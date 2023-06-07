@@ -1,0 +1,90 @@
+## APIVersion: 101031 100034 100035
+## Title: Miat's Pvp Alerts
+## Author: Dorrino, Valandil
+## AddonVersion: 30077
+## SavedVariables: PvpAlertsSettings
+## OptionalDependsOn: LibAddonMenu-2.0
+## DependsOn: LibAddonMenu-2.0 LibGPS LibMapPing LibChatMessage
+## OptionalDependsOn: pChat tom
+
+PvpAlerts_Init_Globals.lua
+PvpAlerts.lua
+
+PvpAlerts_Constants.lua
+PvpAlerts_Utility_Functions.lua
+PvpAlerts_Init_Controls.lua
+PvpAlerts_KOS_System.lua
+PvpAlerts_Capture_Frame.lua
+PvpAlerts_3D_System.lua
+PvpAlerts_Camp_Frame.lua
+PvpAlerts_Spec_Detection.lua
+PvpAlerts_Init_Addon_Menu.lua
+PvpAlerts_XML_Functions.lua
+PvpAlerts_Battlegorund_Scoreboard.lua
+PvpAlerts_Scoreboard.xml
+PvpAlerts_OnScreen.lua
+PvpAlerts.xml
+bindings.xml
+textures/2barsMiddleLineLarge.dds
+textures/2barsTemplateLargeFilled.dds
+textures/2h_3.dds
+textures/3barsMiddleLineLarge.dds
+textures/3barsTemplateLargeFilled.dds
+textures/6star1.dds
+textures/ad_capture_10.dds
+textures/ad_capture_50.dds
+textures/ad_capture_90.dds
+textures/ad_contest_10.dds
+textures/ad_contest_50.dds
+textures/ad_contest_90.dds
+textures/Ayleid_Well_2.dds
+textures/bow_3.dds
+textures/bunny.dds
+textures/dc_capture_10.dds
+textures/dc_capture_50.dds
+textures/dc_capture_90.dds
+textures/dc_contest_10.dds
+textures/dc_contest_50.dds
+textures/dc_contest_90.dds
+textures/dw_3.dds
+textures/E.dds
+textures/ep_capture_10.dds
+textures/ep_capture_50.dds
+textures/ep_capture_90.dds
+textures/ep_contest_10.dds
+textures/ep_contest_50.dds
+textures/ep_contest_90.dds
+textures/flag1Large_100.dds
+textures/flag1Large_10.dds
+textures/flag1Large_40.dds
+textures/flag1Large_51.dds
+textures/flag1Large_90.dds
+textures/flag2Large_100.dds
+textures/flag2Large_10.dds
+textures/flag2Large_40.dds
+textures/flag2Large_51.dds
+textures/flag2Large_90.dds
+textures/flag3Large_100.dds
+textures/flag3Large_10.dds
+textures/flag3Large_40.dds
+textures/flag3Large_51.dds
+textures/flag3Large_90.dds
+textures/grandpotatoe2.dds
+textures/hacking.dds
+textures/hacking_denied.dds
+textures/LICENSE.htm
+textures/miz.dds
+textures/N.dds
+textures/pin_AD_DC.dds
+textures/pin_AD_DC_EP.dds
+textures/pin_AD.dds
+textures/pin_AD_EP.dds
+textures/pin_DC.dds
+textures/pin_DC_EP.dds
+textures/pin_EP.dds
+textures/S.dds
+textures/snb_3.dds
+textures/staff_3.dds
+textures/staff_chan_3.dds
+textures/W.dds
+textures/wrongWay.dds

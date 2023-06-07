@@ -1,0 +1,56 @@
+<Bindings>
+	<Layer name="SI_KEYBINDINGS_LAYER_GENERAL">
+		<Category name="Miat's PVP Alerts">
+			<Action name="PVP_ALERTS_ADD_KOS_MOUSEOVER">
+				<Up>PVP_Add_KOS_Mouseover()</Up>
+				<Down> -->
+				</Down> -->
+
+			</Action>
+			<Action name="PVP_ALERTS_ADD_COOL_MOUSEOVER">
+				<Up>PVP_Add_COOL_Mouseover()</Up>
+				<!-- <Up>PVP_GetCameraXYTest()</Up> -->
+			</Action>
+			<Action name="PVP_ALERTS_WHO_IS">
+				<Up>PVP_Who_Mouseover()</Up>
+			</Action>
+			<Action name="PVP_ALERTS_SHOW_AD">
+				<Down>PVP_FillAllianceTooltip(PVP_Counter_CountContainer_CountAD)</Down>
+				<Up>PVP_ClearTooltip(PVP_Counter_CountContainer_CountAD)</Up>
+			</Action>
+			<Action name="PVP_ALERTS_SHOW_DC">
+				<Down>PVP_FillAllianceTooltip(PVP_Counter_CountContainer_CountDC)</Down>
+				<Up>PVP_ClearTooltip(PVP_Counter_CountContainer_CountDC)</Up>
+			</Action>
+			<Action name="PVP_ALERTS_SHOW_EP">
+				<Down>PVP_FillAllianceTooltip(PVP_Counter_CountContainer_CountEP)</Down>
+				<Up>PVP_ClearTooltip(PVP_Counter_CountContainer_CountEP)</Up>
+			</Action>
+
+			<Action name="PVP_ALERTS_SET_WAYPOINT">
+				<Down>PVP_SetMapPingOnMouseOver()</Down>
+		<!-- <Up>PLAYER_TO_PLAYER:StopInteraction()</Up> -->
+			</Action>
+	    <Action name="PVP_ALERTS_TOGGLE_BG_SCOREBOARD">
+				<Down>PVP_Alerts_Main_Table:ScoreboardToggle(true)</Down>
+				<Up>PVP_Alerts_Main_Table:ScoreboardToggle()</Up>
+	    </Action>
+
+		</Category>
+	</Layer>
+
+	 <Layer name="Death">
+		<Category>
+			<Action name="PVP_ALERTS_RESPAWN_AT_CAMP" hideAction="true" inheritsBindFrom="UI_SHORTCUT_QUICK_SLOTS" rebindable="false">
+		<Down>PVP_Death_ButtonsButton1:OnClicked()</Down>
+	    </Action>
+			<Action name="PVP_ALERTS_RESPAWN_AT_KEEP" hideAction="true" inheritsBindFrom="UI_SHORTCUT_QUINARY" rebindable="false">
+		<Down>PVP_Death_ButtonsButton2:OnClicked()</Down>
+	    </Action>
+			<Action name="PVP_ALERTS_TOGGLE_BG_SCOREBOARD_HIDDEN" inheritsBindFrom="PVP_ALERTS_TOGGLE_BG_SCOREBOARD" hideAction="true">
+				<Down>PVP_Alerts_Main_Table:ScoreboardToggle(true)</Down>
+				<Up>PVP_Alerts_Main_Table:ScoreboardToggle()</Up>
+			</Action>
+		</Category>
+	 </Layer>
+</Bindings>

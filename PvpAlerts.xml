@@ -1,0 +1,852 @@
+<!-- PVP Alerts -->
+
+<GuiXml>
+	<Controls>
+	<!-- <TopLevelControl name="PVP_Main" mouseEnabled="true" movable="true" clampedToScreen="true" hidden="true"> -->
+	    <!-- <Dimensions x="400" y="140" /> -->
+			<!-- <Anchor point="CENTER" /> -->
+			<!-- <OnMoveStop> -->
+				<!-- PVP_Alerts_SavePosition() -->
+			<!-- </OnMoveStop> -->
+	    <!-- <Controls> -->
+				<!-- <Texture name="$(parent)AbilityIcon" textureFile="" hidden="true"> -->
+					<!-- <Dimensions x="70" y="70"/> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0"/> -->
+				<!-- </Texture> -->
+				<!-- <Label name="$(parent)_Label" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS"> -->
+					<!-- <Dimensions x="800" y="70" /> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0"/> -->
+				<!-- </Label> -->
+
+				<!-- <Label name="$(parent)_DebuffLabel" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS" hidden="true"> -->
+					<!-- <Dimensions x="800" y="70" /> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="90"/> -->
+				<!-- </Label> -->
+
+				<!-- <Texture name="$(parent)_Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="true"> -->
+					<!-- <Dimensions x="850" y="360"/> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0"/> -->
+				<!-- </Texture> -->
+				<!-- <Texture name="$(parent)_Backdrop_Add" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="true"> -->
+					<!-- <Dimensions x="850" y="360"/> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0"/> -->
+				<!-- </Texture> -->
+			<!-- </Controls> -->
+	<!-- </TopLevelControl> -->
+
+
+		<Control name="Main_Frame_Icon_Template" mouseEnabled="true" movable="false" clampedToScreen="false" hidden="false" tier="1" layer="0" alpha="1" virtual="true" >
+			<OnInitialized>
+				self:GetNamedChild('Cooldown'):SetDesaturation(1)
+			</OnInitialized>
+			<Controls>
+					<Texture name="$(parent)Icon" textureFile="PapaCrown/textures/bow_3.dds" color="FFFFFF" layer="0" level="1" hidden="false" >
+						<Dimensions x="60" y="60" />
+						<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="0" />
+					</Texture>
+					<Texture name="$(parent)HeavyAttackHighlightIcon" textureFile="PapaCrown/textures/bow_3.dds" color="ddd36a" layer="0" level="0" hidden="false" alpha="0" scale="1.4">
+						<Dimensions x="60" y="60" />
+						<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="0" />
+					</Texture>
+					<Cooldown name="$(parent)Cooldown" inherits="ZO_DefaultCooldown" textureFile="PapaCrown/textures/bow_3.dds" fillColor="787878" layer="0" level="2" hidden="false" >
+						<Dimensions x="60" y="60" />
+						<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" />
+					</Cooldown>
+					<!-- <Cooldown name="$(parent)CooldownMark" inherits="ZO_DefaultCooldown" textureFile="/esoui/art/worldmap/worldmap_map_background.dds" fillColor="FFFFFF" layer="0" level="3" hidden="false" > -->
+						<!-- <Dimensions x="60" y="78" /> -->
+						<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="11"/> -->
+					<!-- </Cooldown> -->
+					<Texture name="$(parent)LeadingEdge" textureFile="EsoUI/Art/ActionBar/coolDown_leadingEdge.dds" color="ffffff" layer="0" level="3" alpha="0.65" hidden="true">
+						<Dimensions x="60" y="5" />
+						<Anchor point="CENTER" relativeTo="$(parent)Icon" relativePoint="BOTTOM" offsetY="0" />
+						<TextureCoords left="0" right ="1" top="0.3" bottom="0.4" />
+					</Texture>
+					<Label name="$(parent)Label" text="" color="FFFFFF" font="ZoFontGameBold" horizontalAlignment="CENTER" verticalAlignment="CENTER" >
+						<Anchor point="CENTER" />
+						<Dimensions x="25" y="12" />
+					</Label>
+					<Texture name="$(parent)Glow" textureFile="EsoUI/Art/HUD/Gamepad/gp_skillGlow.dds" layer="0" level="3" tier="HIGH" hidden="false" alpha="0">
+						<TextureCoords left="0.1875" right ="0.8125" top="0.1875" bottom="0.8125" />
+						<Dimensions x="84" y="84" />
+						<Anchor point="CENTER" />
+					</Texture>
+					<!-- <Texture name="$(parent)Sparkle" inherits="ZO_SparkleTemplate" layer="1" level="3" /> -->
+			</Controls>
+		</Control>
+
+		<TopLevelControl name="PVP_Main" mouseEnabled="true" movable="true" clampedToScreen="true" hidden="true" resizeToFitDescendents="true">
+			<!-- <Dimensions x="444" y="116"/> -->
+			<Anchor point="CENTER" />
+			<OnMoveStop>
+				PVP_Alerts_SavePosition()
+			</OnMoveStop>
+			<OnInitialized>
+				PVP_SetupHighlightAnimation(self)
+			</OnInitialized>
+	    <Controls>
+
+				<Label name="$(parent)Label" text="My Label Rocks" font="$(BOLD_FONT)|28|thick-outline" horizontalAlignment="CENTER" verticalAlignment="CENTER" color="FFFFFF" wrapMode="ELLIPSIS" inheritScale="true">
+					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0"/>
+					<Dimensions x="240" y="38"/>
+				</Label>
+				<Control name="$(parent)AbilityIconFrameLeft" inherits="Main_Frame_Icon_Template" hidden="false" >
+					<Dimensions x="60" y="60"/>
+					<Anchor point="RIGHT" relativeTo="$(parent)Label" relativePoint="LEFT" offsetX="5" offsetY="0"/>
+				</Control>
+				<Control name="$(parent)AbilityIconFrameRight" inherits="Main_Frame_Icon_Template" hidden="false" >
+					<Dimensions x="60" y="60"/>
+					<Anchor point="LEFT" relativeTo="$(parent)Label" relativePoint="RIGHT" offsetX="10" offsetY="0"/>
+				</Control>
+				<Texture name="$(parent)Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="false" excludeFromResizeToFitExtents="true"> -->
+					<TextureCoords top="0.3" bottom="0.7" left="0.15" right="0.81"/>
+					<Anchor point="TOPLEFT" offsetX="-70" offsetY="-35" />
+					<Anchor point="BOTTOMRIGHT" offsetX="60" offsetY="35" />
+				</Texture> -->
+				<Texture name="$(parent)Backdrop_Add" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="false" excludeFromResizeToFitExtents="true"> -->
+					<TextureCoords top="0.3" bottom="0.7" left="0.15" right="0.81"/>
+					<Anchor point="TOPLEFT" offsetX="-70" offsetY="-35" /> -->
+					<Anchor point="BOTTOMRIGHT" offsetX="60" offsetY="35" /> -->
+				</Texture> -->
+			</Controls>
+	</TopLevelControl>
+
+		<TopLevelControl name="PVP_Counter" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" >
+			<Dimensions x="220" y="150" />
+			<Anchor point="CENTER" />
+			<OnMoveStop>
+				PVP_Counter_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<Label name="$(parent)_Label" horizontalAlignment="CENTER" verticalAlignment="BOTTOM" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
+					<Dimensions x="220" y="75" />
+					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetX="0" offsetY="-10"/>
+				</Label>
+				<Control name="$(parent)_CountContainer" inheritAlpha="true" resizeToFitDescendents = "true">
+					<!--<DimensionConstraints minX="350" minY="50" />-->
+					<Anchor point="TOP" relativeTo="$(parent)_Label" relativePoint="BOTTOM" offsetX="0" offsetY="0"/>
+					<Controls>
+						<Label name="$(parent)_CountAD" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
+							<DimensionConstraints minX="25" minY="50" />
+							<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
+						</Label>
+						<Label name="$(parent)_CountDC" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
+							<DimensionConstraints minX="25" minY="50" />
+							<Anchor point="TOPLEFT" relativeTo="$(parent)_CountAD" relativePoint="TOPRIGHT" offsetX="0" offsetY="0"/>
+						</Label>
+						<Label name="$(parent)_CountEP" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
+							<DimensionConstraints minX="25" minY="50" />
+							<Anchor point="TOPLEFT" relativeTo="$(parent)_CountDC" relativePoint="TOPRIGHT" offsetX="0" offsetY="0"/>
+						</Label>
+					</Controls>
+				</Control>
+
+				<Texture name="$(parent)_Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds">
+					<Dimensions x="205" y="400"/>
+					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0"/>
+				</Texture>
+
+				<Label name="$(parent)_TestWidth" hidden="true">
+					<Dimensions x="0" y="0"/>
+					<Anchor point="TOP" />
+				</Label>
+			</Controls>
+		</TopLevelControl>
+		<TopLevelControl name="PVP_ForwardCamp" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+			<!-- <Dimensions x="50" y="50"/> -->
+			<Dimensions x="80" y="80"/>
+
+			<Anchor point="CENTER" />
+			<OnMoveStop>
+				PVP_Camp_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<Texture name="$(parent)_Icon" textureFile="esoui/art/icons/mapkey/mapkey_forwardcamp.dds" layer="2">
+					<!-- <Dimensions x="56" y="56"/> -->
+					<Dimensions x="51" y="51"/>
+					<Anchor point="CENTER" offsetX="0" offsetY="-22"/>
+				</Texture>
+				<Texture name="$(parent)_IconContinuous" textureFile="esoui/art/icons/ability_weapon_028.dds" layer="2">
+					<!-- <Dimensions x="37" y="37"/> -->
+					<Dimensions x="31" y="31"/>
+					<Anchor point="CENTER" offsetX="0" offsetY="20"/>
+				</Texture>
+				<Texture name="$(parent)_IconAyleid" textureFile="esoui/art/icons/quest_spirit_001.dds" layer="2">
+					<Dimensions x="26" y="26"/>
+					<Anchor point="CENTER" offsetX="-33" offsetY="23"/>
+				</Texture>
+				<Texture name="$(parent)_IconBlessing" textureFile="esoui/art/icons/ability_healer_030.dds" layer="2">
+					<Dimensions x="20" y="20"/>
+					<Anchor point="CENTER" offsetX="32" offsetY="23"/>
+				</Texture>
+				<Texture name="$(parent)_Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" layer="0">
+					<!-- <Dimensions x="120" y="300"/> -->
+					<Dimensions x="176" y="500"/>
+					<Anchor point="CENTER" offsetX="2" offsetY="1"/>
+				</Texture>
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_KillFeed" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+			<Dimensions x="750" y="120" />
+			<Anchor point="CENTER" />
+			<OnMoveStop>
+				PVP_Feed_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_19)|soft-shadow-thick" verticalAlignment="CENTER" text="" horizontalAlignment="CENTER" maxHistoryLines="200" inheritAlpha="true" wrapMode="ELLIPSIS" inheritScale="false">
+					<Dimensions x="750" y="120" />
+					<Anchor point="CENTER" offsetY="0" />
+					<LineFade fadeBegin="8" fadeDuration="2"/>
+					<OnMouseWheel>
+						self:MoveScrollPosition(delta)
+					</OnMouseWheel>
+					<OnMouseEnter>
+						self:ShowFadedLines()
+					</OnMouseEnter>
+				</TextBuffer>
+				<Backdrop name="$(parent)_Ratio" hidden="true" edgeColor="444444" centerColor="333333" alpha="1">
+					<Dimensions x="330" y="15" />
+					<Anchor point="TOP" relativeTo="$(parent)_Text" relativePoint="BOTTOM" offsetX="0" offsetY="15" />
+					<Edge edgeSize="1" />
+					<Controls>
+						<Backdrop name="$(parent)_AD" edgeColor="aaaaaa" centerColor="EFD13C" alpha="0.8">
+							  <Dimensions x="110" y="15" />
+							  <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0" />
+							  <Edge edgeSize="1" />
+						</Backdrop>
+						<Label name="$(parent)_AD_Label" font="$(BOLD_FONT)|$(KB_15)|soft-shadow-thin" text="AD" verticalAlignment="CENTER" horizontalAlignment="CENTER">
+							<Dimensions x="50" y="25" />
+							 <Anchor point="CENTER" relativeTo="$(parent)_AD" relativePoint="CENTER" offsetX="0" offsetY="0" />
+						</Label>
+						<Backdrop name="$(parent)_DC" edgeColor="aaaaaa" centerColor="80AFFF" alpha="0.8">
+							  <Dimensions x="110" y="15" />
+							  <Anchor point="TOPLEFT" relativeTo="$(parent)_AD" relativePoint="TOPRIGHT" offsetX="0" offsetY="0" />
+							  <Edge edgeSize="1" />
+						</Backdrop>
+						<Label name="$(parent)_DC_Label" font="$(BOLD_FONT)|$(KB_15)|soft-shadow-thin" text="DC" verticalAlignment="CENTER" horizontalAlignment="CENTER">
+							<Dimensions x="50" y="25" />
+							 <Anchor point="CENTER" relativeTo="$(parent)_DC" relativePoint="CENTER" offsetX="0" offsetY="0" />
+						</Label>
+						<Backdrop name="$(parent)_EP" edgeColor="aaaaaa" centerColor="FF7161" alpha="0.8">
+							  <Dimensions x="110" y="15" />
+							 <Anchor point="TOPLEFT" relativeTo="$(parent)_DC" relativePoint="TOPRIGHT" offsetX="0" offsetY="0" />
+							  <Edge edgeSize="1" />
+						</Backdrop>
+						<Label name="$(parent)_EP_Label" font="$(BOLD_FONT)|$(KB_15)|soft-shadow-thin" text="EP" verticalAlignment="CENTER" horizontalAlignment="CENTER">
+							<Dimensions x="50" y="25" />
+							 <Anchor point="CENTER" relativeTo="$(parent)_EP" relativePoint="CENTER" offsetX="0" offsetY="0" />
+						</Label>
+					</Controls>
+				</Backdrop>
+				<Backdrop name="$(parent)_Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.3" hidden="false" />
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_Names" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+			<Dimensions x="240" y="500" />
+			<Anchor point="CENTER" />
+			<OnMoveStop>
+				PVP_Names_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="ZoFontWinH3" verticalAlignment="CENTER" text="" horizontalAlignment="RIGHT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true" wrapMode="ELLIPSIS" inheritScale="false">
+					<Dimensions x="220" y="500" />
+					<Anchor point="CENTER" offsetY="0" />
+					<LineFade fadeBegin="13" fadeDuration="2"/>
+					<OnMouseWheel>
+						self:MoveScrollPosition(delta)
+					</OnMouseWheel>
+				</TextBuffer>
+				<Backdrop name="$(parent)_Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.3" hidden="false" />
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_TUG" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+				<Dimensions x="240" y="50" />
+				<Anchor point="CENTER" offsetY="540"/>
+				<OnMoveStop>
+					PVP_Tug_SavePosition()
+				</OnMoveStop>
+				<Controls>
+					<Backdrop name="$(parent)_Frame" edgeColor="ffffff" centerColor="000000" alpha="1">
+						<Dimensions x="242" y="27" />
+						<Anchor point="CENTER" offsetY="0"/>
+						<Edge edgeSize="2" />
+						<Controls>
+							<Label name="$(parent)_ADbar" font="$(BOLD_FONT)|$(KB_26)|thick-outline" text="AD" verticalAlignment="CENTER" horizontalAlignment="CENTER" mouseEnabled="false" movable="false" color="ffffff">
+								<Dimensions x="60" y="25" />
+								<Anchor point="LEFT" offsetX="3" offsetY="-6" />
+								<Controls>
+									<Backdrop name="$(parent)_BG" edgeColor="aaaaaa" centerColor="C2AA49" alpha="1">
+										<Dimensions x="80" y="25" />
+										<Anchor point="CENTER" offsetX="-2" offsetY="6"/>
+										<Edge edgeSize="1" />
+									</Backdrop>
+								</Controls>
+							</Label>
+							<Label name="$(parent)_DCbar" font="$(BOLD_FONT)|$(KB_26)|thick-outline" text="DC" verticalAlignment="CENTER" horizontalAlignment="CENTER" mouseEnabled="false" movable="false" color="ffffff">
+								<Dimensions x="60" y="25" />
+								<Anchor point="LEFT" relativeTo="$(parent)_ADbar" relativePoint="RIGHT" offsetX="0" offsetY="0" />
+								<Controls>
+									<Backdrop name="$(parent)_BG" edgeColor="aaaaaa" centerColor="4f81bd" alpha="1">
+										<Dimensions x="80" y="25" />
+										<Anchor point="CENTER" offsetX="-2" offsetY="6"/>
+										<Edge edgeSize="1" />
+									</Backdrop>
+								</Controls>
+							</Label>
+							<Label name="$(parent)_EPbar" font="$(BOLD_FONT)|$(KB_26)|thick-outline" text="EP" verticalAlignment="CENTER" horizontalAlignment="CENTER" mouseEnabled="false" movable="false" color="ffffff">
+								<Dimensions x="60" y="25" />
+								<Anchor point="LEFT" relativeTo="$(parent)_DCbar" relativePoint="RIGHT" offsetX="0" offsetY="0" />
+								<Controls>
+									<Backdrop name="$(parent)_BG" edgeColor="aaaaaa" centerColor="de5b4e" alpha="1">
+										<Dimensions x="80" y="25" />
+										<Anchor point="CENTER" offsetX="-2" offsetY="6"/>
+										<Edge edgeSize="1" />
+									</Backdrop>
+								</Controls>
+							</Label>
+						</Controls>
+					</Backdrop>
+				</Controls>
+		</TopLevelControl>
+
+
+		<TopLevelControl name="PVP_KOS" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+			<!-- <Dimensions x="300" y="370" /> -->
+			<Dimensions x="350" y="360" />
+			<Anchor point="CENTER" />
+			<OnMoveStop>
+				PVP_KOS_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_17)|soft-shadow-thick" verticalAlignment="CENTER" text="" horizontalAlignment="LEFT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true" wrapMode="ELLIPSIS" inheritScale="false">
+					<!-- <Dimensions x="325" y="360" /> -->
+					<Dimensions x="400" y="360" />
+					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetY="0" />
+					<OnMouseWheel>
+						self:MoveScrollPosition(delta)
+					</OnMouseWheel>
+					<Controls>
+						<Backdrop name="PVP_KOS_Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.8" hidden="false" />
+					</Controls>
+				</TextBuffer>
+
+				<Backdrop name="$(parent)_ControlFrame" edgeColor="444444" centerColor="333333" alpha="0.8">
+					<Dimensions x="350" y="8" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)_Text" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="10" />
+					<Edge edgeSize="1" />
+					<Controls>
+						<Label name="$(parent)_Button" font="$(BOLD_FONT)|$(KB_13)|soft-shadow-thin" text="Switch mode" verticalAlignment="CENTER" horizontalAlignment="CENTER" mouseEnabled="true" movable="true">
+							<Dimensions x="85" y="12" />
+							<Anchor point="CENTER" offsetX="0" offsetY="-2" />
+							<OnMoveStart>
+								PVP_KOS_Control_MoveStart(self)
+							</OnMoveStart>
+							<OnMoveStop>
+								PVP_KOS_Control_MoveStop(self)
+							</OnMoveStop>
+							<Controls>
+								<Backdrop name="$(parent)_BG" edgeColor="aaaaaa" centerColor="aa7777" alpha="0.8">
+								  <Dimensions x="85" y="16" />
+								  <Anchor point="CENTER" offsetY="2"/>
+								  <Edge edgeSize="1" />
+								</Backdrop>
+							</Controls>
+						</Label>
+					</Controls>
+				</Backdrop>
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_Death_Buttons" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1" resizeToFitDescendents="true">
+			<Anchor point="BOTTOM" relativeTo="ZO_DeathAvAButtons" relativePoint="TOP" offsetY="-40"/>
+			<Controls>
+				<Control name="$(parent)Button1" inherits="ZO_KeybindButton">
+					 <Anchor point="TOPLEFT"/>
+				</Control>
+				<Control name="$(parent)Button2" inherits="ZO_KeybindButton">
+					  <Anchor point="TOPLEFT" relativeTo="$(parent)Button1" relativePoint="TOPRIGHT" offsetX="40"/>
+				</Control>
+			</Controls>
+		</TopLevelControl>
+
+
+
+		<Backdrop name="PVP_CaptureStatus_Template" edgeColor="444444" centerColor="333333" alpha="1" virtual="true">
+			<Edge edgeSize="1" />
+			<Controls>
+				<Backdrop name="$(parent)Bar" edgeColor="aaaaaa" centerColor="EFD13C" alpha="1">
+					  <Anchor point="LEFT" offsetX="2" offsetY="0" />
+					  <Edge edgeSize="1" />
+				</Backdrop>
+				<Label name="$(parent)Label" font="$(BOLD_FONT)|$(KB_11)|thick-outline" text="%" verticalAlignment="CENTER" horizontalAlignment="CENTER">
+					<!-- <Dimensions x="50" y="25" /> -->
+					 <Anchor point="CENTER" offsetX="0" offsetY="0" />
+				</Label>
+			</Controls>
+		</Backdrop>
+
+
+		<Control name="PVP_CaptureBar_Template" virtual="true">
+			<Controls>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_flagcarrier_neutral.dds" level="2">
+					<Dimensions x="26" y="26"/>
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
+				</Texture>
+				<Texture name="$(parent)IconUnderAttack" textureFile="/esoui/art/mappins/ava_attackburst_64.dds" level="1" hidden="true">
+					<Dimensions x="34" y="34"/>
+					<Anchor point="CENTER" relativeTo="$(parent)Icon" offsetX="0" offsetY="0"/>
+				</Texture>
+				<Backdrop name="$(parent)Meter" inherits="PVP_CaptureStatus_Template" hidden="false">
+					<Anchor point="LEFT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="0"/>
+					<Dimensions x="115" y="11" />
+				</Backdrop>
+			</Controls>
+		</Control>
+
+		<Control name="PVP_CaptureBarSmall_Template" virtual="true">
+			<Controls>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_flagcarrier_neutral.dds" level="2">
+					<Dimensions x="21" y="21"/>
+					<Anchor point="LEFT" offsetX="0" offsetY="0"/>
+				</Texture>
+				<Texture name="$(parent)IconUnderAttack" textureFile="/esoui/art/mappins/ava_attackburst_64.dds" level="1" hidden="true">
+					<Dimensions x="29" y="29"/>
+					<Anchor point="CENTER" relativeTo="$(parent)Icon" offsetX="0" offsetY="0"/>
+				</Texture>
+				<Backdrop name="$(parent)Meter" inherits="PVP_CaptureStatus_Template" hidden="false">
+					<Anchor point="LEFT" relativeTo="$(parent)Icon" relativePoint="RIGHT" offsetX="0"/>
+					<Dimensions x="85" y="9" />
+				</Backdrop>
+			</Controls>
+		</Control>
+
+		<Control name="PVP_CaptureHeader_Template" virtual="true">
+			<Controls>
+				<Label name="$(parent)Label" font="$(BOLD_FONT)|$(KB_15)|thick-outline" text="Objective Name" verticalAlignment="CENTER" horizontalAlignment="LEFT" alpha="1">
+					<Anchor point="TOPLEFT" offsetX="0" />
+					<Dimensions x="400" y="35" />
+				</Label>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_largekeep_neutral.dds" level="2">
+					<Dimensions x="42" y="42"/>
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Label" relativePoint="BOTTOMLEFT" offsetX="5" offsetY="0"/>
+				</Texture>
+				<Texture name="$(parent)IconUnderAttack" textureFile="/esoui/art/mappins/ava_attackburst_64.dds" level="1" hidden="true">
+					<Dimensions x="55" y="55"/>
+					<Anchor point="CENTER" relativeTo="$(parent)Icon" offsetX="-1" offsetY="0"/>
+				</Texture>
+
+			</Controls>
+		</Control>
+
+		<Control name="PVP_CaptureImperialCityDistrict_Template" virtual="true">
+			<Controls>
+				<Label name="$(parent)Label" font="$(BOLD_FONT)|$(KB_15)|thick-outline" text="District Name" verticalAlignment="CENTER" horizontalAlignment="LEFT" alpha="1">
+					<Anchor point="TOPLEFT" offsetX="0" />
+					<Dimensions x="400" y="35" />
+				</Label>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_imperialdistrict_neutral.dds" level="2">
+					<Dimensions x="34" y="34"/>
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Label" relativePoint="TOPLEFT" offsetX="-31" offsetY="10"/>
+				</Texture>
+				<Texture name="$(parent)IconUnderAttack" textureFile="/esoui/art/mappins/ava_attackburst_64.dds" level="1" hidden="true">
+					<Dimensions x="43" y="43"/>
+					<Anchor point="CENTER" relativeTo="$(parent)Icon" offsetX="-1" offsetY="3"/>
+				</Texture>
+				<Control name= "$(parent)Flag1" inherits="PVP_CaptureBarSmall_Template" hidden="false">
+					<Dimensions x="200" y="14" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Label" relativePoint="BOTTOMLEFT" offsetX="-5" offsetY="-10" />
+				</Control>
+			</Controls>
+		</Control>
+
+		<Control name="PVP_CaptureImperialCity_Template" virtual="true">
+			<Controls>
+				<Control name= "$(parent)District1" inherits="PVP_CaptureImperialCityDistrict_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" />
+				</Control>
+				<Control name= "$(parent)District2" inherits="PVP_CaptureImperialCityDistrict_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)District1" relativePoint="BOTTOMLEFT" offsetY="10" />
+				</Control>
+				<Control name= "$(parent)District3" inherits="PVP_CaptureImperialCityDistrict_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)District2" relativePoint="BOTTOMLEFT" offsetY="10" />
+				</Control>
+				<Control name= "$(parent)District4" inherits="PVP_CaptureImperialCityDistrict_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)District3" relativePoint="BOTTOMLEFT" offsetY="10" />
+				</Control>
+				<Control name= "$(parent)District5" inherits="PVP_CaptureImperialCityDistrict_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)District4" relativePoint="BOTTOMLEFT" offsetY="10" />
+				</Control>
+				<Control name= "$(parent)District6" inherits="PVP_CaptureImperialCityDistrict_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)District5" relativePoint="BOTTOMLEFT" offsetY="10" />
+				</Control>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.65" hidden="true" />
+			</Controls>
+		</Control>
+
+		<Control name="PVP_CaptureKeepNew_Template" virtual="true">
+			<Controls>
+				<Control name= "$(parent)Keep" inherits="PVP_CaptureNormal_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" offsetX="0" offsetY="0" />
+				</Control>
+				<Control name= "$(parent)Farm" inherits="PVP_CaptureNormal_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Keep" relativePoint="BOTTOMLEFT" offsetX="0" offsetY="32" />
+				</Control>
+				<Control name= "$(parent)Lumbermill" inherits="PVP_CaptureNormal_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Farm" relativePoint="BOTTOMLEFT" offsetY="15" />
+				</Control>
+				<Control name= "$(parent)Mine" inherits="PVP_CaptureNormal_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Lumbermill" relativePoint="BOTTOMLEFT" offsetY="15"/>
+				</Control>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.65" hidden="true" />
+
+			</Controls>
+		</Control>
+
+		<Control name="PVP_CaptureNormal_Template" virtual="true">
+			<Controls>
+				<Control name= "$(parent)Header" inherits="PVP_CaptureHeader_Template" hidden="false">
+					<Dimensions x="450" y="35" />
+					<Anchor point="TOPLEFT" />
+				</Control>
+				<Control name= "$(parent)Flag1" inherits="PVP_CaptureBar_Template" hidden="false">
+					<Dimensions x="200" y="16" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Header" relativePoint="BOTTOMLEFT" offsetX="-9" offsetY="-11" />
+				</Control>
+				<Control name= "$(parent)Flag2" inherits="PVP_CaptureBar_Template" hidden="false">
+					<Dimensions x="200" y="16" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Flag1" relativePoint="BOTTOMLEFT" offsetY="0" />
+				</Control>
+				<Control name= "$(parent)Flag3" inherits="PVP_CaptureBar_Template" hidden="false">
+					<Dimensions x="200" y="16" />
+					<Anchor point="TOPLEFT" relativeTo="$(parent)Flag2" relativePoint="BOTTOMLEFT" offsetY="0" />
+				</Control>
+
+			</Controls>
+		</Control>
+
+		<TopLevelControl name="PVP_Capture" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+			 <Anchor point="CENTER"/>
+			<Dimensions x="400" y="80" />
+			<OnMoveStop>
+				PVP_Capture_SavePosition()
+			</OnMoveStop>
+			<Controls>
+
+				<Control name= "$(parent)Normal" inherits="PVP_CaptureNormal_Template" hidden="false">
+					<Dimensions x="450" y="85" />
+					<Anchor point="TOPLEFT" />
+				</Control>
+
+				<Control name= "$(parent)Keep" inherits="PVP_CaptureKeepNew_Template" hidden="false">
+					<Dimensions x="450" y="120" />
+					<Anchor point="TOPLEFT" />
+				</Control>
+
+				<Control name= "$(parent)ImperialCity" inherits="PVP_CaptureImperialCity_Template" hidden="false">
+					<Dimensions x="450" y="210" />
+					<Anchor point="TOPLEFT" />
+				</Control>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.65" hidden="true" />
+			</Controls>
+		</TopLevelControl>
+
+
+		<TopLevelControl name="PVP_TargetName" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="0" >
+			<Anchor point="CENTER" offsetX="-10" offsetY="-40" />
+			<Dimensions x="600" y="50" />
+			<OnMoveStop>
+				PVP_TargetName_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<Label name="$(parent)Label" text="" verticalAlignment="CENTER" horizontalAlignment="CENTER" >
+					<Anchor point="CENTER" />
+					<Dimensions x="600" y="50" />
+				</Label>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.3" hidden="true" />
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_TargetIcon" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="1" >
+			<Anchor point="CENTER" offsetX="0" offsetY="0" />
+			<Dimensions x="96" y="96" />
+			<Controls>
+				<Label name="$(parent)Label" text="" verticalAlignment="CENTER" horizontalAlignment="CENTER" font="$(BOLD_FONT)|$(KB_15)|soft-shadow-thin" hidden="false">
+					<Dimensions x="96" y="96"/>
+					<Anchor point="CENTER" />
+				</Label>
+			</Controls>
+		</TopLevelControl>
+
+
+		<TopLevelControl name="PVP_NewAttacker" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="0" >
+			<Anchor point="CENTER" offsetX="50" offsetY="-40" />
+			<Dimensions x="600" y="200" />
+			<OnMoveStop>
+				PVP_NewAttacker_SavePosition()
+			</OnMoveStop>
+			<Controls>
+				<Label name="$(parent)Number" text="10" verticalAlignment="CENTER" horizontalAlignment="CENTER" scale="1">
+					<Anchor point="TOP" />
+					<Dimensions x="100" y="50" />
+				</Label>
+				<Label name="$(parent)Label" text="New player name" verticalAlignment="CENTER" horizontalAlignment="CENTER" scale="1">
+					<Anchor point="TOP" relativeTo="$(parent)Number" relativePoint="BOTTOM" offsetY="50" />
+					<Dimensions x="600" y="50" />
+				</Label>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.3" hidden="true" />
+			</Controls>
+		</TopLevelControl>
+
+
+
+
+		<Control name="PVP_World3D_Template" layer="0" level="0" virtual="true">
+			<Anchor point="CENTER" offsetX="0" />
+			<Dimensions x="100" y="100" />
+			<Controls>
+				<Texture name="$(parent)Locked" textureFile="/esoui/art/miscellaneous/status_locked.dds" color="FF0000" level="4" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="-1" />
+					<Dimensions x="45" y="45" />
+				</Texture>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_largekeep_neutral.dds" level="2" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+				<Texture name="$(parent)IconUA" textureFile="/esoui/art/mappins/ava_attackburst_64.dds" color="FFFFFF" hidden="true" level="1" tier="1">
+					<Anchor point="CENTER" offsetX="-1" />
+					<Dimensions x="110" y="110" />
+				</Texture>
+				<Texture name="$(parent)BG" textureFile="/art/fx/texture/aoe_circle.dds" color="FFFFFF" hidden="true" level="0" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="110" y="110" />
+				</Texture>
+				<Texture name="$(parent)CaptureBG" textureFile="esoui/art/ava/avacapturebar_barframe.dds" hidden="true" level="4" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="120" y="120" />
+				</Texture>
+				<Texture name="$(parent)CaptureBar" textureFile="esoui/art/ava/avacapturebar_fill_contested_ebonheart.dds" hidden="true" level="3" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="120" y="120" />
+				</Texture>
+				<Texture name="$(parent)Divider" textureFile="EsoUI/Art/AvA/avaCaptureBar_midpointDivider.dds" level="4" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="120" y="120" />
+				</Texture>
+				<Texture name="$(parent)Scroll" textureFile="esoui/art/campaign/campaignbonus_scrollicon.dds" level="3" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="90" y="90" />
+				</Texture>
+				<Texture name="$(parent)Flags" textureFile="PvpAlerts/textures/2barsTemplateLargeFilled.dds" level="2" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+				<Texture name="$(parent)Apse" textureFile="PvpAlerts/textures/flag1Large_100.dds" level="3" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+				<Texture name="$(parent)Nave" textureFile="PvpAlerts/textures/flag2Large_100.dds" level="3" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+				<Texture name="$(parent)Other" textureFile="PvpAlerts/textures/flag3Large_100.dds" level="3" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+				<Texture name="$(parent)Middle" textureFile="PvpAlerts/textures/2barsMiddleLineLarge.dds" level="4" hidden="true" tier="1">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+				<Texture name="$(parent)Ping" textureFile="esoui/art/compass/compass_waypoint.dds" level="0" hidden="true" tier="0">
+					<Anchor point="CENTER" offsetX="0" />
+					<Dimensions x="100" y="100" />
+				</Texture>
+			</Controls>
+		</Control>
+
+		<TopLevelControl name="PVP_World3D" layer="0" level="0" inherits="PVP_World3D_Template" virtual="true">
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_OnScreen" layer="0" level="0" tier="1" inherits="PVP_World3D_Template">
+			<OnMoveStop>
+				PVP_OnScreen_SavePosition()
+			</OnMoveStop>
+			<Controls>
+					<Label name="$(parent)Name" text="test" font="$(BOLD_FONT)|$(KB_22)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="CENTER" level="1" inheritScale="false">
+					<Anchor point="TOP" offsetY="-40"/>
+					<DimensionConstraints minX="400" minY="50" />
+				</Label>
+				<Label name="$(parent)Siege" text="testtest" font="$(BOLD_FONT)|$(KB_21)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="CENTER" level="1" inheritScale="false">
+					<Anchor point="BOTTOM" offsetY="50"/>
+					<DimensionConstraints minX="400" minY="50" />
+				</Label>
+				<Control name="$(parent)Neighbors">
+					<Anchor point="TOP" relativeTo="$(parent)Siege" relativePoint="BOTTOM" offsetY="15" />
+					<Dimensions x="400" y="50" />
+					<Controls>
+						<Control name="$(parent)Neighbor2" inherits="PVP_World3D_Template" hidden="true">
+							<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="0" />
+							<Dimensions x="50" y="50" />
+						</Control>
+						<Control name="$(parent)Neighbor1" inherits="PVP_World3D_Template" hidden="true">
+							<Anchor point="RIGHT" relativeTo="$(parent)Neighbor2" relativePoint="LEFT" offsetX="-45" />
+							<Dimensions x="50" y="50" />
+						</Control>
+						<Control name="$(parent)Neighbor3" inherits="PVP_World3D_Template" hidden="true">
+							<Anchor point="LEFT" relativeTo="$(parent)Neighbor2" relativePoint="RIGHT" offsetX="45" />
+							<Dimensions x="50" y="50" />
+						</Control>
+					</Controls>
+				</Control>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.65" hidden="true" />
+			</Controls>
+
+		</TopLevelControl>
+
+
+		<TopLevelControl name="PVP_World3DCrown" tier="0" layer="0" level="0">
+			<Controls>
+				<Texture name="$(parent)Icon" textureFile="esoui/art/icons/mapkey/mapkey_groupleader.dds" level="3" />
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_WorldTooltip" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="true" tier="0" layer="1" alpha="1" resizeToFitDescendents="true" >
+			<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="CENTER" offsetX="30" offsetY="-15" />
+			<DimensionConstraints minX="250" minY="250" />
+			<Controls>
+				<Label name="$(parent)Label" text="" font="$(BOLD_FONT)|$(KB_20)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="TOPLEFT" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+
+				<Label name="$(parent)SubLabel" text="" font="$(BOLD_FONT)|$(KB_21)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="BOTTOM" offsetY="2" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+				<Texture name="$(parent)DividerTop" inherits="ZO_HorizontalDivider" level="1" hidden="true">
+					<Anchor point="TOP" relativeTo="$(parent)SubLabel" relativePoint="BOTTOM" offsetY="10" />
+					<Dimensions x="650" y="10"/>
+				</Texture>
+				<Label name="$(parent)CampaignScoreLabel" text="" font="$(BOLD_FONT)|$(KB_21)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="CENTER" relativeTo="$(parent)DividerTop" relativePoint="BOTTOM" offsetY="20" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+				<Label name="$(parent)CampaignHoldingsLabel" text="" font="$(BOLD_FONT)|$(KB_21)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="CENTER" relativeTo="$(parent)CampaignScoreLabel" relativePoint="BOTTOM" offsetY="20" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+				<Label name="$(parent)EmperorInfoLabel" text="" font="$(BOLD_FONT)|$(KB_21)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="CENTER" relativeTo="$(parent)CampaignHoldingsLabel" relativePoint="BOTTOM" offsetY="20" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+				<Texture name="$(parent)DividerBottom" inherits="ZO_HorizontalDivider" level="1" hidden="true">
+					<Anchor point="TOP" relativeTo="$(parent)EmperorInfoLabel" relativePoint="BOTTOM" offsetY="15" />
+					<Dimensions x="650" y="10"/>
+				</Texture>
+				<Label name="$(parent)CampaignPositionInfoLabel" text="" font="$(BOLD_FONT)|$(KB_23)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="CENTER" relativeTo="$(parent)DividerBottom" relativePoint="BOTTOM" offsetY="18" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+				<Backdrop name="$(parent)Backdrop" inherits="ZO_SliderBackdrop" alpha="0.85" hidden="true"  excludeFromResizeToFitExtents="true">
+					<!-- <Anchor point="TOPLEFT" offsetY="-15" /> -->
+					<Anchor point="CENTER" offsetY="0" />
+					<Dimensions x="500" y="120" />
+				</Backdrop>
+			</Controls>
+		</TopLevelControl>
+
+		<TopLevelControl name="PVP_World3DCameraMeasurement" layer="0" level="0" hidden="true">
+			<Controls>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_largekeep_neutral.dds" level="2">
+					<Anchor point="TOPLEFT" offsetX="0" />
+				</Texture>
+			</Controls>
+		</TopLevelControl>
+
+
+		<TopLevelControl name="PVP_TX" layer="0" level="0" hidden="true">
+			<Anchor point="CENTER" offsetX="150" />
+			<Controls>
+				<Texture name="$(parent)tx1" textureFile="PvpAlerts/textures/rally.dds" level="1"> -->
+					<Dimensions x="2048" y="64"/> -->
+					<Anchor point="CENTER" /> -->
+				</Texture> -->
+				<!-- <Texture name="$(parent)tx2" textureFile="PvpAlerts/textures/link64.dds" level="1"> --> -->
+					<!-- <Dimensions x="128" y="128"/> --> -->
+					<!-- <Anchor point="CENTER" /> --> -->
+				<!-- <</Texture> --> -->
+				<Texture name="$(parent)bg" textureFile="" color="000000" level="0"> -->
+					<Dimensions x="2048" y="64"/> -->
+					<Anchor point="CENTER" /> -->
+				</Texture> -->
+			</Controls>
+		</TopLevelControl>
+
+
+		<TopLevelControl name="PVP_TestWorld" layer="0" level="0" hidden="true">
+			<Controls>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/compass/ava_largekeep_neutral.dds" level="2">
+					<Anchor point="TOPLEFT" offsetX="0" />
+				</Texture>
+			</Controls>
+		</TopLevelControl>
+
+		<Control name="PVP_Medals_OnScreen_Template" mouseEnabled="true" movable="false" clampedToScreen="true" hidden="false" resizeToFitDescendents="true" alpha="1" virtual="true">
+	    <DimensionConstraints minX="50" minY="50" />
+			<OnMouseEnter>
+				PVP_Medal_OnMouseEnter(self)
+			</OnMouseEnter>
+			<OnMouseExit>
+				PVP_Medal_OnMouseExit(self)
+			</OnMouseExit>
+			<OnInitialized>
+				PVP_CreateSparkleAnimation(self)
+			</OnInitialized>
+	    <Controls>
+				<Texture name="$(parent)Icon" textureFile="/esoui/art/icons/battleground_medal_flagcapture_002.dds" level="2">
+					<Dimensions x="80" y="80"/>
+					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0"/>
+				</Texture>
+				<Label name="$(parent)Score" text="x2" horizontalAlignment="RIGHT" verticalAlignment="CENTER" inheritAlpha="true" wrapMode="ELLIPSIS" font="$(BOLD_FONT)|$(KB_26)|thick-outline" color="FFFFFF" level="3">
+					<Dimensions x="64" y="25" />
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Icon" relativePoint="BOTTOMRIGHT" offsetX="0" offsetY="-5"/>
+				</Label>
+				<Label name="$(parent)Name" text="Expert Relic Runner" horizontalAlignment="LEFT" verticalAlignment="CENTER" inheritAlpha="true" wrapMode="ELLIPSIS" font="$(BOLD_FONT)|$(KB_19)|thick-outline" color="AAAA00" level="2" modifyTextType="UPPERCASE">
+					<DimensionConstraints minX="100" minY="25" />
+					<Anchor point="TOP" relativeTo="$(parent)Icon" relativePoint="BOTTOM" offsetX="0" offsetY="4"/>
+				</Label>
+
+				<Texture name="$(parent)Sparkle" inherits="ZO_SparkleTemplate" excludeFromResizeToFitExtents="true" />
+			</Controls>
+	</Control>
+
+		<TopLevelControl name="PVP_Medals" inherits="PVP_Medals_OnScreen_Template" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" resizeToFitDescendents="false" alpha="0">
+	    <Dimensions x="400" y="100" />
+			<OnMoveStop>
+				PVP_Medals_SavePosition()
+			</OnMoveStop>
+			<Anchor point="CENTER" offsetY="450"/>
+	</TopLevelControl>
+
+
+
+		<TopLevelControl name="PVP_TopLevel_Tooltip" inherits="TooltipTopLevel">
+			<Controls>
+				<Tooltip name="PVP_Tooltip" inherits="ZO_BaseTooltip" />
+			</Controls>
+		</TopLevelControl>
+
+
+	</Controls>
+</GuiXml>
