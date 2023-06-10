@@ -338,6 +338,10 @@ PVP.snipeNames = {
 	["Dizzying Swing"] = true,
 
 	["Crushing Swipe"] = true,
+
+	["Fatecarver"] = true,
+	["Exhausting Fatecarver"] = true,
+	["Pragmatic Fatecarver"] = true,
 }
 
 PVP.snipeId = {
@@ -413,6 +417,25 @@ PVP.snipeId = {
 
 	[89128] = 1, --Crushing Swipe
 	[89220] = 2, --Crushing Swipe
+
+	[185808] = -1, -- Fatecarver
+	[185805] = 1, -- Fatecarver
+	[20185805] = 2, -- Fatecarver
+	[30185805] = 3, -- Fatecarver
+	[40185805] = 4, -- Fatecarver
+
+	[183123] = -1, -- Exhausting Fatecarver
+	[183122] = 1, -- Exhausting Fatecarver
+	[20183122] = 2, -- Exhausting Fatecarver
+	[30183122] = 3, -- Exhausting Fatecarver
+	[40183122] = 4, -- Exhausting Fatecarver
+
+	[186370] = -1, -- Pragmatic Fatecarver
+	[186366] = 1, -- Pragmatic Fatecarver
+	[20186366] = 2, -- Pragmatic Fatecarver
+	[30186366] = 3, -- Pragmatic Fatecarver
+	[40186366] = 4, -- Pragmatic Fatecarver
+
 }
 
 PVP.ambushId = {
@@ -910,6 +933,7 @@ PVP.importantAbilities = {
 	["Obsidian Shard"] = true,
 	["Stone Giant"] = true,
 	-- ["Unrelenting Grip"] = true,
+	["The Tide King's Gaze"] = true,
 }
 
 PVP.smallImportantAbilitiesNames = {
@@ -1054,6 +1078,10 @@ PVP.importantAbilitiesId = {
 	[24101] = 3, --Solar Flare Active
 	[24110] = 4, --Solar Flare Active
 
+	[189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
+	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
+	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
 }
 
 PVP.majorImportantAbilitiesId = {
@@ -1109,6 +1137,11 @@ PVP.majorImportantAbilitiesId = {
 	[24080] = 2, --Solar Flare Active
 	[24101] = 3, --Solar Flare Active
 	[24110] = 4, --Solar Flare Active
+
+	[189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
+	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
+	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
 }
 
 PVP.heavyAttackNames = {
@@ -3110,35 +3143,22 @@ PVP.ayleidWellsCoords = {
 -- Original array where on an AD character
 -- An AD vs. DC fight erroneously said EP vs. DC
 -- and an AD vs. EP fight erroneously AD vs. DC
---[[PVP.killLocationPintypeToName = {
-	[186] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
-	[187] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
-	[188] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
-	[189] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
-	[190] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
-	[191] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
-	[192] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[193] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[194] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[195] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
-	[196] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
-	[197] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
-}]]
-
---Modified aray that is accurate for AD characters
 PVP.killLocationPintypeToName = {
-	[186] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
-	[187] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
-	[188] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
-	[189] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[190] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[191] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[192] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
-	[193] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
-	[194] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
-	[195] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[196] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
-	[197] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[MAP_PIN_TYPE_TRI_BATTLE_SMALL] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
+	[MAP_PIN_TYPE_TRI_BATTLE_MEDIUM] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
+	[MAP_PIN_TYPE_TRI_BATTLE_LARGE] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
+
+	[MAP_PIN_TYPE_ALDMERI_VS_EBONHEART_SMALL] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
+	[MAP_PIN_TYPE_ALDMERI_VS_EBONHEART_MEDIUM] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
+	[MAP_PIN_TYPE_ALDMERI_VS_EBONHEART_LARGE] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
+
+	[MAP_PIN_TYPE_ALDMERI_VS_DAGGERFALL_SMALL] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[MAP_PIN_TYPE_ALDMERI_VS_DAGGERFALL_MEDIUM] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[MAP_PIN_TYPE_ALDMERI_VS_DAGGERFALL_LARGE] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+
+	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_SMALL] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
+	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_MEDIUM] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
+	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_MEDIUM] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
 }
 
 PVP.pingsColors = {
@@ -3184,7 +3204,6 @@ PVP.midpointKeepIds = {
 	[10] = true, -- Arrius
 	[11] = true, -- Kingscrest
 	[12] = true, -- Farragut
-
 
 	[16] = true, -- Faregyl
 	[19] = true, -- Black Boot
