@@ -3107,7 +3107,10 @@ PVP.ayleidWellsCoords = {
 
 }
 
-PVP.killLocationPintypeToName = {
+-- Original array where on an AD character
+-- An AD vs. DC fight erroneously said EP vs. DC
+-- and an AD vs. EP fight erroneously AD vs. DC
+--[[PVP.killLocationPintypeToName = {
 	[186] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
 	[187] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
 	[188] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
@@ -3120,6 +3123,22 @@ PVP.killLocationPintypeToName = {
 	[195] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
 	[196] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
 	[197] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
+}]]
+
+--Modified aray that is accurate for AD characters
+PVP.killLocationPintypeToName = {
+	[186] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
+	[187] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
+	[188] = "|cEFD13C3-|r|c80AFFFway|r |cFF7161fight!|r",
+	[189] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[190] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[191] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[192] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
+	[193] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
+	[194] = "|cEFD13CAD|r vs |cFF7161EP|r fight!",
+	[195] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[196] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
+	[197] = "|cEFD13CAD|r vs |c80AFFFDC|r fight!",
 }
 
 PVP.pingsColors = {
