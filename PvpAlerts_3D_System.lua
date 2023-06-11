@@ -1042,7 +1042,6 @@ local function GetControlTexture(control, data, iconType)
 				else
 					if data.unitClass then
 						local classID = data.unitClass
-						if classID == 117 then classID = 7 end
 						texture = PVP.classIconsLarge[classID]
 					else
 						texture = 'esoui/art/icons/mapkey/mapkey_groupmember.dds'

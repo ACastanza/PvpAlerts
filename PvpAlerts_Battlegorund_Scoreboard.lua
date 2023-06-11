@@ -568,7 +568,6 @@ function ScoreboardList:FilterScrollList()
 		formattedIcon = PLAYER_HIGHLIGHT_SCOREBOARD_COLOR:Colorize(formattedIcon)
 
 		local classID = postGameMVP.class
-		if classID == 117 then classID = 7 end
 
 		local formattedName = zo_iconFormatInheritColor(PVP.classIcons[classID], 28, 28) ..
 			zo_strformat(SI_UNIT_NAME, postGameMVP.name)
