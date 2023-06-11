@@ -135,10 +135,10 @@ function PVP:Who(name, contains)
 
 	local function GetCharAccLink(rawName)
 		return PVP:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName, nil, true)) ..
-		', ' ..
-		GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) ..
-		', ' ..
-		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(PVP.SV.playersDB[rawName].unitAccName, "FFFFFF"))
+			', ' ..
+			GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) ..
+			', ' ..
+			((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(PVP.SV.playersDB[rawName].unitAccName, "FFFFFF"))
 	end
 
 	local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
@@ -150,8 +150,9 @@ function PVP:Who(name, contains)
 		local normalPartBefore, normalPartAfter, highlightPart
 
 		highlightPart       = self:Colorize(
-		ZO_LinkHandler_CreateLinkWithoutBrackets(string.sub(strippedName, startIndex, endIndex), nil, CHARACTER_LINK_TYPE,
-			rawName), 'FF00FF')
+			ZO_LinkHandler_CreateLinkWithoutBrackets(string.sub(strippedName, startIndex, endIndex), nil,
+				CHARACTER_LINK_TYPE,
+				rawName), 'FF00FF')
 
 		if startIndex == 1 then
 			normalPartBefore = ""
@@ -170,38 +171,46 @@ function PVP:Who(name, contains)
 
 		if normalPartBefore ~= "" then
 			normalPartBefore = self:Colorize(
-			ZO_LinkHandler_CreateLinkWithoutBrackets(normalPartBefore, nil, CHARACTER_LINK_TYPE, rawName), allianceColor)
+				ZO_LinkHandler_CreateLinkWithoutBrackets(normalPartBefore, nil, CHARACTER_LINK_TYPE, rawName),
+				allianceColor)
 		end
 
 		if normalPartAfter ~= "" then
 			normalPartAfter = self:Colorize(
-			ZO_LinkHandler_CreateLinkWithoutBrackets(normalPartAfter, nil, CHARACTER_LINK_TYPE, rawName), allianceColor)
+				ZO_LinkHandler_CreateLinkWithoutBrackets(normalPartAfter, nil, CHARACTER_LINK_TYPE, rawName),
+				allianceColor)
 		end
 
 		return icon ..
-		normalPartBefore ..
-		highlightPart ..
-		normalPartAfter ..
-		', ' ..
-		GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) ..
-		', ' ..
-		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(PVP.SV.playersDB[rawName].unitAccName, "FFFFFF"))
+			normalPartBefore ..
+			highlightPart ..
+			normalPartAfter ..
+			', ' ..
+			GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) ..
+			', ' ..
+			((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(PVP.SV.playersDB[rawName].unitAccName, "FFFFFF"))
 	end
 
 
 	local function GetCharLink(rawName)
 		return PVP:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-		', ' ..
-		GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) .. ', ' ..
-		(PVP:StringEnd(rawName, '^Mx') and 'male' or 'female')
+			', ' ..
+			GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) .. ', ' ..
+			(PVP:StringEnd(rawName, '^Mx') and 'male' or 'female')
 	end
 
 	local foundPlayerNames, KOSIndex, looseMatch, stringPositionsArray
+
+	if type(name) ~= "string" then
+		d('Invalid name provided!')
+		return
+	end
 
 	if name == "" then
 		d('No name provided!')
 		return
 	end
+
 
 	if string.len(name) <= 2 then
 		d('Name has to be longer than 2 characters!')
@@ -232,17 +241,18 @@ function PVP:Who(name, contains)
 		if self.SV.CP[accName] then currentCP = ' with ' .. PVP:Colorize(self.SV.CP[accName] .. 'cp', 'FFFFFF') .. ',' end
 		if isDecorated then
 			d('The player ' ..
-			PVP:GetFormattedAccountNameLink(accName, "FFFFFF") ..
-			currentCP ..
-			' has ' .. tostring(#foundPlayerNames) .. ' known character' .. (#foundPlayerNames > 1 and 's' or '') .. ':')
+				PVP:GetFormattedAccountNameLink(accName, "FFFFFF") ..
+				currentCP ..
+				' has ' ..
+				tostring(#foundPlayerNames) .. ' known character' .. (#foundPlayerNames > 1 and 's' or '') .. ':')
 		else
 			d('Found ' ..
-			PVP:GetFormattedAccountNameLink(accName, "FFFFFF") ..
-			' account' ..
-			currentCP ..
-			' for the player ' ..
-			PVP:Colorize(zo_strformat(SI_UNIT_NAME, trimmedName), 'FF00FF') ..
-			' that has ' .. PVP:Colorize(#foundPlayerNames, 'FFFFFF') .. ' known characters:')
+				PVP:GetFormattedAccountNameLink(accName, "FFFFFF") ..
+				' account' ..
+				currentCP ..
+				' for the player ' ..
+				PVP:Colorize(zo_strformat(SI_UNIT_NAME, trimmedName), 'FF00FF') ..
+				' that has ' .. PVP:Colorize(#foundPlayerNames, 'FFFFFF') .. ' known characters:')
 		end
 		for i = 1, #foundPlayerNames do
 			d(tostring(i) .. '. ' .. GetCharLink(foundPlayerNames[i]))
@@ -274,9 +284,9 @@ function PVP:Who(name, contains)
 				local first, last = stringPositionsArray[currentName].startChar,
 					stringPositionsArray[currentName].endChar
 				local startsFullWord = string.sub(strippedCurrentName, first - 1, first - 1) == " " or
-				string.sub(strippedCurrentName, first - 1, first - 1) == "-"
+					string.sub(strippedCurrentName, first - 1, first - 1) == "-"
 				local endsFullWord = last == currentNameLength or string.sub(strippedCurrentName, last + 1, last + 1) ==
-				" " or string.sub(strippedCurrentName, last + 1, last + 1) == "-"
+					" " or string.sub(strippedCurrentName, last + 1, last + 1) == "-"
 
 				if first == 1 then
 					if endsFullWord then
@@ -347,8 +357,10 @@ function PVP:CheckKOSValidity(playerName)
 		if #foundPlayerNames > 0 then
 			if #foundPlayerNames == 1 then return foundPlayerNames[1] end
 			for i = 1, #foundPlayerNames do
-				if self.SV.playersDB[foundPlayerNames[i]].unitAlliance ~= self.allianceOfPlayer then return
-					foundPlayerNames[i] end
+				if self.SV.playersDB[foundPlayerNames[i]].unitAlliance ~= self.allianceOfPlayer then
+					return
+						foundPlayerNames[i]
+				end
 			end
 			return foundPlayerNames[1]
 		end
@@ -363,10 +375,14 @@ function PVP:CheckKOSValidity(playerName)
 			if self.SV.playersDB[maleName] and not self.SV.playersDB[femaleName] then return maleName end
 			if not self.SV.playersDB[maleName] and self.SV.playersDB[femaleName] then return femaleName end
 			if self.SV.playersDB[maleName].unitAccName == self.SV.playersDB[femaleName].unitAccName then
-				if self.SV.playersDB[maleName].unitAlliance ~= self.allianceOfPlayer and self.SV.playersDB[femaleName].unitAlliance == self.allianceOfPlayer then return
-					maleName end
-				if self.SV.playersDB[maleName].unitAlliance == self.allianceOfPlayer and self.SV.playersDB[femaleName].unitAlliance ~= self.allianceOfPlayer then return
-					femaleName end
+				if self.SV.playersDB[maleName].unitAlliance ~= self.allianceOfPlayer and self.SV.playersDB[femaleName].unitAlliance == self.allianceOfPlayer then
+					return
+						maleName
+				end
+				if self.SV.playersDB[maleName].unitAlliance == self.allianceOfPlayer and self.SV.playersDB[femaleName].unitAlliance ~= self.allianceOfPlayer then
+					return
+						femaleName
+				end
 				if math.random() > 0.5 then return maleName else return femaleName end
 			end
 			return rawName, true
@@ -383,9 +399,9 @@ function PVP:CheckKOSValidity(playerName)
 			d('Found multiple names. Please use account name to add the desired person:')
 			for i = 1, #foundNames do
 				d(tostring(i) ..
-				'. ' ..
-				self:GetFormattedClassNameLink(foundNames[i], self:NameToAllianceColor(foundNames[i])) ..
-				self:GetFormattedAccountNameLink(PVP.SV.playersDB[foundNames[i]].unitAccName, "FFFFFF"))
+					'. ' ..
+					self:GetFormattedClassNameLink(foundNames[i], self:NameToAllianceColor(foundNames[i])) ..
+					self:GetFormattedAccountNameLink(PVP.SV.playersDB[foundNames[i]].unitAccName, "FFFFFF"))
 			end
 		end
 
@@ -489,7 +505,7 @@ function PVP:AddKOS(playerName, isSlashCommand)
 	local cool = self:FindInCOOL(rawName)
 	if cool then
 		d("Removed from COOL: " ..
-		self:GetFormattedName(self.SV.playersDB[cool].unitName) .. self.SV.playersDB[cool].unitAccName .. "!")
+			self:GetFormattedName(self.SV.playersDB[cool].unitName) .. self.SV.playersDB[cool].unitAccName .. "!")
 		self.SV.coolList[cool] = nil
 		self:PopulateReticleOverNamesBuffer()
 	end
@@ -539,7 +555,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 		for i = 1, #self.SV.KOSList do
 			if self.SV.KOSList[i].unitAccName == self.SV.playersDB[rawName].unitAccName then
 				d("Removed from KOS: " ..
-				self:GetFormattedName(self.SV.KOSList[i].unitName) .. self.SV.KOSList[i].unitAccName .. "!")
+					self:GetFormattedName(self.SV.KOSList[i].unitName) .. self.SV.KOSList[i].unitAccName .. "!")
 				table.remove(self.SV.KOSList, i)
 				break
 			end
@@ -554,7 +570,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 		d("Added to COOL: " .. self:GetFormattedName(rawName) .. self.SV.playersDB[rawName].unitAccName .. "!")
 	else
 		d("Removed from COOL: " ..
-		PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName) .. PVP.SV.playersDB[rawName].unitAccName .. "!")
+			PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName) .. PVP.SV.playersDB[rawName].unitAccName .. "!")
 		PVP.SV.coolList[cool] = nil
 		-- d(self:GetFormattedName(rawName)..self.SV.playersDB[rawName].unitAccName.." is already COOL!")
 	end
@@ -695,7 +711,7 @@ function PVP:PopulateKOSBuffer()
 		for alliance = 1, 3 do
 			for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
 				local isPlayer, ranking, charName, alliancePoints, _, accName = GetCampaignAllianceLeaderboardEntryInfo(
-				currentCampaignId, alliance, i)
+					currentCampaignId, alliance, i)
 
 				if self.KOSNamesList[accName] then
 					if not PVP.kosActivityList[accName] then
@@ -703,8 +719,10 @@ function PVP:PopulateKOSBuffer()
 						PVP.kosActivityList[accName].chars = {}
 					end
 					if not PVP.kosActivityList[accName].chars[charName] then
-						PVP.kosActivityList[accName].chars[charName] = { currentTime = currentTime,
-							points = alliancePoints }
+						PVP.kosActivityList[accName].chars[charName] = {
+							currentTime = currentTime,
+							points = alliancePoints
+						}
 					else
 						if PVP.kosActivityList[accName].chars[charName].points < alliancePoints then
 							if not PVP.kosActivityList.activeChars[accName] then
@@ -713,8 +731,10 @@ function PVP:PopulateKOSBuffer()
 								end
 								PVP.kosActivityList.activeChars[accName] = charName
 							end
-							PVP.kosActivityList[accName].chars[charName] = { currentTime = currentTime,
-								points = alliancePoints }
+							PVP.kosActivityList[accName].chars[charName] = {
+								currentTime = currentTime,
+								points = alliancePoints
+							}
 						end
 					end
 				end
@@ -764,7 +784,7 @@ function PVP:PopulateKOSBuffer()
 					resurrectIcon = ""
 				end
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-				self:GetFormattedAccountNameLink(accName, "40BB40") .. friendIcon .. resurrectIcon)
+					self:GetFormattedAccountNameLink(accName, "40BB40") .. friendIcon .. resurrectIcon)
 				self.KOSNamesList[accName] = true
 			end
 		end
@@ -798,11 +818,11 @@ function PVP:PopulateKOSBuffer()
 				end
 				if ally then
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-					self:GetFormattedAccountNameLink(accName, "FFFFFF") .. self:GetKOSIcon(nil, "FFFFFF") ..
-					resurrectIcon)
+						self:GetFormattedAccountNameLink(accName, "FFFFFF") .. self:GetKOSIcon(nil, "FFFFFF") ..
+						resurrectIcon)
 				else
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-					self:GetFormattedAccountNameLink(accName, "BB4040") .. self:GetKOSIcon() .. resurrectIcon)
+						self:GetFormattedAccountNameLink(accName, "BB4040") .. self:GetKOSIcon() .. resurrectIcon)
 				end
 			end
 		end
@@ -832,7 +852,7 @@ function PVP:PopulateKOSBuffer()
 			local unitId, newName = self:FindCOOLPlayer(k, v)
 			if unitId ~= 0 then
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName)) ..
-				self:Colorize(v, "40BB40") .. self:GetCoolIcon())
+					self:Colorize(v, "40BB40") .. self:GetCoolIcon())
 			else
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName, true),
 					nil, true) .. self:GetFormattedAccountNameLink(v, "3F3F3F") .. self:GetCoolIcon(nil, true))
