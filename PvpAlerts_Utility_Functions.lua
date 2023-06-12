@@ -384,8 +384,6 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		end
 	end
 
-	if unitClass == 117 then unitClass = 7 end
-
 	if not isTargetFrame then
 		if unitClass == 2 then
 			dimension = dimension - 3

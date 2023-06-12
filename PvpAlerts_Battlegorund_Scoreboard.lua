@@ -868,7 +868,6 @@ function ScoreboardList:SetupPlayerRow(control, data)
 	end
 
 	local classID = data.class
-	if classID == 117 then classID = 7 end
 
 	control:GetNamedChild("Name"):SetText(zo_iconFormatInheritColor(PVP.classIcons[classID], 28, 28) ..
 		zo_strformat(SI_UNIT_NAME, data.name))
@@ -1064,7 +1063,6 @@ function PVP_ScoreboardRow_OnMouseEnter(control)
 	PVPScoreboardTooltip:AddVerticalPadding(30)
 
 	local classID = control.data.class
-	if classID == 117 then classID = 7 end
 
 	local formattedName = zo_iconFormatInheritColor(PVP.classIcons[classID], 35, 35) ..
 		zo_strformat(SI_UNIT_NAME, control.data.name)
