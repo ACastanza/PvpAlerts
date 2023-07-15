@@ -3779,13 +3779,24 @@ local function FindNearbyPOIs()
 		end
 	else
 		for i = 1, GetNumKillLocations() do
-			local pinType, targetX, targetY = GetKillLocationPinInfo(i)
+            local pinType, targetX, targetY = GetKillLocationPinInfo(i)
 			if targetX ~= 0 and targetY ~= 0 then
 				local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-				if distance <= adjusted_POI_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_POI_MIN_DISTANCE then
-					local name = PVP.killLocationPintypeToName[pinType]
+                if distance <= adjusted_POI_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_POI_MIN_DISTANCE then
+					local allianceDeaths = {}
+					for a = 1, ALLIANCE_MAX_VALUE do
+						allianceDeaths[a] = GetNumKillLocationAllianceKills(i, a)
+					end
+                    local name = PVP.killLocationPintypeToName[pinType]
+					local name_long = name ..
+					"\nDeaths: |cEFD13CAD " ..
+						allianceDeaths[ALLIANCE_ALDMERI_DOMINION] ..
+						"|r, |cFF7161EPEP " ..
+						allianceDeaths[ALLIANCE_EBONHEART_PACT] ..
+                        "|r, |c80AFFFDC " .. allianceDeaths[ALLIANCE_DAGGERFALL_COVENANT] ..
+						"|r"
 					table.insert(foundPOI,
-						{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance, name = name })
+						{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance, name = name_long })
 				end
 			end
 		end
