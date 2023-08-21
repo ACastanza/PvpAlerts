@@ -3791,7 +3791,7 @@ local function FindNearbyPOIs()
 					local name_long = name ..
 					"\nDeaths: |cEFD13CAD " ..
 						allianceDeaths[ALLIANCE_ALDMERI_DOMINION] ..
-						"|r, |cFF7161EPEP " ..
+						"|r, |cFF7161EP " ..
 						allianceDeaths[ALLIANCE_EBONHEART_PACT] ..
                         "|r, |c80AFFFDC " .. allianceDeaths[ALLIANCE_DAGGERFALL_COVENANT] ..
 						"|r"
