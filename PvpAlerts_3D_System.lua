@@ -3789,7 +3789,7 @@ local function FindNearbyPOIs()
 					end
                     local name = PVP.killLocationPintypeToName[pinType]
 					local name_long = name ..
-					"\nBattle Victories: |cEFD13CAD " ..
+					"\nBattle Victories:\n|cEFD13CAD " ..
 						allianceKills[ALLIANCE_ALDMERI_DOMINION] ..
 						"|r, |cFF7161EP " ..
 						allianceKills[ALLIANCE_EBONHEART_PACT] ..
