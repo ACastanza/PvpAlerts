@@ -1375,12 +1375,16 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 				return text, isKOS, bracketsToken
 			end
 
-			local function GetKbStringTarget(targetNameFromId, targetPlayer, abilityId)
+			local function GetKbStringTarget(targetNameFromId, targetPlayer, abilityId, sourceUnitId, sourceName)
 				local importantToken = GetImportantIcon(targetNameFromId)
 				local suffixToken = "!"
 				local actionToken
+				local killedByToken = "Killed by"
 				local messageColor = "AF7500"
-				local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
+				local sourceNameFromId = PVP.idToName[sourceUnitId]
+				local sourceAllianceColor = PVP:IdToAllianceColor(sourceUnitId)
+                local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
+				
 
 				if self:IsZel(targetNameFromId) then
 					actionToken = PVP:Colorize("got OUTHACKED with", messageColor)
@@ -1392,9 +1396,17 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 
 				suffixToken = PVP:Colorize(suffixToken, messageColor)
 
-
+				local killedByNameToken
+                if sourceNameFromId and sourceAllianceColor then
+                    killedByNameToken = PVP:GetFormattedClassNameLink(sourceNameFromId, sourceAllianceColor)
+                elseif sourceName then
+                    killedByNameToken = " " .. PVP:Colorize(PVP:GetFormattedCharNameLink(sourceName), "FFFFFF")
+                else
+					killedByNameToken = " " .. PVP:Colorize("Unknown Player", "FFFFFF")
+				end
+				
 				local endingToken = abilityToken .. suffixToken .. importantToken
-				local text = GetSpacedOutString(targetPlayer, actionToken, endingToken)
+				local text = GetSpacedOutString(targetPlayer, actionToken, killedByToken, killedByNameToken, endingToken)
 				return text
 			end
 
