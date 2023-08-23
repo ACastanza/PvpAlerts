@@ -1526,7 +1526,7 @@ function PVP:OnKillfeed(killLocation, killerPlayerCharacterName, killerPlayerDis
 	local sourceAllianceColor = PVP:AllianceToColor(killerPlayerAlliance)
 	local sourceValidName = PVP:GetValidName(killerPlayerCharacterName)
 	local targetValidName = PVP:GetValidName(victimPlayerCharacterName)
-    local abilityId = PVP.killingBlows[targetName]
+	local abilityId = PVP.killingBlows[targetValidName]
 	
 	local function GetAccName(playerName)
 		if self.SV.playersDB[playerName] then return self.SV.playersDB[playerName].unitAccName end
