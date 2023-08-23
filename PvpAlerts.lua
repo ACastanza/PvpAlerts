@@ -1400,13 +1400,15 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
                 if sourceNameFromId and sourceAllianceColor then
                     killedByNameToken = PVP:GetFormattedClassNameLink(sourceNameFromId, sourceAllianceColor)
                 elseif sourceName then
-                    killedByNameToken = " " .. PVP:Colorize(PVP:GetFormattedCharNameLink(sourceName), "FFFFFF")
+					killedByNameToken = " " ..
+					PVP:Colorize(PVP:GetFormattedCharNameLink(sourceName), "FFFFFF") .. PVP:Colorize(".", messageColor)
                 else
-					killedByNameToken = " " .. PVP:Colorize("Unknown Player", "FFFFFF")
+					killedByNameToken = " " ..
+					PVP:Colorize("Unknown Player", "FFFFFF") .. PVP:Colorize(".", messageColor)
 				end
 				
 				local endingToken = abilityToken .. suffixToken .. importantToken
-				local text = GetSpacedOutString(targetPlayer, actionToken, killedByToken, killedByNameToken, endingToken)
+				local text = GetSpacedOutString(targetPlayer, actionToken, killedByToken, endingToken, killedByNameToken)
 				return text
 			end
 
