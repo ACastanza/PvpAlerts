@@ -1626,7 +1626,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerCharacterName, killerPlayer
 		else
 			killedByNameToken = " " .. PVP:Colorize("Unknown Player's", "FFFFFF")
 		end
-		killedByNameToken
 		local endingToken = abilityToken .. suffixToken .. importantToken
 		local text = GetSpacedOutString(targetPlayer, actionToken, killedByNameToken, endingToken)
 		return text
