@@ -1526,8 +1526,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerCharacterName, killerPlayer
 	local sourceValidName = PVP:GetValidName(killerPlayerDisplayName)
 	local targetValidName = PVP:GetValidName(victimPlayerDisplayName)
 	local abilityId = PVP.killingBlows[targetValidName]
-    d(victimPlayerCharacterName .. "|" .. victimPlayerDisplayName)
-	d(killerPlayerCharacterName .. "|" .. killerPlayerDisplayName)
 
 	local function GetAccName(playerName)
 		if self.SV.playersDB[playerName] then return self.SV.playersDB[playerName].unitAccName end
