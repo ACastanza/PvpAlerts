@@ -1525,7 +1525,8 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerCharacterName, killerPlayer
 	local sourceAllianceColor = PVP:AllianceToColor(killerPlayerAlliance)
 	local sourceValidName = PVP:GetValidName(killerPlayerDisplayName)
 	local targetValidName = PVP:GetValidName(victimPlayerDisplayName)
-	local abilityId = PVP.killingBlows[targetValidName]
+    local abilityId = PVP.killingBlows[targetValidName]
+	PVP.killingBlows[targetValidName] = nil
 
 	local function GetAccName(playerName)
 		if self.SV.playersDB[playerName] then return self.SV.playersDB[playerName].unitAccName end
@@ -1610,7 +1611,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerCharacterName, killerPlayer
 	local function GetKbStringTarget(targetValidName, targetPlayer, abilityId, killerPlayerDisplayName, sourceName)
 		local importantToken = GetImportantIcon(targetValidName)
 		local suffixToken = "!"
-		local killedByToken = "Killed by"
 		local messageColor = "AF7500"
 		local importantToken = GetImportantIcon(sourceName)
 		local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
@@ -1622,13 +1622,13 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerCharacterName, killerPlayer
 		if sourceValidName and sourceAllianceColor then
 			killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
 		elseif sourceName then
-			killedByNameToken = " " .. PVP:Colorize(PVP:GetFormattedCharNameLink(sourceName), "FFFFFF")
+			killedByNameToken = " " .. PVP:Colorize(PVP:GetFormattedCharNameLink(sourceName) .. "'s", "FFFFFF")
 		else
-			killedByNameToken = " " .. PVP:Colorize("Unknown Player", "FFFFFF")
+			killedByNameToken = " " .. PVP:Colorize("Unknown Player's", "FFFFFF")
 		end
-
+		killedByNameToken
 		local endingToken = abilityToken .. suffixToken .. importantToken
-		local text = GetSpacedOutString(targetPlayer, actionToken, killedByToken, killedByNameToken, endingToken)
+		local text = GetSpacedOutString(targetPlayer, actionToken, killedByNameToken, endingToken)
 		return text
 	end
 
