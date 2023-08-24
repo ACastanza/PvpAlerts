@@ -3786,11 +3786,7 @@ local function FindNearbyPOIs()
 					local allianceKills = {}
 					for a = 1, ALLIANCE_MAX_VALUE do
 						local kills = GetNumKillLocationAllianceKills(i, a)
-						if kills then
-							allianceKills[a] = kills
-						else
-							allianceKills[a] = 0 -- or any other default value you want
-						end
+						allianceKills[a] = kills or 0
 					end
 					local name = PVP.killLocationPintypeToName[pinType]
 					local name_long = name ..
