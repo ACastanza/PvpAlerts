@@ -1684,7 +1684,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			local importantToken = GetImportantIcon(sourceValidName)
 			local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
 			local actionToken
-			local killedByToken = "Killed by"
+			local killedByToken = "killed by"
 			local killerAVARankToken
 			
 			suffixToken = PVP:Colorize(suffixToken, messageColor)
@@ -1704,10 +1704,10 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			
 			if abilityId then
                 abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC') .. suffixToken
-				actionToken = PVP:Colorize("Died From", messageColor)
+				actionToken = PVP:Colorize("died from", messageColor)
 				text = GetSpacedOutString(bracketsToken, playerToken, actionToken, abilityToken, killedByToken)
             else
-				actionToken = PVP:Colorize("Were ", messageColor)
+				actionToken = PVP:Colorize("were ", messageColor)
 				text = GetSpacedOutString(bracketsToken, playerToken, actionToken, killedByToken)
 			end
 			return text, bracketsToken
