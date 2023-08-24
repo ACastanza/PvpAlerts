@@ -1596,8 +1596,8 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			return formattedAbility
 		end
 
-		local function GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerCharacterName,
-									targetAVARankIcon)
+		local function GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerDisplayName,
+									targetAVARankIcon, allianceColor)
 			local text
 			local playerToken = "You"
 			local prepToken = "with"
@@ -1614,8 +1614,8 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			bracketsToken = self:Colorize(bracketsToken, messageColor)
 			prepToken = self:Colorize(prepToken, messageColor)
 			suffixToken = self:Colorize(suffixToken, messageColor)
-			targetAVARankToken = self:Colorize(targetAVARankIcon, messageColor)
-			victimPlayerCharacterName = self:Colorize(victimPlayerCharacterName, messageColor)
+            targetAVARankToken = self:Colorize(targetAVARankIcon, messageColor)
+			victimPlayerDisplayName = self:Colorize(victimPlayerDisplayName, allianceColor)
 			
 			local importantToken, isKOS = GetImportantIcon(targetValidName)
 			if abilityId then
@@ -1646,7 +1646,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
 			local actionToken
 			local locationToken
-            local victimPlayerDisplayName = PVP:Colorize(victimPlayerDisplayName, messageColor)
+            local victimPlayerDisplayName = PVP:Colorize(victimPlayerDisplayName, allianceColor)
 			local endingToken
             suffixToken = PVP:Colorize(suffixToken, messageColor)
 			
@@ -1654,7 +1654,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
             killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
 			
 			if abilityId then
-				sourceName = PVP:Colorize(sourceName .. "'s", messageColor)
+				sourceName = PVP:Colorize(sourceName .. "'s", sourceAllianceColor)
 				actionToken = PVP:Colorize("died from", messageColor)
 				locationToken = PVP:Colorize(" near " .. killLocation, messageColor)
 				endingToken = abilityToken .. locationToken .. suffixToken
@@ -1662,7 +1662,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				actionToken,
 				killerAVARankToken .. killedByNameToken .. sourceName, endingToken)
             else
-				sourceName = PVP:Colorize(sourceName, messageColor)
+				sourceName = PVP:Colorize(sourceName, sourceAllianceColor)
                 actionToken = PVP:Colorize("was killed by", messageColor)
 				locationToken = PVP:Colorize("near " .. killLocation, messageColor)
 				endingToken = locationToken .. suffixToken
@@ -1679,7 +1679,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			local text
 			local bracketsToken = "***"
 			local playerToken = "You"
-			local attackerToken = "Killed with"
 			local suffixToken = "!"
 			local messageColor = "BB4040"
 			local importantToken = GetImportantIcon(sourceValidName)
@@ -1693,10 +1692,9 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 
 			playerToken = PVP:Colorize(playerToken, messageColor)
 			killerAVARankToken = self:Colorize(killerAVARankIcon, sourceAllianceColor)
-			attackerToken = PVP:Colorize(attackerToken, messageColor)
 			bracketsToken = PVP:Colorize(bracketsToken, messageColor)
 			killedByToken = PVP:Colorize(killedByToken, messageColor)
-			killerPlayerDisplayName = PVP:Colorize(killerPlayerDisplayName, messageColor)
+			killerPlayerDisplayName = PVP:Colorize(killerPlayerDisplayName, sourceAllianceColor)
 			
 			local killedByNameToken
 			killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
@@ -1706,10 +1704,10 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			
 			if abilityId then
                 abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC') .. suffixToken
-				actionToken = PVP:Colorize("died from", messageColor)
+				actionToken = PVP:Colorize("Died From", messageColor)
 				text = GetSpacedOutString(bracketsToken, playerToken, actionToken, abilityToken, killedByToken)
             else
-				actionToken = PVP:Colorize("were killed by", messageColor)
+				actionToken = PVP:Colorize("Were ", messageColor)
 				text = GetSpacedOutString(bracketsToken, playerToken, actionToken, killedByToken)
 			end
 			return text, bracketsToken
@@ -1736,7 +1734,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			if isOwnKillingBlow then
 				local isKOS
 				outputText, isKOS, endingBrackets = GetOwnKbString(targetValidName, targetPlayer, abilityId,
-					victimPlayerCharacterName, targetAVARankIcon)
+					victimPlayerDisplayName, targetAVARankIcon, allianceColor)
 				if PVP.SV.playKillingBlowSound then
 					PVP:PlayLoudSound('DUEL_WON')
 					if isKOS then
