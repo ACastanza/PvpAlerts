@@ -12,5 +12,6 @@ This patch implements several changes from the official Miat's PVP Alerts Releas
 - Tide King's Gaze has been added to the important incoming abilities table (should alert when you're being tracked by the eye)
 - A small edge case error in the KOS system has been fixed
 - The "Who is this?" right click option on player names and "/who" command have been enabled outside of PVP Zones (note that this does **not** enable logging of players encountered outside of PVP, you'll only be able to check if a player is someone you've previously encountered in a PVP zone).
-
+- The KillFeed has been reworked to incorporate the additional infromation from EVENT_PVP_KILL_FEED_DEATH
+- 
 The API version been updated to the U39 API.
