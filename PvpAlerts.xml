@@ -187,14 +187,14 @@
 		</TopLevelControl>
 
 		<TopLevelControl name="PVP_KillFeed" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
-			<Dimensions x="750" y="120" />
+			<Dimensions x="850" y="120" />
 			<Anchor point="CENTER" />
 			<OnMoveStop>
 				PVP_Feed_SavePosition()
 			</OnMoveStop>
 			<Controls>
 				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_19)|soft-shadow-thick" verticalAlignment="CENTER" text="" horizontalAlignment="CENTER" maxHistoryLines="200" inheritAlpha="true" wrapMode="ELLIPSIS" inheritScale="false">
-					<Dimensions x="750" y="120" />
+					<Dimensions x="850" y="120" />
 					<Anchor point="CENTER" offsetY="0" />
 					<LineFade fadeBegin="8" fadeDuration="2"/>
 					<OnMouseWheel>
