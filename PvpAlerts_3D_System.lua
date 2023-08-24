@@ -4289,11 +4289,12 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		for i = #self.currentNearbyPOIIds, 1, -1 do
 			local found
 			for k = 1, #foundPOI do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
-				if foundPOI[k].pinType == self.currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or
+				if foundPOI[k].pinType == self.currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or PVP.killLocationPintypeToName[foundPOI[k].pinType] or
 						(foundPOI[k].targetX == self.currentNearbyPOIIds[i].targetX and
 							foundPOI[k].targetY == self.currentNearbyPOIIds[i].targetY and
-							(not foundPOI[k].pingTag or foundPOI[k].pingTag == self.currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player //
-					found = k
+                            (not foundPOI[k].pingTag or foundPOI[k].pingTag == self.currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
+                    found = k
+					self.currentNearbyPOIIds[i].name = foundPOI[k].name
 					self.currentNearbyPOIIds[i].distance = foundPOI[k].distance
 					break
 				end
