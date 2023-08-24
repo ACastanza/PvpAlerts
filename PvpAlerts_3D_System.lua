@@ -3785,9 +3785,14 @@ local function FindNearbyPOIs()
                 if distance <= adjusted_POI_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_POI_MIN_DISTANCE then
 					local allianceKills = {}
 					for a = 1, ALLIANCE_MAX_VALUE do
-						allianceKills[a] = GetNumKillLocationAllianceKills(i, a)
+						local kills = GetNumKillLocationAllianceKills(i, a)
+						if kills then
+							allianceKills[a] = kills
+						else
+							allianceKills[a] = 0 -- or any other default value you want
+						end
 					end
-                    local name = PVP.killLocationPintypeToName[pinType]
+					local name = PVP.killLocationPintypeToName[pinType]
 					local name_long = name ..
 					"\nBattle Victories:\n|cEFD13CAD " ..
 						allianceKills[ALLIANCE_ALDMERI_DOMINION] ..
