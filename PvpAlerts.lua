@@ -1646,7 +1646,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
 			local actionToken
 			local locationToken
-            local victimPlayerDisplayName = PVP:Colorize(victimPlayerDisplayName, allianceColor)
+			local victimPlayerDisplayName = PVP:Colorize(victimPlayerDisplayName, 'CCCCCC')
 			local endingToken
             suffixToken = PVP:Colorize(suffixToken, messageColor)
 			
@@ -1654,7 +1654,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
             killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
 			
 			if abilityId then
-				sourceName = PVP:Colorize(sourceName .. "'s", sourceAllianceColor)
+				sourceName = PVP:Colorize(sourceName .. "'s", 'CCCCCC')
 				actionToken = PVP:Colorize("died from", messageColor)
 				locationToken = PVP:Colorize(" near " .. killLocation, messageColor)
 				endingToken = abilityToken .. locationToken .. suffixToken
@@ -1662,7 +1662,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				actionToken,
 				killerAVARankToken .. killedByNameToken .. sourceName, endingToken)
             else
-				sourceName = PVP:Colorize(sourceName, sourceAllianceColor)
+				sourceName = PVP:Colorize(sourceName, 'CCCCCC')
                 actionToken = PVP:Colorize("was killed by", messageColor)
 				locationToken = PVP:Colorize("near " .. killLocation, messageColor)
 				endingToken = locationToken .. suffixToken
@@ -1694,7 +1694,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			killerAVARankToken = self:Colorize(killerAVARankIcon, sourceAllianceColor)
 			bracketsToken = PVP:Colorize(bracketsToken, messageColor)
 			killedByToken = PVP:Colorize(killedByToken, messageColor)
-			killerPlayerDisplayName = PVP:Colorize(killerPlayerDisplayName, sourceAllianceColor)
+			killerPlayerDisplayName = PVP:Colorize(killerPlayerDisplayName, 'CCCCCC')
 			
 			local killedByNameToken
 			killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
