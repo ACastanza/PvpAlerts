@@ -3791,10 +3791,10 @@ local function FindNearbyPOIs()
 					local name = PVP.killLocationPintypeToName[pinType]
 					local name_long = name ..
 					"\nBattle Victories:\n|cEFD13CAD " ..
-						allianceKills[ALLIANCE_ALDMERI_DOMINION] ..
+						allianceKills[ALLIANCE_ALDMERI_DOMINION] or 0 ..
 						"|r, |cFF7161EP " ..
-						allianceKills[ALLIANCE_EBONHEART_PACT] ..
-                        "|r, |c80AFFFDC " .. allianceKills[ALLIANCE_DAGGERFALL_COVENANT] ..
+						allianceKills[ALLIANCE_EBONHEART_PACT] or 0 ..
+                        "|r, |c80AFFFDC " .. allianceKills[ALLIANCE_DAGGERFALL_COVENANT] or 0 ..
 						"|r"
 					table.insert(foundPOI,
 						{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance, name = name_long })
