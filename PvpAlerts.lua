@@ -1750,7 +1750,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				chat:Print(outputText)
 			end
 		end
-	end, 1000)
+	end, 100)
 end
 
 function PVP:ResetMainFrame()
