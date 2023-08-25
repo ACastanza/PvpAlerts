@@ -995,11 +995,11 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 	end
 end
 
-function PVP:KillFeedRatio_Add(targetUnitId)
-	local alliance = self.playerAlliance[targetUnitId]
+function PVP:KillFeedRatio_Add(alliance, location)
 
 	if not alliance then return end
-
+    -- if not location == GetPlayerActiveSubzoneName() then return end
+	
 	if not PVP.killFeedRatio then
 		PVP.killFeedRatio = {
 			AD = 0,
@@ -1018,7 +1018,7 @@ function PVP:KillFeedRatio_Add(targetUnitId)
 	local EP = PVP.killFeedRatio.EP
 	local zone = PVP.killFeedRatio.zone
 
-	table.insert(zone, GetPlayerActiveSubzoneName())
+	table.insert(zone, location)
 
 	if alliance == 1 then
 		PVP.killFeedRatio.AD = PVP.killFeedRatio.AD + 1
@@ -1710,7 +1710,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			outputText, endingBrackets = GetKbStringPlayer(abilityId, sourceValidName,
 				killerPlayerDisplayName, killerAVARankIcon, sourceAllianceColor)
 		else
-			if self.SV.showKillFeedFrame then self:KillFeedRatio_Add(targetValidName) end
+			if self.SV.showKillFeedFrame then self:KillFeedRatio_Add(victimPlayerAlliance, killLocation) end
 			local targetPlayer = PVP:GetFormattedClassNameLink(targetValidName, allianceColor)
 			if isOwnKillingBlow then
 				local isKOS
