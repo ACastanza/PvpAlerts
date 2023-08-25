@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.8.2"
+PVP.textVersion = "3.9"
 PVP.name = "PvpAlerts"
 PVP.killingBlows = {}
 
@@ -1525,175 +1525,182 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
                         victimPlayerRank)
 	local messageKey = string.format("%s->->%s", killerPlayerDisplayName, victimPlayerDisplayName)
 	local numOccurrences = killFeedDuplicateTracker:AddValue(messageKey)
-	if numOccurrences > 1 then return end
-    zo_callLater(function()
-		local currentTime = GetFrameTimeMilliseconds()
-		local targetValidName = PVP:GetValidName(victimPlayerCharacterName)
-		local abilityId = PVP.killingBlows[targetValidName]
-		local targetAVARankIcon = zo_iconFormatInheritColor(GetAvARankIcon(victimPlayerRank), 18, 18)
-		local allianceColor = PVP:GetTrueAllianceColorsHex(victimPlayerAlliance)
-		local sourceValidName = PVP:GetValidName(killerPlayerCharacterName)
-		local sourceName = killerPlayerDisplayName
-		local sourceAllianceColor = PVP:GetTrueAllianceColorsHex(killerPlayerAlliance)
-		local killerAVARankIcon = zo_iconFormatInheritColor(GetAvARankIcon(killerPlayerRank), 18, 18)
-		PVP.killingBlows[targetValidName] = nil
-		local source
+    if numOccurrences > 1 then return end
 
-		local function GetAccName(playerName)
-			if self.SV.playersDB[playerName] then return self.SV.playersDB[playerName].unitAccName end
-		end
-
-		local function GetSpacedOutString(...)
-			local text = ""
-			local numArgs = select("#", ...)
-			for i = 1, numArgs do
-				text = text .. select(i, ...)
-				if i ~= numArgs then
-					text = text .. " "
-				end
+	local targetValidName = PVP:GetValidName(victimPlayerCharacterName)
+	local allianceColor = PVP:GetTrueAllianceColorsHex(victimPlayerAlliance)
+	local sourceValidName = PVP:GetValidName(killerPlayerCharacterName)
+	local sourceName = killerPlayerDisplayName
+	local sourceAllianceColor = PVP:GetTrueAllianceColorsHex(killerPlayerAlliance)
+	
+	local function playerDBUpdateCheck(playerValidName, playerDisplayName, playerAlliance, unitAllianceRank)
+		if playerValidName == self.playerName or playerDisplayName == "" then return end
+		if not self.SV.playersDB[playerValidName] then
+            self.SV.playersDB[playerValidName] = {
+				unitAccName = playerDisplayName,
+				unitAlliance = playerAlliance,
+				unitAvARank = unitAllianceRank
+			}
+        else
+            if self.SV.playersDB[playerValidName].unitAlliance ~= playerAlliance then
+                self.SV.playersDB[playerValidName].unitAlliance = playerAlliance
+            end
+			if self.SV.playersDB[playerValidName].unitAvARank ~= unitAllianceRank then
+				self.SV.playersDB[playerValidName].unitAvARank = unitAllianceRank
 			end
-			return text
 		end
+	end		
 
-		local function GetImportantIcon(playerName)
-			local KOSOrFriend = self:IsKOSOrFriend(playerName)
-			if KOSOrFriend then
-				if KOSOrFriend == "KOS" then
-					return self:GetKOSIcon(32,
-							self.SV.playersDB[playerName].unitAlliance == self.allianceOfPlayer and "FFFFFF" or nil),
-						true
-				elseif KOSOrFriend == "friend" then
-					return self:GetFriendIcon(24) .. self.Colorize(GetAccName(playerName), "40BB40"), false
-				elseif KOSOrFriend == "cool" then
-					return self:GetCoolIcon(24) .. self.Colorize(GetAccName(playerName), "40BB40"), false
-				elseif KOSOrFriend == "groupleader" then
-					return self:GetGroupLeaderIcon(32), false
-				elseif KOSOrFriend == "group" then
-					return self:GetGroupIcon(32), false
-				end
+	local function GetAccName(playerName)
+		if self.SV.playersDB[playerName] then return self.SV.playersDB[playerName].unitAccName end
+	end
+
+	local function GetSpacedOutString(...)
+		local text = ""
+		local numArgs = select("#", ...)
+		for i = 1, numArgs do
+			text = text .. select(i, ...)
+			if i ~= numArgs then
+				text = text .. " "
+			end
+		end
+		return text
+	end
+
+	local function GetImportantIcon(playerName)
+		local KOSOrFriend = self:IsKOSOrFriend(playerName)
+		if KOSOrFriend then
+			if KOSOrFriend == "KOS" then
+				return self:GetKOSIcon(32,
+						self.SV.playersDB[playerName].unitAlliance == self.allianceOfPlayer and "FFFFFF" or nil),
+					true
+			elseif KOSOrFriend == "friend" then
+				return self:GetFriendIcon(24) .. self.Colorize(GetAccName(playerName), "40BB40"), false
+			elseif KOSOrFriend == "cool" then
+				return self:GetCoolIcon(24) .. self.Colorize(GetAccName(playerName), "40BB40"), false
+			elseif KOSOrFriend == "groupleader" then
+				return self:GetGroupLeaderIcon(32), false
+			elseif KOSOrFriend == "group" then
+				return self:GetGroupIcon(32), false
+			end
+		else
+			return ""
+		end
+	end
+
+	local function GetFormattedAbilityName(abilityId, color)
+		local abilityName
+		local textAbilityIcon
+		local formattedAbility
+		if abilityId then
+			abilityName = self:Colorize(GetAbilityName(abilityId), color)
+			local abilityIcon = GetAbilityIcon(abilityId)
+
+			if abilityIcon:find(PVP_ICON_MISSING) then
+				textAbilityIcon = ""
 			else
-				return ""
+				textAbilityIcon = zo_iconFormat(abilityIcon, 18, 18)
 			end
+			formattedAbility = textAbilityIcon .. abilityName
+		else
+			formattedAbility = nil
 		end
+		return formattedAbility
+	end
 
-		local function GetFormattedAbilityName(abilityId, color)
-			local abilityName
-            local textAbilityIcon
-			local formattedAbility
-			if abilityId then
-				abilityName = self:Colorize(GetAbilityName(abilityId), color)
-				local abilityIcon = GetAbilityIcon(abilityId)
+	local function GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerDisplayName, allianceColor)
+		local text
+		local messageColor = "40BB40"
+		local bracketsToken = self:Colorize("***", messageColor)
+		local playerActionKilledToken = self:Colorize("You killed", messageColor)
 
-				if abilityIcon:find(PVP_ICON_MISSING) then
-					textAbilityIcon = ""
-				else
-					textAbilityIcon = zo_iconFormat(abilityIcon, 18, 18)
-				end
-				formattedAbility = textAbilityIcon .. abilityName
-			else
-				formattedAbility = nil
-			end
-			return formattedAbility
-		end
+		local importantToken, isKOS = GetImportantIcon(targetValidName)
+		local victimNameToken = targetPlayer
+		victimPlayerDisplayName = self:Colorize(victimPlayerDisplayName, allianceColor)
 
-		local function GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerDisplayName,
-									targetAVARankIcon, allianceColor)
-			local text
-			local messageColor = "40BB40"
-			local bracketsToken = self:Colorize("***", messageColor)
-            local playerActionKilledToken = self:Colorize("You killed", messageColor)
-		
-			local importantToken, isKOS = GetImportantIcon(targetValidName)
-            local targetAVARankToken = self:Colorize(targetAVARankIcon, allianceColor)
-			local victimNameToken = targetPlayer
-			victimPlayerDisplayName = self:Colorize(victimPlayerDisplayName, allianceColor)
+		local prepToken = self:Colorize("with", messageColor)
+		local suffixToken = self:Colorize("!", messageColor)
+		local kbIconToken = zo_iconFormat(PVP_KILLING_BLOW, 38, 38)
 
-			local prepToken = self:Colorize("with", messageColor)
-			local suffixToken = self:Colorize("!", messageColor)
-			local kbIconToken = zo_iconFormat(PVP_KILLING_BLOW, 38, 38)
-			
-            if abilityId then
-				local abilityToken = GetFormattedAbilityName(abilityId, messageColor)
-				text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
-					importantToken, targetAVARankToken .. targetPlayer .. victimPlayerDisplayName,
+		if abilityId then
+			local abilityToken = GetFormattedAbilityName(abilityId, messageColor)
+			text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
+				importantToken, victimNameToken .. victimPlayerDisplayName,
 				prepToken,
 				abilityToken .. suffixToken .. kbIconToken)
-            else
-				text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
-					importantToken,
-					targetAVARankToken .. targetPlayer .. victimPlayerDisplayName .. suffixToken .. kbIconToken)
-			end
-			return text, isKOS, bracketsToken
+		else
+			text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
+				importantToken, victimNameToken .. victimPlayerDisplayName .. suffixToken .. kbIconToken)
+		end
+		return text, isKOS, bracketsToken
+	end
+
+	local function GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, allianceColor, abilityId,
+									 sourceValidName, sourceName, sourceAllianceColor, killLocation)
+		local text
+		local messageColor = "AF7500"
+		local killerImportantToken = GetImportantIcon(sourceValidName)
+		local killerNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
+		local killerPlayerDisplayName = PVP:Colorize(sourceName, 'CCCCCC')
+
+		local actionToken = PVP:Colorize("killed", messageColor)
+
+		local victimImportantToken = GetImportantIcon(targetValidName)
+		local victimNameToken = targetPlayer
+		local victimPlayerDisplayNameToken = PVP:Colorize(victimPlayerDisplayName, 'CCCCCC')
+		local withToken = PVP:Colorize("with", messageColor)
+
+		local locationToken = PVP:Colorize("near " .. killLocation, messageColor)
+		local suffixToken = PVP:Colorize("!", messageColor)
+
+		if abilityId then
+			local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
+			text = GetSpacedOutString(killerImportantToken .. killerNameToken .. killerPlayerDisplayName, actionToken,
+				victimImportantToken .. victimNameToken .. victimPlayerDisplayNameToken,
+				withToken,
+				abilityToken, locationToken .. suffixToken)
+		else
+			text = GetSpacedOutString(killerImportantToken .. killerNameToken .. killerPlayerDisplayName, actionToken,
+				victimImportantToken .. victimNameToken .. victimPlayerDisplayNameToken,
+				locationToken .. suffixToken)
 		end
 
-		local function GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, allianceColor,
-										targetAVARankIcon, abilityId,
-										 sourceValidName, sourceName, sourceAllianceColor, killerAVARankIcon,
-                                         killLocation)
-			local text
-			local messageColor = "AF7500"
-			local killerImportantToken = GetImportantIcon(sourceValidName)
-			local killerAVARankToken = self:Colorize(killerAVARankIcon, sourceAllianceColor)
-			local killerNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
-			local killerPlayerDisplayName = PVP:Colorize(sourceName, 'CCCCCC')
+		return text
+	end
 
-			local actionToken = PVP:Colorize("killed", messageColor)
+    local function GetKbStringPlayer(abilityId, sourceValidName, killerPlayerDisplayName, sourceAllianceColor)
+        local text
+        local messageColor = "BB4040"
+        local bracketsToken = PVP:Colorize("***", messageColor)
+        local playerActionDiedToken = PVP:Colorize("You were killed by", messageColor)
 
-			local victimImportantToken = GetImportantIcon(targetValidName)
-			local victimAVARankToken = self:Colorize(targetAVARankIcon, allianceColor)
-			local victimNameToken = targetPlayer
-			local victimPlayerDisplayNameToken = PVP:Colorize(victimPlayerDisplayName, 'CCCCCC')
-			local withToken = PVP:Colorize("with", messageColor)
+        local importantToken = GetImportantIcon(sourceValidName)
+        local killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
+        local killerPlayerDisplayNameToken = PVP:Colorize(killerPlayerDisplayName, 'CCCCCC')
 
-			local locationToken = PVP:Colorize("near " .. killLocation, messageColor)
-			local suffixToken = PVP:Colorize("!", messageColor)
+        local suffixToken = PVP:Colorize("!", messageColor)
 
-            if abilityId then
-				local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
-				text = GetSpacedOutString(killerImportantToken ..
-					killerAVARankToken .. killerNameToken .. killerPlayerDisplayName, actionToken,
-					victimImportantToken .. victimAVARankToken .. victimNameToken .. victimPlayerDisplayNameToken,
-					withToken,
-					abilityToken, locationToken .. suffixToken)
-			else
-				text = GetSpacedOutString(killerImportantToken ..
-					killerAVARankToken .. killerNameToken .. killerPlayerDisplayName, actionToken,
-					victimImportantToken .. victimAVARankToken .. victimNameToken .. victimPlayerDisplayNameToken,
-					locationToken .. suffixToken)
-			end
+        if abilityId then
+            local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
+            local possessiveToken = PVP:Colorize("'s'", messageColor)
+            text = GetSpacedOutString(playerActionDiedToken,
+                importantToken .. killedByNameToken .. killerPlayerDisplayNameToken .. possessiveToken,
+                abilityToken .. suffixToken)
+        else
+            text = GetSpacedOutString(playerActionDiedToken,
+                importantToken .. killedByNameToken .. killerPlayerDisplayNameToken .. suffixToken)
+        end
+        return text, bracketsToken
+    end
 
-			return text
-		end
+	playerDBUpdateCheck(targetValidName, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank)
+	playerDBUpdateCheck(sourceValidName, sourceName, killerPlayerAlliance, killerPlayerRank)
+	
+    zo_callLater(function()
 
-		local function GetKbStringPlayer(abilityId, sourceValidName, killerPlayerDisplayName, killerAVARankIcon,
-										 sourceAllianceColor)
-			local text
-			local messageColor = "BB4040"
-			local bracketsToken = PVP:Colorize("***", messageColor)
-			local playerActionDiedToken = PVP:Colorize("You were killed by", messageColor)
-			
-			local importantToken = GetImportantIcon(sourceValidName)
-			local killerAVARankToken = self:Colorize(killerAVARankIcon, sourceAllianceColor)
-			local killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
-            local killerPlayerDisplayNameToken = PVP:Colorize(killerPlayerDisplayName, 'CCCCCC')
-			
-            local suffixToken = PVP:Colorize("!", messageColor)
-						
-			if abilityId then
-                local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
-				local possessiveToken = PVP:Colorize("'s'", messageColor)
-				text = GetSpacedOutString(playerActionDiedToken,
-					importantToken ..
-					killerAVARankToken .. killedByNameToken .. killerPlayerDisplayNameToken .. possessiveToken,
-					abilityToken .. suffixToken)
-            else
-				text = GetSpacedOutString(playerActionDiedToken,
-					importantToken ..
-					killerAVARankToken .. killedByNameToken .. killerPlayerDisplayNameToken .. suffixToken)
-			end
-			return text, bracketsToken
-		end
-
+		local currentTime = GetFrameTimeMilliseconds()
+		local abilityId = PVP.killingBlows[targetValidName]
+		PVP.killingBlows[targetValidName] = nil
 		if self.killFeedDelay == 0 then PVP_KillFeed_Text:Clear() end
 		if self.killFeedRatioDelay == 0 then self:KillFeedRatio_Reset() end
 
@@ -1708,14 +1715,14 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 
 		if kbOnPlayer then
 			outputText, endingBrackets = GetKbStringPlayer(abilityId, sourceValidName,
-				killerPlayerDisplayName, killerAVARankIcon, sourceAllianceColor)
+				killerPlayerDisplayName, sourceAllianceColor)
 		else
 			if self.SV.showKillFeedFrame then self:KillFeedRatio_Add(victimPlayerAlliance, killLocation) end
 			local targetPlayer = PVP:GetFormattedClassNameLink(targetValidName, allianceColor)
 			if isOwnKillingBlow then
 				local isKOS
 				outputText, isKOS, endingBrackets = GetOwnKbString(targetValidName, targetPlayer, abilityId,
-					victimPlayerDisplayName, targetAVARankIcon, allianceColor)
+					victimPlayerDisplayName, allianceColor)
 				if PVP.SV.playKillingBlowSound then
 					PVP:PlayLoudSound('DUEL_WON')
 					if isKOS then
@@ -1725,9 +1732,8 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 					end
 				end
 			else
-				outputText = GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, allianceColor,
-					targetAVARankIcon, abilityId,
-					sourceValidName, sourceName, sourceAllianceColor, targetAVARankIcon, killLocation)
+                outputText = GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, allianceColor,
+				abilityId, sourceValidName, sourceName, sourceAllianceColor, killLocation)
 			end
 		end
 
@@ -3240,9 +3246,11 @@ function PVP.OnTargetChanged()
 			ZO_GetSecondaryPlayerNameFromUnitTag('reticleover')
 		-- local unitAccName=ZO_GetSecondaryPlayerNameFromUnitTag('reticleover')
 		local unitClass = GetUnitClassId('reticleover')
-		local unitAlliance = GetUnitAlliance('reticleover')
+        local unitAlliance = GetUnitAlliance('reticleover')
+		local unitAllianceRank = GetUnitAvARank('reticleover')
 		local unitRace = GetUnitRaceId('reticleover')
-		local unitCP = GetUnitChampionPoints('reticleover')
+        local unitCP = GetUnitChampionPoints('reticleover')
+		local unitMundus
 
 		local unitSpec
 		if PVP.SV.playersDB[unitName] then
@@ -3257,7 +3265,8 @@ function PVP.OnTargetChanged()
 				unitClass = unitClass,
 				unitRace = unitRace,
 				unitSpec = unitSpec,
-				mundus = unitMundus
+                mundus = unitMundus,
+				unitAvARank = unitAllianceRank
 			}
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}

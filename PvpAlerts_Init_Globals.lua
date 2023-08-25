@@ -46,11 +46,6 @@ PVP.globalConstants = {
 
 	['PVP_ATTACKER'] = "/esoui/art/compass/ava_returnpoint_ebonheart.dds",
 	['PVP_RESURRECT'] = "/esoui/art/compass/ava_flagcarrier_neutral.dds",
-	['PVP_MONKEY'] = "PvpAlerts/textures/miz.dds",
-	['PVP_BUNNY'] = "PvpAlerts/textures/bunny.dds",
-	['PVP_HACK'] = "PvpAlerts/textures/hacking.dds",
-	['PVP_HACK_DENIED'] = "PvpAlerts/textures/hacking_denied.dds",
-	['PVP_POTATOE_ICON'] = "PvpAlerts/textures/grandpotatoe2.dds",
 	['PVP_6STAR'] = "PvpAlerts/textures/6star1.dds",
 
 	['PVP_AP'] = "esoui/art/currency/alliancepoints_32.dds",
@@ -94,8 +89,6 @@ PVP.globalConstants = {
 	['FLAGTYPE_OTHER'] = 1001,
 	['FLAGTYPE_NAVE'] = 1002,
 	['FLAGTYPE_APSE'] = 1003,
-
-	['PVP_POTATOE_RANK'] = 51,
 
 	['PVP_ID_RETAIN_TIME'] = 20000,
 	-- ['PVP_ID_RETAIN_TIME'] = 20000,
