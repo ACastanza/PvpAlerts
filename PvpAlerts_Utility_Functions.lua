@@ -423,7 +423,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
     end
 	
     local avaRankIcon = ""
-	if self.SV.playersDB[playerName] and self.SV.playersDB[playerName].unitAvARank and not isTargetNameFrame and not isTargetFrame then
+	if self.SV.playersDB[playerName] and self.SV.playersDB[playerName].unitAvARank then
 		local unitAvARank = self.SV.playersDB[playerName].unitAvARank
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
             allianceColor)
