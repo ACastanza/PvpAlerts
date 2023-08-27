@@ -1616,7 +1616,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 
 		local importantToken, isKOS = GetImportantIcon(targetValidName)
 		local victimNameToken = targetPlayer
-		victimPlayerDisplayName = self:Colorize(victimPlayerDisplayName, messageColor)
+		victimPlayerDisplayName = self:Colorize(victimPlayerDisplayName, 'CCCCCC')
 
 		local prepToken = self:Colorize("with", messageColor)
 		local suffixToken = self:Colorize("!", messageColor)
