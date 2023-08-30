@@ -1078,7 +1078,8 @@ PVP.importantAbilitiesId = {
 	[24101] = 3, --Solar Flare Active
 	[24110] = 4, --Solar Flare Active
 
-	[189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	[189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
 	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
 	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
 	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
@@ -1138,7 +1139,8 @@ PVP.majorImportantAbilitiesId = {
 	[24101] = 3, --Solar Flare Active
 	[24110] = 4, --Solar Flare Active
 
-	[189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	[189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
 	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
 	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
 	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
