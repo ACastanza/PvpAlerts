@@ -7,7 +7,7 @@ PVP.textVersion = "3.9"
 PVP.name = "PvpAlerts"
 PVP.killingBlows = {}
 
-local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(1500, 0)
+local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
 local LCM = LibChatMessage
 local chat = LCM.Create('PvpAlerts', 'PVP')
 PVP.CHAT = chat
