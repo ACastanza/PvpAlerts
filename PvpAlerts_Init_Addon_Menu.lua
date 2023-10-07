@@ -20,7 +20,8 @@ function PVP:InitializeAddonMenu()
 			self.SV.tugOffsetX=0
 			self.SV.tugOffsetY=0
 			self.SV.feedOffsetX=0
-			self.SV.feedOffsetY=0
+            self.SV.feedOffsetY = 0
+			self.SV.killFeedNameType=self.defaults.killFeedNameType
 			self.SV.namesOffsetX=0
 			self.SV.namesOffsetY=0
 			self.SV.KOSOffsetX=0
@@ -326,6 +327,31 @@ function PVP:InitializeAddonMenu()
 		disabled = function() return not self.SV.enabled or not self.SV.showKillFeedFrame end,
 	    },
 	    {
+		type = "dropdown",
+		name = "Kill Feed Name Type Preference:",
+        tooltip = 'Default is "Character@User"',
+		default = self.defaults.killFeedNameType,
+		choices = { "Character@User", "Character", "@User"},
+		getFunc = function()
+			if self.SV.killFeedNameType=="both" then
+				return "Character@User"
+			elseif self.SV.killFeedNameType=="character" then
+				return "Character"
+			elseif self.SV.killFeedNameType=="user" then
+				return "@User"
+			end
+		end,
+		setFunc = function(newValue)
+			if newValue == "Character@User" then
+				self.SV.killFeedNameType="both"
+			elseif newValue == "Character" then
+				self.SV.killFeedNameType="character"
+			elseif newValue == "@User" then
+				self.SV.killFeedNameType="user"
+			end
+        end,
+        },
+		{
 		type = "checkbox",
 		name = "Enable Kill Feed chat tab",
 		tooltip = "ON - enables kill feed chat tab, OFF - removes kill feed chat tab",

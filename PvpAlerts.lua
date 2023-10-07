@@ -1615,23 +1615,34 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local playerActionKilledToken = self:Colorize("You killed", messageColor)
 
 		local importantToken, isKOS = GetImportantIcon(targetValidName)
+		local victimPlayerToken
 		local victimNameToken = targetPlayer
-		local victimPlayerDisplayNameToken = self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
-		self:Colorize(victimPlayerDisplayName, 'CCCCCC')
+		local victimPlayerDisplayNameToken
 
 		local prepToken = self:Colorize("with", messageColor)
 		local suffixToken = self:Colorize("!", messageColor)
 		local kbIconToken = zo_iconFormat(PVP_KILLING_BLOW, 38, 38)
 
+		if PVP.SV.killFeedNameType == "both" then
+			victimPlayerToken = victimNameToken .. self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
+				self:Colorize(victimPlayerDisplayName, "CCCCCC")
+		elseif PVP.SV.killFeedNameType == "character" then
+            victimPlayerToken = victimNameToken
+		elseif PVP.SV.killFeedNameType == "user" then
+			victimPlayerToken = self:GetFormattedClassIcon(targetValidName, nil, allianceColor) ..
+				self:GetFormattedAccountNameLink(victimPlayerDisplayName, allianceColor) or
+				self:Colorize(victimPlayerDisplayName, allianceColor)
+        end
+		
 		if abilityId then
 			local abilityToken = GetFormattedAbilityName(abilityId, messageColor)
 			text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
-				importantToken, victimNameToken .. victimPlayerDisplayNameToken,
+				importantToken .. victimPlayerToken,
 				prepToken,
 				abilityToken .. suffixToken .. kbIconToken)
 		else
 			text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
-				importantToken, victimNameToken .. victimPlayerDisplayNameToken .. suffixToken .. kbIconToken)
+				importantToken .. victimPlayerToken .. suffixToken .. kbIconToken)
 		end
 		return text, isKOS, bracketsToken
 	end
@@ -1639,34 +1650,51 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 	local function GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, allianceColor, abilityId,
 									 sourceValidName, sourceName, sourceAllianceColor, killLocation)
 		local text
-		local messageColor = "AF7500"
-		local killerImportantToken = GetImportantIcon(sourceValidName)
+        local messageColor = "AF7500"
+		
+        local killerImportantToken = GetImportantIcon(sourceValidName)
+		local killerPlayerToken
 		local killerNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
-		local killerPlayerDisplayNameToken = self:GetFormattedAccountNameLink(sourceName, "CCCCCC") or
-			self:Colorize(sourceName, 'CCCCCC')
+		local killerPlayerDisplayNameToken
 			
 		local actionToken = PVP:Colorize("killed", messageColor)
 
 		local victimImportantToken = GetImportantIcon(targetValidName)
+		local victimPlayerToken
 		local victimNameToken = targetPlayer
-		local victimPlayerDisplayNameToken = self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
-			self:Colorize(victimPlayerDisplayName, 'CCCCCC')
-		local withToken = PVP:Colorize("with", messageColor)
+		local victimPlayerDisplayNameToken
+		local withToken = self:Colorize("with", messageColor)
 
-		local locationToken = PVP:Colorize("near " .. killLocation, messageColor)
-		local suffixToken = PVP:Colorize("!", messageColor)
+		local locationToken = self:Colorize("near " .. killLocation, messageColor)
+		local suffixToken = self:Colorize("!", messageColor)
 
+		if PVP.SV.killFeedNameType == "both" then
+			killerPlayerToken = killerNameToken .. self:GetFormattedAccountNameLink(sourceName, "CCCCCC") or
+				self:Colorize(sourceName, "CCCCCC")
+			victimPlayerToken = victimNameToken .. self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
+			self:Colorize(victimPlayerDisplayName, "CCCCCC")
+		elseif PVP.SV.killFeedNameType == "character" then
+			killerPlayerToken = killerNameToken
+			victimPlayerToken = victimNameToken
+		elseif PVP.SV.killFeedNameType == "user" then
+			killerPlayerToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor) ..
+				self:GetFormattedAccountNameLink(sourceName, sourceAllianceColor) or
+				self:Colorize(sourceName, sourceAllianceColor)
+			victimPlayerToken = self:GetFormattedClassIcon(targetValidName, nil, allianceColor) ..
+				self:GetFormattedAccountNameLink(victimPlayerDisplayName, allianceColor) or
+				self:Colorize(victimPlayerDisplayName, allianceColor)
+		end
 		if abilityId then
-			local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
-			text = GetSpacedOutString(killerImportantToken .. killerNameToken .. killerPlayerDisplayNameToken,
+			local abilityToken = GetFormattedAbilityName(abilityId, "CCCCCC")
+			text = GetSpacedOutString(killerImportantToken .. killerPlayerToken,
 				actionToken,
-				victimImportantToken .. victimNameToken .. victimPlayerDisplayNameToken,
+				victimImportantToken .. victimPlayerToken,
 				withToken,
 				abilityToken, locationToken .. suffixToken)
 		else
-			text = GetSpacedOutString(killerImportantToken .. killerNameToken .. killerPlayerDisplayNameToken,
+			text = GetSpacedOutString(killerImportantToken .. killerPlayerToken,
 				actionToken,
-				victimImportantToken .. victimNameToken .. victimPlayerDisplayNameToken,
+				victimImportantToken .. victimPlayerToken,
 				locationToken .. suffixToken)
 		end
 
@@ -1680,21 +1708,30 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local playerActionDiedToken = PVP:Colorize("You were killed by", messageColor)
 
         local importantToken = GetImportantIcon(sourceValidName)
+		local killerPlayerToken
         local killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
-		local killerPlayerDisplayNameToken = self:GetFormattedAccountNameLink(killerPlayerDisplayName, "CCCCCC") or
-			self:Colorize(killerPlayerDisplayName, 'CCCCCC')
+		local killerPlayerDisplayNameToken
 			
-        local suffixToken = PVP:Colorize("!", messageColor)
-
+		local suffixToken = self:Colorize("!", messageColor)
+		if PVP.SV.killFeedNameType == "both" then
+			killerPlayerToken = killedByNameToken .. self:GetFormattedAccountNameLink(killerPlayerDisplayName, "CCCCCC") or
+				self:Colorize(killerPlayerDisplayName, "CCCCCC")
+		elseif PVP.SV.killFeedNameType == "character" then
+			killerPlayerToken = killedByNameToken
+		elseif PVP.SV.killFeedNameType == "user" then
+			killerPlayerToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor) ..
+				self:GetFormattedAccountNameLink(killerPlayerDisplayName, sourceAllianceColor) or
+				self:Colorize(killerPlayerDisplayName, sourceAllianceColor)
+		end
         if abilityId then
-            local abilityToken = GetFormattedAbilityName(abilityId, 'CCCCCC')
-            local possessiveToken = PVP:Colorize("'s'", messageColor)
+            local abilityToken = GetFormattedAbilityName(abilityId, "CCCCCC")
+			local possessiveToken = self:Colorize("'s'", messageColor)
             text = GetSpacedOutString(playerActionDiedToken,
-                importantToken .. killedByNameToken .. killerPlayerDisplayNameToken .. possessiveToken,
+				importantToken .. killerPlayerToken .. possessiveToken,
                 abilityToken .. suffixToken)
         else
             text = GetSpacedOutString(playerActionDiedToken,
-                importantToken .. killedByNameToken .. killerPlayerDisplayNameToken .. suffixToken)
+				importantToken .. killerPlayerToken .. suffixToken)
         end
         return text, bracketsToken
     end
@@ -3633,12 +3670,10 @@ end)
 
 function PVP:InitializeSV()
 	self.SV = ZO_SavedVars:NewAccountWide("PvpAlertsSettings", self.version, "Settings", self.defaults)
-	if self.SV.guild3d == nil then
-		self.SV.guild3d = true
-	end
+    if self.SV.guild3d == nil then self.SV.guild3d = true end
 	if not self.SV.coolList then self.SV.coolList = {} end
 	if not self.SV.CP then self.SV.CP = {} end
-	if self.SV.enabled then self:InitializeChat() end
+    if self.SV.enabled then self:InitializeChat() end
 end
 
 function PVP.OnLoad(eventCode, addonName)
