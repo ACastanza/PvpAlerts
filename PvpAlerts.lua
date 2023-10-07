@@ -1617,7 +1617,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local importantToken, isKOS = GetImportantIcon(targetValidName)
 		local victimPlayerToken
 		local victimNameToken = targetPlayer
-		local victimPlayerDisplayNameToken
 
 		local prepToken = self:Colorize("with", messageColor)
 		local suffixToken = self:Colorize("!", messageColor)
@@ -1655,14 +1654,12 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local killerImportantToken = GetImportantIcon(sourceValidName)
 		local killerPlayerToken
 		local killerNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
-		local killerPlayerDisplayNameToken
 			
 		local actionToken = PVP:Colorize("killed", messageColor)
 
 		local victimImportantToken = GetImportantIcon(targetValidName)
 		local victimPlayerToken
 		local victimNameToken = targetPlayer
-		local victimPlayerDisplayNameToken
 		local withToken = self:Colorize("with", messageColor)
 
 		local locationToken = self:Colorize("near " .. killLocation, messageColor)
@@ -1710,7 +1707,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local importantToken = GetImportantIcon(sourceValidName)
 		local killerPlayerToken
         local killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
-		local killerPlayerDisplayNameToken
 			
 		local suffixToken = self:Colorize("!", messageColor)
 		if PVP.SV.killFeedNameType == "both" then
