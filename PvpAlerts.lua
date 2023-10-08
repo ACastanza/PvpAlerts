@@ -5,9 +5,10 @@ local PVP = PVP_Alerts_Main_Table
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
 PVP.textVersion = "3.9"
 PVP.name = "PvpAlerts"
-PVP.killingBlows = {}
 
 local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
+local killingBlows = {}
+
 local LCM = LibChatMessage
 local chat = LCM.Create('PvpAlerts', 'PVP')
 PVP.CHAT = chat
@@ -1282,8 +1283,8 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 			local targetNameFromId = PVP.idToName[targetUnitId]
             if targetNameFromId then
 				local validTargetName = PVP:GetValidName(targetNameFromId)
-                PVP.killingBlows[validTargetName] = abilityId
-				zo_callLater(function() PVP.killingBlows[validTargetName] = nil end, 5000)
+                killingBlows[validTargetName] = abilityId
+				zo_callLater(function() killingBlows[validTargetName] = nil end, 5000)
 			end
 		end
 	end
@@ -1523,6 +1524,7 @@ end
 function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCharacterName, killerPlayerAlliance,
 						killerPlayerRank, victimPlayerDisplayName, victimPlayerCharacterName, victimPlayerAlliance,
                         victimPlayerRank)
+	local killFeedNameType = self.SV.killFeedNameType or self.defaults.killFeedNameType
 	local messageKey = string.format("%s->->%s", killerPlayerDisplayName, victimPlayerDisplayName)
 	local numOccurrences = killFeedDuplicateTracker:AddValue(messageKey)
     if numOccurrences > 1 then return end
@@ -1622,12 +1624,12 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local suffixToken = self:Colorize("!", messageColor)
 		local kbIconToken = zo_iconFormat(PVP_KILLING_BLOW, 38, 38)
 
-		if PVP.SV.killFeedNameType == "both" then
+		if killFeedNameType == "both" then
 			victimPlayerToken = victimNameToken .. self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
 				self:Colorize(victimPlayerDisplayName, "CCCCCC")
-		elseif PVP.SV.killFeedNameType == "character" then
+		elseif killFeedNameType == "character" then
             victimPlayerToken = victimNameToken
-		elseif PVP.SV.killFeedNameType == "user" then
+		elseif killFeedNameType == "user" then
 			victimPlayerToken = self:GetFormattedClassIcon(targetValidName, nil, allianceColor) ..
 				self:GetFormattedAccountNameLink(victimPlayerDisplayName, allianceColor) or
 				self:Colorize(victimPlayerDisplayName, allianceColor)
@@ -1665,15 +1667,15 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local locationToken = self:Colorize("near " .. killLocation, messageColor)
 		local suffixToken = self:Colorize("!", messageColor)
 
-		if PVP.SV.killFeedNameType == "both" then
+		if killFeedNameType == "both" then
 			killerPlayerToken = killerNameToken .. self:GetFormattedAccountNameLink(sourceName, "CCCCCC") or
 				self:Colorize(sourceName, "CCCCCC")
 			victimPlayerToken = victimNameToken .. self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
 			self:Colorize(victimPlayerDisplayName, "CCCCCC")
-		elseif PVP.SV.killFeedNameType == "character" then
+		elseif killFeedNameType == "character" then
 			killerPlayerToken = killerNameToken
 			victimPlayerToken = victimNameToken
-		elseif PVP.SV.killFeedNameType == "user" then
+		elseif killFeedNameType == "user" then
 			killerPlayerToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor) ..
 				self:GetFormattedAccountNameLink(sourceName, sourceAllianceColor) or
 				self:Colorize(sourceName, sourceAllianceColor)
@@ -1709,12 +1711,12 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
 			
 		local suffixToken = self:Colorize("!", messageColor)
-		if PVP.SV.killFeedNameType == "both" then
+		if killFeedNameType == "both" then
 			killerPlayerToken = killedByNameToken .. self:GetFormattedAccountNameLink(killerPlayerDisplayName, "CCCCCC") or
 				self:Colorize(killerPlayerDisplayName, "CCCCCC")
-		elseif PVP.SV.killFeedNameType == "character" then
+		elseif killFeedNameType == "character" then
 			killerPlayerToken = killedByNameToken
-		elseif PVP.SV.killFeedNameType == "user" then
+		elseif killFeedNameType == "user" then
 			killerPlayerToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor) ..
 				self:GetFormattedAccountNameLink(killerPlayerDisplayName, sourceAllianceColor) or
 				self:Colorize(killerPlayerDisplayName, sourceAllianceColor)
@@ -1738,8 +1740,8 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
     zo_callLater(function()
 
 		local currentTime = GetFrameTimeMilliseconds()
-		local abilityId = PVP.killingBlows[targetValidName]
-		PVP.killingBlows[targetValidName] = nil
+		local abilityId = killingBlows[targetValidName]
+		killingBlows[targetValidName] = nil
 		if self.killFeedDelay == 0 then PVP_KillFeed_Text:Clear() end
 		if self.killFeedRatioDelay == 0 then self:KillFeedRatio_Reset() end
 
@@ -3668,7 +3670,7 @@ function PVP:InitializeSV()
 	self.SV = ZO_SavedVars:NewAccountWide("PvpAlertsSettings", self.version, "Settings", self.defaults)
     if self.SV.guild3d == nil then self.SV.guild3d = true end
 	if not self.SV.coolList then self.SV.coolList = {} end
-	if not self.SV.CP then self.SV.CP = {} end
+    if not self.SV.CP then self.SV.CP = {} end
     if self.SV.enabled then self:InitializeChat() end
 end
 
