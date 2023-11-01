@@ -1,4 +1,4 @@
-## APIVersion: 101039
+## APIVersion: 101040
 ## Title: Miat's Pvp Alerts
 ## Author: Dorrino, Valandil
 ## AddonVersion: 30078

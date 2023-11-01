@@ -69,12 +69,13 @@ local PVP_DISTANCE_MAX_MULTIPLIER_IC = 9
 -- local PVP_FALLOFF_DISTANCE = 0.03
 -- local PVP_FALLOFF_DISTANCE1 = 0.05
 local PVP_MAX_DISTANCE = 0.20
-local PVP_MIN_DISTANCE = 0
-local PVP_SKIRMISH_DISTANCE = PVP_MAX_DISTANCE -- / 20
+local PVP_SKIRMISH_MAX_DISTANCE = PVP_MAX_DISTANCE * 1.5
 local PVP_MIN_TOOLTIP_POPUP_DISTANCE = PVP_MAX_DISTANCE / 6.4
 
 local PVP_POI_HEIGHT_GRACE_DISTANCE = 0.02
+local PVP_MIN_DISTANCE = 0
 local PVP_POI_MIN_DISTANCE = 0.01
+local PVP_SKIRMISH_MIN_DISTANCE = PVP_POI_MIN_DISTANCE * 0.75
 
 local PVP_PINTYPE_AYLEIDWELL = PVP:GetGlobal('PVP_PINTYPE_AYLEIDWELL')
 local PVP_PINTYPE_DELVE = PVP:GetGlobal('PVP_PINTYPE_DELVE')
@@ -244,7 +245,7 @@ local function IsSkirmishCloseToObjective(condition, objectiveX, objectiveY, sca
 			local pinType, targetX, targetY = GetKillLocationPinInfo(i)
 			if targetX ~= 0 and targetY ~= 0 then
 				local distance = PVP:GetCoordsDistance2D(objectiveX, objectiveY, targetX, targetY)
-				if pinType ~= MAP_PIN_TYPE_INVALID and distance <= scaleAdjustment * PVP_SKIRMISH_DISTANCE then
+				if pinType ~= MAP_PIN_TYPE_INVALID and distance <= scaleAdjustment * PVP_SKIRMISH_MAX_DISTANCE then
 					isSkirmish = true
 					break
 				end
@@ -3774,7 +3775,7 @@ local function FindNearbyPOIs()
             local pinType, targetX, targetY = GetKillLocationPinInfo(i)
 			if targetX ~= 0 and targetY ~= 0 then
 				local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-                if distance <= adjusted_POI_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_POI_MIN_DISTANCE then
+				if distance <= adjusted_POI_MAX_DISTANCE * 1.5 and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_SKIRMISH_MIN_DISTANCE then
 					local allianceKills = {}
 					for a = 1, ALLIANCE_MAX_VALUE do
 						local kills = GetNumKillLocationAllianceKills(i, a)
