@@ -1439,7 +1439,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 					local abilityIcon = GetAbilityIcon(abilityId)
 					-- PVP_Main.currentChannel = nil
 					-- self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false)
-					local displayHitValue = hitValue or 1450
+					local displayHitValue = math.max(1450, hitValue or 0)
 					self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false, false, displayHitValue)
 					PVP_Main.currentChannel = {
 						abilityId = abilityId,
