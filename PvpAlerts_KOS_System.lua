@@ -672,6 +672,16 @@ function PVP:IsKOSOrFriend(playerName)
 	return false
 end
 
+function PVP:IsEmperor(playerName, emperorRawName)
+	if emperorRawName == "" or emperorRawName == nil then return false end
+	if playerName == "" or playerName == nil then return false end
+	playerName = tostring(playerName)
+	emperorRawName = tostring(emperorRawName)
+	local playerRootName = PVP:GetRootNames(playerName)
+	local emperorRootName = PVP:GetRootNames(emperorRawName)
+	return playerRootName == emperorRootName
+end
+
 function PVP:IsNameInKOS(playerName)
 	local dbRecord, accName
 	dbRecord = self.SV.playersDB[playerName]

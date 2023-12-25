@@ -41,7 +41,8 @@ local PVP_BRIGHT_AD_COLOR = PVP:GetGlobal('PVP_BRIGHT_AD_COLOR')
 local PVP_BRIGHT_EP_COLOR = PVP:GetGlobal('PVP_BRIGHT_EP_COLOR')
 local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 
-
+local emperorAlliance, emperorRawName, emperorAccName
+ 
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
 		PVP.playerSpec[PVP.idToName[id]] = nil
@@ -204,6 +205,11 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		chat:Print('----------------------------')
 	end
 	-- PVP:TestThisScale()
+end
+
+function PVP:updateCampaignEmperor(eventCode, campaignId)
+    if not campaignId == GetCurrentCampaignId() then return end
+	emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(campaignId)
 end
 
 local lastcount, lastcountAcc
@@ -861,7 +867,11 @@ function PVP:OnZoneChange(_, zoneName, newZone)
 
 	if not self.SV.unlocked and self.SV.showCaptureFrame then PVP:SetupCurrentObjective(zoneText) end
 
-	PVP:UpdateNearbyKeepsAndPOIs(nil, true)
+    PVP:UpdateNearbyKeepsAndPOIs(nil, true)
+	local currentCampaignId = GetCurrentCampaignId()
+	if currentCampaignId ~= 0 then
+		self:updateCampaignEmperor(nil, currentCampaignId)
+	end
 end
 
 function PVP:OnOwnerOrUnderAttackChanged(zoneText, keepIdToUpdate, updateType)
@@ -1617,6 +1627,10 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local playerActionKilledToken = self:Colorize("You killed", messageColor)
 
 		local importantToken, isKOS = GetImportantIcon(targetValidName)
+		local isVictimEmperor = self:IsEmperor(targetValidName, emperorRawName)
+		if isVictimEmperor then
+			importantToken = PVP:GetEmperorIcon(32, allianceColor) .. importantToken
+		end
 		local victimPlayerToken
 		local victimNameToken = targetPlayer
 
@@ -1652,14 +1666,22 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 									 sourceValidName, sourceName, sourceAllianceColor, killLocation)
 		local text
         local messageColor = "AF7500"
-		
+
         local killerImportantToken = GetImportantIcon(sourceValidName)
+		local isKillerEmperor = self:IsEmperor(sourceValidName, emperorRawName)
+		if isKillerEmperor then
+			killerImportantToken = PVP:GetEmperorIcon(32, sourceAllianceColor) .. killerImportantToken
+		end
 		local killerPlayerToken
 		local killerNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
 			
 		local actionToken = PVP:Colorize("killed", messageColor)
 
-		local victimImportantToken = GetImportantIcon(targetValidName)
+        local victimImportantToken = GetImportantIcon(targetValidName)
+		local isVictimEmperor = self:IsEmperor(targetValidName, emperorRawName)
+		if isVictimEmperor then
+			victimImportantToken = PVP:GetEmperorIcon(32, allianceColor) .. victimImportantToken
+		end
 		local victimPlayerToken
 		local victimNameToken = targetPlayer
 		local withToken = self:Colorize("with", messageColor)
@@ -1707,6 +1729,10 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local playerActionDiedToken = PVP:Colorize("You were killed by", messageColor)
 
         local importantToken = GetImportantIcon(sourceValidName)
+		local isKillerEmperor = self:IsEmperor(sourceValidName, emperorRawName)
+		if isKillerEmperor then
+			importantToken = PVP:GetEmperorIcon(32, sourceAllianceColor) .. importantToken
+		end
 		local killerPlayerToken
         local killedByNameToken = PVP:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor)
 			
@@ -2132,7 +2158,8 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 	end
 
 	local formattedName
-	local KOSOrFriend                   = self:IsKOSOrFriend(playerName)
+	local KOSOrFriend = self:IsKOSOrFriend(playerName)
+	local isEmperor = self:IsEmperor(playerName, emperorRawName)
 
 	local statusIcon, isDeadOrResurrect = FindInNames(playerName)
 
@@ -2157,7 +2184,6 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 		end
 	end
 
-
 	if isDeadOrResurrect then
 		formattedName = self:GetFormattedClassNameLink(playerName, nameColor, false, isDeadOrResurrect, true,
 			not isTargetFrame)
@@ -2165,18 +2191,22 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 		formattedName = self:GetFormattedClassNameLink(playerName, nameColor, nil, nil, true, not isTargetFrame)
 	end
 
-	-- if KOSOrFriend then
-	if KOSOrFriend == "KOS" then
-		formattedName = formattedName .. self:GetKOSIcon(not isTargetFrame and 45 or nil)
-	elseif KOSOrFriend == "friend" then
-		formattedName = formattedName .. self:GetFriendIcon(not isTargetFrame and 35 or 19)
-	elseif KOSOrFriend == "cool" then
-		formattedName = formattedName .. self:GetCoolIcon(not isTargetFrame and 35 or 19)
-	elseif KOSOrFriend == "groupleader" then
-		formattedName = formattedName .. self:GetGroupLeaderIcon(not isTargetFrame and 45 or nil)
-	elseif KOSOrFriend == "group" then
-		formattedName = formattedName .. self:GetGroupIcon(not isTargetFrame and 45 or nil)
+	if isEmperor then
+		formattedName = self:GetEmperorIcon(not isTargetFrame and 45 or nil,
+			PVP:GetTrueAllianceColorsHex(emperorAlliance)) .. formattedName
 	end
+	-- if KOSOrFriend then
+    if KOSOrFriend == "KOS" then
+        formattedName = formattedName .. self:GetKOSIcon(not isTargetFrame and 45 or nil)
+    elseif KOSOrFriend == "friend" then
+        formattedName = formattedName .. self:GetFriendIcon(not isTargetFrame and 35 or 19)
+    elseif KOSOrFriend == "cool" then
+        formattedName = formattedName .. self:GetCoolIcon(not isTargetFrame and 35 or 19)
+    elseif KOSOrFriend == "groupleader" then
+        formattedName = formattedName .. self:GetGroupLeaderIcon(not isTargetFrame and 45 or nil)
+    elseif KOSOrFriend == "group" then
+        formattedName = formattedName .. self:GetGroupIcon(not isTargetFrame and 45 or nil)
+    end		
 
 	if isTargetFrame then
 		formattedName = formattedName .. statusIcon
@@ -2496,7 +2526,9 @@ function PVP:OnOff()
 			EVENT_MANAGER:RegisterForUpdate(self.name, 250, PVP.OnUpdate)
 			DEATH_FRAGMENT:RegisterCallback("StateChange", OnDeathFragmentStateChange)
 			PVP_SCOREBOARD_FRAGMENT:RegisterCallback("StateChange", ScoreboardFragmentCallback)
-			CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", OnWorldMapChangedCallback)
+            CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", OnWorldMapChangedCallback)
+			EVENT_MANAGER:RegisterForUpdate(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED,
+				function(...) self:updateCampaignEmperor(...) end)
 		end
 		self:InitEnabledAddon()
 	else
@@ -2516,7 +2548,8 @@ function PVP:OnOff()
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_MEDAL_AWARDED)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_ALLIANCE_POINT_UPDATE)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_ACTION_SLOT_ABILITY_USED)
-			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_LEADER_UPDATE)
+            EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_LEADER_UPDATE)
+			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED)
 			EVENT_MANAGER:UnregisterForUpdate(self.name)
 			DEATH_FRAGMENT:UnregisterCallback("StateChange", OnDeathFragmentStateChange)
 			PVP_SCOREBOARD_FRAGMENT:UnregisterCallback("StateChange", ScoreboardFragmentCallback)
@@ -2713,9 +2746,10 @@ function PVP:GetAllianceCountPlayers()
 			end
 
 			if playerName ~= self.playerName then
-				local KOSOrFriend                     = self:IsKOSOrFriend(playerName)
+                local KOSOrFriend = self:IsKOSOrFriend(playerName)
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
-				local addStatus
+                local addStatus
+				
 				if statusIcon == "" then addStatus = true end
 				if KOSOrFriend then
 					if KOSOrFriend == "KOS" then
@@ -2815,11 +2849,11 @@ function PVP:GetAllianceCountPlayers()
 		for k, v in pairs(self.playerAlliance) do
 			local playerName                      = self.idToName[k]
 			local formattedName
-			local KOSOrFriend                     = self:IsKOSOrFriend(playerName)
-
+            local KOSOrFriend = self:IsKOSOrFriend(playerName)
 			local statusIcon, isResurrect, isDead = FindInNames(playerName)
 			local addStatus
-			if statusIcon == "" then addStatus = true end
+            if statusIcon == "" then addStatus = true end
+			
 			if isDead or isResurrect then
 				formattedName = self:GetFormattedClassNameLink(playerName,
 					self:GetTimeFadedColor(self:NameToAllianceColor(playerName, true), k, currentTime), false, true, k,
@@ -2911,11 +2945,11 @@ function PVP:GetAllianceCountPlayers()
 
 		for k, _ in pairs(self.playerNames) do
 			if not foundNames[k] then
-				local playerName                      = k
+				local playerName = k
 				local formattedName
-				local nameLength                      = string.len(zo_strformat(SI_UNIT_NAME, playerName))
-				local KOSOrFriend                     = self:IsKOSOrFriend(playerName)
-
+				local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
+				local KOSOrFriend = self:IsKOSOrFriend(playerName)
+				
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
 
 				if (not isDead) and (not isResurrect) then
@@ -3160,7 +3194,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 		if playerName then
 			local iconsCount = 0
 			local formattedName = ""
-			KOSOrFriend = self:IsKOSOrFriend(playerName)
+            KOSOrFriend = self:IsKOSOrFriend(playerName)
 			if KOSOrFriend then
 				iconsCount = iconsCount + 1
 				if KOSOrFriend == "KOS" then

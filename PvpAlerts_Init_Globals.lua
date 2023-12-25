@@ -45,9 +45,12 @@ PVP.globalConstants = {
 	['PVP_FIGHT_EPDC'] = "/esoui/art/mappins/ava_ebonheartvdaggerfall.dds",
 
 	['PVP_ATTACKER'] = "/esoui/art/compass/ava_returnpoint_ebonheart.dds",
-	['PVP_RESURRECT'] = "/esoui/art/compass/ava_flagcarrier_neutral.dds",
-	['PVP_6STAR'] = "PvpAlerts/textures/6star1.dds",
 
+	['PVP_RESURRECT'] = "/esoui/art/compass/ava_flagcarrier_neutral.dds",
+	
+	['PVP_6STAR'] = "PvpAlerts/textures/6star1.dds",
+	['PVP_EMPEROR'] = "/esoui/art/campaign/overview_indexicon_emperor_up.dds",
+	
 	['PVP_AP'] = "esoui/art/currency/alliancepoints_32.dds",
 
 	['PVP_NAME_FONT'] = "$(BOLD_FONT)|29|thick-outline",
