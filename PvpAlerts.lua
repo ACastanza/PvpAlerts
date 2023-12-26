@@ -41,7 +41,7 @@ local PVP_BRIGHT_AD_COLOR = PVP:GetGlobal('PVP_BRIGHT_AD_COLOR')
 local PVP_BRIGHT_EP_COLOR = PVP:GetGlobal('PVP_BRIGHT_EP_COLOR')
 local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 
-local currentCampaignActiveEmperor
+local currentCampaignActiveEmperor, currentCampaignActiveEmperorAlliance
  
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
@@ -212,6 +212,7 @@ function PVP:updateCampaignEmperor(eventCode, campaignId)
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(campaignId)
 	emperorRawName = tostring(emperorRawName)
 	currentCampaignActiveEmperor = PVP:GetRootNames(emperorRawName)
+	currentCampaignActiveEmperorAlliance = emperorAlliance
 end
 
 local lastcount, lastcountAcc
@@ -2195,7 +2196,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 
 	if isEmperor then
 		formattedName = self:GetEmperorIcon(not isTargetFrame and 45 or nil,
-			PVP:GetTrueAllianceColorsHex(emperorAlliance)) .. formattedName
+			PVP:GetTrueAllianceColorsHex(currentCampaignActiveEmperorAlliance)) .. formattedName
 	end
 	-- if KOSOrFriend then
     if KOSOrFriend == "KOS" then
