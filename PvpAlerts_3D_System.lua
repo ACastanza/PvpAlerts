@@ -1,7 +1,7 @@
 local PVP = PVP_Alerts_Main_Table
 
-PVP.LMP = LibMapPing
-PVP.GPS = LibGPS2
+PVP.LMP = LibMapPing2
+PVP.GPS = LibGPS3
 
 local chat = PVP.CHAT
 

@@ -41,7 +41,7 @@ local PVP_BRIGHT_AD_COLOR = PVP:GetGlobal('PVP_BRIGHT_AD_COLOR')
 local PVP_BRIGHT_EP_COLOR = PVP:GetGlobal('PVP_BRIGHT_EP_COLOR')
 local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 
-local emperorAlliance, emperorRawName, emperorAccName
+local currentCampaignActiveEmperor
  
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
@@ -209,7 +209,9 @@ end
 
 function PVP:updateCampaignEmperor(eventCode, campaignId)
     if not campaignId == GetCurrentCampaignId() then return end
-	emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(campaignId)
+	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(campaignId)
+	emperorRawName = tostring(emperorRawName)
+	currentCampaignActiveEmperor = PVP:GetRootNames(emperorRawName)
 end
 
 local lastcount, lastcountAcc
@@ -1627,7 +1629,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local playerActionKilledToken = self:Colorize("You killed", messageColor)
 
 		local importantToken, isKOS = GetImportantIcon(targetValidName)
-		local isVictimEmperor = PVP:IsEmperor(targetValidName, emperorRawName)
+		local isVictimEmperor = PVP:IsEmperor(targetValidName, currentCampaignActiveEmperor)
 		if isVictimEmperor then
 			importantToken = PVP:GetEmperorIcon(32, allianceColor) .. importantToken
 		end
@@ -1668,7 +1670,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local messageColor = "AF7500"
 
         local killerImportantToken = GetImportantIcon(sourceValidName)
-		local isKillerEmperor = PVP:IsEmperor(sourceValidName, emperorRawName)
+		local isKillerEmperor = PVP:IsEmperor(sourceValidName, currentCampaignActiveEmperor)
 		if isKillerEmperor then
 			killerImportantToken = PVP:GetEmperorIcon(32, sourceAllianceColor) .. killerImportantToken
 		end
@@ -1678,7 +1680,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local actionToken = PVP:Colorize("killed", messageColor)
 
         local victimImportantToken = GetImportantIcon(targetValidName)
-		local isVictimEmperor = PVP:IsEmperor(targetValidName, emperorRawName)
+		local isVictimEmperor = PVP:IsEmperor(targetValidName, currentCampaignActiveEmperor)
 		if isVictimEmperor then
 			victimImportantToken = PVP:GetEmperorIcon(32, allianceColor) .. victimImportantToken
 		end
@@ -1729,7 +1731,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local playerActionDiedToken = PVP:Colorize("You were killed by", messageColor)
 
         local importantToken = GetImportantIcon(sourceValidName)
-		local isKillerEmperor = PVP:IsEmperor(sourceValidName, emperorRawName)
+		local isKillerEmperor = PVP:IsEmperor(sourceValidName, currentCampaignActiveEmperor)
 		if isKillerEmperor then
 			importantToken = PVP:GetEmperorIcon(32, sourceAllianceColor) .. importantToken
 		end
@@ -2159,7 +2161,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 
 	local formattedName
 	local KOSOrFriend = self:IsKOSOrFriend(playerName)
-	local isEmperor = PVP:IsEmperor(playerName, emperorRawName)
+	local isEmperor = PVP:IsEmperor(playerName, currentCampaignActiveEmperor)
 
 	local statusIcon, isDeadOrResurrect = FindInNames(playerName)
 
