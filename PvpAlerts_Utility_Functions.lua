@@ -22,6 +22,7 @@ local PVP_IMPORTANT_ICON = PVP:GetGlobal('PVP_IMPORTANT_ICON')
 local PVP_EYE_ICON = PVP:GetGlobal('PVP_EYE_ICON')
 local PVP_KILLING_BLOW = PVP:GetGlobal('PVP_KILLING_BLOW')
 local PVP_ATTACKER = PVP:GetGlobal('PVP_ATTACKER')
+local PVP_EMPEROR = PVP:GetGlobal('PVP_EMPEROR')
 local PVP_RESURRECT = PVP:GetGlobal('PVP_RESURRECT')
 local PVP_6STAR = PVP:GetGlobal('PVP_6STAR')
 
@@ -551,6 +552,12 @@ function PVP:GetAttackerIcon(dimension, color)
 	return self:Colorize(zo_iconFormatInheritColor(PVP_ATTACKER, dimension, dimension), color)
 end
 
+function PVP:GetEmperorIcon(dimension, color)
+    dimension = dimension or 20
+    color = color or "FFFFFF"
+    return self:Colorize(zo_iconFormatInheritColor(PVP_EMPEROR, dimension, dimension), color)
+end
+
 -- function PVP:GetTargetIcon(dimension, color)
 -- dimension = dimension or 22
 -- color = color or "FFFFFF"
@@ -760,12 +767,18 @@ function PVP:IsMalformedName(name)
 end
 
 function PVP:GetValidName(name)
-	if not name or name == '' then return end
-	if not PVP:IsMalformedName(name) then return name end
-	-- if not PVP.bgNames then return end
+    if not name or name == '' then return end
+    if not PVP:IsMalformedName(name) then return name end
+    -- if not PVP.bgNames then return end
 
-	if PVP.bgNames and PVP.bgNames[name .. '^Mx'] then return name .. '^Mx' end
-	if PVP.bgNames and PVP.bgNames[name .. '^Fx'] then return name .. '^Fx' end
+    if PVP.bgNames and PVP.bgNames[name .. '^Mx'] then return name .. '^Mx' end
+    if PVP.bgNames and PVP.bgNames[name .. '^Fx'] then return name .. '^Fx' end
+end
+
+function PVP:GetRootNames(name)
+	if not name or name == '' then return "" end
+	local rootName = name:gsub("%s*%^[MF]x%s*$", "")
+	return rootName or ""
 end
 
 function PVP:BgAllianceToHexColor(bgAlliance)
