@@ -777,7 +777,7 @@ end
 
 function PVP:GetRootNames(name)
 	if not name or name == '' then return "" end
-	local rootName = name:match("^(.-)%^")
+	local rootName = name:gsub("%s*%^[MF]x%s*$", "")
 	return rootName or ""
 end
 

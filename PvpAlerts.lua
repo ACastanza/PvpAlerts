@@ -1627,7 +1627,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local playerActionKilledToken = self:Colorize("You killed", messageColor)
 
 		local importantToken, isKOS = GetImportantIcon(targetValidName)
-		local isVictimEmperor = self:IsEmperor(targetValidName, emperorRawName)
+		local isVictimEmperor = PVP:IsEmperor(targetValidName, emperorRawName)
 		if isVictimEmperor then
 			importantToken = PVP:GetEmperorIcon(32, allianceColor) .. importantToken
 		end
@@ -1668,7 +1668,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local messageColor = "AF7500"
 
         local killerImportantToken = GetImportantIcon(sourceValidName)
-		local isKillerEmperor = self:IsEmperor(sourceValidName, emperorRawName)
+		local isKillerEmperor = PVP:IsEmperor(sourceValidName, emperorRawName)
 		if isKillerEmperor then
 			killerImportantToken = PVP:GetEmperorIcon(32, sourceAllianceColor) .. killerImportantToken
 		end
@@ -1678,7 +1678,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local actionToken = PVP:Colorize("killed", messageColor)
 
         local victimImportantToken = GetImportantIcon(targetValidName)
-		local isVictimEmperor = self:IsEmperor(targetValidName, emperorRawName)
+		local isVictimEmperor = PVP:IsEmperor(targetValidName, emperorRawName)
 		if isVictimEmperor then
 			victimImportantToken = PVP:GetEmperorIcon(32, allianceColor) .. victimImportantToken
 		end
@@ -1729,7 +1729,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
         local playerActionDiedToken = PVP:Colorize("You were killed by", messageColor)
 
         local importantToken = GetImportantIcon(sourceValidName)
-		local isKillerEmperor = self:IsEmperor(sourceValidName, emperorRawName)
+		local isKillerEmperor = PVP:IsEmperor(sourceValidName, emperorRawName)
 		if isKillerEmperor then
 			importantToken = PVP:GetEmperorIcon(32, sourceAllianceColor) .. importantToken
 		end
@@ -2159,7 +2159,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 
 	local formattedName
 	local KOSOrFriend = self:IsKOSOrFriend(playerName)
-	local isEmperor = self:IsEmperor(playerName, emperorRawName)
+	local isEmperor = PVP:IsEmperor(playerName, emperorRawName)
 
 	local statusIcon, isDeadOrResurrect = FindInNames(playerName)
 
