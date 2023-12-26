@@ -673,7 +673,7 @@ function PVP:IsKOSOrFriend(playerName)
 end
 
 function PVP:IsEmperor(playerName, currentCampaignActiveEmperor)
-	if emperorRawName == "" or emperorRawName == nil then return false end
+	if currentCampaignActiveEmperor == "" or currentCampaignActiveEmperor == nil then return false end
 	if playerName == "" or playerName == nil then return false end
 	playerName = tostring(playerName)
 	local playerRootName = PVP:GetRootNames(playerName)
