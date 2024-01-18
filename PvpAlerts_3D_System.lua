@@ -1979,7 +1979,8 @@ local function GetEmperorInfoString(isWorldCrown)
 		elseif femaleName then
 			formattedEmperorName = femaleName
 		else
-			formattedEmperorName = GetAllianceColoredString(emperorRawName, emperorAlliance)
+			formattedEmperorName = PVP:GetEmperorIcon(45, PVP:GetTrueAllianceColorsHex(emperorAlliance)) ..
+				GetAllianceColoredString(emperorRawName, emperorAlliance)
 		end
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)

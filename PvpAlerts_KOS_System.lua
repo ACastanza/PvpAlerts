@@ -676,8 +676,9 @@ function PVP:IsEmperor(playerName, currentCampaignActiveEmperor)
 	if currentCampaignActiveEmperor == "" or currentCampaignActiveEmperor == nil then return false end
 	if playerName == "" or playerName == nil then return false end
 	playerName = tostring(playerName)
-	local playerRootName = PVP:GetRootNames(playerName)
-	return playerRootName == currentCampaignActiveEmperor
+	if playerName == currentCampaignActiveEmperor .. "^Mx" then return true end
+	if playerName == currentCampaignActiveEmperor .. "^Fx" then return true end
+	return false
 end
 
 function PVP:IsNameInKOS(playerName)
