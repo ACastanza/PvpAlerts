@@ -1668,6 +1668,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 	local function GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, allianceColor, abilityId,
 									 sourceValidName, sourceName, sourceAllianceColor, killLocation)
 		local text
+		local endToken
         local messageColor = "AF7500"
 
         local killerImportantToken = GetImportantIcon(sourceValidName)
@@ -1689,8 +1690,14 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		local victimNameToken = targetPlayer
 		local withToken = self:Colorize("with", messageColor)
 
-		local locationToken = self:Colorize("near " .. killLocation, messageColor)
-		local suffixToken = self:Colorize("!", messageColor)
+        local suffixToken = self:Colorize("!", messageColor)
+
+		if not killLocation or killLocation == "" then
+			endToken = suffixToken
+		else
+			local locationToken = self:Colorize(" near " .. killLocation, messageColor)
+			endToken = locationToken .. suffixToken
+		end
 
 		if killFeedNameType == "both" then
 			killerPlayerToken = killerNameToken .. self:GetFormattedAccountNameLink(sourceName, "CCCCCC") or
@@ -1714,12 +1721,12 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				actionToken,
 				victimImportantToken .. victimPlayerToken,
 				withToken,
-				abilityToken, locationToken .. suffixToken)
+				abilityToken .. endToken)
 		else
 			text = GetSpacedOutString(killerImportantToken .. killerPlayerToken,
 				actionToken,
-				victimImportantToken .. victimPlayerToken,
-				locationToken .. suffixToken)
+				victimImportantToken .. victimPlayerToken ..
+				endToken)
 		end
 
 		return text
