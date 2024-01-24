@@ -515,11 +515,11 @@ function PVP:Purge_PlayerDB()
 			end
 		end
 
-		if not PVP.SV.playersDB[k] == nil and v.lastSeen == nil then
+		if PVP.SV.playersDB[k] ~= nil and v.lastSeen == nil then
 			PVP.SV.playersDB[k].lastSeen = sessionTimeEpoch
 		end
 
-		if not PVP.SV.playersDB[k] == nil and (v.lastSeen <= (sessionTimeEpoch - 63244800)) and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
+		if PVP.SV.playersDB[k] ~= nil and (v.lastSeen <= (sessionTimeEpoch - 63244800)) and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
 			PVP.SV.playersDB[k] = nil
 		else
 			if PVP.SV.CP[v.unitAccName] then
