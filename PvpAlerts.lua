@@ -6,6 +6,7 @@ PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole
 PVP.textVersion = "3.9"
 PVP.name = "PvpAlerts"
 
+local sessionTimeEpoch = os.time(os.date("!*t"))
 local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
 local killingBlows = {}
 
@@ -496,6 +497,39 @@ function PVP:CountTotal(currentTime)
 	end
 
 	return count
+end
+
+function PVP:Purge_PlayerDB()
+	local kosListNames = {}
+	for _, data in pairs(PVP.SV.KOSList) do
+		kosListNames[data.unitName] = true
+	end
+
+	local unitAccNameCP = {}
+	for k, v in pairs(PVP.SV.playersDB) do
+		if v.unitAvARank == nil and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
+			PVP.SV.playersDB[k] = nil
+		else
+			if PVP.SV.CP[v.unitAccName] then
+				unitAccNameCP[v.unitAccName] = PVP.SV.CP[v.unitAccName]
+			end
+		end
+
+		if v.lastSeen == nil then
+			PVP.SV.playersDB[k].lastSeen = sessionTimeEpoch
+		end
+
+		if (v.lastSeen <= (sessionTimeEpoch - 63244800)) and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
+			PVP.SV.playersDB[k] = nil
+		else
+			if PVP.SV.CP[v.unitAccName] then
+				unitAccNameCP[v.unitAccName] = PVP.SV.CP[v.unitAccName]
+			end
+		end
+	end
+
+	PVP.SV.CP = {}
+	PVP.SV.CP = unitAccNameCP
 end
 
 function PVP:ProcessNpcs(currentTime)
@@ -1554,7 +1588,8 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
             self.SV.playersDB[playerValidName] = {
 				unitAccName = playerDisplayName,
 				unitAlliance = playerAlliance,
-				unitAvARank = unitAllianceRank
+                unitAvARank = unitAllianceRank,
+				lastSeen = sessionTimeEpoch
 			}
         else
             if self.SV.playersDB[playerValidName].unitAlliance ~= playerAlliance then
@@ -1562,6 +1597,9 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
             end
 			if self.SV.playersDB[playerValidName].unitAvARank ~= unitAllianceRank then
 				self.SV.playersDB[playerValidName].unitAvARank = unitAllianceRank
+			end
+			if self.SV.playersDB[playerValidName].lastSeen ~= sessionTimeEpoch then
+				self.SV.playersDB[playerValidName].lastSeen = sessionTimeEpoch
 			end
 		end
 	end		
@@ -3351,7 +3389,8 @@ function PVP.OnTargetChanged()
 				unitRace = unitRace,
 				unitSpec = unitSpec,
                 mundus = unitMundus,
-				unitAvARank = unitAllianceRank
+                unitAvARank = unitAllianceRank,
+				lastSeen = sessionTimeEpoch
 			}
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
@@ -3722,7 +3761,8 @@ function PVP.OnLoad(eventCode, addonName)
 	if addonName ~= PVP.name then return end
 	EVENT_MANAGER:UnregisterForEvent(PVP.name, EVENT_ADD_ON_LOADED, PVP.OnLoad)
 
-	PVP:InitializeSV()
+    PVP:InitializeSV()
+	-- PVP:Purge_PlayerDB()
 	PVP:InitializeAddonMenu()
 	PVP:AvAHax()
 	PVP_KOS_SCENE_FRAGMENT = ZO_FadeSceneFragment:New(PVP_KOS, nil, 0)
