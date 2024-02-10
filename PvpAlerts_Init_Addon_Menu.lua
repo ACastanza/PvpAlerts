@@ -360,7 +360,7 @@ function PVP:InitializeAddonMenu()
 			choices = {"Link","Character@User", "Character", "@User" },
 			getFunc = function()
 				if self.SV.killFeedNameType == "link" then
-					return "link"
+					return "Link"
 				elseif self.SV.killFeedNameType=="both" then
 					return "Character@User"
 				elseif self.SV.killFeedNameType=="character" then
