@@ -21,8 +21,9 @@ function PVP:InitializeAddonMenu()
 			self.SV.tugOffsetY=0
 			self.SV.feedOffsetX=0
             self.SV.feedOffsetY = 0
-			self.SV.killFeedNameType=self.defaults.killFeedNameType
-			self.SV.namesOffsetX=0
+			self.SV.userDisplayNameType=self.defaults.userDisplayNameType
+			self.SV.killFeedNameType = self.defaults.killFeedNameType
+			self.SV.namesOffsetX = 0
 			self.SV.namesOffsetY=0
 			self.SV.KOSOffsetX=0
 			self.SV.KOSOffsetY=0
@@ -234,6 +235,31 @@ function PVP:InitializeAddonMenu()
 			self:InitControls()
 		end
 	    },
+		{
+		type = "dropdown",
+		name = "User Display Name Type Preference:",
+        tooltip = 'Default is "Character"',
+		default = self.defaults.userDisplayNameType,
+		choices = { "Character@User", "Character", "@User"},
+		getFunc = function()
+			if self.SV.userDisplayNameType=="both" then
+				return "Character@User"
+			elseif self.SV.userDisplayNameType=="character" then
+				return "Character"
+			elseif self.SV.userDisplayNameType=="user" then
+				return "@User"
+			end
+		end,
+		setFunc = function(newValue)
+			if newValue == "Character@User" then
+				self.SV.userDisplayNameType="both"
+			elseif newValue == "Character" then
+				self.SV.userDisplayNameType="character"
+			elseif newValue == "@User" then
+				self.SV.userDisplayNameType="user"
+			end
+        end,
+        },
 	    {
 		type = "header",
 		name = "Attacks notification options",
@@ -326,31 +352,35 @@ function PVP:InitializeAddonMenu()
 		default = "Center",
 		disabled = function() return not self.SV.enabled or not self.SV.showKillFeedFrame end,
 	    },
-	    {
-		type = "dropdown",
-		name = "Kill Feed Name Type Preference:",
-        tooltip = 'Default is "Character@User"',
-		default = self.defaults.killFeedNameType,
-		choices = { "Character@User", "Character", "@User"},
-		getFunc = function()
-			if self.SV.killFeedNameType=="both" then
-				return "Character@User"
-			elseif self.SV.killFeedNameType=="character" then
-				return "Character"
-			elseif self.SV.killFeedNameType=="user" then
-				return "@User"
-			end
-		end,
-		setFunc = function(newValue)
-			if newValue == "Character@User" then
-				self.SV.killFeedNameType="both"
-			elseif newValue == "Character" then
-				self.SV.killFeedNameType="character"
-			elseif newValue == "@User" then
-				self.SV.killFeedNameType="user"
-			end
-        end,
-        },
+		{
+			type = "dropdown",
+			name = "Kill Feed Name Type Preference:",
+			tooltip = 'Default (Link) uses the value of "User Display Name Type Preference"',
+			default = self.defaults.killFeedNameType,
+			choices = {"Link","Character@User", "Character", "@User" },
+			getFunc = function()
+				if self.SV.killFeedNameType == "link" then
+					return "link"
+				elseif self.SV.killFeedNameType=="both" then
+					return "Character@User"
+				elseif self.SV.killFeedNameType=="character" then
+					return "Character"
+				elseif self.SV.killFeedNameType=="user" then
+					return "@User"
+				end
+			end,
+			setFunc = function(newValue)
+				if newValue == "Link" then
+					self.SV.killFeedNameType="link"
+				elseif newValue == "Character@User" then
+					self.SV.killFeedNameType="both"
+				elseif newValue == "Character" then
+					self.SV.killFeedNameType="character"
+				elseif newValue == "@User" then
+					self.SV.killFeedNameType="user"
+				end
+			end,
+		},
 		{
 		type = "checkbox",
 		name = "Enable Kill Feed chat tab",

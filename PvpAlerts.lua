@@ -43,7 +43,7 @@ local PVP_BRIGHT_EP_COLOR = PVP:GetGlobal('PVP_BRIGHT_EP_COLOR')
 local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 
 local currentCampaignActiveEmperor, currentCampaignActiveEmperorAlliance
- 
+
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
 		PVP.playerSpec[PVP.idToName[id]] = nil
@@ -1571,7 +1571,10 @@ end
 function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCharacterName, killerPlayerAlliance,
 						killerPlayerRank, victimPlayerDisplayName, victimPlayerCharacterName, victimPlayerAlliance,
                         victimPlayerRank)
-	local killFeedNameType = self.SV.killFeedNameType or self.defaults.killFeedNameType
+    local killFeedNameType = self.SV.killFeedNameType or self.defaults.killFeedNameType
+	if killFeedNameType == "link" then
+		killFeedNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
+	end
 	local messageKey = string.format("%s->->%s", killerPlayerDisplayName, victimPlayerDisplayName)
 	local numOccurrences = killFeedDuplicateTracker:AddValue(messageKey)
     if numOccurrences > 1 then return end
@@ -2002,6 +2005,7 @@ end
 function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImportant, isPiercingMark, isDebuff, hitValue)
 	local playerAlliance, nameFromDB, classIcon, nameColor, nameFont, enemyName, formattedName, pureNameWidth
 	local importantMode = isImportant and not isPiercingMark
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local heavyAttackSpacer = isHeavyAttack and "" or " "
 	local abilityIconSize = isHeavyAttack and 75 or 50
 	-- local nameWidth = abilityIconSize
@@ -2018,6 +2022,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 			heavyAttackSpacer
 	elseif not isDebuff then
 		nameFromDB = self.idToName[sourceUnitId]
+		accountNameFromDB = self.SV.playersDB[nameFromDB].unitAccName
 		playerAlliance = self:IdToAllianceColor(sourceUnitId)
 		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance) or
 			heavyAttackSpacer
@@ -2025,7 +2030,11 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 		classIcon = ""
 	end
 
-	enemyName = isDebuff and sourceName or self:GetFormattedName(sourceName)
+	-- enemyName = isDebuff and sourceName or self:GetFormattedName(sourceName)
+	enemyName = isDebuff and sourceName or 
+            (userDisplayNameType == "character" and self:GetFormattedName(sourceName) or 
+             (userDisplayNameType == "user" and accountNameFromDB or 
+              (userDisplayNameType == "both" and self:GetFormattedName(sourceName) .. accountNameFromDB)))
 
 	if importantMode then
 		nameColor = self.SV.colors.stealthed
@@ -2177,6 +2186,8 @@ end
 
 function PVP:GetTargetChar(playerName, isTargetFrame)
 	if not self.SV.playersDB[playerName] then return nil end
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
+	accountNameFromDB = self.SV.playersDB[playerName].unitAccName
 
 	local function FindInNames(playerName)
 		local isDeadOrResurrect
@@ -2205,7 +2216,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 		return statusIcon, isDeadOrResurrect
 	end
 
-	local formattedName
+	local formattedName, classIcons, charName, accountName
 	local KOSOrFriend = self:IsKOSOrFriend(playerName)
 	local isEmperor = PVP:IsEmperor(playerName, currentCampaignActiveEmperor)
 
@@ -2233,10 +2244,21 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 	end
 
 	if isDeadOrResurrect then
-		formattedName = self:GetFormattedClassNameLink(playerName, nameColor, false, isDeadOrResurrect, true,
-			not isTargetFrame)
+		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, isDeadorResurrect, isTargetFrame, not isTargetFrame)
+		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, false), nameColor)
 	else
-		formattedName = self:GetFormattedClassNameLink(playerName, nameColor, nil, nil, true, not isTargetFrame)
+		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, nil, true, not isTargetFrame)
+		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, nil), nameColor)
+	end
+
+	if userDisplayNameType == "both" then
+		accountName = self:GetFormattedAccountNameLink(accountNameFromDB, "CCCCCC")
+		formattedName = classIcons .. charName .. "|r" .. accountName
+	elseif userDisplayNameType == "character" then
+		formattedName = classIcons .. charName
+	elseif userDisplayNameType == "user" then
+		accountName = self:GetFormattedAccountNameLink(accountNameFromDB, nameColor)
+		formattedName = classIcons .. accountName
 	end
 
 	if isEmperor then
@@ -3223,6 +3245,7 @@ end
 
 function PVP:PopulateReticleOverNamesBuffer()
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local currentTime = GetFrameTimeMilliseconds()
 	PVP_Names_Text:Clear()
 	if #self.namesToDisplay == 0 then return end
@@ -3240,6 +3263,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			isResurrect = nil
 		end
 		if playerName then
+			local accountName = self.SV.playersDB[playerName].unitAccName
 			local iconsCount = 0
 			local formattedName = ""
             KOSOrFriend = self:IsKOSOrFriend(playerName)
@@ -3288,10 +3312,17 @@ function PVP:PopulateReticleOverNamesBuffer()
 
 			if iconsCount == 0 then iconsCount = nil end
 
-			local charName = self:GetFormattedClassNameLink(playerName,
-				self:NameToAllianceColor(playerName, isDead or isResurrect), iconsCount, isDead or isResurrect)
-
-			formattedName = charName .. formattedName .. endIcon
+			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect)
+			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect)
+			local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
+			local accountName = self:GetFormattedAccountNameLink(accountName, allianceColor)
+			if userDisplayNameType == "both" then
+				formattedName = classIcons .. charName .. accountName .. formattedName .. endIcon
+			elseif userDisplayNameType == "character" then
+				formattedName = classIcons .. charName .. formattedName .. endIcon
+			elseif userDisplayNameType == "user" then
+				formattedName = classIcons .. accountName .. formattedName .. endIcon
+			end
 			PVP_Names_Text:AddMessage(formattedName)
 		end
 	end
