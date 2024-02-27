@@ -2003,7 +2003,7 @@ function PVP_SetupHighlightAnimation(control)
 end
 
 function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImportant, isPiercingMark, isDebuff, hitValue)
-	local playerAlliance, nameFromDB, classIcon, nameColor, nameFont, enemyName, formattedName, pureNameWidth
+	local playerAlliance, nameFromDB, accountNameFromDB, classIcon, nameColor, nameFont, enemyName, formattedName, pureNameWidth
 	local importantMode = isImportant and not isPiercingMark
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local heavyAttackSpacer = isHeavyAttack and "" or " "
