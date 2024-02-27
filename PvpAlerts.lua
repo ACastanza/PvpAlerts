@@ -2187,7 +2187,7 @@ end
 function PVP:GetTargetChar(playerName, isTargetFrame)
 	if not self.SV.playersDB[playerName] then return nil end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
-	accountNameFromDB = self.SV.playersDB[playerName].unitAccName
+	local accountNameFromDB = self.SV.playersDB[playerName].unitAccName
 
 	local function FindInNames(playerName)
 		local isDeadOrResurrect
