@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.9.3"
+PVP.textVersion = "3.9.5"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = os.time(os.date("!*t"))
@@ -2022,7 +2022,11 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 			heavyAttackSpacer
 	elseif not isDebuff then
 		nameFromDB = self.idToName[sourceUnitId]
-		accountNameFromDB = self.SV.playersDB[nameFromDB].unitAccName
+		if nameFromDB then
+			accountNameFromDB = self.SV.playersDB[nameFromDB].unitAccName or "@name unknown"
+		else
+			accountNameFromDB = "@name unknown"
+		end
 		playerAlliance = self:IdToAllianceColor(sourceUnitId)
 		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance) or
 			heavyAttackSpacer
@@ -2031,10 +2035,10 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	end
 
 	-- enemyName = isDebuff and sourceName or self:GetFormattedName(sourceName)
-	enemyName = isDebuff and sourceName or 
-            (userDisplayNameType == "character" and self:GetFormattedName(sourceName) or 
-             (userDisplayNameType == "user" and accountNameFromDB or 
-              (userDisplayNameType == "both" and self:GetFormattedName(sourceName) .. accountNameFromDB)))
+	enemyName = isDebuff and sourceName or
+		(userDisplayNameType == "character" and (self:GetFormattedName(sourceName) or "unknown player") or
+			(userDisplayNameType == "user" and (accountNameFromDB or sourceName or "unknown player") or
+				(userDisplayNameType == "both" and (self:GetFormattedName(sourceName) .. accountNameFromDB) or "unknown player")))
 
 	if importantMode then
 		nameColor = self.SV.colors.stealthed
@@ -2187,7 +2191,7 @@ end
 function PVP:GetTargetChar(playerName, isTargetFrame)
 	if not self.SV.playersDB[playerName] then return nil end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
-	local accountNameFromDB = self.SV.playersDB[playerName].unitAccName
+	local accountNameFromDB = self.SV.playersDB[playerName].unitAccName or "@name unknown"
 
 	local function FindInNames(playerName)
 		local isDeadOrResurrect
