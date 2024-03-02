@@ -2193,12 +2193,14 @@ local function ControlOnUpdate(control)
         else
 			local guildClaimName, siegeCount
             if keepNotClaimable then
-                guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
+				guildClaimName = ''
             else
-                guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or "Unclaimed"
+                guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or ''
                 if guildClaimName and guildClaimName ~= "" then
                     guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
                         PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
+                else
+					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
                 end
             end
 			
