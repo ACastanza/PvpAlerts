@@ -730,8 +730,12 @@
 					<DimensionConstraints minX="100" minY="25" />
 				</Label>
 
-				<Label name="$(parent)SubLabel" text="" font="$(BOLD_FONT)|$(KB_21)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+				<Label name="$(parent)SubLabel" text="" font="$(BOLD_FONT)|$(KB_18)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
 					<Anchor point="CENTER" relativeTo="$(parent)Label" relativePoint="BOTTOM" offsetY="2" />
+					<DimensionConstraints minX="100" minY="25" />
+				</Label>
+				<Label name="$(parent)SiegeLabel" text="" font="$(BOLD_FONT)|$(KB_18)|thick-outline" color='CCCCCC' verticalAlignment="CENTER" horizontalAlignment="LEFT" level="1">
+					<Anchor point="CENTER" relativeTo="$(parent)SubLabel" relativePoint="BOTTOM" offsetY="0" />
 					<DimensionConstraints minX="100" minY="25" />
 				</Label>
 				<Texture name="$(parent)DividerTop" inherits="ZO_HorizontalDivider" level="1" hidden="true">

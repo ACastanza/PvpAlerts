@@ -1259,7 +1259,8 @@ end
 local function ResetWorldTooltip()
 	PVP.currentTooltip = nil
 	PVP_WorldTooltipLabel:SetText('')
-	PVP_WorldTooltipSubLabel:SetText('')
+    PVP_WorldTooltipSubLabel:SetText('')
+	PVP_WorldTooltipSiegeLabel:SetText('')
 	PVP_WorldTooltipCampaignScoreLabel:SetText('')
 	PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
 	PVP_WorldTooltipCampaignHoldingsLabel:SetText('')
@@ -1848,7 +1849,7 @@ local function IsFlagInObjectiveId(objectiveId)
 	return false
 end
 
-local function SetupNormalWorldTooltip()
+local function SetupNormalWorldTooltip(altAlign)
 	PVP_WorldTooltipBackdrop:SetHidden(true)
 	PVP_WorldTooltipDividerTop:SetHidden(true)
 	PVP_WorldTooltipDividerBottom:SetHidden(true)
@@ -1858,12 +1859,19 @@ local function SetupNormalWorldTooltip()
 	PVP_WorldTooltipLabel:ClearAnchors()
 	PVP_WorldTooltipLabel:SetAnchor(TOPLEFT, PVP_WorldTooltip, TOPLEFT, 0, 0)
 	PVP_WorldTooltipLabel:SetFont('$(BOLD_FONT)|$(KB_20)|thick-outline')
-	PVP_WorldTooltipSubLabel:ClearAnchors()
-	PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 2)
+    PVP_WorldTooltipSubLabel:ClearAnchors()
+	PVP_WorldTooltipSiegeLabel:ClearAnchors()
+	if altAlign then
+		PVP_WorldTooltipSubLabel:SetAnchor(TOPLEFT, PVP_WorldTooltipLabel, BOTTOMLEFT, 0, 4)
+		PVP_WorldTooltipSiegeLabel:SetAnchor(TOPLEFT, PVP_WorldTooltipSubLabel, BOTTOMLEFT, 0, 0)
+	else
+		PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 2)
+		PVP_WorldTooltipSiegeLabel:SetAnchor(TOP, PVP_WorldTooltipSubLabel, BOTTOM, 0, 0)
+	end
 	PVP_WorldTooltipCampaignScoreLabel:SetText('')
 	PVP_WorldTooltipCampaignHoldingsLabel:SetText('')
 	PVP_WorldTooltipEmperorInfoLabel:SetText('')
-	PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
+    PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
 end
 
 local function SetControlInitialSize(control, isCtfBase)
@@ -1980,7 +1988,7 @@ local function GetEmperorInfoString(isWorldCrown)
 			formattedEmperorName = femaleName
 		else
 			formattedEmperorName = PVP:GetEmperorIcon(45, PVP:GetTrueAllianceColorsHex(emperorAlliance)) ..
-				GetAllianceColoredString(emperorRawName, emperorAlliance)
+			GetAllianceColoredString(emperorRawName, emperorAlliance)
 		end
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)
@@ -1995,6 +2003,8 @@ local function GetEmperorInfoString(isWorldCrown)
 end
 
 local function ControlOnUpdate(control)
+	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
+    local keepIsClaimable = (keepType ~= KEEPTYPE_ARTIFACT_GATE and keepType ~= KEEPTYPE_GATE)
 	local currentTime = GetFrameTimeMilliseconds()
 	if (currentTime - control.params.lastUpdate) >= 10 then
 		control.params.lastUpdate = currentTime
@@ -2177,25 +2187,44 @@ local function ControlOnUpdate(control)
 			local x, y = PVP_WorldTooltip:GetDimensions()
 			PVP_WorldTooltipBackdrop:SetDimensions(x + 35, y + 50)
 			PVP_WorldTooltipSubLabel:ClearAnchors()
-			PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 4)
-		else
-			if control.totalSieges > 0 then
-				local siegeAD = control.params.siegesAD > 0 and
-				(' ' .. PVP:Colorize(tostring(control.params.siegesAD), PVP:AllianceToColor(1))) or ""
-				local siegeDC = control.params.siegesDC > 0 and
-				(' ' .. PVP:Colorize(tostring(control.params.siegesDC), PVP:AllianceToColor(3))) or ""
-				local siegeEP = control.params.siegesEP > 0 and
-				(' ' .. PVP:Colorize(tostring(control.params.siegesEP), PVP:AllianceToColor(2))) or ""
-				PVP_WorldTooltipSubLabel:SetText('Siege:' .. siegeAD .. siegeDC .. siegeEP)
-			else
-				PVP_WorldTooltipSubLabel:SetText('')
+            PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 4)
+			PVP_WorldTooltipSiegeLabel:ClearAnchors()
+			PVP_WorldTooltipSiegeLabel:SetAnchor(TOP, PVP_WorldTooltipSubLabel, BOTTOM, 0, 0)
+        else
+			local guildClaimName, siegeCount
+			if keepIsClaimable then
+				guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or "Unclaimed"
+				if guildClaimName and guildClaimName ~= "" then
+					guildClaimName = PVP:Colorize("Guild Owner: ",'C5C29F') .. PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
+				else 
+					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
+				end
+			end
+            if control.totalSieges > 0 then
+                local siegeAD = control.params.siegesAD > 0 and
+                    (' ' .. PVP:Colorize(tostring(control.params.siegesAD), PVP:AllianceToColor(1))) or ""
+                local siegeDC = control.params.siegesDC > 0 and
+                    (' ' .. PVP:Colorize(tostring(control.params.siegesDC), PVP:AllianceToColor(3))) or ""
+                local siegeEP = control.params.siegesEP > 0 and
+                    (' ' .. PVP:Colorize(tostring(control.params.siegesEP), PVP:AllianceToColor(2))) or ""
+                siegeCount = 'Siege:' .. siegeAD .. siegeDC .. siegeEP
+            else
+				siegeCount = ''
+            end
+			
+			if keepIsClaimable then
+                PVP_WorldTooltipSubLabel:SetText(guildClaimName)
+				PVP_WorldTooltipSiegeLabel:SetText(siegeCount)
+            else
+				PVP_WorldTooltipSubLabel:SetText(siegeCount)
+				PVP_WorldTooltipSiegeLabel:SetText('')
 			end
 
 			local distanceText = GetUpgradeLevelString(control) .. GetFormattedDistanceText(control)
 			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)) ..
 			distanceText)
 
-			SetupNormalWorldTooltip()
+            SetupNormalWorldTooltip(true)
 		end
 		showingTooltipStart = PVP.currentTooltip ~= control
 		if showingTooltipStart then
@@ -2547,11 +2576,14 @@ local function PoiOnUpdate(control)
 			PVP_WorldTooltipBackdrop:SetDimensions(x + 35, y + 50)
 			PVP_WorldTooltipSubLabel:ClearAnchors()
 			PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 4)
+			PVP_WorldTooltipSiegeLabel:ClearAnchors()
+			PVP_WorldTooltipSiegeLabel:SetAnchor(TOP, PVP_WorldTooltipSubLabel, BOTTOM, 0, 0)
 		else
 			PVP_WorldTooltipLabel:SetText(mainText)
 			PVP_WorldTooltipLabel:SetColor(0.8, 0.8, 0.8)
-			SetupNormalWorldTooltip()
-			PVP_WorldTooltipSubLabel:SetText('')
+			SetupNormalWorldTooltip(false)
+            PVP_WorldTooltipSubLabel:SetText('')
+			PVP_WorldTooltipSiegeLabel:SetText('')
 		end
 		PVP_WorldTooltip:SetHidden(false)
 	end
@@ -2635,7 +2667,7 @@ local function CrownOnUpdate()
 
 		local WORLD_CROWN = true
 		PVP_WorldTooltipLabel:SetText(GetEmperorInfoString(WORLD_CROWN))
-		SetupNormalWorldTooltip()
+		SetupNormalWorldTooltip(false)
 	elseif PVP.currentTooltip == PVP_World3DCrown then
 		ResetWorldTooltip()
 	end
@@ -3525,7 +3557,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 						PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT,
 							GetObjectiveInfo(0, control.params.objectiveId, BGQUERY_LOCAL)) .. distanceText)
 
-						SetupNormalWorldTooltip()
+						SetupNormalWorldTooltip(false)
 
 
 						showingTooltipStart = PVP.currentTooltip ~= control
