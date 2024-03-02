@@ -2004,7 +2004,7 @@ end
 
 local function ControlOnUpdate(control)
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
-	local keepIsClaimable = (keepType ~= KEEPTYPE_ARTIFACT_GATE and keepType ~= KEEPTYPE_ARTIFACT_KEEP)
+	local keepNotClaimable = keepType == KEEPTYPE_ARTIFACT_GATE or keepType == PVP_KEEPTYPE_ARTIFACT_KEEP or keepType == PVP_KEEPTYPE_BORDER_KEEP
 	local currentTime = GetFrameTimeMilliseconds()
 	if (currentTime - control.params.lastUpdate) >= 10 then
 		control.params.lastUpdate = currentTime
@@ -2192,14 +2192,16 @@ local function ControlOnUpdate(control)
 			PVP_WorldTooltipSiegeLabel:SetAnchor(TOP, PVP_WorldTooltipSubLabel, BOTTOM, 0, 0)
         else
 			local guildClaimName, siegeCount
-			if keepIsClaimable then
-				guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or "Unclaimed"
-				if guildClaimName and guildClaimName ~= "" then
-					guildClaimName = PVP:Colorize("Guild Owner: ",'C5C29F') .. PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
-				else 
-					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
-				end
-			end
+            if keepNotClaimable then
+                guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
+            else
+                guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or "Unclaimed"
+                if guildClaimName and guildClaimName ~= "" then
+                    guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
+                        PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
+                end
+            end
+			
             if control.totalSieges > 0 then
                 local siegeAD = control.params.siegesAD > 0 and
                     (' ' .. PVP:Colorize(tostring(control.params.siegesAD), PVP:AllianceToColor(1))) or ""
@@ -2212,12 +2214,12 @@ local function ControlOnUpdate(control)
 				siegeCount = ''
             end
 			
-			if keepIsClaimable then
-                PVP_WorldTooltipSubLabel:SetText(guildClaimName)
-				PVP_WorldTooltipSiegeLabel:SetText(siegeCount)
-            else
+			if keepNotClaimable then
 				PVP_WorldTooltipSubLabel:SetText(siegeCount)
-				PVP_WorldTooltipSiegeLabel:SetText('')
+                PVP_WorldTooltipSiegeLabel:SetText('')
+            else
+				PVP_WorldTooltipSubLabel:SetText(guildClaimName)
+				PVP_WorldTooltipSiegeLabel:SetText(siegeCount)
 			end
 
 			local distanceText = GetUpgradeLevelString(control) .. GetFormattedDistanceText(control)
