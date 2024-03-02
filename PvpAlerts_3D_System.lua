@@ -2004,7 +2004,7 @@ end
 
 local function ControlOnUpdate(control)
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
-    local keepIsClaimable = (keepType ~= KEEPTYPE_ARTIFACT_GATE and keepType ~= KEEPTYPE_GATE)
+	local keepIsClaimable = (keepType ~= KEEPTYPE_ARTIFACT_GATE and keepType ~= KEEPTYPE_ARTIFACT_KEEP)
 	local currentTime = GetFrameTimeMilliseconds()
 	if (currentTime - control.params.lastUpdate) >= 10 then
 		control.params.lastUpdate = currentTime
