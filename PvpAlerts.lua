@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.9.6"
+PVP.textVersion = "3.9.7"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = os.time(os.date("!*t"))
@@ -3787,7 +3787,8 @@ end)
 function PVP:InitializeSV()
 	self.SV = ZO_SavedVars:NewAccountWide("PvpAlertsSettings", self.version, "Settings", self.defaults)
     if self.SV.guild3d == nil then self.SV.guild3d = true end
-	if not self.SV.coolList then self.SV.coolList = {} end
+    if not self.SV.coolList then self.SV.coolList = {} end
+	if not self.SV.playerNotes then self.SV.playerNotes = {} end
     if not self.SV.CP then self.SV.CP = {} end
     if self.SV.enabled then self:InitializeChat() end
 end

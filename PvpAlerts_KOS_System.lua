@@ -699,7 +699,7 @@ function PVP:PopulateKOSBuffer()
 		if PVP.kosActivityList and PVP.kosActivityList.measureTime and (currentTime - PVP.kosActivityList.measureTime) < 60 then return end
 		QueryCampaignLeaderboardData()
 		local currentCampaignId = GetCurrentCampaignId()
-
+		
 		if not PVP.kosActivityList then
 			PVP.kosActivityList = {}
 			PVP.kosActivityList.activeChars = {}
@@ -778,8 +778,11 @@ function PVP:PopulateKOSBuffer()
 	self:FindFriends()
 
 	if next(self.friends) ~= nil and (mode == 1 or mode == 2) then
-		for rawName, v in pairs(self.friends) do
-			local accName = self.SV.playersDB[rawName].unitAccName
+        for rawName, v in pairs(self.friends) do
+			local playerNote
+            local accName = self.SV.playersDB[rawName].unitAccName
+			playerNote = self.SV.playerNotes[accName]
+			if playerNote then playerNote = PVP:Colorize(" - " .. playerNote, 'C5C29F') else playerNote = "" end
 			if not self.KOSNamesList[accName] then
 				local friendIcon, resurrectIcon
 				if v.isFriend then
@@ -793,7 +796,7 @@ function PVP:PopulateKOSBuffer()
 					resurrectIcon = ""
 				end
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-					self:GetFormattedAccountNameLink(accName, "40BB40") .. friendIcon .. resurrectIcon)
+					self:GetFormattedAccountNameLink(accName, "40BB40") .. friendIcon .. resurrectIcon .. playerNote)
 				self.KOSNamesList[accName] = true
 			end
 		end
@@ -805,9 +808,11 @@ function PVP:PopulateKOSBuffer()
 		local rawName = self.SV.KOSList[i].unitName
 		local accName = self.SV.KOSList[i].unitAccName
 		local ally = self.SV.playersDB[rawName].unitAlliance == self.allianceOfPlayer
-		local isResurrect
-		local isActive = PVP.kosActivityList.activeChars[accName]
-
+		local isResurrect, playerNote
+        local isActive = PVP.kosActivityList.activeChars[accName]
+		playerNote = self.SV.playerNotes[accName]
+        if playerNote then playerNote = PVP:Colorize(" - " .. playerNote, 'C5C29F') else playerNote = "" end
+		
 		if unitId ~= 0 then
 			for j = 1, #self.namesToDisplay do
 				if self.namesToDisplay[j] == rawName and self.namesToDisplay[j].isResurrect then
@@ -828,10 +833,11 @@ function PVP:PopulateKOSBuffer()
 				if ally then
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(accName, "FFFFFF") .. self:GetKOSIcon(nil, "FFFFFF") ..
-						resurrectIcon)
+						resurrectIcon .. playerNote)
 				else
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-						self:GetFormattedAccountNameLink(accName, "BB4040") .. self:GetKOSIcon() .. resurrectIcon)
+						self:GetFormattedAccountNameLink(accName, "BB4040") ..
+						self:GetKOSIcon() .. resurrectIcon .. playerNote)
 				end
 			end
 		end
@@ -851,20 +857,24 @@ function PVP:PopulateKOSBuffer()
 				end
 			else
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName, true),
-					nil, true) .. self:GetFormattedAccountNameLink(accName, "3F3F3F"))
+					nil, true) .. self:GetFormattedAccountNameLink(accName, "3F3F3F") .. playerNote)
 			end
 		end
 	end
 
 	if mode == 4 then
 		for k, v in pairs(self.SV.coolList) do
-			local unitId, newName = self:FindCOOLPlayer(k, v)
+            local unitId, newName = self:FindCOOLPlayer(k, v)
+			local playerNote
+			playerNote = self.SV.playerNotes[v]
+			if playerNote then playerNote = PVP:Colorize(" - " .. playerNote, 'C5C29F') else playerNote = "" end
 			if unitId ~= 0 then
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName)) ..
-					self:Colorize(v, "40BB40") .. self:GetCoolIcon())
+					self:Colorize(v, "40BB40") .. self:GetCoolIcon() .. playerNote)
 			else
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName, true),
-					nil, true) .. self:GetFormattedAccountNameLink(v, "3F3F3F") .. self:GetCoolIcon(nil, true))
+					nil, true) ..
+				self:GetFormattedAccountNameLink(v, "3F3F3F") .. self:GetCoolIcon(nil, true) .. playerNote)
 			end
 		end
 
