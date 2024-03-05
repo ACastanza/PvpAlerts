@@ -343,13 +343,13 @@ function PVP:managePlayerNote(noteString)
         doFunc = noteString
     end
 	
-    local function IsAccFriendKOSorCOOL(accName)
+	local function IsAccFriendKOSorCOOL(charAccName)
 		if IsFriend(charAccName) then return true end
         for i = 1, #PVP.SV.KOSList do
-            if PVP.SV.KOSList[i].unitAccName == accName then return true end
+			if PVP.SV.KOSList[i].unitAccName == charAccName then return true end
         end
         for i = 1, #PVP.SV.coolList do
-            if PVP.SV.coolList[i] == accName then return true end
+			if PVP.SV.coolList[i] == charAccName then return true end
         end
         return false
     end
