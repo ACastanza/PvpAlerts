@@ -846,7 +846,7 @@ function PVP:PopulateKOSBuffer()
 			local playerNote
             local accName = self.SV.playersDB[rawName].unitAccName
 			playerNote = self.SV.playerNotes[accName]
-			if playerNote then playerNote = PVP:Colorize(" - " .. playerNote, 'C5C29F') else playerNote = "" end
+			if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
 			if not self.KOSNamesList[accName] then
 				local friendIcon, resurrectIcon
 				if v.isFriend then
@@ -875,7 +875,7 @@ function PVP:PopulateKOSBuffer()
 		local isResurrect, playerNote
         local isActive = PVP.kosActivityList.activeChars[accName]
 		playerNote = self.SV.playerNotes[accName]
-        if playerNote then playerNote = PVP:Colorize(" - " .. playerNote, 'C5C29F') else playerNote = "" end
+        if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
 		
 		if unitId ~= 0 then
 			for j = 1, #self.namesToDisplay do
@@ -931,7 +931,7 @@ function PVP:PopulateKOSBuffer()
             local unitId, newName = self:FindCOOLPlayer(k, v)
 			local playerNote
 			playerNote = self.SV.playerNotes[v]
-			if playerNote then playerNote = PVP:Colorize(" - " .. playerNote, 'C5C29F') else playerNote = "" end
+			if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
 			if unitId ~= 0 then
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName)) ..
 					self:Colorize(v, "40BB40") .. self:GetCoolIcon() .. playerNote)
