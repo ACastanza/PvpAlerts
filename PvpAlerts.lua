@@ -2563,7 +2563,8 @@ function PVP:OnOff()
 	end
 
 	SLASH_COMMANDS["/who"] = function(name) PVP.Who(self, name, true) end
-
+	SLASH_COMMANDS["/pvpnote"] = function(noteString) PVP.managePlayerNote(self, noteString) end
+	
 	if self.SV.enabled and PVP:IsInPVPZone() then
 		if not self.addonEnabled then
 			self.addonEnabled = true

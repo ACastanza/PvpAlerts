@@ -337,6 +337,70 @@ function PVP:Who(name, contains)
 	end
 end
 
+function PVP:managePlayerNote(noteString)
+	local doFunc, charAccName, accNote = noteString:match("([^ ]+) ([^ ]+) (.+)")
+    if not doFunc then
+        doFunc = noteString
+    end
+	
+    local function IsAccFriendKOSorCOOL(accName)
+		if IsFriend(charAccName) then return true end
+        for i = 1, #PVP.SV.KOSList do
+            if PVP.SV.KOSList[i].unitAccName == accName then return true end
+        end
+        for i = 1, #PVP.SV.coolList do
+            if PVP.SV.coolList[i] == accName then return true end
+        end
+        return false
+    end
+	
+    if (not doFunc == "list") or (not doFunc == "clear") then
+        if not IsAccFriendKOSorCOOL(charAccName) then
+            d(self:GetFormattedAccountNameLink(charAccName, "FFFFFF") ..
+                " must be added to KOS, COOL, or Friends list for notes to display!")
+        end
+    end
+
+    if doFunc == "add" then
+        if not self.SV.playerNotes[charAccName] then
+            self.SV.playerNotes[charAccName] = accNote
+            d("Note added for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+        else
+			local oldAccNote = self.SV.playerNotes[charAccName]
+			self.SV.playerNotes[charAccName] = accNote
+            d("Note '".. oldAccNote .. "' overwritten for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+        end
+    elseif doFunc == "remove" then
+        if self.SV.playerNotes[charAccName] then
+            self.SV.playerNotes[charAccName] = nil
+            d("Note removed for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+        else
+            d("No note exists for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+        end
+    elseif doFunc == "show" then
+        if self.SV.playerNotes[charAccName] then
+            d("Note for " ..
+                self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. ": " .. self.SV.playerNotes[charAccName])
+        else
+            d("No note exists for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+        end
+    elseif doFunc == "list" then
+        if next(self.SV.playerNotes) then
+            d("Player notes:")
+            for k, v in pairs(self.SV.playerNotes) do
+                d(self:GetFormattedAccountNameLink(k, "FFFFFF") .. ": " .. v)
+            end
+        else
+            d("No notes found!")
+        end
+	elseif doFunc == "clear" then
+		self.SV.playerNotes = {}
+		d("All notes cleared!")
+    else
+        d("Invalid command! Options are 'add', 'remove', 'show', 'list', or 'clear'.")
+    end
+end
+
 function PVP:CheckKOSValidity(playerName)
 	local function IsAccInKOS(accName)
 		for i = 1, #PVP.SV.KOSList do
