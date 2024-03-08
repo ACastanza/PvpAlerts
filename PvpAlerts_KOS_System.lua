@@ -346,7 +346,9 @@ function PVP:managePlayerNote(noteString)
 	local function IsAccFriendKOSorCOOL(charAccName)
 		if IsFriend(charAccName) then return true end
         for i = 1, #PVP.SV.KOSList do
-			if PVP.SV.KOSList[i].unitAccName == charAccName then return true end
+            if PVP.SV.KOSList[i].unitAccName == charAccName then
+                return true
+            end
         end
         for i = 1, #PVP.SV.coolList do
 			if PVP.SV.coolList[i] == charAccName then return true end
@@ -354,12 +356,38 @@ function PVP:managePlayerNote(noteString)
         return false
     end
 	
-    if (not doFunc == "list") or (not doFunc == "clear") then
-        if not IsAccFriendKOSorCOOL(charAccName) then
-            d(self:GetFormattedAccountNameLink(charAccName, "FFFFFF") ..
-                " must be added to KOS, COOL, or Friends list for notes to display!")
+    local function IsAccMalformedName(charAccName)
+        for i = 1, #PVP.SV.KOSList do
+			local unitKOSName = PVP.SV.KOSList[i].unitName
+            if PVP:DeaccentString(unitKOSName) == charAccName then
+				return true, unitKOSName
+            end
         end
+        for i = 1, #PVP.SV.coolList do
+			local unitCOOLName = PVP.SV.coolList[i]
+            if PVP:DeaccentString(unitCOOLName) == charAccName then
+                return true, unitCOOLName
+            end
+        end
+        return false
     end
+	
+    if (not doFunc == "list") or (not doFunc == "clear") then
+        if charAccName then
+			
+            if (not IsAccFriendKOSorCOOL(charAccName)) then
+				local isMalformed, unitDBName = IsAccMalformedName(charAccName)
+				if isMalformed then
+					d(charAccName .. " wasn't found in your KOS, COOL. or Friends lists, did you mean '" .. unitDBName .. "'?")
+				else
+					d(self:GetFormattedAccountNameLink(charAccName, "FFFFFF") ..
+						" must be added to KOS, COOL, or Friends list for notes to display!")
+				end
+			end
+		else
+			d("No account name provided!")
+		end
+	end
 
     if doFunc == "add" then
         if not self.SV.playerNotes[charAccName] then
@@ -496,7 +524,7 @@ function PVP:CheckKOSValidity(playerName)
 		return false, false, false, isMultiple
 	end
 
-	local rawName, isInKOS, isAmbiguous
+	local rawName, isInKOS, isAmbiguous, isMultiple
 
 	if IsDecoratedDisplayName(playerName) then
 		rawName, isInKOS = IsAccInDB(playerName)
