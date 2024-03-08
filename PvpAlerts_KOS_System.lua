@@ -372,8 +372,8 @@ function PVP:managePlayerNote(noteString)
         return false
     end
 	
-    if (not doFunc == "list") or (not doFunc == "clear") then
-        if charAccName then
+	if doFunc ~= "list" and doFunc ~= "clear" then
+		if charAccName then
 			
             if (not IsAccFriendKOSorCOOL(charAccName)) then
 				local isMalformed, unitDBName = IsAccMalformedName(charAccName)
