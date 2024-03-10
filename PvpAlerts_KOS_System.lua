@@ -372,23 +372,29 @@ function PVP:managePlayerNote(noteString)
         return false
     end
 	
-	if doFunc ~= "list" and doFunc ~= "clear" then
-		if charAccName then
-			
-            if (not IsAccFriendKOSorCOOL(charAccName)) then
-				local isMalformed, unitDBName = IsAccMalformedName(charAccName)
-				if isMalformed then
-					d(charAccName .. " wasn't found in your KOS, COOL. or Friends lists, did you mean '" .. unitDBName .. "'?")
-				else
-					d(self:GetFormattedAccountNameLink(charAccName, "FFFFFF") ..
-						" must be added to KOS, COOL, or Friends list for notes to display!")
-				end
-			end
-		else
-			d("No account name provided!")
-		end
-	end
+    if doFunc ~= "list" and doFunc ~= "clear" then
+        if not charAccName then
+            d("No account name provided!")
+            return
+        end
 
+        if charAccName:sub(1, 1) ~= "@" then
+            d("Must use player @name to assign notes!")
+            return
+        end
+
+        if not IsAccFriendKOSorCOOL(charAccName) then
+            local isMalformed, unitDBName = IsAccMalformedName(charAccName)
+            if isMalformed then
+                d(charAccName ..
+                    " wasn't found in your KOS, COOL. or Friends lists, did you mean '" .. unitDBName .. "'?")
+            else
+                d(self:GetFormattedAccountNameLink(charAccName, "FFFFFF") ..
+                    " must be added to KOS, COOL, or Friends list for notes to display!")
+            end
+        end
+    end
+	
     if doFunc == "add" then
         if not self.SV.playerNotes[charAccName] then
             self.SV.playerNotes[charAccName] = accNote
