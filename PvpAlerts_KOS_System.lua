@@ -338,7 +338,7 @@ function PVP:Who(name, contains)
 end
 
 function PVP:managePlayerNote(noteString)
-	local doFunc, charAccName, accNote = noteString:match("([^ ]+) ([^ ]+)(.*)")
+	local doFunc, charAccName, accNote = noteString:match("([^ ]+) ([^ ]+)%s*(.*)")
 	if not doFunc then
         doFunc = noteString
     end
