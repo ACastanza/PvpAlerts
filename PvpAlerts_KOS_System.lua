@@ -683,13 +683,16 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
 	local newName = unitName
 	if next(self.idToName) ~= nil then
 		for k, v in pairs(self.idToName) do
-			if self.SV.playersDB[v] and self.SV.playersDB[v].unitAccName == unitAccName then
-				if v ~= unitName then
-					self.SV.coolList[v] = unitAccName
-					self.SV.coolList[unitName] = nil
-					newName = v
+            if self.SV.playersDB[v] and self.SV.playersDB[v].unitAccName == unitAccName then
+				local hasPlayerNote = (self.SV.playerNotes[unitAccName] ~= nil)
+                if v ~= unitName then
+                    self.SV.coolList[v] = unitAccName
+                    self.SV.coolList[unitName] = nil
+                    newName = v
+                end
+				if (not IsPlayerInGroup(v)) or hasPlayerNote then
+					unitId = k
 				end
-				if not IsPlayerInGroup(v) then unitId = k end
 				break
 			end
 		end
@@ -697,13 +700,16 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
 
 	if unitId == 0 and next(self.playerNames) ~= nil then
 		for k, _ in pairs(self.playerNames) do
-			if self.SV.playersDB[k].unitAccName == unitAccName then
-				if k ~= unitName then
-					self.SV.coolList[k] = unitAccName
-					self.SV.coolList[unitName] = nil
-					newName = k
-				end
-				if not IsPlayerInGroup(k) then unitId = 1234567890 end
+            if self.SV.playersDB[k].unitAccName == unitAccName then
+				local hasPlayerNote = (self.SV.playerNotes[unitAccName] ~= nil)
+                if k ~= unitName then
+                    self.SV.coolList[k] = unitAccName
+                    self.SV.coolList[unitName] = nil
+                    newName = k
+                end
+                if (not IsPlayerInGroup(k)) or hasPlayerNote then
+                    unitId = 1234567890
+                end
 				break
 			end
 		end
