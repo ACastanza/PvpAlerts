@@ -996,8 +996,9 @@ function PVP:FindFriends()
 	local foundNames = {}
 	if next(self.idToName) ~= nil then
 		for k, v in pairs(self.idToName) do
-			local cool = self:FindInCOOL(v)
-			if self.SV.playersDB[v] and not IsPlayerInGroup(v) and (IsFriend(v) or cool) then
+            local cool = self:FindInCOOL(v)
+			local hasPlayerNote = (self.SV.playerNotes[PVP.SV.playersDB[v].unitAccName] ~= nil)
+			if self.SV.playersDB[v] and hasPlayerNote or (not IsPlayerInGroup(v)) and (IsFriend(v) or cool) then
 				if not self.friends[v] and self.SV.playKOSSound and PVP.SV.KOSmode ~= 3 then
 					if currentTime - self.friendSoundDelay > 2000 then
 						PlaySound(SOUNDS.CROWN_CRATES_CARD_FLIPPING)
@@ -1018,8 +1019,9 @@ function PVP:FindFriends()
 	if next(self.playerNames) ~= nil then
 		for k, _ in pairs(self.playerNames) do
 			if not foundNames[k] then
-				local cool = self:FindInCOOL(k)
-				if not IsPlayerInGroup(k) and (IsFriend(k) or cool) then
+                local cool = self:FindInCOOL(k)
+				local hasPlayerNote = (self.SV.playerNotes[PVP.SV.playersDB[k].unitAccName] ~= nil)
+				if hasPlayerNote or (not IsPlayerInGroup(k)) and (IsFriend(k) or cool) then
 					if not self.friends[k] and self.SV.playKOSSound and PVP.SV.KOSmode ~= 3 then
 						if currentTime - self.friendSoundDelay > 2000 then
 							PlaySound(SOUNDS.CROWN_CRATES_CARD_FLIPPING)
