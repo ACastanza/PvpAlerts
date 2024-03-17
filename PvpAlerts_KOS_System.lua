@@ -997,21 +997,23 @@ function PVP:FindFriends()
 	if next(self.idToName) ~= nil then
 		for k, v in pairs(self.idToName) do
             local cool = self:FindInCOOL(v)
-			local hasPlayerNote = (self.SV.playerNotes[PVP.SV.playersDB[v].unitAccName] ~= nil)
-			if self.SV.playersDB[v] and hasPlayerNote or (not IsPlayerInGroup(v)) and (IsFriend(v) or cool) then
-				if not self.friends[v] and self.SV.playKOSSound and PVP.SV.KOSmode ~= 3 then
-					if currentTime - self.friendSoundDelay > 2000 then
+            if self.SV.playersDB[v] then
+				local hasPlayerNote = (self.SV.playerNotes[PVP.SV.playersDB[v].unitAccName] ~= nil)
+				if hasPlayerNote or (not IsPlayerInGroup(v)) and (IsFriend(v) or cool) then
+					if not self.friends[v] and self.SV.playKOSSound and PVP.SV.KOSmode ~= 3 then
+						if currentTime - self.friendSoundDelay > 2000 then
+							PlaySound(SOUNDS.CROWN_CRATES_CARD_FLIPPING)
+						end
 						PlaySound(SOUNDS.CROWN_CRATES_CARD_FLIPPING)
+						self.friendSoundDelay = currentTime
 					end
-					PlaySound(SOUNDS.CROWN_CRATES_CARD_FLIPPING)
-					self.friendSoundDelay = currentTime
+					if IsFriend(v) then
+						self.friends[v] = { currentTime = currentTime, isFriend = true, isResurrect = false }
+					else
+						self.friends[v] = { currentTime = currentTime, isFriend = false, isResurrect = false }
+					end
+					foundNames[v] = true
 				end
-				if IsFriend(v) then
-					self.friends[v] = { currentTime = currentTime, isFriend = true, isResurrect = false }
-				else
-					self.friends[v] = { currentTime = currentTime, isFriend = false, isResurrect = false }
-				end
-				foundNames[v] = true
 			end
 		end
 	end
