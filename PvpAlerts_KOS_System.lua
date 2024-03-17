@@ -690,7 +690,7 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
                     self.SV.coolList[unitName] = nil
                     newName = v
                 end
-				if (not IsPlayerInGroup(v)) or hasPlayerNote then
+				if hasPlayerNote or not IsPlayerInGroup(v) then
 					unitId = k
 				end
 				break
@@ -707,8 +707,8 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
                     self.SV.coolList[unitName] = nil
                     newName = k
                 end
-                if (not IsPlayerInGroup(k)) or hasPlayerNote then
-                    unitId = 1234567890
+				if hasPlayerNote or not IsPlayerInGroup(k) then
+					unitId = 1234567890
                 end
 				break
 			end
