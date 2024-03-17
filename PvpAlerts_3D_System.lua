@@ -1993,7 +1993,7 @@ local function GetEmperorInfoString(isWorldCrown)
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)
 			text = PVP:Colorize('Emperor ', 'CCCCCC') ..
-			formattedEmperorName .. PVP:Colorize(' is reiging for ' .. PVP:SecondsToClock(math.floor(reignTime)),
+			formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(math.floor(reignTime)),
 				'CCCCCC')
 		else
 			text = PVP:Colorize('Current Emperor is: ', 'CCCCCC') .. formattedEmperorName
