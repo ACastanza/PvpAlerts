@@ -725,7 +725,7 @@ function PVP:FindKOSPlayer(index)
             if self.SV.playersDB[v] and self.SV.playersDB[v].unitAccName == self.SV.KOSList[index].unitAccName then
 				local hasPlayerNote = (self.SV.playerNotes[self.SV.KOSList[index].unitAccName] ~= nil)
 				if v ~= self.SV.KOSList[index].unitName then self.SV.KOSList[index].unitName = v end
-				if (not IsPlayerInGroup(v)) or hasPlayerNote then unitId = k end
+				if hasPlayerNote or not IsPlayerInGroup(v) then unitId = k end
 				break
 			end
 		end
@@ -736,7 +736,7 @@ function PVP:FindKOSPlayer(index)
             if self.SV.playersDB[k].unitAccName == self.SV.KOSList[index].unitAccName then
 				local hasPlayerNote = (self.SV.playerNotes[self.SV.KOSList[index].unitAccName] ~= nil)
 				if k ~= self.SV.KOSList[index].unitName then self.SV.KOSList[index].unitName = k end
-				if (not IsPlayerInGroup(k)) or hasPlayerNote then unitId = 1234567890 end
+				if hasPlayerNote or not IsPlayerInGroup(k) then unitId = 1234567890 end
 				break
 			end
 		end
