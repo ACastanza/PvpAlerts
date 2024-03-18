@@ -591,18 +591,18 @@
 
 
 		<TopLevelControl name="PVP_NewAttacker" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="0" >
-			<Anchor point="CENTER" offsetX="50" offsetY="-40" />
+			<Anchor point="TOP"/>
 			<Dimensions x="600" y="200" />
 			<OnMoveStop>
 				PVP_NewAttacker_SavePosition()
 			</OnMoveStop>
 			<Controls>
 				<Label name="$(parent)Number" text="10" verticalAlignment="CENTER" horizontalAlignment="CENTER" scale="1">
-					<Anchor point="TOP" />
+					<Anchor point="BOTTOM" relativeTo="$(parent)" relativePoint="CENTER" offsetY="-37.5"/>
 					<Dimensions x="100" y="50" />
 				</Label>
 				<Label name="$(parent)Label" text="New player name" verticalAlignment="CENTER" horizontalAlignment="CENTER" scale="1">
-					<Anchor point="TOP" relativeTo="$(parent)Number" relativePoint="BOTTOM" offsetY="50" />
+					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="CENTER" offsetY="37.5" />
 					<Dimensions x="600" y="50" />
 				</Label>
 				<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.3" hidden="true" />
