@@ -598,7 +598,7 @@
 			</OnMoveStop>
 			<Controls>
 				<Label name="$(parent)Number" text="10" verticalAlignment="CENTER" horizontalAlignment="CENTER" scale="1">
-					<Anchor point="BOTTOM" relativeTo="$(parent)" relativePoint="CENTER" offsetY="-37.5"/>
+					<Anchor point="BOTTOM" relativeTo="$(parent)" relativePoint="CENTER" offsetY="-50"/>
 					<Dimensions x="100" y="50" />
 				</Label>
 				<Label name="$(parent)Label" text="New player name" verticalAlignment="CENTER" horizontalAlignment="CENTER" scale="1">
