@@ -97,16 +97,16 @@
 					<Dimensions x="60" y="60"/>
 					<Anchor point="LEFT" relativeTo="$(parent)Label" relativePoint="RIGHT" offsetX="10" offsetY="0"/>
 				</Control>
-				<Texture name="$(parent)Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="false" excludeFromResizeToFitExtents="true"> -->
+				<Texture name="$(parent)Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="false" excludeFromResizeToFitExtents="true">
 					<TextureCoords top="0.3" bottom="0.7" left="0.15" right="0.81"/>
 					<Anchor point="TOPLEFT" offsetX="-70" offsetY="-35" />
 					<Anchor point="BOTTOMRIGHT" offsetX="60" offsetY="35" />
-				</Texture> -->
-				<Texture name="$(parent)Backdrop_Add" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="false" excludeFromResizeToFitExtents="true"> -->
+				</Texture>
+				<Texture name="$(parent)Backdrop_Add" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" hidden="false" excludeFromResizeToFitExtents="true">
 					<TextureCoords top="0.3" bottom="0.7" left="0.15" right="0.81"/>
-					<Anchor point="TOPLEFT" offsetX="-70" offsetY="-35" /> -->
-					<Anchor point="BOTTOMRIGHT" offsetX="60" offsetY="35" /> -->
-				</Texture> -->
+					<Anchor point="TOPLEFT" offsetX="-70" offsetY="-35" />
+					<Anchor point="BOTTOMRIGHT" offsetX="60" offsetY="35" />
+				</Texture>
 			</Controls>
 	</TopLevelControl>
 
@@ -777,26 +777,6 @@
 				</Texture>
 			</Controls>
 		</TopLevelControl>
-
-
-		<TopLevelControl name="PVP_TX" layer="0" level="0" hidden="true">
-			<Anchor point="CENTER" offsetX="150" />
-			<Controls>
-				<Texture name="$(parent)tx1" textureFile="PvpAlerts/textures/rally.dds" level="1"> -->
-					<Dimensions x="2048" y="64"/> -->
-					<Anchor point="CENTER" /> -->
-				</Texture> -->
-				<!-- <Texture name="$(parent)tx2" textureFile="PvpAlerts/textures/link64.dds" level="1"> --> -->
-					<!-- <Dimensions x="128" y="128"/> --> -->
-					<!-- <Anchor point="CENTER" /> --> -->
-				<!-- <</Texture> --> -->
-				<Texture name="$(parent)bg" textureFile="" color="000000" level="0"> -->
-					<Dimensions x="2048" y="64"/> -->
-					<Anchor point="CENTER" /> -->
-				</Texture> -->
-			</Controls>
-		</TopLevelControl>
-
 
 		<TopLevelControl name="PVP_TestWorld" layer="0" level="0" hidden="true">
 			<Controls>
