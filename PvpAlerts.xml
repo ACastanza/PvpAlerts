@@ -377,12 +377,12 @@
 			<Edge edgeSize="1" />
 			<Controls>
 				<Backdrop name="$(parent)Bar" edgeColor="aaaaaa" centerColor="EFD13C" alpha="1">
-					  <Anchor point="LEFT" offsetX="2" offsetY="0" />
+					  <Anchor point="LEFT" offsetX="1" offsetY="0" />
 					  <Edge edgeSize="1" />
 				</Backdrop>
 				<Label name="$(parent)Label" font="$(BOLD_FONT)|$(KB_11)|thick-outline" text="%" verticalAlignment="CENTER" horizontalAlignment="CENTER">
 					<!-- <Dimensions x="50" y="25" /> -->
-					 <Anchor point="CENTER" offsetX="0" offsetY="0" />
+					 <Anchor point="CENTER" offsetX="0" offsetY="3" />
 				</Label>
 			</Controls>
 		</Backdrop>

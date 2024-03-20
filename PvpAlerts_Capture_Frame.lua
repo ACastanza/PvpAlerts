@@ -173,7 +173,7 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 		else
 			icon:SetDimensions(26,26)
 		end
-		bar:SetDimensions((control:GetWidth()-4)*percentage/100, control:GetHeight()-2)
+		bar:SetDimensions((control:GetWidth()-1.5)*percentage/100, control:GetHeight()-2)
 		bar:SetCenterColor(barColorR, barColorG, barColorB)
 		label:SetText(tostring(percentage)..'%')
 	end
@@ -341,7 +341,7 @@ function PVP:UpdateKeepCaptureMeter()
 			-- flag:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, alliance))
 		-- end
 
-		bar:SetDimensions((control:GetWidth()-4)*percentage/100, control:GetHeight()-2)
+		bar:SetDimensions((control:GetWidth()-1.5)*percentage/100, control:GetHeight()-2)
 		bar:SetCenterColor(barColorR, barColorG, barColorB)
 		label:SetText(tostring(percentage)..'%')
 	end
@@ -462,7 +462,7 @@ function PVP:UpdateDistrictCaptureMeter()
 		local bar = GetControl(control, 'Bar')
 		local label = GetControl(control, 'Label')
 
-		bar:SetDimensions((control:GetWidth()-4)*percentage/100, control:GetHeight()-2)
+		bar:SetDimensions((control:GetWidth()-1.5)*percentage/100, control:GetHeight()-2)
 		bar:SetCenterColor(barColorR, barColorG, barColorB)
 		label:SetText(tostring(percentage)..'%')
 	end
