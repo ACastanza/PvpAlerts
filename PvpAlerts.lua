@@ -553,6 +553,7 @@ function PVP:MainRefresh(currentTime)
 		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
 		PVP.afterC = GetGameTimeMilliseconds()
 
+		local divider = PVP:Colorize("/", "FFFFFF")
 		local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
 		local labelControl = PVP_Counter:GetNamedChild('_Label')
 		local bgControl = PVP_Counter:GetNamedChild('_Backdrop')
@@ -560,8 +561,8 @@ function PVP:MainRefresh(currentTime)
 		local dcControl = containerControl:GetNamedChild('_CountDC')
 		local epControl = containerControl:GetNamedChild('_CountEP')
 
-		adControl:SetText(tostring(numberAD))
-		dcControl:SetText(tostring(numberDC))
+		adControl:SetText(tostring(numberAD) .. divider)
+		dcControl:SetText(tostring(numberDC) .. divider)
 		epControl:SetText(tostring(numberEP))
 
 		local targetWidth = containerControl:GetWidth()

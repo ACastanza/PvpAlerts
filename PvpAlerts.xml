@@ -119,31 +119,23 @@
 			<Controls>
 				<Label name="$(parent)_Label" horizontalAlignment="CENTER" verticalAlignment="BOTTOM" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
 					<Dimensions x="220" y="75" />
-					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetX="0" offsetY="-5"/>
+					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetX="0" offsetY="-10"/>
 				</Label>
 				<Control name="$(parent)_CountContainer" inheritAlpha="true" resizeToFitDescendents = "true">
 					<!--<DimensionConstraints minX="350" minY="50" />-->
-					<Anchor point="TOP" relativeTo="$(parent)_Label" relativePoint="BOTTOM" offsetX="0" offsetY="-5"/>
+					<Anchor point="TOP" relativeTo="$(parent)_Label" relativePoint="BOTTOM" offsetX="0" offsetY="0"/>
 					<Controls>
-						<Label name="$(parent)_CountDC" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
-							<DimensionConstraints minX="25" minY="50" />
-							<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="0"/>
-						</Label>
-						<Label name="$(parent)_SpacerADDC" text="/" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
-							<DimensionConstraints minX="5" minY="5" />
-							<Anchor point="TOPRIGHT" relativeTo="$(parent)_CountDC" relativePoint="TOPLEFT" offsetX="0" offsetY="1"/>
-						</Label>
 						<Label name="$(parent)_CountAD" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
 							<DimensionConstraints minX="25" minY="50" />
-							<Anchor point="TOPRIGHT" relativeTo="$(parent)_SpacerADDC" relativePoint="TOPLEFT" offsetX="0" offsetY="-1"/>
+							<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>
 						</Label>
-						<Label name="$(parent)_SpacerDCEP" text="/" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
-							<DimensionConstraints minX="5" minY="5" />
-							<Anchor point="TOPLEFT" relativeTo="$(parent)_CountDC" relativePoint="TOPRIGHT" offsetX="0" offsetY="1"/>
+						<Label name="$(parent)_CountDC" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
+							<DimensionConstraints minX="25" minY="50" />
+							<Anchor point="TOPLEFT" relativeTo="$(parent)_CountAD" relativePoint="TOPRIGHT" offsetX="0" offsetY="0"/>
 						</Label>
 						<Label name="$(parent)_CountEP" text="" horizontalAlignment="CENTER" verticalAlignment="CENTER" inheritAlpha="true" color="FFFFFF" wrapMode="ELLIPSIS">
 							<DimensionConstraints minX="25" minY="50" />
-							<Anchor point="TOPLEFT" relativeTo="$(parent)_SpacerDCEP" relativePoint="TOPRIGHT" offsetX="0" offsetY="-1"/>
+							<Anchor point="TOPLEFT" relativeTo="$(parent)_CountDC" relativePoint="TOPRIGHT" offsetX="0" offsetY="0"/>
 						</Label>
 					</Controls>
 				</Control>

@@ -90,6 +90,7 @@ function PVP:InitControls()
 	PVP_NewAttackerLabel:SetFont("$(BOLD_FONT)|35|soft-shadow-thick")
 
 
+
 	PVP_Capture:ClearAnchors()
 	PVP_Capture:SetAnchor(CENTER, GuiRoot, CENTER, self.SV.captureOffsetX, self.SV.captureOffsetY)
 
@@ -98,9 +99,7 @@ function PVP:InitControls()
 	PVP_Counter_CountContainer_CountAD:SetFont(PVP_NUMBER_FONT)
 	PVP_Counter_CountContainer_CountDC:SetFont(PVP_NUMBER_FONT)
 	PVP_Counter_CountContainer_CountEP:SetFont(PVP_NUMBER_FONT)
-	PVP_Counter_CountContainer_SpacerADDC:SetFont(PVP_NUMBER_FONT)
-	PVP_Counter_CountContainer_SpacerDCEP:SetFont(PVP_NUMBER_FONT)
-	
+
 	-- PVP_Main_Label:SetFont(PVP_NAME_FONT)
 	if self.fadeOutIsPlaying and self.fadeOutIsPlaying:IsPlaying() then self.fadeOutIsPlaying:Stop() end
 
