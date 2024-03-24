@@ -3804,10 +3804,13 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 											PVP.SV.playerNotes[playerName] = nil
 											chat:Printf("Deleted note \"%s\" for player %s",
 												accNote, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
-										else
+										elseif noteString ~= accNote then
 											PVP.SV.playerNotes[playerName] = noteString
 											chat:Printf("Updated note for player %s to \"%s\"",
 												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"), noteString)
+										else
+											chat:Printf("Note for player %s was not changed",
+												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
 										end
 									end
 								})
