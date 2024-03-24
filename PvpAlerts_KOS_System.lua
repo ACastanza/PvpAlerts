@@ -378,23 +378,23 @@ function PVP:managePlayerNote(noteString)
 	
     if doFunc ~= "list" and doFunc ~= "clear" then
         if not charAccName then
-            d("No account name provided!")
+			PVP.CHAT:Printf("No account name provided!")
             return
         end
 
         if charAccName:sub(1, 1) ~= "@" then
-            d("Must use player @name to assign notes!")
+			PVP.CHAT:Printf("Must use player @name to assign notes!")
             return
         end
 
         if not IsAccFriendKOSorCOOL(charAccName) then
             local isMalformed, unitDBName = IsAccMalformedName(charAccName)
             if isMalformed then
-                d(charAccName ..
-                    " wasn't found in your KOS, COOL. or Friends lists, did you mean '" .. unitDBName .. "'?")
+				PVP.CHAT:Printf("%s wasn't found in your KOS, COOL. or Friends lists, did you mean \"%s\"?",
+					charAccName, self:GetFormattedAccountNameLink(unitDBName, "FFFFFF"))
             else
-                d(self:GetFormattedAccountNameLink(charAccName, "FFFFFF") ..
-                    " must be added to KOS, COOL, or Friends list for notes to display!")
+                PVP.CHAT:Printf("%s must be added to KOS, COOL, or Friends list for notes to display!",
+				self:GetFormattedAccountNameLink(charAccName, "FFFFFF"))
             end
         end
     end
@@ -402,40 +402,39 @@ function PVP:managePlayerNote(noteString)
     if doFunc == "add" then
         if not self.SV.playerNotes[charAccName] then
             self.SV.playerNotes[charAccName] = accNote
-            d("Note added for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+			PVP.CHAT:Printf("Note added for %s!", self:GetFormattedAccountNameLink(charAccName, "FFFFFF"))
         else
 			local oldAccNote = self.SV.playerNotes[charAccName]
-			self.SV.playerNotes[charAccName] = accNote
-            d("Note '".. oldAccNote .. "' overwritten for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+            self.SV.playerNotes[charAccName] = accNote
+			PVP.CHAT:Printf("Note '%s' overwritten for %s!", oldAccNote, self:GetFormattedAccountNameLink(charAccName, "FFFFFF"))
         end
-    elseif doFunc == "remove" then
+    elseif doFunc == "delete" then
         if self.SV.playerNotes[charAccName] then
             self.SV.playerNotes[charAccName] = nil
-            d("Note removed for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+			PVP.CHAT:Printf("Note deleted for %s!", self:GetFormattedAccountNameLink(charAccName, "FFFFFF"))
         else
-            d("No note exists for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+			PVP.CHAT:Printf("No note exists for %s!", self:GetFormattedAccountNameLink(charAccName, "FFFFFF"))
         end
     elseif doFunc == "show" then
         if self.SV.playerNotes[charAccName] then
-            d("Note for " ..
-                self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. ": " .. self.SV.playerNotes[charAccName])
+			PVP.CHAT:Printf("Note for %s: %s", self:GetFormattedAccountNameLink(charAccName, "FFFFFF"), self.SV.playerNotes[charAccName])
         else
-            d("No note exists for " .. self:GetFormattedAccountNameLink(charAccName, "FFFFFF") .. "!")
+			PVP.CHAT:Printf("No note exists for %s!", self:GetFormattedAccountNameLink(charAccName, "FFFFFF"))
         end
     elseif doFunc == "list" then
         if next(self.SV.playerNotes) then
-            d("Player notes:")
+			PVP.CHAT:Printf("Player notes:")
             for k, v in pairs(self.SV.playerNotes) do
-                d(self:GetFormattedAccountNameLink(k, "FFFFFF") .. ": " .. v)
+				PVP.CHAT:Printf(self:GetFormattedAccountNameLink(k, "FFFFFF") .. ": " .. v)
             end
         else
-            d("No notes found!")
+			PVP.CHAT:Printf("No notes found!")
         end
 	elseif doFunc == "clear" then
-		self.SV.playerNotes = {}
-		d("All notes cleared!")
+        self.SV.playerNotes = {}
+		PVP.CHAT:Printf("All notes cleared!")
     else
-        d("Invalid command! Options are 'add', 'remove', 'show', 'list', or 'clear'.")
+		PVP.CHAT:Printf("Invalid command! Options are 'add', 'delete', 'show', 'list', or 'clear'.")
     end
 end
 
@@ -497,8 +496,8 @@ function PVP:CheckKOSValidity(playerName)
 			end
 		end
 
-		if #foundNames ~= 0 then
-			d('Found multiple names. Please use account name to add the desired person:')
+        if #foundNames ~= 0 then
+			PVP.CHAT:Printf('Found multiple names. Please use account name to add the desired person:')
 			for i = 1, #foundNames do
 				d(tostring(i) ..
 					'. ' ..
@@ -583,7 +582,7 @@ function PVP:FindInCOOL(playerName)
 end
 
 function PVP:AddKOS(playerName, isSlashCommand)
-	if not self.SV.showKOSFrame then d('KOS/COOL system is disabled!') end
+	if not self.SV.showKOSFrame then PVP.CHAT:Printf('KOS/COOL system is disabled!') end
 
 	if not playerName or playerName == "" then
 		d("Name was not provided!")
@@ -593,21 +592,20 @@ function PVP:AddKOS(playerName, isSlashCommand)
 	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName)
 
 	if not rawName then
-		if not isMultiple then d("This player is not in the database!") end
+		if not isMultiple then PVP.CHAT:Printf("This player is not in the database!") end
 		return
 	end
 
 	if isAmbiguous then
-		d("The name is ambiguous!")
+		PVP.CHAT:Printf("The name is ambiguous!")
 		return
 	end
 
 	-- if isInKOS then d('This account is already in KOS as: '..self:GetFormattedName(rawName).."!") return end
 
 	local cool = self:FindInCOOL(rawName)
-	if cool then
-		d("Removed from COOL: " ..
-			self:GetFormattedName(self.SV.playersDB[cool].unitName) .. self.SV.playersDB[cool].unitAccName .. "!")
+    if cool then
+		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(self.SV.playersDB[cool].unitName), self.SV.playersDB[cool].unitAccName)	
 		self.SV.coolList[cool] = nil
 		self:PopulateReticleOverNamesBuffer()
 	end
@@ -623,41 +621,40 @@ function PVP:AddKOS(playerName, isSlashCommand)
 			end
 		end
 		table.insert(self.SV.KOSList,
-			{ unitName = rawName, unitAccName = self.SV.playersDB[rawName].unitAccName, unitId = unitId })
-		d("Added to KOS: " .. self:GetFormattedName(rawName) .. self.SV.playersDB[rawName].unitAccName .. "!")
-	else
-		d("Removed from KOS: " .. self:GetFormattedName(rawName) .. self.SV.playersDB[rawName].unitAccName .. "!")
+            { unitName = rawName, unitAccName = self.SV.playersDB[rawName].unitAccName, unitId = unitId })
+		PVP.CHAT:Printf("Added to KOS: %s%s!", self:GetFormattedName(rawName), self.SV.playersDB[rawName].unitAccName)
+    else
+		PVP.CHAT:Printf("Removed from KOS: %s%s!", self:GetFormattedName(self.SV.KOSList[isInKOS].unitName), self.SV.KOSList[isInKOS].unitAccName)
 		table.remove(self.SV.KOSList, isInKOS)
 	end
 	self:PopulateKOSBuffer()
 end
 
 function PVP:AddCOOL(playerName, isSlashCommand)
-	if not self.SV.showKOSFrame then d('KOS/COOL system is disabled!') end
+	if not self.SV.showKOSFrame then PVP.CHAT:Printf('KOS/COOL system is disabled!') end
 
 	if not playerName or playerName == "" then
-		d("Name was not provided!")
+		PVP.CHAT:Printf("Name was not provided!")
 		return
 	end
 
 	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName)
 
 	if not rawName then
-		if not isMultiple then d("This player is not in the database!") end
+		if not isMultiple then PVP.CHAT:Printf("This player is not in the database!") end
 		return
 	end
 
 	-- if isInKOS then d('This account is already in KOS as: '..self:GetFormattedName(rawName).."!") return end
 	if isAmbiguous then
-		d("The name is ambiguous!")
+		PVP.CHAT:Printf("The name is ambiguous!")
 		return
 	end
 
 	if isInKOS then
 		for i = 1, #self.SV.KOSList do
-			if self.SV.KOSList[i].unitAccName == self.SV.playersDB[rawName].unitAccName then
-				d("Removed from KOS: " ..
-					self:GetFormattedName(self.SV.KOSList[i].unitName) .. self.SV.KOSList[i].unitAccName .. "!")
+            if self.SV.KOSList[i].unitAccName == self.SV.playersDB[rawName].unitAccName then
+				PVP.CHAT:Printf("Removed from KOS: %s%s!", self:GetFormattedName(self.SV.KOSList[i].unitName), self.SV.KOSList[i].unitAccName)
 				table.remove(self.SV.KOSList, i)
 				break
 			end
@@ -668,11 +665,10 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 
 
 	if not cool then
-		self.SV.coolList[rawName] = self.SV.playersDB[rawName].unitAccName
-		d("Added to COOL: " .. self:GetFormattedName(rawName) .. self.SV.playersDB[rawName].unitAccName .. "!")
-	else
-		d("Removed from COOL: " ..
-			PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName) .. PVP.SV.playersDB[rawName].unitAccName .. "!")
+        self.SV.coolList[rawName] = self.SV.playersDB[rawName].unitAccName
+		PVP.CHAT:Printf("Added to COOL: %s%s!", self:GetFormattedName(rawName), self.SV.playersDB[rawName].unitAccName)
+    else
+		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(self.SV.playersDB[cool].unitName), self.SV.playersDB[cool].unitAccName)
 		PVP.SV.coolList[cool] = nil
 		-- d(self:GetFormattedName(rawName)..self.SV.playersDB[rawName].unitAccName.." is already COOL!")
 	end
