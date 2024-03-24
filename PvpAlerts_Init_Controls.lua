@@ -499,6 +499,18 @@ function PVP.EditNoteDialogSetup(dialog, data)
 	GetControl(dialog, "NoteEdit"):SetText(data.noteString)
 end
 
+function PVP.EditNoteDialogSetup(dialog, data)
+    GetControl(dialog, "DisplayName"):SetText(data.playerName)
+    GetControl(dialog, "NoteEdit"):SetText(data.noteString)
+
+    local deleteControl = GetControl(dialog, "Delete")
+    if data.noteString then
+        deleteControl:SetHidden(false)
+    else
+        deleteControl:SetHidden(true)
+    end
+end
+
 function PVP:RegisterCustomDialog()
 	local dialogControl = GetControl("PVP_EditNoteDialog")
 
@@ -512,10 +524,31 @@ function PVP:RegisterCustomDialog()
 			},
 			buttons =
 			{
+
 				[1] =
 				{
+					control = GetControl(dialogControl, "Cancel"),
+                    text = SI_DIALOG_CANCEL,
+					keybind = "DIALOG_SECONDARY",
+				},
+
+				[2] =
+				{
+					control = GetControl(dialogControl, "Delete"),
+					text = SI_MAIL_DELETE,
+					callback = function(dialog)
+						local data = dialog.data
+						if data.noteString then
+							data.changedCallback(data.playerName, nil)
+						end
+					end,
+                },
+
+				[3] =
+				{
 					control = GetControl(dialogControl, "Save"),
-					text = SI_SAVE,
+                    text = SI_SAVE,
+					keybind = "DIALOG_PRIMARY",
 					callback = function(dialog)
 						local data = dialog.data
 						local noteString = GetControl(dialog, "NoteEdit"):GetText()
@@ -525,24 +558,6 @@ function PVP:RegisterCustomDialog()
 						end
 					end,
 				},
-
-				[2] =
-				{
-					control = GetControl(dialogControl, "Cancel"),
-					text = SI_DIALOG_CANCEL,
-				},
-
-				[3] =
-				{
-					control = GetControl(dialogControl, "Remove"),
-					text = SI_DIALOG_REMOVE,
-					callback = function(dialog)
-						local data = dialog.data
-						if data.noteString then
-							data.changedCallback(data.playerName, nil)
-						end
-					end,
-				}
 			}
 		})
 end
