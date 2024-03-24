@@ -493,3 +493,56 @@ function PVP:ManageFragments(fragment)
 		GAME_MENU_SCENE:RegisterCallback("StateChange", FrameMenuFix)
 	end
 end
+
+function PVP.EditNoteDialogSetup(dialog, data)
+	GetControl(dialog, "DisplayName"):SetText(data.playerName)
+	GetControl(dialog, "NoteEdit"):SetText(data.noteString)
+end
+
+function PVP:RegisterCustomDialog()
+	local dialogControl = GetControl("PVP_EditNoteDialog")
+
+	ZO_Dialogs_RegisterCustomDialog("PVP_EDIT_NOTE",
+		{
+			customControl = dialogControl,
+			setup = PVP.EditNoteDialogSetup,
+			title =
+			{
+				text = PVP_NOTES_EDIT_NOTE,
+			},
+			buttons =
+			{
+				[1] =
+				{
+					control = GetControl(dialogControl, "Save"),
+					text = SI_SAVE,
+					callback = function(dialog)
+						local data = dialog.data
+						local noteString = GetControl(dialog, "NoteEdit"):GetText()
+
+						if (noteString ~= data.noteString) then
+							data.changedCallback(data.playerName, noteString)
+						end
+					end,
+				},
+
+				[2] =
+				{
+					control = GetControl(dialogControl, "Cancel"),
+					text = SI_DIALOG_CANCEL,
+				},
+
+				[3] =
+				{
+					control = GetControl(dialogControl, "Remove"),
+					text = SI_DIALOG_REMOVE,
+					callback = function(dialog)
+						local data = dialog.data
+						if data.noteString then
+							data.changedCallback(data.playerName, nil)
+						end
+					end,
+				}
+			}
+		})
+end

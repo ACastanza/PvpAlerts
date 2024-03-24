@@ -3546,7 +3546,8 @@ function PVP:InitEnabledAddon()
 		EVENT_MANAGER:UnregisterForUpdate(self.name)
 		EVENT_MANAGER:RegisterForUpdate(self.name, 250, PVP.OnUpdate)
 		PVP:Init3D()
-		PVP:InitControls()
+        PVP:InitControls()
+		PVP:RegisterCustomDialog()
 		PVP.playerName = GetRawUnitName('player')
 		PVP.allianceOfPlayer = GetUnitAlliance('player')
 		PVP_KOS_Text:SetHandler("OnLinkMouseUp",
@@ -3776,6 +3777,48 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							end)
 						end
 					end
+					if PVP.SV.playersDB[rawName].unitAccName then
+						local unitAccName = PVP.SV.playersDB[rawName].unitAccName
+                        local accNote = PVP.SV.playerNotes[unitAccName]
+						if not accNote then
+							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_NOTE), function()
+								ZO_Dialogs_ShowDialog("PVP_EDIT_NOTE", {
+									playerName = unitAccName,
+									noteString = nil,
+									changedCallback = function(playerName, noteString)
+										if noteString and noteString ~= "" then
+											PVP.SV.playerNotes[playerName] = noteString
+											chat:Printf("Added note \"%s\" for player %s",
+												noteString, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+										end
+									end
+								})
+							end)
+						else
+							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_EDIT_NOTE), function()
+								ZO_Dialogs_ShowDialog("PVP_EDIT_NOTE", {
+									playerName = unitAccName,
+									noteString = accNote,
+									changedCallback = function(playerName, noteString)
+										if (not noteString) or noteString == "" then
+											PVP.SV.playerNotes[playerName] = nil
+											chat:Printf("Removed note \"%s\" for player %s",
+												accNote, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+										else
+											PVP.SV.playerNotes[playerName] = noteString
+											chat:Printf("Updated note for player %s to \"%s\"",
+												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"), noteString)
+										end
+									end
+								})
+							end)
+							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_NOTE), function()
+								chat:Printf("Removed note \"%s\" for player %s",
+									accNote, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+								PVP.SV.playerNotes[unitAccName] = nil
+							end)
+						end
+					end
 				end
 			end
 		end
@@ -3826,7 +3869,11 @@ function PVP.OnLoad(eventCode, addonName)
 	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS", "Add to KOS")
 	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_COOL", "Remove from COOL")
 	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL", "Add to COOL")
-
+    ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_ADD_NOTE", "Add Note")
+	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_EDIT_NOTE", "Edit Note")
+    ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_REMOVE_NOTE", "Remove Note")
+    ZO_CreateStringId("PVP_NOTES_EDIT_NOTE", GetString(SI_EDIT_NOTE_DIALOG_TITLE))
+	
 	CALLBACK_MANAGER:FireCallbacks(PVP.name .. "_OnAddOnLoaded")
 	EVENT_MANAGER:RegisterForEvent(PVP.name, EVENT_PLAYER_ACTIVATED, PVP.Activated)
 end

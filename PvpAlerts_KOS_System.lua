@@ -254,8 +254,11 @@ function PVP:Who(name, contains)
 				PVP:Colorize(zo_strformat(SI_UNIT_NAME, trimmedName), 'FF00FF') ..
 				' that has ' .. PVP:Colorize(#foundPlayerNames, 'FFFFFF') .. ' known characters:')
 		end
-		for i = 1, #foundPlayerNames do
-			d(tostring(i) .. '. ' .. GetCharLink(foundPlayerNames[i]))
+        for i = 1, #foundPlayerNames do
+            d(tostring(i) .. '. ' .. GetCharLink(foundPlayerNames[i]))
+        end
+		if self.SV.playerNotes[accName] and self.SV.playerNotes[accName] ~= "" then
+			d('Note: ' .. self.SV.playerNotes[accName])
 		end
 	else -- multiple players information returned
 		local patternName = zo_strformat(SI_UNIT_NAME, trimmedName)
