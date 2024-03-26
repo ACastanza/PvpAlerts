@@ -3714,7 +3714,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(PVP.SV.KOSList[index].unitName),
 								PVP.SV.KOSList[index].unitAccName)
 							table.remove(PVP.SV.KOSList, index)
-							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName),
+							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(rawName),
 								PVP.SV.playersDB[rawName].unitAccName)
 							local cool = PVP:FindInCOOL(rawName)
 							if not cool then PVP.SV.coolList[rawName] = PVP.SV.playersDB[rawName].unitAccName end
@@ -3734,8 +3734,8 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
 							local cool = PVP:FindInCOOL(rawName)
 							if cool then
-								chat:printf("Removed from COOL: %s%s!",
-									PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName),
+								chat:Printf("Removed from COOL: %s%s!",
+									PVP:GetFormattedName(rawName),
 									PVP.SV.playersDB[rawName].unitAccName)
 								PVP.SV.coolList[cool] = nil
 								PVP:PopulateReticleOverNamesBuffer()
@@ -3757,7 +3757,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						if not cool then
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
 								chat:Printf("Added to COOL: %s%s!",
-									PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName),
+									PVP:GetFormattedName(rawName),
 									PVP.SV.playersDB[rawName].unitAccName)
 								PVP.SV.coolList[rawName] = PVP.SV.playersDB[rawName].unitAccName
 								PVP:PopulateKOSBuffer()
@@ -3766,7 +3766,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						else
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_COOL), function()
 								chat:Printf("Removed from COOL: %s%s!",
-									PVP:GetFormattedName(PVP.SV.playersDB[rawName].unitName),
+									PVP:GetFormattedName(rawName),
 									PVP.SV.playersDB[rawName].unitAccName)
 								local cool = PVP:FindInCOOL(rawName)
 								if cool then
