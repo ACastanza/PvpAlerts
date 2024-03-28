@@ -318,6 +318,7 @@ function PVP:GetUnitAllianceFromDb(unitId)
 end
 
 function PVP:GetUnitSpecColor(playerName)
+	local specFromDB, color
 	local isPlayer = playerName == self.playerName
 
 	if not isPlayer and self.SV.playersDB[playerName] then

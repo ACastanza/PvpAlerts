@@ -63,8 +63,8 @@ function PVP:Who(name, contains)
 
 			for k, v in pairs(PVP.SV.playersDB) do
 				local strippedName = zo_strformat(SI_UNIT_NAME, k)
+				local lowerName = string.lower(strippedName)
 				local currentDeaccentedName = string.lower(PVP:DeaccentString(strippedName))
-				local lowerName = string.lower(lowerName)
 
 				if lowerName == name then
 					table.insert(lowercaseMatch, k)

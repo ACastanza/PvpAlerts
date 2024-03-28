@@ -836,7 +836,6 @@ PVP.magickaAbilities = {
 	["Ritual of Rebirth"] = true,
 	["Lingering Ritual"] = true,
 	["Healing Ritual"] = true,
-	["Ritual of Rebirth"] = true,
 	["Hasty Prayer"] = true,
 
 	["Radiant Aura"] = true,
@@ -3162,7 +3161,7 @@ PVP.killLocationPintypeToName = {
 
 	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_SMALL] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
 	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_MEDIUM] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
-	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_MEDIUM] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
+	[MAP_PIN_TYPE_EBONHEART_VS_DAGGERFALL_LARGE] = "|cFF7161EP|r vs |c80AFFFDC|r fight!",
 }
 
 PVP.pingsColors = {

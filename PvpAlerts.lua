@@ -74,11 +74,11 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 	if not PVP.SV.enabled or not PVP:IsInPVPZone() then return end
 	local function sma(period)
 		local t = {}
-		function sum(a, ...)
+		local function sum(a, ...)
 			if a then return a + sum(...) else return 0 end
 		end
 
-		function average(n)
+		local function average(n)
 			if #t == period then table.remove(t, 1) end
 			t[#t + 1] = n
 			return sum(unpack(t)) / #t, math.max(unpack(t))
@@ -1103,6 +1103,7 @@ function PVP:KillFeedRatio_Reset()
 end
 
 function PVP:SecondsToClock(seconds)
+	local hours, mins, secs
 	local seconds = tonumber(seconds)
 
 	if seconds <= 0 then
@@ -1148,7 +1149,7 @@ function PVP:BattleReport()
 			(data.EP > 0 and (" " .. self:Colorize(tostring(data.EP) .. " EP", PVP_BRIGHT_EP_COLOR)) or "")
 		outputCasualties = self:Colorize(outputCasualties, "BBBBBB")
 
-		outputAP = self:Colorize(". Earned", "BBBBBB") ..
+		local outputAP = self:Colorize(". Earned", "BBBBBB") ..
 			self:Colorize(" " .. zo_iconFormat(PVP_AP, 24, 24) .. tostring(data.earnedAP), "00cc00")
 
 		local finalReport = outputTitle .. battleTime .. outputCasualties .. outputAP .. self:Colorize(". ***", "BBBBBB")

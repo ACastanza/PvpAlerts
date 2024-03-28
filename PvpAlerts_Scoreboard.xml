@@ -22,9 +22,9 @@
 				<Texture name="$(parent)BG" textureFile="esoui/art/miscellaneous/listitem_selectedhighlight.dds" color="FFFFFF" alpha="0.85" level="1" >
 					<AnchorFill />
 					<TextureCoords top="0" bottom="1" left="0.015" right="0.75"/>
-					<OnInitialized> -->
+					<OnInitialized>
 						self.nonRecolorable = true
-					</OnInitialized> -->
+					</OnInitialized>
 				</Texture>
 				<Label name="$(parent)Rank" inherits="PVP_ScoreboardRowLabel" horizontalAlignment="CENTER">
 					<Anchor point="LEFT" relativePoint="LEFT" relativeTo="$(parent)" />
@@ -74,7 +74,7 @@
 					<Controls>
 						<Control name="$(parent)Rank" inherits="ZO_SortHeader">
 							<OnInitialized>
-								ZO_SortHeader_Initialize(self, zo_iconFormat("EsoUI/Art/Battlegrounds/battlegrounds_tabIcon_battlegrounds_up.dds"), "rank", ZO_SORT_ORDER_UP, TEXT_ALIGN_CENTER, "ZoFontGame") --> --> --> -->
+								ZO_SortHeader_Initialize(self, zo_iconFormat("EsoUI/Art/Battlegrounds/battlegrounds_tabIcon_battlegrounds_up.dds"), "rank", ZO_SORT_ORDER_UP, TEXT_ALIGN_CENTER, "ZoFontGame")
 							</OnInitialized>
 							<Anchor point="TOPLEFT" />
 							<Dimensions x="30" y="30" />
@@ -163,7 +163,7 @@
 						self.nonRecolorable = true
 					</OnInitialized>
 				</Label>
-				<Texture name="$(parent)BG" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="2" alpha="1" color="FFFFFF"> -->
+				<Texture name="$(parent)BG" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="2" alpha="1" color="FFFFFF">
 					<Dimensions x="160" y="210"/> -->
 					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="BOTTOM" offsetX="0" offsetY="-25"/>
 					<TextureCoords top="0" bottom="1" left="0.018" right="0.86"/>
@@ -189,11 +189,11 @@
 							<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="16"/>
 							<TextureCoords top="0" bottom="1" left="0.018" right="0.86"/>
 						</Texture>
-						<Texture name="$(parent)Backdrop2" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="3" alpha="1" color="FF0000"> -->
-							<Dimensions x="550" y="80"/> -->
-							<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="-16"/> -->
+						<Texture name="$(parent)Backdrop2" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="3" alpha="1" color="FF0000">
+							<Dimensions x="550" y="80"/>
+							<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="-16"/>
 							<TextureCoords top="1" bottom="0" left="0.018" right="0.86"/>
-						</Texture> -->
+						</Texture>
 						<Texture name="$(parent)Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" level="2" alpha="1" color="FF0000">
 							<Dimensions x="1200" y="290"/>
 							<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="7" offsetY="1"/>
@@ -231,21 +231,21 @@
 					<Anchor point="TOP" relativeTo="$(parent)" offsetX="-350" offsetY="132" />
 				</Label>
 
-				<!-- <Texture name="$(parent)TestOrange" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="2" alpha="1" color="FFFFFF"> --> -->
-					<!-- <Dimensions x="160" y="210"/> --> -->
-					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="-250"/> --> -->
+				<!-- <Texture name="$(parent)TestOrange" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="2" alpha="1" color="FFFFFF"> -->
+					<!-- <Dimensions x="160" y="210"/> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0" offsetY="-250"/> -->
 					<!-- <TextureCoords top="0" bottom="1" left="0.018" right="0.86"/> -->
-				<!-- </Texture> --> -->
-				<!-- <Texture name="$(parent)TestPurple" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_purple.dds" level="2" alpha="1" color="FFFFFF"> --> -->
-					<!-- <Dimensions x="160" y="210"/> --> -->
-					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="-160" offsetY="-250"/> --> -->
+				<!-- </Texture> -->
+				<!-- <Texture name="$(parent)TestPurple" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_purple.dds" level="2" alpha="1" color="FFFFFF"> -->
+					<!-- <Dimensions x="160" y="210"/> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="-160" offsetY="-250"/> -->
 					<!-- <TextureCoords top="0" bottom="1" left="0.018" right="0.86"/> -->
-				<!-- </Texture> -->		 -->
-				<!-- <Texture name="$(parent)TestGreen" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_green.dds" level="2" alpha="1" color="FFFFFF"> --> -->
-					<!-- <Dimensions x="160" y="210"/> --> -->
-					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="160" offsetY="-250"/> --> -->
+				<!-- </Texture> -->
+				<!-- <Texture name="$(parent)TestGreen" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_green.dds" level="2" alpha="1" color="FFFFFF"> -->
+					<!-- <Dimensions x="160" y="210"/> -->
+					<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="160" offsetY="-250"/> -->
 					<!-- <TextureCoords top="0" bottom="1" left="0.018" right="0.86"/> -->
-				<!-- </Texture> -->						 -->
+				<!-- </Texture> -->
 
 
 				<Texture name="$(parent)DivierTop1" textureFile="esoui/art/miscellaneous/horizontaldivider.dds" alpha="1" hidden="false" level="1">
@@ -284,10 +284,10 @@
 				<Control name="$(parent)PlayerIcon" hidden="false" tier="1" level="1" layer="2">
 					<Anchor point="BOTTOM" relativePoint="TOP" relativeTo="$(parent)ScoreTeam2" offsetY="7" />
 					<Controls>
-						<Texture name="$(parent)Icon" textureFile="esoui/art/currency/currency_crown.dds" color="CCCC00" hidden="true"> -->
-							<Anchor point="TOP" relativePoint="TOP" relativeTo="$(parent)" offsetY="0" /> -->
-							<Dimensions x="80" y="70" /> -->
-						</Texture>	 -->
+						<Texture name="$(parent)Icon" textureFile="esoui/art/currency/currency_crown.dds" color="CCCC00" hidden="true">
+							<Anchor point="TOP" relativePoint="TOP" relativeTo="$(parent)" offsetY="0" />
+							<Dimensions x="80" y="70" />
+						</Texture>
 						<Texture name="$(parent)Bar" textureFile="EsoUI/Art/HUD/Gamepad/gp_skillGlow.dds" hidden="false" >
 							<!-- <TextureCoords left="0.25" right = "0.75" top="0" bottom="0.3" /> -->
 							<TextureCoords left="0.25" right = "0.75" top="0.73" bottom="1" />
