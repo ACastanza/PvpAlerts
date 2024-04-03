@@ -1977,8 +1977,8 @@ local function GetEmperorInfoString(isWorldCrown)
 	if emperorAlliance == ALLIANCE_NONE then
 		text = PVP:Colorize("No emperor is currently reigning!", 'CCCCCC')
 	else
-		local maleName = PVP:GetTargetChar(emperorRawName .. "^Mx")
-		local femaleName = PVP:GetTargetChar(emperorRawName .. "^Fx")
+		local maleName = PVP:GetTargetChar(emperorRawName .. "^Mx", 35, 35)
+		local femaleName = PVP:GetTargetChar(emperorRawName .. "^Fx", 35, 35)
 
 		local formattedEmperorName
 

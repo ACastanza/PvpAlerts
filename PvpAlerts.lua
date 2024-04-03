@@ -2188,7 +2188,7 @@ function PVP:StartAnimation(control, animationType, targetParameter)
 	return timeline
 end
 
-function PVP:GetTargetChar(playerName, isTargetFrame)
+function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 	if not self.SV.playersDB[playerName] then return nil end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local accountNameFromDB = self.SV.playersDB[playerName].unitAccName or "@name unknown"
@@ -2233,7 +2233,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 
 	local nameColor
 
-	if isTargetFrame then
+	if isTargetFrame and (not forceScale) then
 		nameColor = 'FFFFFF'
 	else
 		if IsActiveWorldBattleground() then
@@ -2266,7 +2266,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame)
 	end
 
 	if isEmperor then
-		formattedName = self:GetEmperorIcon(not isTargetFrame and 45 or nil,
+		formattedName = self:GetEmperorIcon(forceScale or (not isTargetFrame and 45) or nil,
 			PVP:GetTrueAllianceColorsHex(currentCampaignActiveEmperorAlliance)) .. formattedName
 	end
 	-- if KOSOrFriend then
