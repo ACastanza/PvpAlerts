@@ -1104,6 +1104,10 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 			unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
 			return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
 				lastSeen
+        elseif tokenColor then
+			local unitAccNameColor = PVP:Colorize(unitAccName, tokenColor)
+			local unitCharNameColor = PVP:Colorize(unitCharName, tokenColor)
+			return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 		else
 			return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 		end
@@ -1126,8 +1130,11 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 					unitAccNameToken = unitAccName
 				end
 				unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
-				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
-					lastSeen
+				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+			elseif tokenColor then
+				local unitAccNameColor = PVP:Colorize(unitAccName, tokenColor)
+				local unitCharNameColor = PVP:Colorize(unitCharName, tokenColor)
+				return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			else
 				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			end
@@ -1149,8 +1156,11 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 					unitAccNameToken = unitAccName
 				end
 				unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
-				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
-					lastSeen
+				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+			elseif tokenColor then
+				local unitAccNameColor = PVP:Colorize(unitAccName, tokenColor)
+				local unitCharNameColor = PVP:Colorize(unitCharName, tokenColor)
+				return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			else
 				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			end
