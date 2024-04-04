@@ -1080,3 +1080,82 @@ function PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 	local distance = sqrt(((targetX - selfX) * (targetX - selfX)) + ((targetY - selfY) * (targetY - selfY)))
 	return distance
 end
+
+function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
+	local isMalformedName, unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen, unitAccNameToken, unitCharNameToken, allianceColor
+	isMalformedName = PVP:IsMalformedName(playerName)
+	if (not isMalformedName) and PVP.SV.playersDB[playerName] ~= nil then
+		local playerInfo = PVP.SV.playersDB[playerName]
+		unitAccName = playerInfo.unitAccName
+		unitCharName = playerName
+		unitAlliance = playerInfo.unitAlliance
+		unitClass = playerInfo.unitClass
+		unitRace = playerInfo.unitRace
+		unitSpec = playerInfo.unitSpec
+		unitAvARank = playerInfo.unitAvARank
+		lastSeen = playerInfo.lastSeen
+		if returnInfoToken then
+			allianceColor = tokenColor or PVP:NameToAllianceColor(unitCharName)
+			if unitAccName then
+				unitAccNameToken = PVP:GetFormattedAccountNameLink(unitAccName, allianceColor)
+			else
+				unitAccNameToken = unitAccName
+			end
+			unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
+			return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+				lastSeen
+		else
+			return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+		end
+	elseif isMalformedName then
+		if PVP.SV.playersDB[playerName .. "^Fx"] ~= nil then
+			local playerInfo = PVP.SV.playersDB[playerName .. "^Fx"]
+			unitAccName = playerInfo.unitAccName
+			unitCharName = playerName .. "^Fx"
+			unitAlliance = playerInfo.unitAlliance
+			unitClass = playerInfo.unitClass
+			unitRace = playerInfo.unitRace
+			unitSpec = playerInfo.unitSpec
+			unitAvARank = playerInfo.unitAvARank
+			lastSeen = playerInfo.lastSeen
+			if returnInfoToken then
+				allianceColor = tokenColor or PVP:NameToAllianceColor(unitCharName)
+				if unitAccName then
+					unitAccNameToken = PVP:GetFormattedAccountNameLink(unitAccName, allianceColor)
+				else
+					unitAccNameToken = unitAccName
+				end
+				unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
+				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+					lastSeen
+			else
+				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+			end
+		elseif PVP.SV.playersDB[playerName .. "^Mx"] ~= nil then
+			local playerInfo = PVP.SV.playersDB[playerName .. "^Mx"]
+			unitAccName = playerInfo.unitAccName
+			unitCharName = playerName .. "^Mx"
+			unitAlliance = playerInfo.unitAlliance
+			unitClass = playerInfo.unitClass
+			unitRace = playerInfo.unitRace
+			unitSpec = playerInfo.unitSpec
+			unitAvARank = playerInfo.unitAvARank
+			lastSeen = playerInfo.lastSeen
+			if returnInfoToken then
+				allianceColor = tokenColor or PVP:NameToAllianceColor(unitCharName)
+				if unitAccName then
+					unitAccNameToken = PVP:GetFormattedAccountNameLink(unitAccName, allianceColor)
+				else
+					unitAccNameToken = unitAccName
+				end
+				unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
+				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+					lastSeen
+			else
+				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+			end
+		end
+	else
+		return
+	end
+end
