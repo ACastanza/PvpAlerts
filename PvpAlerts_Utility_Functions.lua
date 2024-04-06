@@ -1086,14 +1086,14 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 	isMalformedName = PVP:IsMalformedName(playerName)
 	if (not isMalformedName) and PVP.SV.playersDB[playerName] ~= nil then
 		local playerInfo = PVP.SV.playersDB[playerName]
-		unitAccName = playerInfo.unitAccName
+		unitAccName = playerInfo.unitAccName or ""
 		unitCharName = playerName
-		unitAlliance = playerInfo.unitAlliance
-		unitClass = playerInfo.unitClass
-		unitRace = playerInfo.unitRace
-		unitSpec = playerInfo.unitSpec
-		unitAvARank = playerInfo.unitAvARank
-		lastSeen = playerInfo.lastSeen
+		unitAlliance = playerInfo.unitAlliance or ""
+		unitClass = playerInfo.unitClass or ""
+		unitRace = playerInfo.unitRace or ""
+		unitSpec = playerInfo.unitSpec or ""
+		unitAvARank = playerInfo.unitAvARank or ""
+		lastSeen = playerInfo.lastSeen or ""
 		
         if returnInfoToken then
 			if tokenColor == "alliance" then
@@ -1122,14 +1122,14 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 	elseif isMalformedName then
 		if PVP.SV.playersDB[playerName .. "^Fx"] ~= nil then
 			local playerInfo = PVP.SV.playersDB[playerName .. "^Fx"]
-			unitAccName = playerInfo.unitAccName
+			unitAccName = playerInfo.unitAccName or ""
 			unitCharName = playerName .. "^Fx"
-			unitAlliance = playerInfo.unitAlliance
-			unitClass = playerInfo.unitClass
-			unitRace = playerInfo.unitRace
-			unitSpec = playerInfo.unitSpec
-			unitAvARank = playerInfo.unitAvARank
-			lastSeen = playerInfo.lastSeen
+			unitAlliance = playerInfo.unitAlliance or ""
+			unitClass = playerInfo.unitClass or ""
+			unitRace = playerInfo.unitRace or ""
+			unitSpec = playerInfo.unitSpec or ""
+			unitAvARank = playerInfo.unitAvARank or ""
+			lastSeen = playerInfo.lastSeen or ""
 			if returnInfoToken then
 				if tokenColor == "alliance" then
 					allianceColor = PVP:GetTrueAllianceColors(unitAlliance)
@@ -1155,14 +1155,14 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 			end
 		elseif PVP.SV.playersDB[playerName .. "^Mx"] ~= nil then
 			local playerInfo = PVP.SV.playersDB[playerName .. "^Mx"]
-			unitAccName = playerInfo.unitAccName
+			unitAccName = playerInfo.unitAccName or ""
 			unitCharName = playerName .. "^Mx"
-			unitAlliance = playerInfo.unitAlliance
-			unitClass = playerInfo.unitClass
-			unitRace = playerInfo.unitRace
-			unitSpec = playerInfo.unitSpec
-			unitAvARank = playerInfo.unitAvARank
-			lastSeen = playerInfo.lastSeen
+			unitAlliance = playerInfo.unitAlliance or ""
+			unitClass = playerInfo.unitClass or ""
+			unitRace = playerInfo.unitRace or ""
+			unitSpec = playerInfo.unitSpec or ""
+			unitAvARank = playerInfo.unitAvARank or ""
+			lastSeen = playerInfo.lastSeen or ""
 			if returnInfoToken then
 				if tokenColor == "alliance" then
 					allianceColor = PVP:GetTrueAllianceColors(unitAlliance)
@@ -1187,7 +1187,15 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			end
 		end
-	else
-		return
+    else
+		unitAccName = ""
+		unitCharName = ""
+		unitAlliance = ""
+		unitClass = ""
+		unitRace = ""
+		unitSpec = ""
+		unitAvARank = ""
+		lastSeen = ""
+		return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 	end
 end
