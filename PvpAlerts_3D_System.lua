@@ -2290,7 +2290,7 @@ local function PoiOnUpdate(control)
 	local isBattlegroundTeamSignAnimationPlaying = control.battlegroundTeamSignAnimationHandler and
 	control.battlegroundTeamSignAnimationHandler:IsPlaying()
 	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and
-	control.params.alliance == GetUnitBattlegroundAlliance('player') and
+	control.params.alliance == GetUnitBattlegroundTeam('player') and
 	GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
 
 	if control.params.type == 'RALLY' or control.params.hasRally then
@@ -2350,7 +2350,7 @@ local function PoiOnUpdate(control)
 
 			local function GetBattlegroundAllianceString()
 				local text = PVP:Colorize("You're playing on ", 'CCCCCC') ..
-				PVP:Colorize(GetBattlegroundAllianceName(control.params.alliance), bgAllianceHexColor) ..
+				PVP:Colorize(GetBattlegroundTeamName(control.params.alliance), bgAllianceHexColor) ..
 				PVP:Colorize(' team!', 'CCCCCC')
 				return text
 			end
@@ -2382,11 +2382,11 @@ local function PoiOnUpdate(control)
 
 				for i = 1, GetNumScoreboardEntries() do
 					local alliance = GetScoreboardEntryBattlegroundAlliance(i)
-					if alliance == BATTLEGROUND_ALLIANCE_FIRE_DRAKES then
+					if alliance == BATTLEGROUND_TEAM_FIRE_DRAKES then
 						countFD = countFD + 1
-					elseif alliance == BATTLEGROUND_ALLIANCE_PIT_DAEMONS then
+					elseif alliance == BATTLEGROUND_TEAM_PIT_DAEMONS then
 						countPD = countPD + 1
-					elseif alliance == BATTLEGROUND_ALLIANCE_STORM_LORDS then
+					elseif alliance == BATTLEGROUND_TEAM_STORM_LORDS then
 						countSL = countSL + 1
 					end
 				end
@@ -2394,10 +2394,10 @@ local function PoiOnUpdate(control)
 				local text
 				-- FD/SL/PD
 				text = PVP:Colorize('The teams currently have: ', 'CCCCCC') ..
-				PVP:Colorize(countFD, PVP:BgAllianceToHexColor(BATTLEGROUND_ALLIANCE_FIRE_DRAKES)) ..
+				PVP:Colorize(countFD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_FIRE_DRAKES)) ..
 				' ' ..
-				PVP:Colorize(countSL, PVP:BgAllianceToHexColor(BATTLEGROUND_ALLIANCE_STORM_LORDS)) ..
-				' ' .. PVP:Colorize(countPD, PVP:BgAllianceToHexColor(BATTLEGROUND_ALLIANCE_PIT_DAEMONS))
+				PVP:Colorize(countSL, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_STORM_LORDS)) ..
+				' ' .. PVP:Colorize(countPD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_PIT_DAEMONS))
 				return text
 			end
 
@@ -2452,7 +2452,7 @@ local function PoiOnUpdate(control)
 				PVP:Colorize(control.params.name,
 					PVP:AllianceToColor(GetKeepAlliance(control.params.doorDistrictKeepId, 1)))
 			elseif type == 'BG_BASE' then
-				mainText = GetBattlegroundAllianceName(control.params.alliance) .. ' base'
+				mainText = GetBattlegroundTeamName(control.params.alliance) .. ' base'
 			elseif type == 'GROUP' then
 				local formattedName = PVP:GetTargetChar(control.params.name)
 				mainText = formattedName and formattedName or zo_strformat(SI_PLAYER_NAME, control.params.name)
@@ -2629,7 +2629,7 @@ local function PoiOnUpdate(control)
 			control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
 	end
 
-	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and control.params.alliance ~= GetUnitBattlegroundAlliance('player') then
+	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and control.params.alliance ~= GetUnitBattlegroundTeam('player') then
 		control:SetAlpha(0.5)
 	elseif type == 'GROUP' and not (PVP.SV.allgroup3d or (control.params.isGroupLeader and PVP.SV.groupleader3d)) then
 		local distanceThreshold = 0.1 * scaleAdjustment * PVP_MAX_DISTANCE

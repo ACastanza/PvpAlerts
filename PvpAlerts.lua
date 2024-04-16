@@ -1173,7 +1173,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 
 	local isInBG = IsActiveWorldBattleground()
 	local isValidBGNameToDisplay = isInBG and PVP.bgNames and PVP.bgNames[unitName] and PVP.bgNames[unitName] ~= 0 and
-		PVP.bgNames[unitName] ~= GetUnitBattlegroundAlliance('player')
+		PVP.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
 	local isValidCyroNameToDisplay = not isInBG and self.SV.playersDB[unitName].unitAlliance ~= self.allianceOfPlayer
 
 
@@ -2505,7 +2505,7 @@ end
 
 function PVP:OnMedalAwarded(eventCode, medalId, medalName, medalIcon, medalPoints)
 	if not PVP.SV.showMedalsFrame or PVP.SV.unlocked then return end
-	local alliance = GetUnitBattlegroundAlliance('player')
+	local alliance = GetUnitBattlegroundTeam('player')
 
 	local medalCount = GetScoreboardEntryNumEarnedMedalsById(GetScoreboardPlayerEntryIndex(), medalId) + 1
 
@@ -3430,7 +3430,7 @@ function PVP.OnTargetChanged()
 			}
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
-				PVP.bgNames[unitName] = GetUnitBattlegroundAlliance('reticleover')
+				PVP.bgNames[unitName] = GetUnitBattlegroundTeam('reticleover')
 			end
 			if PVP.SV.showNewTargetInfo then
 				ZO_TargetUnitFramereticleoverName:SetText(PVP:GetTargetChar(unitName, true))

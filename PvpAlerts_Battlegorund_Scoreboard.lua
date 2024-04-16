@@ -10,10 +10,10 @@ local PVP_SPECIALS_ICON_DOM = "EsoUI/Art/MapPins/battlegrounds_multiCapturePoint
 local PVP_SPECIALS_ICON_DM = "esoui/art/deathrecap/deathrecap_killingblow_icon.dds"
 local PVP_SPECIALS_ICON_CTF = "esoui/art/compass/ava_flagcarrier_neutral.dds"
 
-local BATTLEGROUND_ALLIANCE_TO_BG_TEXTURE = {
-	[BATTLEGROUND_ALLIANCE_FIRE_DRAKES] = "EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds",
-	[BATTLEGROUND_ALLIANCE_PIT_DAEMONS] = "EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_green.dds",
-	[BATTLEGROUND_ALLIANCE_STORM_LORDS] = "EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_purple.dds",
+local BATTLEGROUND_TEAM_TO_BG_TEXTURE = {
+	[BATTLEGROUND_TEAM_FIRE_DRAKES] = "EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds",
+	[BATTLEGROUND_TEAM_PIT_DAEMONS] = "EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_green.dds",
+	[BATTLEGROUND_TEAM_STORM_LORDS] = "EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_purple.dds",
 }
 
 local PVP_GOLD_COLOR = ZO_ColorDef:New("CCCC00")
@@ -560,7 +560,7 @@ function ScoreboardList:FilterScrollList()
 		control:GetNamedChild("Score"):SetText(formattedScore)
 		control:GetNamedChild("Name"):SetText(formattedName:upper())
 
-		control:GetNamedChild("BG"):SetTexture(BATTLEGROUND_ALLIANCE_TO_BG_TEXTURE[alliance])
+		control:GetNamedChild("BG"):SetTexture(BATTLEGROUND_TEAM_TO_BG_TEXTURE[alliance])
 	end
 
 	local function GenerateMVPText(postGameMVP, specialsIcon)
@@ -692,7 +692,7 @@ function ScoreboardList:FilterScrollList()
 		local battlegroundId = GetCurrentBattlegroundId()
 		local battlegroundGameType = GetBattlegroundGameType(battlegroundId)
 
-		local playerAlliance = GetUnitBattlegroundAlliance('player')
+		local playerAlliance = GetUnitBattlegroundTeam('player')
 
 
 		local specialsControl1 = PVP_ScoreboardList1HeadersSpecialsName
@@ -755,7 +755,7 @@ function ScoreboardList:FilterScrollList()
 		elseif isPostGame then
 			local winningTeamName
 
-			winningTeamName = GetBattlegroundAllianceName(winningTeamAlliance):upper()
+			winningTeamName = GetBattlegroundTeamName(winningTeamAlliance):upper()
 
 			local winnerTitleString
 

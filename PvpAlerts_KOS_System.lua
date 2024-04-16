@@ -744,7 +744,7 @@ function PVP:FindKOSPlayer(index)
 	local isInNames = self.playerNames[self.SV.KOSList[index].unitName]
 
 	if self.SV.KOSList[index].unitId == 0 and unitId ~= 0 and self.SV.playKOSSound and (isInNames or self.playerAlliance[unitId]) then
-		if (isInNames and self.SV.playersDB[self.SV.KOSList[index].unitName].unitAlliance == self.allianceOfPlayer) or self.playerAlliance[unitId] == self.allianceOfPlayer or (IsActiveWorldBattleground() and PVP.bgNames and PVP.bgNames[self.SV.KOSList[index].unitName] and PVP.bgNames[self.SV.KOSList[index].unitName] == GetUnitBattlegroundAlliance('player')) then
+		if (isInNames and self.SV.playersDB[self.SV.KOSList[index].unitName].unitAlliance == self.allianceOfPlayer) or self.playerAlliance[unitId] == self.allianceOfPlayer or (IsActiveWorldBattleground() and PVP.bgNames and PVP.bgNames[self.SV.KOSList[index].unitName] and PVP.bgNames[self.SV.KOSList[index].unitName] == GetUnitBattlegroundTeam('player')) then
 			-- d('KOS failed here')
 			if PVP.SV.KOSmode == 2 then
 				if currentTime - self.kosSoundDelay > 2000 then
