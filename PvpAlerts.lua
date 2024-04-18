@@ -3845,7 +3845,7 @@ function PVP.OnLoad(eventCode, addonName)
 	EVENT_MANAGER:UnregisterForEvent(PVP.name, EVENT_ADD_ON_LOADED, PVP.OnLoad)
 
     PVP:InitializeSV()
-	-- PVP:Purge_PlayerDB()
+	PVP:Purge_PlayerDB()
 	PVP:InitializeAddonMenu()
 	PVP:AvAHax()
 	PVP_KOS_SCENE_FRAGMENT = ZO_FadeSceneFragment:New(PVP_KOS, nil, 0)
