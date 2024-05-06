@@ -782,8 +782,7 @@ function PVP:GetRootNames(name)
 	return rootName or ""
 end
 
-function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName)
-	local oldUnitAccName = PVP.SV.playersDB[unitCharName].unitAccName
+function PVP:UpdatePlayerDbAccountName(unitAccName, oldUnitAccName)
 	local nameChangeNote = " (AutoNote: Previous name " .. oldUnitAccName .. ")"
 
 	local charactersToUpdate = {}
