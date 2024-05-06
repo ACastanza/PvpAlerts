@@ -417,19 +417,19 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		mundus = self:Colorize(mundus, mundusColor)
 	end
 
-    if unitClass then
-        classIcon = zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension)
-        -- classIcon = self:Colorize(zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension), color)
-    else
-        classIcon = ""
-    end
-	
-    local avaRankIcon = ""
+	if unitClass then
+		classIcon = zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension)
+		-- classIcon = self:Colorize(zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension), color)
+	else
+		classIcon = ""
+	end
+
+	local avaRankIcon = ""
 	if self.SV.playersDB[playerName] and self.SV.playersDB[playerName].unitAvARank then
 		local unitAvARank = self.SV.playersDB[playerName].unitAvARank
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
-            allianceColor)
-    else
+			allianceColor)
+	else
 		avaRankIcon = ""
 	end
 
@@ -554,9 +554,9 @@ function PVP:GetAttackerIcon(dimension, color)
 end
 
 function PVP:GetEmperorIcon(dimension, color)
-    dimension = dimension or 20
-    color = color or "FFFFFF"
-    return self:Colorize(zo_iconFormatInheritColor(PVP_EMPEROR, dimension, dimension), color)
+	dimension = dimension or 20
+	color = color or "FFFFFF"
+	return self:Colorize(zo_iconFormatInheritColor(PVP_EMPEROR, dimension, dimension), color)
 end
 
 -- function PVP:GetTargetIcon(dimension, color)
@@ -768,18 +768,57 @@ function PVP:IsMalformedName(name)
 end
 
 function PVP:GetValidName(name)
-    if not name or name == '' then return end
-    if not PVP:IsMalformedName(name) then return name end
-    -- if not PVP.bgNames then return end
+	if not name or name == '' then return end
+	if not PVP:IsMalformedName(name) then return name end
+	-- if not PVP.bgNames then return end
 
-    if PVP.bgNames and PVP.bgNames[name .. '^Mx'] then return name .. '^Mx' end
-    if PVP.bgNames and PVP.bgNames[name .. '^Fx'] then return name .. '^Fx' end
+	if PVP.bgNames and PVP.bgNames[name .. '^Mx'] then return name .. '^Mx' end
+	if PVP.bgNames and PVP.bgNames[name .. '^Fx'] then return name .. '^Fx' end
 end
 
 function PVP:GetRootNames(name)
 	if not name or name == '' then return "" end
 	local rootName = name:gsub("%s*%^[MF]x%s*$", "")
 	return rootName or ""
+end
+
+function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName)
+	local oldUnitAccName = PVP.SV.playersDB[unitCharName].unitAccName
+	local nameChangeNote = " (AutoNote: Previous name " .. oldUnitAccName .. ")"
+
+	local charactersToUpdate = {}
+	local isOnList
+	for k, v in pairs(PVP.SV.playersDB) do
+		if v.unitAccName == oldUnitAccName then
+			charactersToUpdate[k] = true
+			PVP.SV.playersDB[k].unitAccName = unitAccName
+		end
+	end
+	for k, v in ipairs(PVP.SV.KOSList) do
+		if v.unitAccName == oldUnitAccName then
+			charactersToUpdate[k] = true
+			PVP.SV.KOSList[k].unitAccName = unitAccName
+			isOnList = true
+		end
+	end
+	for k, v in pairs(PVP.SV.coolList) do
+		if charactersToUpdate[k] then
+			PVP.SV.coolList[k].unitAccName = unitAccName
+			isOnList = true
+		end
+	end
+	if PVP.SV.playerNotes[oldUnitAccName] then
+		local oldNote = PVP.SV.playerNotes[oldUnitAccName] or ""
+		PVP.SV.playerNotes[unitAccName] = oldNote .. nameChangeNote
+		PVP.SV.playerNotes[oldUnitAccName] = nil
+	else
+		if isOnList then
+			PVP.SV.playerNotes[unitAccName] = nameChangeNote
+		end
+	end
+
+	PVP.CHAT:Printf("Name Change! Player %s was previously known as %s",
+		self:GetFormattedAccountNameLink(unitAccName, "76BCC3"), self:Colorize(oldUnitAccName, "FFFFFF"))
 end
 
 function PVP:BgAllianceToHexColor(bgAlliance)
@@ -950,7 +989,6 @@ function PVP:GetDMPowerups(battlegroundId)
 end
 
 function PVP:AvAHax()
-
 	local GetAvARankIcon_original = GetAvARankIcon
 	GetAvARankIcon = function(rank)
 		if rank == 50 and self.SV.show6star then
@@ -1094,11 +1132,11 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 		unitSpec = playerInfo.unitSpec or ""
 		unitAvARank = playerInfo.unitAvARank or ""
 		lastSeen = playerInfo.lastSeen or ""
-		
-        if returnInfoToken then
+
+		if returnInfoToken then
 			if tokenColor == "alliance" then
-                allianceColor = PVP:GetTrueAllianceColors(unitAlliance)
-            else
+				allianceColor = PVP:GetTrueAllianceColors(unitAlliance)
+			else
 				allianceColor = tokenColor or PVP:NameToAllianceColor(unitCharName)
 			end
 			if unitAccName then
@@ -1109,13 +1147,14 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 			unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
 			return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
 				lastSeen
-        elseif tokenColor then
+		elseif tokenColor then
 			if tokenColor == "alliance" then
 				tokenColor = PVP:GetTrueAllianceColors(unitAlliance)
 			end
 			local unitAccNameColor = PVP:Colorize(unitAccName, tokenColor)
 			local unitCharNameColor = PVP:Colorize(unitCharName, tokenColor)
-			return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+			return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+				lastSeen
 		else
 			return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 		end
@@ -1142,14 +1181,16 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 					unitAccNameToken = unitAccName
 				end
 				unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
-				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
-            elseif tokenColor then
+				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+					lastSeen
+			elseif tokenColor then
 				if tokenColor == "alliance" then
 					tokenColor = PVP:GetTrueAllianceColors(unitAlliance)
 				end
 				local unitAccNameColor = PVP:Colorize(unitAccName, tokenColor)
 				local unitCharNameColor = PVP:Colorize(unitCharName, tokenColor)
-				return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+				return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+					lastSeen
 			else
 				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			end
@@ -1175,19 +1216,21 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 					unitAccNameToken = unitAccName
 				end
 				unitCharNameToken = PVP:GetFormattedClassNameLink(unitCharName, allianceColor)
-				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
-            elseif tokenColor then
+				return unitAccNameToken, unitCharNameToken, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+					lastSeen
+			elseif tokenColor then
 				if tokenColor == "alliance" then
 					tokenColor = PVP:GetTrueAllianceColors(unitAlliance)
 				end
 				local unitAccNameColor = PVP:Colorize(unitAccName, tokenColor)
 				local unitCharNameColor = PVP:Colorize(unitCharName, tokenColor)
-				return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
+				return unitAccNameColor, unitCharNameColor, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank,
+					lastSeen
 			else
 				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			end
 		end
-    else
+	else
 		unitAccName = ""
 		unitCharName = ""
 		unitAlliance = ""
