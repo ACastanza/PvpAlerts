@@ -1624,10 +1624,6 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 		}
 	end
 
-	local function GetAccName(playerName)
-		if self.SV.playersDB[playerName] then return self.SV.playersDB[playerName].unitAccName end
-	end
-
 	local function GetSpacedOutString(...)
 		local text = ""
 		local numArgs = select("#", ...)
