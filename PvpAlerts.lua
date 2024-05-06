@@ -1585,8 +1585,12 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 	local sourceAllianceColor = PVP:GetTrueAllianceColorsHex(killerPlayerAlliance)
 
 	local function playerDBUpdateCheck(playerValidName, playerDisplayName, playerAlliance, unitAllianceRank)
+		local targetPlayerDbEntry
+
 		if playerValidName == self.playerName or playerDisplayName == "" then return end
-		if not self.SV.playersDB[playerValidName] then
+
+		targetPlayerDbEntry = self.SV.playersDB[playerValidName]
+		if not targetPlayerDbEntry then
 			self.SV.playersDB[playerValidName] = {
 				unitAccName = playerDisplayName,
 				unitAlliance = playerAlliance,
@@ -1594,14 +1598,19 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				lastSeen = sessionTimeEpoch
 			}
 		else
-			if self.SV.playersDB[playerValidName].unitAlliance ~= playerAlliance then
+			if targetPlayerDbEntry.unitAlliance ~= playerAlliance then
 				self.SV.playersDB[playerValidName].unitAlliance = playerAlliance
 			end
-			if self.SV.playersDB[playerValidName].unitAvARank ~= unitAllianceRank then
+			if targetPlayerDbEntry.unitAvARank ~= unitAllianceRank then
 				self.SV.playersDB[playerValidName].unitAvARank = unitAllianceRank
 			end
-			if self.SV.playersDB[playerValidName].lastSeen ~= sessionTimeEpoch then
+			if targetPlayerDbEntry.lastSeen ~= sessionTimeEpoch then
 				self.SV.playersDB[playerValidName].lastSeen = sessionTimeEpoch
+			end
+			if targetPlayerDbEntry.unitAccName ~= playerDisplayName then
+				local oldUnitAccName = targetPlayer.unitAccName
+				-- Append "ssytem note" for username changes
+				self.SV.playersDB[playerValidName].unitAccName = playerDisplayName
 			end
 		end
 	end
