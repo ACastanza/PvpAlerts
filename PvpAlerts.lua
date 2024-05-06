@@ -1607,11 +1607,12 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			if targetPlayerDbEntry.lastSeen ~= sessionTimeEpoch then
 				self.SV.playersDB[playerValidName].lastSeen = sessionTimeEpoch
 			end
-			if targetPlayerDbEntry.unitAccName ~= playerDisplayName then
+			--[[ 			if targetPlayerDbEntry.unitAccName ~= playerDisplayName then
 				local oldUnitAccName = targetPlayer.unitAccName
-				-- Append "ssytem note" for username changes
+				-- Append "sytem note" for username changes
 				self.SV.playersDB[playerValidName].unitAccName = playerDisplayName
 			end
+ ]]
 		end
 	end
 
