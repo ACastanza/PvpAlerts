@@ -1585,11 +1585,9 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 	local sourceAllianceColor = PVP:GetTrueAllianceColorsHex(killerPlayerAlliance)
 
 	local function playerDBUpdateCheck(playerValidName, playerDisplayName, playerAlliance, unitAllianceRank)
-		local targetPlayerDbEntry
-
 		if playerValidName == self.playerName or playerDisplayName == "" then return end
 
-		targetPlayerDbEntry = self.SV.playersDB[playerValidName]
+		local targetPlayerDbEntry = self.SV.playersDB[playerValidName]
 		if not targetPlayerDbEntry then
 			self.SV.playersDB[playerValidName] = {
 				unitAccName = playerDisplayName,
@@ -1607,11 +1605,9 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			if targetPlayerDbEntry.lastSeen ~= sessionTimeEpoch then
 				self.SV.playersDB[playerValidName].lastSeen = sessionTimeEpoch
 			end
-			--[[
 			if targetPlayerDbEntry.unitAccName ~= playerDisplayName then
 				PVP:UpdatePlayerDbAccountName(playerDisplayName, targetPlayerDbEntry.unitAccName)
 			end
- ]]
 		end
 	end
 
@@ -3422,15 +3418,20 @@ function PVP.OnTargetChanged()
 		local unitAllianceRank = GetUnitAvARank('reticleover')
 		local unitRace = GetUnitRaceId('reticleover')
 		local unitCP = GetUnitChampionPoints('reticleover')
-		local unitMundus
 
-		local unitSpec
-		if PVP.SV.playersDB[unitName] then
-			unitSpec = PVP.SV.playersDB[unitName].unitSpec
-			unitMundus = PVP.SV.playersDB[unitName].mundus
-		end
-
+		local unitMundus, unitSpec, unitDbAccName
 		if unitName then
+			local targetPlayerDbEntry = PVP.SV.playersDB[unitName]
+			if targetPlayerDbEntry then
+				unitSpec = targetPlayerDbEntry.unitSpec
+				unitMundus = targetPlayerDbEntry.mundus
+				unitDbAccName = targetPlayerDbEntry.unitAccName
+			end
+
+			if unitDbAccName and (unitDbAccName ~= unitAccName) then
+				PVP:UpdatePlayerDbAccountName(unitAccName, unitDbAccName)
+			end
+
 			PVP.SV.playersDB[unitName] = {
 				unitAccName = unitAccName,
 				unitAlliance = unitAlliance,
