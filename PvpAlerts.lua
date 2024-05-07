@@ -215,23 +215,23 @@ function PVP.OnCombatEnd(_, combatState)
 		local targetPlayerDbEntry = PVP.SV.playersDB[k]
 		if not targetPlayerDbEntry then
 			PVP.SV.playersDB[k] = {
-				unitAccName = v.playerDisplayName,
-				unitAlliance = v.playerAlliance,
-				unitAvARank = v.unitAllianceRank,
-				lastSeen = v.sessionTimeEpoch
+				unitAccName = v.unitAccName,
+				unitAlliance = v.unitAlliance,
+				unitAvARank = v.unitAvARank,
+				lastSeen = v.lastSeen
 			}
 		else
-			if targetPlayerDbEntry.unitAlliance ~= v.playerAlliance then
-				PVP.SV.playersDB[k].unitAlliance = v.playerAlliance
+			if targetPlayerDbEntry.unitAlliance ~= v.unitAlliance then
+				PVP.SV.playersDB[k].unitAlliance = v.unitAlliance
 			end
-			if targetPlayerDbEntry.unitAvARank ~= v.unitAllianceRank then
-				PVP.SV.playersDB[k].unitAvARank = v.unitAllianceRank
+			if targetPlayerDbEntry.unitAvARank ~= v.unitAvARank then
+				PVP.SV.playersDB[k].unitAvARank = v.unitAvARank
 			end
-			if targetPlayerDbEntry.lastSeen ~= v.sessionTimeEpoch then
-				PVP.SV.playersDB[k].lastSeen = v.sessionTimeEpoch
+			if targetPlayerDbEntry.lastSeen ~= v.lastSeen then
+				PVP.SV.playersDB[k].lastSeen = v.lastSeen
 			end
-			if targetPlayerDbEntry.unitAccName ~= v.playerDisplayName then
-				PVP:UpdatePlayerDbAccountName(v.playerDisplayName, targetPlayerDbEntry.unitAccName)
+			if targetPlayerDbEntry.unitAccName ~= v.unitAccName then
+				PVP:UpdatePlayerDbAccountName(v.unitAccName, targetPlayerDbEntry.unitAccName)
 			end
 		end
 		batchPlayerDbUpdates[k] = nil
