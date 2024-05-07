@@ -3445,6 +3445,9 @@ function PVP.OnTargetChanged()
 
 			if unitDbAccName and (unitDbAccName ~= unitAccName) then
 				PVP:UpdatePlayerDbAccountName(unitAccName, unitDbAccName)
+				if batchPlayerDbUpdates[unitName] then
+					batchPlayerDbUpdates[unitName] = nil
+				end
 			end
 
 			PVP.SV.playersDB[unitName] = {
