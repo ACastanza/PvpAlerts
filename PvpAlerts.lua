@@ -3690,6 +3690,7 @@ function PVP.Activated()
 end
 
 CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
+	-- TODO: Implement support for cachedPlayerDbUpdates in LookUp Functions
 	local ShowPlayerContextMenu = CHAT_SYSTEM.ShowPlayerContextMenu
 	function CHAT_SYSTEM:ShowPlayerContextMenu(playerName, rawName)
 		ShowPlayerContextMenu(self, playerName, rawName)
@@ -3706,12 +3707,12 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 		end
 
 		local function IsNameInDB(rawName)
-			if PVP:CheckName(rawName) then
-				if PVP.SV.playersDB[rawName] then return rawName else return false end
+			if PVP:CheckName(rawName) then                                 -- check this function
+				if PVP.SV.playersDB[rawName] then return rawName else return false end --add cache check here
 			end
 			local maleName = rawName .. "^Mx"
 			local femaleName = rawName .. "^Fx"
-			if PVP.SV.playersDB[maleName] or PVP.SV.playersDB[femaleName] then
+			if PVP.SV.playersDB[maleName] or PVP.SV.playersDB[femaleName] then -- don't bother with adding support here
 				if PVP.SV.playersDB[maleName] and not PVP.SV.playersDB[femaleName] then return maleName end
 				if not PVP.SV.playersDB[maleName] and PVP.SV.playersDB[femaleName] then return femaleName end
 				if PVP.SV.playersDB[maleName].unitAccName == PVP.SV.playersDB[femaleName].unitAccName then
@@ -3742,6 +3743,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							index = i
 							break
 						end
+						unitAccName = playerName
 					end
 					if index then
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_KOS), function()
@@ -3750,7 +3752,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							table.remove(PVP.SV.KOSList, index)
 							PVP:PopulateKOSBuffer()
 						end)
-						local cool = PVP:FindAccInCOOL(unitAccName)
+						local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 						if cool then
 							PVP.SV.coolList[cool] = nil
 							PVP:PopulateKOSBuffer()
@@ -3763,14 +3765,14 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							table.remove(PVP.SV.KOSList, index)
 							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
-							local cool = PVP:FindAccInCOOL(unitAccName)
+							local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 							if not cool then PVP.SV.coolList[rawName] = unitAccName end
 							PVP:PopulateKOSBuffer()
 							PVP:PopulateReticleOverNamesBuffer()
 						end)
 					else
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
-							local cool = PVP:FindAccInCOOL(unitAccName)
+							local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 							if cool then
 								chat:Printf("Removed from COOL: %s%s!",
 									PVP:GetFormattedName(rawName),
@@ -3788,7 +3790,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 
 							PVP:PopulateKOSBuffer()
 						end)
-						local cool = PVP:FindAccInCOOL(unitAccName)
+						local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 
 						if not cool then
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
@@ -3804,7 +3806,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								chat:Printf("Removed from COOL: %s%s!",
 									PVP:GetFormattedName(rawName),
 									unitAccName)
-								local cool = PVP:FindAccInCOOL(unitAccName)
+								local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 								if cool then
 									PVP.SV.coolList[cool] = nil
 									PVP:PopulateKOSBuffer()
