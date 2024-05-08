@@ -1620,7 +1620,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			unitAccName = playerDisplayName,
 			unitAlliance = playerAlliance,
 			unitAvARank = unitAllianceRank,
-			lastSeen = sessionTimeEpoch,
+			lastSeen = sessionTimeEpoch
 		}
 	end
 
