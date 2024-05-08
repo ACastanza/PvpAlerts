@@ -440,23 +440,22 @@ function PVP:managePlayerNote(noteString)
 	end
 end
 
-function PVP:CheckKOSValidity(playerName)
-	local function IsAccInKOS(accName)
+function PVP:CheckKOSValidity(dbRecord)
+	local function IsAccInKOS(unitAccName)
 		for i = 1, #PVP.SV.KOSList do
-			if PVP.SV.KOSList[i].unitAccName == accName then return PVP.SV.KOSList[i].unitName, i end
+			if PVP.SV.KOSList[i].unitAccName == unitAccName then return PVP.SV.KOSList[i].unitName, i end
 		end
 		return false
 	end
 
-	local function IsAccInDB(accName)
-		local nameFromKOS, indexInKOS = IsAccInKOS(accName)
+	local function IsAccInDB(unitAccName)
+		local nameFromKOS, indexInKOS = IsAccInKOS(unitAccName)
 		if nameFromKOS then return nameFromKOS, indexInKOS end
 
 		local foundPlayerNames = {}
 		for k, v in pairs(PVP.SV.playersDB) do
-			if v.unitAccName == accName then table.insert(foundPlayerNames, k) end
+			if v.unitAccName == unitAccName then table.insert(foundPlayerNames, k) end
 		end
-
 		if #foundPlayerNames > 0 then
 			if #foundPlayerNames == 1 then return foundPlayerNames[1] end
 			for i = 1, #foundPlayerNames do
@@ -511,18 +510,18 @@ function PVP:CheckKOSValidity(playerName)
 		return false, false, true
 	end
 
-	local function IsNameInDB(rawName)
-		if PVP:CheckName(rawName) then
-			if PVP.SV.playersDB[rawName] then
-				local nameFromKOS, indexInKOS = IsAccInKOS(PVP.SV.playersDB[rawName].unitAccName)
+	local function IsNameInDB(dbRecord)
+		if PVP:CheckName(dbRecord.unitCharName) then
+			if dbRecord.unitAccName then
+				local nameFromKOS, indexInKOS = IsAccInKOS(dbRecord.unitAccName)
 				if nameFromKOS then return nameFromKOS, indexInKOS end
-				return rawName
+				return dbRecord.unitCharName
 			else
 				return false
 			end
 		end
 
-		local foundRawName, isAmbiguous, isMultiple = CheckNameWithoutSuffixes(rawName)
+		local foundRawName, isAmbiguous, isMultiple = CheckNameWithoutSuffixes(dbRecord.unitCharName)
 
 		if isAmbiguous then return foundRawName, false, true end
 
@@ -537,10 +536,10 @@ function PVP:CheckKOSValidity(playerName)
 
 	local rawName, isInKOS, isAmbiguous, isMultiple
 
-	if IsDecoratedDisplayName(playerName) then
-		rawName, isInKOS = IsAccInDB(playerName)
+	if IsDecoratedDisplayName(dbRecord.unitCharName) then
+		rawName, isInKOS = IsAccInDB(dbRecord.unitAccName)
 	else
-		rawName, isInKOS, isAmbiguous, isMultiple = IsNameInDB(playerName)
+		rawName, isInKOS, isAmbiguous, isMultiple = IsNameInDB(dbRecord)
 	end
 
 	return rawName, isInKOS, isAmbiguous, isMultiple
@@ -583,6 +582,23 @@ function PVP:FindInCOOL(playerName)
 	return found
 end
 
+function PVP:FindAccInCOOL(unitPlayerName, unitAccName)
+	if not unitAccName then return false end
+	local found
+	for k, v in pairs(self.SV.coolList) do
+		if unitAccName == v then
+			found = k
+			break
+		end
+	end
+	if found and found ~= unitPlayerName then
+		self.SV.coolList[found] = nil
+		self.SV.coolList[unitPlayerName] = unitAccName
+		found = unitPlayerName
+	end
+	return found
+end
+
 function PVP:AddKOS(playerName, isSlashCommand)
 	if not self.SV.showKOSFrame then PVP.CHAT:Printf('KOS/COOL system is disabled!') end
 
@@ -590,8 +606,13 @@ function PVP:AddKOS(playerName, isSlashCommand)
 		d("Name was not provided!")
 		return
 	end
-
-	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName)
+	local dbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName] or {}
+	dbRecord.unitCharName = playerName
+	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(dbRecord)
+	if rawName and (rawName ~= playerName) then
+		dbRecord = cachedPlayerDbUpdates[rawName] or self.SV.playersDB[rawName] or {}
+		dbRecord.unitCharName = rawName
+	end
 
 	if not rawName then
 		if not isMultiple then PVP.CHAT:Printf("This player is not in the database!") end
@@ -624,8 +645,8 @@ function PVP:AddKOS(playerName, isSlashCommand)
 			end
 		end
 		table.insert(self.SV.KOSList,
-			{ unitName = rawName, unitAccName = self.SV.playersDB[rawName].unitAccName, unitId = unitId })
-		PVP.CHAT:Printf("Added to KOS: %s%s!", self:GetFormattedName(rawName), self.SV.playersDB[rawName].unitAccName)
+			{ unitName = rawName, unitAccName = dbRecord.unitAccName, unitId = unitId })
+		PVP.CHAT:Printf("Added to KOS: %s%s!", self:GetFormattedName(rawName), dbRecord.unitAccName)
 	else
 		PVP.CHAT:Printf("Removed from KOS: %s%s!", self:GetFormattedName(self.SV.KOSList[isInKOS].unitName),
 			self.SV.KOSList[isInKOS].unitAccName)
@@ -642,7 +663,14 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 		return
 	end
 
-	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName)
+	local dbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName] or {}
+	dbRecord.unitCharName = playerName
+	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(dbRecord)
+	if rawName and (rawName ~= playerName) then
+		dbRecord = cachedPlayerDbUpdates[rawName] or self.SV.playersDB[rawName] or {}
+		dbRecord.unitCharName = rawName
+	end
+
 
 	if not rawName then
 		if not isMultiple then PVP.CHAT:Printf("This player is not in the database!") end
@@ -657,7 +685,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 
 	if isInKOS then
 		for i = 1, #self.SV.KOSList do
-			if self.SV.KOSList[i].unitAccName == self.SV.playersDB[rawName].unitAccName then
+			if self.SV.KOSList[i].unitAccName == dbRecord.unitAccName then
 				PVP.CHAT:Printf("Removed from KOS: %s%s!", self:GetFormattedName(self.SV.KOSList[i].unitName),
 					self.SV.KOSList[i].unitAccName)
 				table.remove(self.SV.KOSList, i)
@@ -670,11 +698,10 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 
 
 	if not cool then
-		self.SV.coolList[rawName] = self.SV.playersDB[rawName].unitAccName
-		PVP.CHAT:Printf("Added to COOL: %s%s!", self:GetFormattedName(rawName), self.SV.playersDB[rawName].unitAccName)
+		self.SV.coolList[rawName] = dbRecord.unitAccName
+		PVP.CHAT:Printf("Added to COOL: %s%s!", self:GetFormattedName(rawName), dbRecord.unitAccName)
 	else
-		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(self.SV.playersDB[cool].unitName),
-			self.SV.playersDB[cool].unitAccName)
+		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(rawName), dbRecord.unitAccName)
 		PVP.SV.coolList[cool] = nil
 		-- d(self:GetFormattedName(rawName)..self.SV.playersDB[rawName].unitAccName.." is already COOL!")
 	end
@@ -771,15 +798,17 @@ function PVP:FindKOSPlayer(index)
 	return unitId
 end
 
-function PVP:IsKOSOrFriend(playerName)
-	if not self.SV.playersDB[playerName] then return false end
+function PVP:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
+	local dbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+	if not dbRecord then return false end
+	local unitAccName = dbRecord.unitAccName
 	-- if GetRawUnitName(GetGroupLeaderUnitTag())==playerName then return "groupleader" end
 	if PVP:GetValidName(GetRawUnitName(GetGroupLeaderUnitTag())) == playerName then return "groupleader" end
 	if IsPlayerInGroup(playerName) then return "group" end
-	if self:IsNameInKOS(playerName) then return "KOS" end
+	if self:IsAccNameInKOS(unitAccName) then return "KOS" end
 	if IsFriend(playerName) then return "friend" end
 
-	if self:FindInCOOL(playerName) then return "cool" end
+	if self:FindAccInCOOL(playerName, unitAccName) then return "cool" end
 
 	return false
 end
@@ -793,13 +822,9 @@ function PVP:IsEmperor(playerName, currentCampaignActiveEmperor)
 	return false
 end
 
-function PVP:IsNameInKOS(playerName)
-	local dbRecord, accName
-	dbRecord = self.SV.playersDB[playerName]
-	if not dbRecord then return false else accName = dbRecord.unitAccName end
-
+function PVP:IsAccNameInKOS(unitAccName)
 	for i = 1, #self.SV.KOSList do
-		if accName == self.SV.KOSList[i].unitAccName then return true end
+		if unitAccName == self.SV.KOSList[i].unitAccName then return true end
 	end
 	return false
 end
@@ -1001,9 +1026,10 @@ function PVP:FindFriends()
 	local foundNames = {}
 	if next(self.idToName) ~= nil then
 		for k, v in pairs(self.idToName) do
-			local cool = self:FindInCOOL(v)
-			if self.SV.playersDB[v] then
-				local hasPlayerNote = (self.SV.playerNotes[PVP.SV.playersDB[v].unitAccName] ~= nil)
+			local dbRecord = self.SV.playersDB[v]
+			if dbRecord then
+				local cool = self:FindAccInCOOL(v, dbRecord.unitAccName)
+				local hasPlayerNote = (self.SV.playerNotes[dbRecord.unitAccName] ~= nil)
 				if hasPlayerNote or (not IsPlayerInGroup(v)) and (IsFriend(v) or cool) then
 					if not self.friends[v] and self.SV.playKOSSound and PVP.SV.KOSmode ~= 3 then
 						if currentTime - self.friendSoundDelay > 2000 then
@@ -1026,8 +1052,9 @@ function PVP:FindFriends()
 	if next(self.playerNames) ~= nil then
 		for k, _ in pairs(self.playerNames) do
 			if not foundNames[k] then
-				local cool = self:FindInCOOL(k)
-				local hasPlayerNote = (self.SV.playerNotes[PVP.SV.playersDB[k].unitAccName] ~= nil)
+				local dbRecord = self.SV.playersDB[k]
+				local cool = self:FindAccInCOOL(k, dbRecord.unitAccName)
+				local hasPlayerNote = (self.SV.playerNotes[dbRecord.unitAccName] ~= nil)
 				if hasPlayerNote or (not IsPlayerInGroup(k)) and (IsFriend(k) or cool) then
 					if not self.friends[k] and self.SV.playKOSSound and PVP.SV.KOSmode ~= 3 then
 						if currentTime - self.friendSoundDelay > 2000 then

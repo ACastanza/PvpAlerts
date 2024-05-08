@@ -341,18 +341,26 @@ function PVP:GetUnitSpecColor(playerName)
 end
 
 function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeadorResurrect, isTargetFrame,
-								   isTargetNameFrame, unitClass, id, currentTime)
-	local classIcon
-	local isPlayer = playerName == self.playerName
+								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank)
+	local classIcon, dbRecord, isPlayer
 
-	if not self.SV.playersDB[playerName] and not isPlayer and not unitClass then return "" end
+	isPlayer = playerName == self.playerName
+	dbRecord = self.SV.playersDB[playerName]
+
+	if not dbRecord and not isPlayer and not unitClass then
+		if unitAvARank and not isPlayer then
+			return self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName)
+		else
+			return ""
+		end
+	end
 
 	dimension = dimension or 29
 	if isTargetNameFrame then dimension = 45 end
 	local specFromDB, color
 
-	if not isPlayer and self.SV.playersDB[playerName] then
-		specFromDB = self.SV.playersDB[playerName].unitSpec
+	if not isPlayer and dbRecord then
+		specFromDB = dbRecord.unitSpec
 	end
 
 	if specFromDB then
@@ -375,7 +383,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		if isPlayer then
 			unitClass = GetUnitClassId('player')
 		else
-			unitClass = self.SV.playersDB[playerName].unitClass
+			unitClass = dbRecord.unitClass
 		end
 	end
 
@@ -394,10 +402,10 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	end
 
 	local mundus = ""
-	if self.SV.playersDB[playerName] and self.SV.playersDB[playerName].mundus then
+	if dbRecord and dbRecord.mundus then
 		local mundusColor = ""
-		if self.mundusColors[self.SV.playersDB[playerName].mundus] then
-			mundusColor = self.mundusColors[self.SV.playersDB[playerName].mundus]
+		if self.mundusColors[dbRecord.mundus] then
+			mundusColor = self.mundusColors[dbRecord.mundus]
 		else
 			mundusColor = "FFFFFF"
 		end
@@ -409,7 +417,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		else
 			mundusDimension = 21
 		end
-		mundus = zo_iconFormatInheritColor("PvpAlerts/textures/" .. self.SV.playersDB[playerName].mundus .. "m.dds",
+		mundus = zo_iconFormatInheritColor("PvpAlerts/textures/" .. dbRecord.mundus .. "m.dds",
 			mundusDimension, mundusDimension)
 		if id and currentTime then
 			mundusColor = self:GetTimeFadedColor(mundusColor, id, currentTime)
@@ -425,8 +433,11 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	end
 
 	local avaRankIcon = ""
-	if self.SV.playersDB[playerName] and self.SV.playersDB[playerName].unitAvARank then
-		local unitAvARank = self.SV.playersDB[playerName].unitAvARank
+	if unitAvARank then
+		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
+			allianceColor)
+	elseif dbRecord and dbRecord.unitAvARank then
+		unitAvARank = dbRecord.unitAvARank
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
 			allianceColor)
 	else
@@ -440,6 +451,22 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	classIcon = self:Colorize(classIcon, color)
 
 	return startSpacer .. mundus .. classIcon .. endSpacer .. avaRankIcon
+end
+
+function PVP:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName)
+	local avaRankIcon
+	dimension = dimension or 29
+	if unitAvARank then
+		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
+			allianceColor)
+	elseif self.SV.playersDB[playerName] and self.SV.playersDB[playerName].unitAvARank then
+		unitAvARank = self.SV.playersDB[playerName].unitAvARank
+		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
+			allianceColor)
+	else
+		avaRankIcon = ""
+	end
+	return avaRankIcon
 end
 
 function PVP:GetFormattedName(playerName, truncate)
@@ -487,9 +514,10 @@ function PVP:GetFormattedCharNameLink(playerName, truncate)
 end
 
 function PVP:GetFormattedClassNameLink(playerName, allianceColor, truncate, isDeadorResurrect, isTargetFrame,
-									   isTargetNameFrame, unitClass, id, currentTime)
+									   isTargetNameFrame, unitClass, id, currentTime, unitAvARank)
 	return self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, isTargetFrame, isTargetNameFrame,
-		unitClass, id, currentTime) .. self:Colorize(self:GetFormattedCharNameLink(playerName, truncate), allianceColor)
+			unitClass, id, currentTime, unitAvARank) ..
+		self:Colorize(self:GetFormattedCharNameLink(playerName, truncate), allianceColor)
 end
 
 function PVP:GetFormattedAccountNameLink(accName, color)
