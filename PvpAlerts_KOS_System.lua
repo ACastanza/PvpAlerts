@@ -440,7 +440,7 @@ function PVP:managePlayerNote(noteString)
 	end
 end
 
-function PVP:CheckKOSValidity(dbRecord)
+function PVP:CheckKOSValidity(unitCharName, dbRecord)
 	local function IsAccInKOS(unitAccName)
 		for i = 1, #PVP.SV.KOSList do
 			if PVP.SV.KOSList[i].unitAccName == unitAccName then return PVP.SV.KOSList[i].unitName, i end
@@ -510,18 +510,18 @@ function PVP:CheckKOSValidity(dbRecord)
 		return false, false, true
 	end
 
-	local function IsNameInDB(dbRecord)
-		if PVP:CheckName(dbRecord.unitCharName) then
+	local function IsNameInDBRecord(unitCharName, dbRecord)
+		if PVP:CheckName(unitCharName) then
 			if dbRecord.unitAccName then
 				local nameFromKOS, indexInKOS = IsAccInKOS(dbRecord.unitAccName)
 				if nameFromKOS then return nameFromKOS, indexInKOS end
-				return dbRecord.unitCharName
+				return unitCharName
 			else
 				return false
 			end
 		end
 
-		local foundRawName, isAmbiguous, isMultiple = CheckNameWithoutSuffixes(dbRecord.unitCharName)
+		local foundRawName, isAmbiguous, isMultiple = CheckNameWithoutSuffixes(unitCharName)
 
 		if isAmbiguous then return foundRawName, false, true end
 
@@ -536,10 +536,10 @@ function PVP:CheckKOSValidity(dbRecord)
 
 	local rawName, isInKOS, isAmbiguous, isMultiple
 
-	if IsDecoratedDisplayName(dbRecord.unitCharName) then
+	if IsDecoratedDisplayName(unitCharName) then
 		rawName, isInKOS = IsAccInDB(dbRecord.unitAccName)
 	else
-		rawName, isInKOS, isAmbiguous, isMultiple = IsNameInDB(dbRecord)
+		rawName, isInKOS, isAmbiguous, isMultiple = IsNameInDBRecord(unitCharName, dbRecord)
 	end
 
 	return rawName, isInKOS, isAmbiguous, isMultiple
@@ -608,7 +608,7 @@ function PVP:AddKOS(playerName, isSlashCommand)
 	end
 	local dbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName] or {}
 	dbRecord.unitCharName = playerName
-	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(dbRecord)
+	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName, dbRecord)
 	if rawName and (rawName ~= playerName) then
 		dbRecord = cachedPlayerDbUpdates[rawName] or self.SV.playersDB[rawName] or {}
 		dbRecord.unitCharName = rawName
@@ -664,11 +664,9 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 	end
 
 	local dbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName] or {}
-	dbRecord.unitCharName = playerName
-	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(dbRecord)
+	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName, dbRecord)
 	if rawName and (rawName ~= playerName) then
 		dbRecord = cachedPlayerDbUpdates[rawName] or self.SV.playersDB[rawName] or {}
-		dbRecord.unitCharName = rawName
 	end
 
 
