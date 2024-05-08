@@ -3769,19 +3769,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							PVP:PopulateReticleOverNamesBuffer()
 						end)
 					else
-						local unitId = 0
-						local unitAccName
-						if next(PVP.idToName) ~= nil and PVP.SV.playersDB[rawName] then
-							for k, v in pairs(PVP.idToName) do
-								if cachedPlayerDbUpdates[v] and cachedPlayerDbUpdates[v].unitAccName == cachedPlayerDbUpdates[rawName].unitAccName then
-									unitAccName = cachedPlayerDbUpdates[v].unitAccName
-									break
-								elseif PVP.SV.playersDB[v] and PVP.SV.playersDB[v].unitAccName == PVP.SV.playersDB[rawName].unitAccName then
-									unitAccName = PVP.SV.playersDB[v].unitAccName
-									break
-								end
-							end
-						end
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
 							local cool = PVP:FindAccInCOOL(unitAccName)
 							if cool then
