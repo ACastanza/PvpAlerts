@@ -836,7 +836,11 @@ function PVP:UpdatePlayerDbAccountName(unitAccName, oldUnitAccName)
 	end
 	if PVP.SV.playerNotes[oldUnitAccName] then
 		local oldNote = PVP.SV.playerNotes[oldUnitAccName] or ""
-		PVP.SV.playerNotes[unitAccName] = oldNote .. nameChangeNote
+		local currentNote = PVP.SV.playerNotes[unitAccName] or ""
+		local combinedNote = ((oldNote ~= "" and oldNote) or "")
+		combinedNote = combinedNote .. ((currentNote ~= "" and " " .. currentNote) or "")
+		combinedNote = combinedNote .. ((nameChangeNote ~= "" and " " .. nameChangeNote) or "")
+		PVP.SV.playerNotes[unitAccName] = combinedNote
 		PVP.SV.playerNotes[oldUnitAccName] = nil
 	else
 		if isOnList then
