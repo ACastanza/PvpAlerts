@@ -212,8 +212,8 @@ end
 function PVP:OnCombatState(eventCode, combatState)
 	if combatState then return end
 	for k, v in pairs(cachedPlayerDbUpdates) do
-		local targetPlayerDbEntry = PVP.SV.playersDB[k]
-		if not targetPlayerDbEntry then
+		local playerDbRecord = PVP.SV.playersDB[k]
+		if not playerDbRecord then
 			PVP.SV.playersDB[k] = {
 				unitAccName = v.unitAccName,
 				unitAlliance = v.unitAlliance,
@@ -221,17 +221,17 @@ function PVP:OnCombatState(eventCode, combatState)
 				lastSeen = v.lastSeen
 			}
 		else
-			if targetPlayerDbEntry.unitAlliance ~= v.unitAlliance then
+			if playerDbRecord.unitAlliance ~= v.unitAlliance then
 				PVP.SV.playersDB[k].unitAlliance = v.unitAlliance
 			end
-			if targetPlayerDbEntry.unitAvARank ~= v.unitAvARank then
+			if playerDbRecord.unitAvARank ~= v.unitAvARank then
 				PVP.SV.playersDB[k].unitAvARank = v.unitAvARank
 			end
-			if targetPlayerDbEntry.lastSeen ~= v.lastSeen then
+			if playerDbRecord.lastSeen ~= v.lastSeen then
 				PVP.SV.playersDB[k].lastSeen = v.lastSeen
 			end
-			if targetPlayerDbEntry.unitAccName ~= v.unitAccName then
-				PVP:UpdatePlayerDbAccountName(v.unitAccName, targetPlayerDbEntry.unitAccName)
+			if playerDbRecord.unitAccName ~= v.unitAccName then
+				PVP:UpdatePlayerDbAccountName(v.unitAccName, playerDbRecord.unitAccName)
 			end
 		end
 		cachedPlayerDbUpdates[k] = nil
@@ -2217,10 +2217,10 @@ function PVP:StartAnimation(control, animationType, targetParameter)
 end
 
 function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
-	local targetPlayerDbEntry = self.SV.playersDB[playerName]
-	if not targetPlayerDbEntry then return nil end
+	local playerDbRecord = self.SV.playersDB[playerName]
+	if not playerDbRecord then return nil end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
-	local accountNameFromDB = targetPlayerDbEntry.unitAccName or "@name unknown"
+	local accountNameFromDB = playerDbRecord.unitAccName or "@name unknown"
 
 	local function FindInNames(playerName)
 		local isDeadOrResurrect
@@ -2236,7 +2236,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 							statusIcon = self:GetAttackerIcon(not isTargetFrame and 55 or nil)
 						else
 							statusIcon = self:GetFightIcon(not isTargetFrame and 35 or nil, nil,
-								targetPlayerDbEntry.unitAlliance)
+								playerDbRecord.unitAlliance)
 						end
 					elseif v.isAttacker then
 						statusIcon = self:GetAttackerIcon(not isTargetFrame and 55 or nil)
@@ -3059,7 +3059,7 @@ function PVP:GetAllianceCountPlayers()
 		for k, _ in pairs(self.playerNames) do
 			if not foundNames[k] then
 				local playerName = k
-				local formattedName
+				local formattedName, unitAllianceFromPlayersDb
 				local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 
@@ -3101,8 +3101,8 @@ function PVP:GetAllianceCountPlayers()
 						formattedName = formattedName .. "**"
 					end
 
-
-					if self.SV.playersDB[playerName].unitAlliance == 1 then
+					unitAllianceFromPlayersDb = self.SV.playersDB[playerName].unitAlliance
+					if unitAllianceFromPlayersDb == 1 then
 						if nameLength > maxLengthAD then maxLengthAD = nameLength end
 						numberAD = numberAD + 1
 						table.insert(tableAD, formattedName)
@@ -3121,7 +3121,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							table.insert(othersTableAD, playerName)
 						end
-					elseif self.SV.playersDB[playerName].unitAlliance == 2 then
+					elseif unitAllianceFromPlayersDb == 2 then
 						if nameLength > maxLengthEP then maxLengthEP = nameLength end
 						numberEP = numberEP + 1
 						table.insert(tableEP, formattedName)
@@ -3139,7 +3139,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							table.insert(othersTableEP, playerName)
 						end
-					elseif self.SV.playersDB[playerName].unitAlliance == 3 then
+					elseif unitAllianceFromPlayersDb == 3 then
 						if nameLength > maxLengthDC then maxLengthDC = nameLength end
 						numberDC = numberDC + 1
 						table.insert(tableDC, formattedName)
@@ -3306,7 +3306,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			isResurrect = nil
 		end
 		if playerName then
-			local accountName = self.SV.playersDB[playerName].unitAccName
+			local playerDbRecord = self.SV.playersDB[playerName]
 			local iconsCount = 0
 			local formattedName = ""
 			KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
@@ -3341,11 +3341,11 @@ function PVP:PopulateReticleOverNamesBuffer()
 					end
 				else
 					if isAttacker and isTarget then
-						endIcon = self:GetFightIcon(nil, nil, self.SV.playersDB[playerName].unitAlliance)
+						endIcon = self:GetFightIcon(nil, nil, playerDbRecord.unitAlliance)
 					elseif isAttacker then
 						endIcon = self:GetAttackerIcon()
 					elseif isTarget then
-						endIcon = self:GetFightIcon(nil, nil, self.SV.playersDB[playerName].unitAlliance)
+						endIcon = self:GetFightIcon(nil, nil, playerDbRecord.unitAlliance)
 					else
 						iconsCount = iconsCount - 1
 						endIcon = ""
@@ -3358,7 +3358,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect)
 			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect)
 			local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
-			local accountName = self:GetFormattedAccountNameLink(accountName, allianceColor)
+			local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
 			if userDisplayNameType == "both" then
 				formattedName = classIcons .. charName .. accountName .. formattedName .. endIcon
 			elseif userDisplayNameType == "character" then
@@ -3450,11 +3450,11 @@ function PVP.OnTargetChanged()
 
 		local unitMundus, unitSpec, unitDbAccName
 		if unitName then
-			local targetPlayerDbEntry = PVP.SV.playersDB[unitName]
-			if targetPlayerDbEntry then
-				unitSpec = targetPlayerDbEntry.unitSpec
-				unitMundus = targetPlayerDbEntry.mundus
-				unitDbAccName = targetPlayerDbEntry.unitAccName
+			local playerDbRecord = PVP.SV.playersDB[unitName]
+			if playerDbRecord then
+				unitSpec = playerDbRecord.unitSpec
+				unitMundus = playerDbRecord.mundus
+				unitDbAccName = playerDbRecord.unitAccName
 			end
 
 			if unitDbAccName and (unitDbAccName ~= unitAccName) then

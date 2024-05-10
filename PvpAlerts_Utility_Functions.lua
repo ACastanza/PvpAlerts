@@ -342,12 +342,12 @@ end
 
 function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeadorResurrect, isTargetFrame,
 								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank)
-	local classIcon, dbRecord, isPlayer
+	local classIcon, playerDbRecord, isPlayer
 
 	isPlayer = playerName == self.playerName
-	dbRecord = self.SV.playersDB[playerName]
+	playerDbRecord = self.SV.playersDB[playerName]
 
-	if not dbRecord and not isPlayer and not unitClass then
+	if not playerDbRecord and not isPlayer and not unitClass then
 		if unitAvARank and not isPlayer then
 			return self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName)
 		else
@@ -359,8 +359,8 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	if isTargetNameFrame then dimension = 45 end
 	local specFromDB, color
 
-	if not isPlayer and dbRecord then
-		specFromDB = dbRecord.unitSpec
+	if not isPlayer and playerDbRecord then
+		specFromDB = playerDbRecord.unitSpec
 	end
 
 	if specFromDB then
@@ -383,7 +383,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		if isPlayer then
 			unitClass = GetUnitClassId('player')
 		else
-			unitClass = dbRecord.unitClass
+			unitClass = playerDbRecord.unitClass
 		end
 	end
 
@@ -402,10 +402,10 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	end
 
 	local mundus = ""
-	if dbRecord and dbRecord.mundus then
+	if playerDbRecord and playerDbRecord.mundus then
 		local mundusColor = ""
-		if self.mundusColors[dbRecord.mundus] then
-			mundusColor = self.mundusColors[dbRecord.mundus]
+		if self.mundusColors[playerDbRecord.mundus] then
+			mundusColor = self.mundusColors[playerDbRecord.mundus]
 		else
 			mundusColor = "FFFFFF"
 		end
@@ -417,7 +417,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		else
 			mundusDimension = 21
 		end
-		mundus = zo_iconFormatInheritColor("PvpAlerts/textures/" .. dbRecord.mundus .. "m.dds",
+		mundus = zo_iconFormatInheritColor("PvpAlerts/textures/" .. playerDbRecord.mundus .. "m.dds",
 			mundusDimension, mundusDimension)
 		if id and currentTime then
 			mundusColor = self:GetTimeFadedColor(mundusColor, id, currentTime)
@@ -436,8 +436,8 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	if unitAvARank then
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
 			allianceColor)
-	elseif dbRecord and dbRecord.unitAvARank then
-		unitAvARank = dbRecord.unitAvARank
+	elseif playerDbRecord and playerDbRecord.unitAvARank then
+		unitAvARank = playerDbRecord.unitAvARank
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
 			allianceColor)
 	else
@@ -1154,15 +1154,15 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 	local isMalformedName, unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen, unitAccNameToken, unitCharNameToken, allianceColor
 	isMalformedName = PVP:IsMalformedName(playerName)
 	if (not isMalformedName) and PVP.SV.playersDB[playerName] ~= nil then
-		local playerInfo = PVP.SV.playersDB[playerName]
-		unitAccName = playerInfo.unitAccName
+		local playerDbRecord = PVP.SV.playersDB[playerName]
+		unitAccName = playerDbRecord.unitAccName
 		unitCharName = playerName
-		unitAlliance = playerInfo.unitAlliance
-		unitClass = playerInfo.unitClass
-		unitRace = playerInfo.unitRace
-		unitSpec = playerInfo.unitSpec
-		unitAvARank = playerInfo.unitAvARank
-		lastSeen = playerInfo.lastSeen
+		unitAlliance = playerDbRecord.unitAlliance
+		unitClass = playerDbRecord.unitClass
+		unitRace = playerDbRecord.unitRace
+		unitSpec = playerDbRecord.unitSpec
+		unitAvARank = playerDbRecord.unitAvARank
+		lastSeen = playerDbRecord.lastSeen
 
 		if returnInfoToken then
 			if tokenColor == "alliance" then
@@ -1191,15 +1191,15 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 		end
 	elseif isMalformedName then
 		if PVP.SV.playersDB[playerName .. "^Fx"] ~= nil then
-			local playerInfo = PVP.SV.playersDB[playerName .. "^Fx"]
-			unitAccName = playerInfo.unitAccName
+			local playerDbRecord = PVP.SV.playersDB[playerName .. "^Fx"]
+			unitAccName = playerDbRecord.unitAccName
 			unitCharName = playerName .. "^Fx"
-			unitAlliance = playerInfo.unitAlliance
-			unitClass = playerInfo.unitClass
-			unitRace = playerInfo.unitRace
-			unitSpec = playerInfo.unitSpec
-			unitAvARank = playerInfo.unitAvARank
-			lastSeen = playerInfo.lastSeen
+			unitAlliance = playerDbRecord.unitAlliance
+			unitClass = playerDbRecord.unitClass
+			unitRace = playerDbRecord.unitRace
+			unitSpec = playerDbRecord.unitSpec
+			unitAvARank = playerDbRecord.unitAvARank
+			lastSeen = playerDbRecord.lastSeen
 			if returnInfoToken then
 				if tokenColor == "alliance" then
 					allianceColor = PVP:GetTrueAllianceColors(unitAlliance)
@@ -1226,15 +1226,15 @@ function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 				return unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen
 			end
 		elseif PVP.SV.playersDB[playerName .. "^Mx"] ~= nil then
-			local playerInfo = PVP.SV.playersDB[playerName .. "^Mx"]
-			unitAccName = playerInfo.unitAccName
+			local playerDbRecord = PVP.SV.playersDB[playerName .. "^Mx"]
+			unitAccName = playerDbRecord.unitAccName
 			unitCharName = playerName .. "^Mx"
-			unitAlliance = playerInfo.unitAlliance
-			unitClass = playerInfo.unitClass
-			unitRace = playerInfo.unitRace
-			unitSpec = playerInfo.unitSpec
-			unitAvARank = playerInfo.unitAvARank
-			lastSeen = playerInfo.lastSeen
+			unitAlliance = playerDbRecord.unitAlliance
+			unitClass = playerDbRecord.unitClass
+			unitRace = playerDbRecord.unitRace
+			unitSpec = playerDbRecord.unitSpec
+			unitAvARank = playerDbRecord.unitAvARank
+			lastSeen = playerDbRecord.lastSeen
 			if returnInfoToken then
 				if tokenColor == "alliance" then
 					allianceColor = PVP:GetTrueAllianceColors(unitAlliance)
