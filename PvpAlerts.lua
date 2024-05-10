@@ -245,21 +245,6 @@ function PVP:updateCampaignEmperor(eventCode, campaignId)
 	currentCampaignActiveEmperor = PVP:GetRootNames(emperorRawName)
 	currentCampaignActiveEmperorAcc = emperorAccName
 	currentCampaignActiveEmperorAlliance = emperorAlliance
-	--[[
-	local emperorDbEntry, emperorDbAccName
-	emperorDbEntry = PVP.SV.playersDB[currentCampaignActiveEmperor]
-	if emperorDbEntry then
-		emperorDbAccName = emperorDbEntry.unitAccName
-	end
-
-	if emperorDbAccName and (emperorDbAccName ~= emperorAccName) then
-		PVP:UpdatePlayerDbAccountName(emperorDbAccName, emperorDbAccName)
-	end
-
-	PVP.SV.playersDB[currentCampaignActiveEmperor].unitAccName = emperorAccName
-	PVP.SV.playersDB[currentCampaignActiveEmperor].unitAlliance = emperorAlliance
-	PVP.SV.playersDB[currentCampaignActiveEmperor].lastSeen = sessionTimeEpoch
-	]]
 end
 
 local lastcount, lastcountAcc
