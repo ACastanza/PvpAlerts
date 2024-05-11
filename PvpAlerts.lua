@@ -3696,7 +3696,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 	local ShowPlayerContextMenu = CHAT_SYSTEM.ShowPlayerContextMenu
 	function CHAT_SYSTEM:ShowPlayerContextMenu(playerName, rawName)
 		ShowPlayerContextMenu(self, playerName, rawName)
-
 		local function IsAccInDB(accName)
 			for k, v in ipairs(PVP.SV.KOSList) do
 				if v.unitAccName == accName then return v.unitName end
@@ -3745,7 +3744,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							index = i
 							break
 						end
-						unitAccName = playerName
 					end
 					if index then
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_KOS), function()
@@ -3773,6 +3771,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							PVP:PopulateReticleOverNamesBuffer()
 						end)
 					else
+						unitAccName = PVP.SV.playersDB[rawName].unitAccName
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
 							local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 							if cool then
@@ -3828,7 +3827,8 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 										if noteString and noteString ~= "" then
 											PVP.SV.playerNotes[playerName] = noteString
 											chat:Printf("Added note \"%s\" for player %s",
-												noteString, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+												PVP:Colorize(noteString, "76BCC3"),
+												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
 										end
 									end
 								})
@@ -3842,11 +3842,13 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 										if (not noteString) or noteString == "" then
 											PVP.SV.playerNotes[playerName] = nil
 											chat:Printf("Deleted note \"%s\" for player %s",
-												accNote, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+												PVP:Colorize(accNote, "76BCC3"),
+												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
 										elseif noteString ~= accNote then
 											PVP.SV.playerNotes[playerName] = noteString
 											chat:Printf("Updated note for player %s to \"%s\"",
-												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"), noteString)
+												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"),
+												PVP:Colorize(noteString, "76BCC3"))
 										else
 											chat:Printf("Note for player %s was not changed",
 												PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
@@ -3856,7 +3858,8 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							end)
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_DELETE_NOTE), function()
 								chat:Printf("Deleted note \"%s\" for player %s",
-									accNote, PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+									PVP:Colorize(accNote, "76BCC3"),
+									PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
 								PVP.SV.playerNotes[unitAccName] = nil
 							end)
 						end
