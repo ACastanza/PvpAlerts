@@ -3737,17 +3737,19 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 
 			if rawName then
 				if PVP.SV.showKOSFrame then
-					local index, unitAccName
+					local index, unitAccName, kosUnitAccName
+					unitAccName = PVP.SV.playersDB[rawName]
+						and PVP.SV.playersDB[rawName].unitAccName or nil
 					for i = 1, #PVP.SV.KOSList do
-						unitAccName = PVP.SV.KOSList[i].unitAccName
-						if unitAccName == PVP.SV.playersDB[rawName].unitAccName then
+						kosUnitAccName = PVP.SV.KOSList[i].unitAccName
+						if kosUnitAccName == unitAccName then
 							index = i
 							break
 						end
 					end
 					if index then
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_KOS), function()
-							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(PVP.SV.KOSList[index].unitName),
+							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(kosUnitAccName),
 								unitAccName)
 							table.remove(PVP.SV.KOSList, index)
 							PVP:PopulateKOSBuffer()
@@ -3760,7 +3762,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						end
 
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
-							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(PVP.SV.KOSList[index].unitName),
+							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(kosUnitAccName),
 								unitAccName)
 							table.remove(PVP.SV.KOSList, index)
 							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(rawName),
@@ -3771,7 +3773,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							PVP:PopulateReticleOverNamesBuffer()
 						end)
 					else
-						unitAccName = PVP.SV.playersDB[rawName].unitAccName
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
 							local cool = PVP:FindAccInCOOL(rawName, unitAccName)
 							if cool then
