@@ -689,42 +689,33 @@ end
 
 function PVP:InsertAnimationType(animHandler, animType, control, animDuration, animDelay, animEasing, ...)
 	if not animHandler then return end
+
+	local animation, startValues, endValues
+
 	if animType == ANIMATION_SCALE then
-		local animationScale, startScale, endScale, scaleFromSV =
-			animHandler:InsertAnimation(ANIMATION_SCALE, control, animDelay), ...
-		if scaleFromSV then
-			startScale = startScale * self.SV.controlScale
-			endScale = endScale * self.SV.controlScale
+		animation, startValues, endValues = animHandler:InsertAnimation(ANIMATION_SCALE, control, animDelay), ...
+		if select(4, ...) then
+			startValues = startValues * self.SV.controlScale
+			endValues = endValues * self.SV.controlScale
 		end
-		animationScale:SetScaleValues(startScale, endScale)
-		animationScale:SetDuration(animDuration)
-		animationScale:SetEasingFunction(animEasing)
+		animation:SetScaleValues(startValues, endValues)
 	elseif animType == ANIMATION_ALPHA then
-		local animationAlpha, startAlpha, endAlpha = animHandler:InsertAnimation(ANIMATION_ALPHA, control, animDelay),
-			...
-		animationAlpha:SetAlphaValues(startAlpha, endAlpha)
-		animationAlpha:SetDuration(animDuration)
-		animationAlpha:SetEasingFunction(animEasing)
+		animation, startValues, endValues = animHandler:InsertAnimation(ANIMATION_ALPHA, control, animDelay), ...
+		animation:SetAlphaValues(startValues, endValues)
 	elseif animType == ANIMATION_TRANSLATE then
-		local animationTranslate, startX, startY, offsetX, offsetY =
-			animHandler:InsertAnimation(ANIMATION_TRANSLATE, control, animDelay), ...
-		animationTranslate:SetTranslateOffsets(startX, startY, offsetX, offsetY)
-		animationTranslate:SetDuration(animDuration)
-		animationTranslate:SetEasingFunction(animEasing)
+		animation, startValues, endValues = animHandler:InsertAnimation(ANIMATION_TRANSLATE, control, animDelay), ...
+		animation:SetTranslateOffsets(startValues, endValues)
 	elseif animType == ANIMATION_ROTATE3D then
-		local animationRotate3D, startPitchRadians, startYawRadians, startRollRadians, endPitchRadians, endYawRadians, endRollRadians =
-			animHandler:InsertAnimation(ANIMATION_ROTATE3D, control, animDelay), ...
-		animationRotate3D:SetRotationValues(startPitchRadians, startYawRadians, startRollRadians, endPitchRadians,
-			endYawRadians, endRollRadians)
-		animationRotate3D:SetDuration(animDuration)
-		animationRotate3D:SetEasingFunction(animEasing)
+		animation, startValues, endValues = animHandler:InsertAnimation(ANIMATION_ROTATE3D, control, animDelay), ...
+		animation:SetRotationValues(startValues, endValues)
 	elseif animType == ANIMATION_COLOR then
-		local animationColor, startPitchRadians, startYawRadians, startRollRadians, endPitchRadians, endYawRadians, endRollRadians =
-			animHandler:InsertAnimation(ANIMATION_COLOR, control, animDelay), ...
-		animationRotate3D:SetRotationValues(startPitchRadians, startYawRadians, startRollRadians, endPitchRadians,
-			endYawRadians, endRollRadians)
-		animationRotate3D:SetDuration(animDuration)
-		animationRotate3D:SetEasingFunction(animEasing)
+		animation, startValues, endValues = animHandler:InsertAnimation(ANIMATION_COLOR, control, animDelay), ...
+		animation:SetRotationValues(startValues, endValues)
+	end
+
+	if animation then
+		animation:SetDuration(animDuration)
+		animation:SetEasingFunction(animEasing)
 	end
 end
 
