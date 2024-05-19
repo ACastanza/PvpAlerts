@@ -36,7 +36,7 @@ local PVP_FIGHT_DCEP = PVP:GetGlobal('PVP_FIGHT_DCEP')
 local PVP_ID_RETAIN_TIME = PVP:GetGlobal('PVP_ID_RETAIN_TIME')
 local PVP_ID_RETAIN_TIME_EFFECT = PVP:GetGlobal('PVP_ID_RETAIN_TIME_EFFECT')
 
-
+local sqrt = zo_sqrt
 
 
 function PVP:RGBtoHEX(rgb)
@@ -673,7 +673,7 @@ function PVP:TableConcat(t1, t2)
 end
 
 function PVP:IsPlayerCCImmune(graceTimeInSec)
-	if not graceTime then graceTimeInSec = 0 end
+	if not graceTimeInSec then graceTimeInSec = 0 end
 
 	for i = 1, GetNumBuffs('player') do
 		local buffName, timeStarted, timeEnding, _, _, _, _, _, _, _, abilityId, _, castByPlayer = GetUnitBuffInfo(
@@ -1160,8 +1160,6 @@ function CountNestedElements(t)
 
 	-- /script d(CountNestedElements(PVP_Alerts_Main_Table.SV))
 end
-
-local sqrt = math.sqrt
 
 function PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 	local distance = sqrt(((targetX - selfX) * (targetX - selfX)) + ((targetY - selfY) * (targetY - selfY)))
