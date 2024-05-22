@@ -817,7 +817,7 @@ function PVP:UpdatePlayerDbAccountName(unitAccName, oldUnitAccName)
 			PVP.CHAT:Printf(
 				"Prevented Potential Database Error! Detected Player name change from %s to %s but Champion Points decreased (from %s to %s)",
 				self:GetFormattedAccountNameLink(oldUnitAccName, "FFFFFF"),
-				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"), oldCP, newCP)
+				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"), newCP, oldCP)
 			return
 		else
 			PVP.SV.CP[oldUnitAccName] = nil
