@@ -38,6 +38,7 @@ local PVP_ID_RETAIN_TIME_EFFECT = PVP:GetGlobal('PVP_ID_RETAIN_TIME_EFFECT')
 
 local sqrt = zo_sqrt
 
+local databaseIntegrityCheck = {}
 
 function PVP:RGBtoHEX(rgb)
 	local hexadecimal = ''
@@ -814,11 +815,13 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 			PVP.SV.CP[unitAccName] = oldCP
 			PVP.SV.CP[oldUnitAccName] = nil
 		elseif oldCP > newCP then
+			if databaseIntegrityCheck[unitCharName] then return end
 			PVP.CHAT:Printf(
-				"Prevented Potential Database Error! Character %s reported player name change from %s to %s but Champion Points decreased (from %s to %s)",
+				"Aborted full database update for Character %s. Logged player name change from %s to %s but Champion Points decreased (from %s to %s)",
 				self:GetFormattedCharNameLink(unitCharName),
 				self:GetFormattedAccountNameLink(oldUnitAccName, "FFFFFF"),
 				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"), oldCP, newCP)
+			databaseIntegrityCheck[unitCharName] = true
 			return
 		else
 			PVP.SV.CP[oldUnitAccName] = nil
