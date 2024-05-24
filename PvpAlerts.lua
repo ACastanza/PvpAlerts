@@ -3457,6 +3457,10 @@ function PVP.OnTargetChanged()
 				unitDbAccName = playerDbRecord.unitAccName
 			end
 
+			if unitCP > 0 then
+				PVP.SV.CP[unitAccName] = unitCP
+			end
+
 			if unitDbAccName and (unitDbAccName ~= unitAccName) then
 				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
 			end
@@ -3501,12 +3505,9 @@ function PVP.OnTargetChanged()
 			end
 		end
 
-		if unitCP > 0 then
-			PVP.SV.CP[unitAccName] = unitCP
-			if PVP.SV.showMaxTargetCP then
-				ZO_TargetUnitFramereticleoverChampionIcon:SetDimensions(20, 20)
-				ZO_TargetUnitFramereticleoverLevel:SetText(unitCP)
-			end
+		if (unitCP > 0) and PVP.SV.showMaxTargetCP then
+			ZO_TargetUnitFramereticleoverChampionIcon:SetDimensions(20, 20)
+			ZO_TargetUnitFramereticleoverLevel:SetText(unitCP)
 		end
 
 		PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, unitRace, IsUnitDead('reticleover'))
