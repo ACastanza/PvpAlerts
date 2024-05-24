@@ -530,10 +530,27 @@ function PVP:CountTotal(currentTime)
 	return count
 end
 
-function PVP:Purge_PlayerDB()
+function PVP:Clean_PlayerDB()
+	-- This loop creates a list of all known characters in the KOS list and updates their associated unitAccName if needed
 	local kosListNames = {}
-	for _, data in pairs(PVP.SV.KOSList) do
-		kosListNames[data.unitName] = true
+	for k, v in ipairs(PVP.SV.KOSList) do
+		kosListNames[v.unitName] = true
+		if PVP.SV.playersDB[v.unitName] then
+			local dbUnitAccName = PVP.SV.playersDB[v.unitName].unitAccName
+			if dbUnitAccName and dbUnitAccName ~= v.unitAccName then
+				PVP.SV.KOSList[k].unitAccName = dbUnitAccName
+			end
+		end
+	end
+
+	-- This loop updates unitAccName of all known players in the Cool LIst
+	for k, v in pairs(PVP.SV.coolList) do
+		if PVP.SV.playersDB[k] then
+			local dbUnitAccName = PVP.SV.playersDB[k].unitAccName
+			if dbUnitAccName and dbUnitAccName ~= v then
+				PVP.SV.coolList[k] = dbUnitAccName
+			end
+		end
 	end
 
 	local unitAccNameCP = {}
@@ -3888,7 +3905,7 @@ function PVP.OnLoad(eventCode, addonName)
 	EVENT_MANAGER:UnregisterForEvent(PVP.name, EVENT_ADD_ON_LOADED, PVP.OnLoad)
 
 	PVP:InitializeSV()
-	PVP:Purge_PlayerDB()
+	PVP:Clean_PlayerDB()
 	PVP:InitializeAddonMenu()
 	PVP:AvAHax()
 	PVP_KOS_SCENE_FRAGMENT = ZO_FadeSceneFragment:New(PVP_KOS, nil, 0)
