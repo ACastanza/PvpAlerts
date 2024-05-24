@@ -817,10 +817,10 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 		elseif oldCP > newCP then
 			if databaseIntegrityCheck[unitCharName] then return end
 			PVP.CHAT:Printf(
-				"Aborted full database update for Character %s. Logged player name change from %s to %s but Champion Points decreased (from %s to %s)",
-				self:GetFormattedCharNameLink(unitCharName),
+				"Ignored apparent player name change from %s to %s as this would require a CP decrease. Possible logging error for character %s.",
 				self:GetFormattedAccountNameLink(oldUnitAccName, "FFFFFF"),
-				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"), oldCP, newCP)
+				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"),
+				self:GetFormattedCharNameLink(unitCharName))
 			databaseIntegrityCheck[unitCharName] = true
 			return
 		else
