@@ -231,7 +231,7 @@ function PVP:OnCombatState(eventCode, combatState)
 				PVP.SV.playersDB[k].lastSeen = v.lastSeen
 			end
 			if playerDbRecord.unitAccName ~= v.unitAccName then
-				PVP:UpdatePlayerDbAccountName(v.unitAccName, playerDbRecord.unitAccName)
+				PVP:UpdatePlayerDbAccountName(k, v.unitAccName, playerDbRecord.unitAccName)
 			end
 		end
 		cachedPlayerDbUpdates[k] = nil
@@ -3458,7 +3458,7 @@ function PVP.OnTargetChanged()
 			end
 
 			if unitDbAccName and (unitDbAccName ~= unitAccName) then
-				PVP:UpdatePlayerDbAccountName(unitAccName, unitDbAccName)
+				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
 			end
 
 			if cachedPlayerDbUpdates[unitName] then

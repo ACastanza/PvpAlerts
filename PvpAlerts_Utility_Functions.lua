@@ -801,7 +801,7 @@ function PVP:GetRootNames(name)
 	return rootName or ""
 end
 
-function PVP:UpdatePlayerDbAccountName(unitAccName, oldUnitAccName)
+function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName)
 	local nameChangeNote = " (AutoNote: Previous name " .. oldUnitAccName .. ")"
 
 	local charactersToUpdate = {}
@@ -815,7 +815,8 @@ function PVP:UpdatePlayerDbAccountName(unitAccName, oldUnitAccName)
 			PVP.SV.CP[oldUnitAccName] = nil
 		elseif oldCP > newCP then
 			PVP.CHAT:Printf(
-				"Prevented Potential Database Error! Detected Player name change from %s to %s but Champion Points decreased (from %s to %s)",
+				"Prevented Potential Database Error! Character %s reported player name change from %s to %s but Champion Points decreased (from %s to %s)",
+				self:GetFormattedCharNameLink(unitCharName),
 				self:GetFormattedAccountNameLink(oldUnitAccName, "FFFFFF"),
 				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"), oldCP, newCP)
 			return
