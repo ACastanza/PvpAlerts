@@ -3767,7 +3767,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 					end
 					if index then
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_KOS), function()
-							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(kosUnitAccName),
+							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
 							table.remove(PVP.SV.KOSList, index)
 							PVP:PopulateKOSBuffer()
@@ -3780,7 +3780,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						end
 
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
-							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(kosUnitAccName),
+							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
 							table.remove(PVP.SV.KOSList, index)
 							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(rawName),
