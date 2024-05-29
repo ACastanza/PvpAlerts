@@ -531,7 +531,6 @@ function PVP:CountTotal(currentTime)
 end
 
 function PVP:Clean_PlayerDB()
-	-- This loop creates a list of all known characters in the KOS list and updates their associated unitAccName if needed
 	local kosListNames = {}
 	for k, v in ipairs(PVP.SV.KOSList) do
 		kosListNames[v.unitName] = true
@@ -543,7 +542,6 @@ function PVP:Clean_PlayerDB()
 		end
 	end
 
-	-- This loop updates unitAccName of all known players in the Cool LIst
 	for k, v in pairs(PVP.SV.coolList) do
 		if PVP.SV.playersDB[k] then
 			local dbUnitAccName = PVP.SV.playersDB[k].unitAccName
@@ -557,10 +555,6 @@ function PVP:Clean_PlayerDB()
 	for k, v in pairs(PVP.SV.playersDB) do
 		if v.unitAvARank == nil and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
 			PVP.SV.playersDB[k] = nil
-		else
-			if PVP.SV.CP[v.unitAccName] then
-				unitAccNameCP[v.unitAccName] = PVP.SV.CP[v.unitAccName]
-			end
 		end
 
 		if PVP.SV.playersDB[k] ~= nil and v.lastSeen == nil then
@@ -569,14 +563,11 @@ function PVP:Clean_PlayerDB()
 
 		if PVP.SV.playersDB[k] ~= nil and (v.lastSeen <= (sessionTimeEpoch - 31550000)) and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
 			PVP.SV.playersDB[k] = nil
-		else
-			if PVP.SV.CP[v.unitAccName] then
-				unitAccNameCP[v.unitAccName] = PVP.SV.CP[v.unitAccName]
-			end
+		elseif (PVP.SV.playersDB[k] ~= nil) and PVP.SV.CP[v.unitAccName] then
+			unitAccNameCP[v.unitAccName] = PVP.SV.CP[v.unitAccName]
 		end
 	end
 
-	PVP.SV.CP = {}
 	PVP.SV.CP = unitAccNameCP
 end
 

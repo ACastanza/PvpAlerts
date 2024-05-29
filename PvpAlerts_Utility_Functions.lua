@@ -805,7 +805,6 @@ end
 function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName)
 	local nameChangeNote = " (AutoNote: Previous name " .. oldUnitAccName .. ")"
 
-	local charactersToUpdate = {}
 	local isOnList
 
 	local oldCP = PVP.SV.CP[oldUnitAccName]
@@ -815,7 +814,7 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 			PVP.SV.CP[unitAccName] = oldCP
 			PVP.SV.CP[oldUnitAccName] = nil
 		elseif oldCP > newCP then
-			if databaseIntegrityCheck[unitCharName] then return end
+			if databaseIntegrityCheck[unitCharName] then d("Seen Again:") end
 			PVP.CHAT:Printf(
 				"Ignored apparent player name change from %s to %s as this would require a CP decrease. Possible logging error for character %s.",
 				self:GetFormattedAccountNameLink(oldUnitAccName, "FFFFFF"),
@@ -823,27 +822,24 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 				self:GetFormattedCharNameLink(unitCharName))
 			databaseIntegrityCheck[unitCharName] = true
 			return
-		else
-			PVP.SV.CP[oldUnitAccName] = nil
 		end
+		PVP.SV.CP[oldUnitAccName] = nil
 	end
 
 	for k, v in pairs(PVP.SV.playersDB) do
 		if v.unitAccName == oldUnitAccName then
-			charactersToUpdate[k] = true
 			PVP.SV.playersDB[k].unitAccName = unitAccName
 		end
 	end
 	for k, v in ipairs(PVP.SV.KOSList) do
 		if v.unitAccName == oldUnitAccName then
-			charactersToUpdate[k] = true
 			PVP.SV.KOSList[k].unitAccName = unitAccName
 			isOnList = true
 		end
 	end
 	for k, v in pairs(PVP.SV.coolList) do
-		if charactersToUpdate[k] then
-			PVP.SV.coolList[k].unitAccName = unitAccName
+		if v == oldUnitAccName then
+			PVP.SV.coolList[k] = unitAccName
 			isOnList = true
 		end
 	end
