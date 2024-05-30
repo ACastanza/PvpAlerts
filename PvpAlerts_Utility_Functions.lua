@@ -814,9 +814,9 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 			PVP.SV.CP[unitAccName] = oldCP
 			PVP.SV.CP[oldUnitAccName] = nil
 		elseif oldCP > newCP then
-			if databaseIntegrityCheck[unitCharName] then d("Seen Again:") end
+			if databaseIntegrityCheck[unitCharName] then return end
 			PVP.CHAT:Printf(
-				"Ignored apparent player name change from %s to %s as this would require a CP decrease. Possible logging error for character %s.",
+				"Possible player name change from %s to %s, seen for character %s, but this requires a CP decrease.",
 				self:GetFormattedAccountNameLink(oldUnitAccName, "FFFFFF"),
 				self:GetFormattedAccountNameLink(unitAccName, "FFFFFF"),
 				self:GetFormattedCharNameLink(unitCharName))
