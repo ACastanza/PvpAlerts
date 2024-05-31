@@ -1653,9 +1653,9 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 						unitAlliance == self.allianceOfPlayer and "FFFFFF" or nil),
 					true
 			elseif KOSOrFriend == "friend" then
-				return self:GetFriendIcon(24) .. self.Colorize(unitAccName, "40BB40"), false
+				return self:GetFriendIcon(24), false
 			elseif KOSOrFriend == "cool" then
-				return self:GetCoolIcon(24) .. self.Colorize(unitAccName, "40BB40"), false
+				return self:GetCoolIcon(24), false
 			elseif KOSOrFriend == "groupleader" then
 				return self:GetGroupLeaderIcon(32), false
 			elseif KOSOrFriend == "group" then
