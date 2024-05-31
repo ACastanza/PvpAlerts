@@ -2719,6 +2719,7 @@ function PVP:FullReset()
 	self.onEffect = {}
 
 	self.friends = {}
+	self.guildmates = {}
 
 	self.attackSoundDelay = 0
 	self.friendSoundDelay = 0

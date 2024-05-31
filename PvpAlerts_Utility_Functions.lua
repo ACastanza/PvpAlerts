@@ -1163,6 +1163,38 @@ function PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 	return distance
 end
 
+function PVP:GetGuildmateSharedGuilds(displayName)
+	if (not displayName) or (displayName == "") then return "" end
+	if not IsGuildMate(displayName) then return "" end
+
+	local guildNamesToken = ""
+	local firstGuildAllianceColor
+	local foundGuilds = 0
+
+	for i = 1, GetNumGuilds() do
+		local guildId = GetGuildId(i)
+		local memberIndex = GetGuildMemberIndexFromDisplayName(guildId, displayName)
+		if memberIndex then
+			foundGuilds = foundGuilds + 1
+			local guildName = GetGuildName(guildId)
+			local guildAlliance = GetGuildAlliance(guildId)
+			local guildAllianceColor = self:GetTrueAllianceColorsHex(guildAlliance)
+
+			if foundGuilds > 1 then
+				guildNamesToken = guildNamesToken .. ", "
+			end
+
+			guildNamesToken = guildNamesToken .. self:Colorize(guildName, guildAllianceColor)
+
+			if not firstGuildAllianceColor then
+				firstGuildAllianceColor = guildAllianceColor
+			end
+		end
+	end
+
+	return guildNamesToken, firstGuildAllianceColor
+end
+
 function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 	local isMalformedName, unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen, unitAccNameToken, unitCharNameToken, allianceColor
 	isMalformedName = PVP:IsMalformedName(playerName)

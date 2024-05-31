@@ -238,6 +238,7 @@ function PVP:Who(name, contains)
 	if KOSIndex ~= nil then --single player account information returned
 		local currentCP = ""
 		local accName = PVP.SV.playersDB[foundPlayerNames[1]].unitAccName
+		local sharedGuilds = PVP:GetGuildmateSharedGuilds(accName)
 		if self.SV.CP[accName] then currentCP = ' with ' .. PVP:Colorize(self.SV.CP[accName] .. 'cp', 'FFFFFF') .. ',' end
 		if isDecorated then
 			d('The player ' ..
@@ -256,6 +257,9 @@ function PVP:Who(name, contains)
 		end
 		for i = 1, #foundPlayerNames do
 			d(tostring(i) .. '. ' .. GetCharLink(foundPlayerNames[i]))
+		end
+		if sharedGuilds and sharedGuilds ~= "" then
+			d('Shared Guild(s): ' .. sharedGuilds)
 		end
 		if self.SV.playerNotes[accName] and self.SV.playerNotes[accName] ~= "" then
 			d('Note: ' .. self:Colorize(self.SV.playerNotes[accName], "76BCC3"))
@@ -912,27 +916,63 @@ function PVP:PopulateKOSBuffer()
 
 	self:FindFriends()
 
-	if next(self.friends) ~= nil and (mode == 1 or mode == 2) then
+	if next(self.friends) ~= nil then
 		for rawName, v in pairs(self.friends) do
-			local playerNote
-			local accName = self.SV.playersDB[rawName].unitAccName
-			playerNote = self.SV.playerNotes[accName]
-			if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
-			if not self.KOSNamesList[accName] then
-				local friendIcon, resurrectIcon
-				if v.isFriend then
-					friendIcon = self:GetFriendIcon()
-				else
-					friendIcon = self:GetCoolIcon()
+			local ally = self.SV.playersDB[rawName].unitAlliance == self.allianceOfPlayer
+			if (mode == 2 and ally) or (mode == 3 and not ally) or mode == 1 then
+				local playerNote
+				local accName = self.SV.playersDB[rawName].unitAccName
+				playerNote = self.SV.playerNotes[accName]
+				if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
+				if not self.KOSNamesList[accName] then
+					local friendIcon, resurrectIcon
+					if v.isFriend then
+						friendIcon = self:GetFriendIcon()
+					else
+						friendIcon = self:GetCoolIcon()
+					end
+					if v.isResurrect then
+						resurrectIcon = self:GetResurrectIcon()
+					else
+						resurrectIcon = ""
+					end
+					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+						self:GetFormattedAccountNameLink(accName, "40BB40") .. friendIcon .. resurrectIcon .. playerNote)
+					self.KOSNamesList[accName] = true
 				end
-				if v.isResurrect then
-					resurrectIcon = self:GetResurrectIcon()
-				else
-					resurrectIcon = ""
+			end
+		end
+	end
+
+	self:FindGuildmates()
+
+	if next(self.guildmates) ~= nil then
+		for rawName, v in pairs(self.guildmates) do
+			local ally = self.SV.playersDB[rawName].unitAlliance == self.allianceOfPlayer
+			if (mode == 2 and ally) or (mode == 3 and not ally) or mode == 1 then
+				local playerNote
+				local accName = self.SV.playersDB[rawName].unitAccName
+				playerNote = self.SV.playerNotes[accName]
+				if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
+				if not self.KOSNamesList[accName] then
+					local guildIcon, guildNames, firstGuildAllianceColor, resurrectIcon
+					if v.isGuildmate then
+						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(accName)
+						guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
+						guildNames = " " .. guildNames
+					else
+						guildIcon = self:GetCoolIcon()
+					end
+					if v.isResurrect then
+						resurrectIcon = self:GetResurrectIcon()
+					else
+						resurrectIcon = ""
+					end
+					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+						self:GetFormattedAccountNameLink(accName, "40BB40") ..
+						guildIcon .. resurrectIcon .. (guildNames or "") .. playerNote)
+					self.KOSNamesList[accName] = true
 				end
-				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-					self:GetFormattedAccountNameLink(accName, "40BB40") .. friendIcon .. resurrectIcon .. playerNote)
-				self.KOSNamesList[accName] = true
 			end
 		end
 	end
@@ -1080,6 +1120,56 @@ function PVP:FindFriends()
 
 	for k, v in pairs(self.friends) do
 		if v.currentTime ~= currentTime then self.friends[k] = nil end
+	end
+end
+
+function PVP:FindGuildmates()
+	local currentTime = GetFrameTimeMilliseconds()
+	local foundNames = {}
+	if next(self.idToName) ~= nil then
+		for k, v in pairs(self.idToName) do
+			local playerDbRecord = self.SV.playersDB[v]
+			if playerDbRecord then
+				local cool = self:FindAccInCOOL(v, playerDbRecord.unitAccName)
+				local hasPlayerNote = (self.SV.playerNotes[playerDbRecord.unitAccName] ~= nil)
+				if hasPlayerNote or (not IsPlayerInGroup(v)) and (IsGuildMate(v) or cool) then
+					if IsGuildMate(v) then
+						self.guildmates[v] = { currentTime = currentTime, isGuildmate = true, isResurrect = false }
+					else
+						self.guildmates[v] = { currentTime = currentTime, isGuildmate = false, isResurrect = false }
+					end
+					foundNames[v] = true
+				end
+			end
+		end
+	end
+
+	if next(self.playerNames) ~= nil then
+		for k, _ in pairs(self.playerNames) do
+			if not foundNames[k] then
+				local playerDbRecord = self.SV.playersDB[k]
+				local cool = self:FindAccInCOOL(k, playerDbRecord.unitAccName)
+				local hasPlayerNote = (self.SV.playerNotes[playerDbRecord.unitAccName] ~= nil)
+				if hasPlayerNote or (not IsPlayerInGroup(k)) and (IsGuildMate(k) or cool) then
+					if IsGuildMate(k) then
+						self.guildmates[k] = { currentTime = currentTime, isGuildmate = true, isResurrect = false }
+					else
+						self.guildmates[k] = { currentTime = currentTime, isGuildmate = false, isResurrect = false }
+					end
+				end
+			end
+		end
+	end
+
+	for i = 1, #self.namesToDisplay do
+		if self.guildmates[self.namesToDisplay[i]] and self.namesToDisplay[i].isResurrect then
+			self.guildmates[self.namesToDisplay[i]].isResurrect = true
+		end
+	end
+
+
+	for k, v in pairs(self.guildmates) do
+		if v.currentTime ~= currentTime then self.guildmates[k] = nil end
 	end
 end
 
