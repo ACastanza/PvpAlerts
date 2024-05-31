@@ -551,6 +551,12 @@ function PVP:GetFriendIcon(dimension)
 	return self:Colorize(zo_iconFormatInheritColor(PVP_FRIEND_ICON, dimension, dimension), "40BB40")
 end
 
+function PVP:GetGuildIcon(dimension, color)
+	dimension = dimension or 20
+	color = color or "BB4040"
+	return self:Colorize(zo_iconFormatInheritColor(PVP_GUILD_ICON, dimension, dimension), color)
+end
+
 function PVP:GetCoolIcon(dimension, dimmed)
 	dimension = dimension or 20
 	local color
