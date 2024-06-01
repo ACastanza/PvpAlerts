@@ -1662,7 +1662,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				return self:GetGroupIcon(32), false
 			elseif KOSOrFriend == "guild" then
 				return self:GetGuildIcon(24,
-						unitAlliance == self.allianceOfPlayer and "FFFFFF" or nil),
+						unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040"),
 					false
 			end
 		else

@@ -553,7 +553,7 @@ end
 
 function PVP:GetGuildIcon(dimension, color)
 	dimension = dimension or 20
-	color = color or "BB4040"
+	color = color or "FFFFFF"
 	return self:Colorize(zo_iconFormatInheritColor(PVP_GUILD_ICON, dimension, dimension), color)
 end
 
