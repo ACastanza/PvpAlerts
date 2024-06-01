@@ -3344,7 +3344,8 @@ function PVP:PopulateReticleOverNamesBuffer()
 				elseif KOSOrFriend == "group" then
 					formattedName = formattedName .. self:GetGroupIcon()
 				elseif KOSOrFriend == "guild" then
-					formattedName = formattedName .. self:GetGuildIcon()
+					formattedName = formattedName .. self:GetGuildIcon(nil,
+						playerDbRecord.unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
 				end
 			end
 			local endIcon
