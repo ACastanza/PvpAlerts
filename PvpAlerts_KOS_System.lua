@@ -838,6 +838,7 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 		local playerDbRecord = self.SV.playersDB[v]
 		if playerDbRecord then
 			local isCool = self:FindAccInCOOL(v, playerDbRecord.unitAccName)
+			local isPlayerGrouped = IsPlayerInGroup(v)
 			local playerNote = self.SV.playerNotes[playerDbRecord.unitAccName]
 			local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
 			local isFriend = IsFriend(v)
@@ -847,6 +848,7 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 					currentTime = currentTime,
 					unitAccName = playerDbRecord.unitAccName,
 					unitAlliance = playerDbRecord.unitAlliance,
+					isPlayerGrouped = isPlayerGrouped,
 					isFriend = isFriend,
 					isGuildmate = isGuildmate,
 					isCool = isCool,
@@ -860,23 +862,26 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 	for k, _ in pairs(self.playerNames) do
 		if not self.potentialAllies[k] then
 			local playerDbRecord = self.SV.playersDB[k]
-			local accName = playerDbRecord.unitAccName
-			local isCool = self:FindAccInCOOL(k, playerDbRecord.unitAccName)
-			local playerNote = self.SV.playerNotes[playerDbRecord.unitAccName]
-			local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
-			local isFriend = IsFriend(k)
-			local isGuildmate = IsGuildmate(k)
-			if hasPlayerNote or (not IsPlayerInGroup(k)) and (isCool or isFriend or isGuildmate) then
-				self.potentialAllies[k] = {
-					currentTime = currentTime,
-					unitAccName = playerDbRecord.unitAccName,
-					unitAlliance = playerDbRecord.unitAlliance,
-					isFriend = isFriend,
-					isGuildmate = isGuildmate,
-					isCool = isCool,
-					playerNote = hasPlayerNote and playerNote or nil,
-					isResurrect = false
-				}
+			if playerDbRecord then
+				local isPlayerGrouped = IsPlayerInGroup(k)
+				local isCool = self:FindAccInCOOL(k, playerDbRecord.unitAccName)
+				local playerNote = self.SV.playerNotes[playerDbRecord.unitAccName]
+				local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
+				local isFriend = IsFriend(k)
+				local isGuildmate = IsGuildmate(k)
+				if hasPlayerNote or (not IsPlayerInGroup(k)) and (isCool or isFriend or isGuildmate) then
+					self.potentialAllies[k] = {
+						currentTime = currentTime,
+						unitAccName = playerDbRecord.unitAccName,
+						unitAlliance = playerDbRecord.unitAlliance,
+						isPlayerGrouped = isPlayerGrouped,
+						isFriend = isFriend,
+						isGuildmate = isGuildmate,
+						isCool = isCool,
+						playerNote = hasPlayerNote and playerNote or nil,
+						isResurrect = false
+					}
+				end
 			end
 		end
 	end
@@ -1003,7 +1008,8 @@ function PVP:PopulateKOSBuffer()
 					end
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(v.unitAccName, "40BB40") ..
-						resurrectIcon .. importantIcon .. guildIcon .. (guildNames or "") .. v.playerNote)
+						resurrectIcon ..
+						importantIcon .. guildIcon .. (((not v.isPlayerGrouped) and guildNames) or "") .. v.playerNote)
 					self.KOSNamesList[v.unitAccName] = true
 				end
 			end
