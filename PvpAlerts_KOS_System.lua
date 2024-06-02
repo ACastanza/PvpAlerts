@@ -959,7 +959,6 @@ function PVP:PopulateKOSBuffer()
 					if v.isGuildmate then
 						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(accName)
 						guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
-						guildNames = " " .. guildNames
 					else
 						guildIcon = self:GetCoolIcon()
 					end
