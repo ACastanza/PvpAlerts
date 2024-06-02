@@ -3888,7 +3888,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_DELETE_NOTE), function()
 								chat:Printf("Deleted note \"%s\" for player %s",
 									PVP:Colorize(accNote, "76BCC3"),
-									PVP:GetFormattedAccountNameLink(playerName, "FFFFFF"))
+									PVP:GetFormattedAccountNameLink(unitAccName, "FFFFFF"))
 								PVP.SV.playerNotes[unitAccName] = nil
 							end)
 						end
