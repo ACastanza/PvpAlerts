@@ -843,7 +843,7 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 			local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
 			local isFriend = IsFriend(v)
 			local isGuildmate = IsGuildMate(v)
-			if hasPlayerNote or (not IsPlayerInGroup(v)) and (isCool or isFriend or isGuildmate) then
+			if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 				self.potentialAllies[v] = {
 					currentTime = currentTime,
 					unitAccName = playerDbRecord.unitAccName,
@@ -869,7 +869,7 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 				local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
 				local isFriend = IsFriend(k)
 				local isGuildmate = IsGuildMate(k)
-				if hasPlayerNote or (not IsPlayerInGroup(k)) and (isCool or isFriend or isGuildmate) then
+				if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 					self.potentialAllies[k] = {
 						currentTime = currentTime,
 						unitAccName = playerDbRecord.unitAccName,
@@ -984,7 +984,12 @@ function PVP:PopulateKOSBuffer()
 		for rawName, v in pairs(self.potentialAllies) do
 			local isAlly = v.unitAlliance == self.allianceOfPlayer
 			if (mode == 2 and isAlly) or (mode == 3 and not isAlly) or mode == 1 then
-				if v.playerNote then v.playerNote = PVP:Colorize("- " .. v.playerNote, 'C5C29F') else v.playerNote = "" end
+				local playerNoteToken
+				if v.playerNote then
+					playerNoteToken = PVP:Colorize("- " .. v.playerNote, 'C5C29F')
+				else
+					playerNoteToken = ""
+				end
 				if not self.KOSNamesList[v.unitAccName] then
 					local importantIcon, guildIcon, guildNames, firstGuildAllianceColor, resurrectIcon
 					if v.isFriend then
@@ -1009,7 +1014,7 @@ function PVP:PopulateKOSBuffer()
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(v.unitAccName, "40BB40") ..
 						resurrectIcon ..
-						importantIcon .. guildIcon .. (((not v.isPlayerGrouped) and guildNames) or "") .. v.playerNote)
+						importantIcon .. guildIcon .. (((not v.isPlayerGrouped) and guildNames) or "") .. playerNoteToken)
 					self.KOSNamesList[v.unitAccName] = true
 				end
 			end
@@ -1022,8 +1027,17 @@ function PVP:PopulateKOSBuffer()
 		local rawName = self.SV.KOSList[i].unitName
 		local accName = self.SV.KOSList[i].unitAccName
 		local ally = self.SV.playersDB[rawName].unitAlliance == self.allianceOfPlayer
-		local isResurrect, playerNote
 		local isActive = PVP.kosActivityList.activeChars[accName]
+		local isResurrect, playerNote, guildNames, firstGuildAllianceColor, guildIcon
+
+		if IsGuildMate(rawName) then
+			guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(accName)
+			guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
+		else
+			guildIcon = ""
+			guildNames = ""
+		end
+
 		playerNote = self.SV.playerNotes[accName]
 		if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
 
