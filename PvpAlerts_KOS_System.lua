@@ -1061,11 +1061,11 @@ function PVP:PopulateKOSBuffer()
 				if ally then
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(accName, "FFFFFF") .. self:GetKOSIcon(nil, "FFFFFF") ..
-						resurrectIcon .. playerNote)
+						resurrectIcon .. guildIcon .. playerNote)
 				else
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(accName, "BB4040") ..
-						self:GetKOSIcon() .. resurrectIcon .. playerNote)
+						self:GetKOSIcon() .. resurrectIcon .. guildIcon .. guildNames .. playerNote)
 				end
 			end
 		end
@@ -1085,7 +1085,8 @@ function PVP:PopulateKOSBuffer()
 				end
 			else
 				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName, true),
-					nil, true) .. self:GetFormattedAccountNameLink(accName, "3F3F3F") .. playerNote)
+						nil, true) ..
+					self:GetFormattedAccountNameLink(accName, "3F3F3F") .. guildIcon .. guildNames .. playerNote)
 			end
 		end
 	end
