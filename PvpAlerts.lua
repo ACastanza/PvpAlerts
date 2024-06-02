@@ -2322,7 +2322,8 @@ function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 	elseif KOSOrFriend == "group" then
 		formattedName = formattedName .. self:GetGroupIcon(not isTargetFrame and 45 or nil)
 	elseif KOSOrFriend == "guild" then
-		formattedName = formattedName .. self:GetGuildIcon(not isTargetFrame and 35 or 19)
+		formattedName = formattedName .. self:GetGuildIcon(not isTargetFrame and 35 or 19,
+			playerDbRecord.unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
 	end
 
 	if isTargetFrame then
