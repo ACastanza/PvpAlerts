@@ -960,7 +960,8 @@ function PVP:PopulateKOSBuffer()
 						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(accName)
 						guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
 					else
-						guildIcon = self:GetCoolIcon()
+						guildIcon = ""
+						guildNames = ""
 					end
 					if v.isResurrect then
 						resurrectIcon = self:GetResurrectIcon()
@@ -969,7 +970,7 @@ function PVP:PopulateKOSBuffer()
 					end
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(accName, "40BB40") ..
-						guildIcon .. resurrectIcon .. (guildNames or "") .. playerNote)
+						resurrectIcon .. guildIcon .. (guildNames or "") .. playerNote)
 					self.KOSNamesList[accName] = true
 				end
 			end
