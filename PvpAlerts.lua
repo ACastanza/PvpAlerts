@@ -2712,7 +2712,7 @@ function PVP:FullReset()
 	self.namesToDisplay = {}
 	self.onEffect = {}
 
-	self.friends = {}
+	self.potentialAllies = {}
 
 	self.attackSoundDelay = 0
 	self.friendSoundDelay = 0
