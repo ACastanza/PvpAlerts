@@ -2658,77 +2658,77 @@ PVP.bgDamagePowerups = {
 
 PVP.bgTeamBases = {
 	[77] = { -- arc DOM
-		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[42] = { -- arc DM
-		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[84] = { -- arc CTF
-		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[70] = { -- foyada DON
-		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[41] = { -- foyada DM
-		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[83] = { -- foyada CTF
-		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[72] = { -- ularra DOM
-		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[43] = { -- ularra DM
-		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	[85] = { -- ularra CTF
-		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 }
 
 PVP.bgTeamBasesFull = {
 	ald = { -- ald DOM
-		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.243979, y = 0.497148, z = 169.91, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.748098, y = 0.208174, z = 170.03, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.739860, y = 0.772813, z = 169.90, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	foya = { -- foyada DON
-		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.259573, y = 0.572009, z = 132.64, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.679091, y = 0.756353, z = 133.19, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.691968, y = 0.281260, z = 132.59, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 
 	ul = { -- ularra DOM
-		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_ALLIANCE_FIRE_DRAKES },
-		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_ALLIANCE_PIT_DAEMONS },
-		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_ALLIANCE_STORM_LORDS },
+		{ x = 0.216728, y = 0.496081, z = 176.42, alliance = BATTLEGROUND_TEAM_FIRE_DRAKES },
+		{ x = 0.700304, y = 0.213287, z = 176.54, alliance = BATTLEGROUND_TEAM_PIT_DAEMONS },
+		{ x = 0.695902, y = 0.773083, z = 176.03, alliance = BATTLEGROUND_TEAM_STORM_LORDS },
 	},
 }
 

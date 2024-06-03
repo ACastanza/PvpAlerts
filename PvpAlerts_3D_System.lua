@@ -215,7 +215,7 @@ local function SetupTextureCoords(control)
 		if not control.params.textureState then
 			control.params.textureState = 1
 			icon:SetTextureCoords(((control.params.textureState - 1) * 64) / 2048, (control.params.textureState * 64) /
-			2048, 0, 1)
+				2048, 0, 1)
 		end
 	elseif type == 'PING' then
 		icon:SetTextureCoords(0, 0.03125, 0, 1)
@@ -388,19 +388,19 @@ local function Hide3DControl(control, scaleAdjustment)
 
 	local notCurrentDistrict = icControls[type] and not control.params.isCurrent
 	local controlTooClose = (type ~= "SHADOW_IMAGE") and
-	control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
+		control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
 	local isControlUtility = utilityControls[type]
 	-- local onScreenCheck = IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or (PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_ARTIFACT_KEEP) or (PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_BORDER_KEEP) or (PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT)) or (IsPlayerNearObjective(control.params.name) and control.params.type == 'MILEGATE'))
 	local onScreenCheck = (IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(control.params.keepId)])) or
-	(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
+		(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
 	local isMapShowing = ZO_WorldMap_IsWorldMapShowing()
 	local controlTooFar = not isControlUtility and control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance
 	local controlOnScreen = PVP.SV.showOnScreen and PVP.SV.onScreenReplace and onScreenCheck
 	local keepCheck = control.params.keepId and GetKeepResourceType(control.params.keepId) ~= 0 and
-	(control.params.distance > scaleAdjustment * PVP.SV.maxResource3DIconsDistance or control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance)
+		(control.params.distance > scaleAdjustment * PVP.SV.maxResource3DIconsDistance or control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance)
 
 	local shouldHideControl = isMapShowing or notCurrentDistrict or controlTooClose or controlTooFar or controlOnScreen or
-	keepCheck
+		keepCheck
 
 	control:SetHidden(shouldHideControl)
 	return shouldHideControl
@@ -427,8 +427,10 @@ local function IsInBorderKeepArea(renew)
 
 		for k, v in pairs(PVP.borderKeepsIds) do
 			local keepName = GetKeepName(k)
-			if keepName == locationName or string.gsub(locationName, ' Gate', '') == string.gsub(keepName, 'Gate', '') then return
-				k end                                                                                                           --hax because typo in English client for dc border keep names
+			if keepName == locationName or string.gsub(locationName, ' Gate', '') == string.gsub(keepName, 'Gate', '') then
+				return
+					k
+			end --hax because typo in English client for dc border keep names
 		end
 		return false
 	else
@@ -494,8 +496,10 @@ local function GetCameraInfoOld()
 
 	local newX, newY
 
-	if not PVP.currentCameraDistance then PVP.currentCameraDistance = GetSetting(SETTING_TYPE_CAMERA,
-			CAMERA_SETTING_DISTANCE) end
+	if not PVP.currentCameraDistance then
+		PVP.currentCameraDistance = GetSetting(SETTING_TYPE_CAMERA,
+			CAMERA_SETTING_DISTANCE)
+	end
 
 	local cameraX = sin(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
 	local cameraY = cos(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
@@ -747,7 +751,7 @@ local function SetCaptureBarVisibility(control)
 		local toHide = (control.params.percentage == 100 and not GetKeepUnderAttack(control.params.keepId, 1))
 		local neutral = control.params.captureAlliance == 0 or control.params.percentage == 0
 		local adjustHiding = (control.params.distance > control.params.scaleAdjustment * PVP.SV.max3DCaptureDistance and PVP.currentTooltip ~= control) or
-		isControlFlipping
+			isControlFlipping
 
 		divider:SetAlpha(1)
 		captureBG:SetAlpha(1)
@@ -1013,7 +1017,8 @@ local function GetControlTexture(control, data, iconType)
 		['EAST'] = PVP_TEXTURES_PATH .. 'E.dds',
 		['NORTH'] = PVP_TEXTURES_PATH .. 'N.dds',
 		['SOUTH'] = PVP_TEXTURES_PATH .. 'S.dds',
-		['IC_DOOR'] = (data.doorType == 1) and "esoui/art/icons/mapkey/mapkey_artifactgate_open.dds" or "esoui/art/icons/mapkey/mapkey_artifactgate_closed.dds",
+		['IC_DOOR'] = (data.doorType == 1) and "esoui/art/icons/mapkey/mapkey_artifactgate_open.dds" or
+			"esoui/art/icons/mapkey/mapkey_artifactgate_closed.dds",
 		['IC_BASE'] = PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, data.alliance),
 		['IC_VAULT'] = select(4, GetPOIMapInfo(IC_ZONEID, data.poiId)),
 		['SEWERS_SIGN'] = PVP_TEXTURES_PATH .. 'wrongWay.dds',
@@ -1031,7 +1036,7 @@ local function GetControlTexture(control, data, iconType)
 			texture = string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'SCROLL' then
 			texture = data.isBgFlag and ZO_MapPin.PIN_DATA[data.pinType].texture or
-			string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+				string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'GROUP' then
 			if control.params.isGroupLeader then
 				texture = 'esoui/art/icons/mapkey/mapkey_groupleader.dds'
@@ -1259,7 +1264,7 @@ end
 local function ResetWorldTooltip()
 	PVP.currentTooltip = nil
 	PVP_WorldTooltipLabel:SetText('')
-    PVP_WorldTooltipSubLabel:SetText('')
+	PVP_WorldTooltipSubLabel:SetText('')
 	PVP_WorldTooltipSiegeLabel:SetText('')
 	PVP_WorldTooltipCampaignScoreLabel:SetText('')
 	PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
@@ -1306,9 +1311,12 @@ function PVP:Init3D()
 		control:GetNamedChild('Ping'):SetTextureCoords(0, 1, 0, 1)
 		control:GetNamedChild('Icon'):Set3DRenderSpaceUsesDepthBuffer(false)
 		if control.params.borderKeepAnimationHandler and control.params.borderKeepAnimationHandler:IsPlaying() then
-			control.params.borderKeepAnimationHandler:Stop() end
-		if control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() then control.params
-				.flippingPlaying:Stop() end
+			control.params.borderKeepAnimationHandler:Stop()
+		end
+		if control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() then
+			control.params
+				.flippingPlaying:Stop()
+		end
 		ResetControlPings(control)
 		control.params = {}
 	end
@@ -1362,14 +1370,14 @@ function PVP:Init3D()
 				local control = v
 				if control and control:GetName() and control.params.type ~= 'COMPASS' then
 					local newX = PVP.currentCameraInfo.current3DX +
-					(control.params.X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
+						(control.params.X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
 					local newY = PVP.currentCameraInfo.current3DY +
-					(control.params.Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+						(control.params.Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 
 					local newX = PVP.currentCameraInfo.last3dX +
-					(control.params.X - PVP.currentCameraInfo.lastMapX) * GetCurrentMapScaleTo3D()
+						(control.params.X - PVP.currentCameraInfo.lastMapX) * GetCurrentMapScaleTo3D()
 					local newY = PVP.currentCameraInfo.last3dY +
-					(control.params.Y - PVP.currentCameraInfo.lastMapY) * GetCurrentMapScaleTo3D()
+						(control.params.Y - PVP.currentCameraInfo.lastMapY) * GetCurrentMapScaleTo3D()
 
 
 					local oldX, oldZ, oldY = control:Get3DRenderSpaceOrigin()
@@ -1399,7 +1407,7 @@ function PVP:OnWorldMapChangedCallback()
 	-- PVP.wmcCallbackPending = zo_callLater(function() PVP.wmcCallbackPending = nil if DoesCurrentMapMatchMapForPlayerLocation() then d('map changed callback') PVP:UpdateNearbyKeepsAndPOIs(nil, true) end end, 50)
 	-- end
 	zo_callLater(
-	function() if DoesCurrentMapMatchMapForPlayerLocation() then PVP:UpdateNearbyKeepsAndPOIs(nil, true) end end, 50)
+		function() if DoesCurrentMapMatchMapForPlayerLocation() then PVP:UpdateNearbyKeepsAndPOIs(nil, true) end end, 50)
 end
 
 function PVP:Should3DSystemBeOn()
@@ -1458,8 +1466,10 @@ local function Take3DMeasurements()
 	end
 
 	if PVP.suppressTest and (GetFrameTimeMilliseconds() > (PVP.suppressTest.currentTime + 6000)) then
-		if PVP.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, PVP.suppressTest.playerGroupTag) then PVP.LMP:UnsuppressPing(
-			MAP_PIN_TYPE_PING, PVP.suppressTest.playerGroupTag) end
+		if PVP.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, PVP.suppressTest.playerGroupTag) then
+			PVP.LMP:UnsuppressPing(
+				MAP_PIN_TYPE_PING, PVP.suppressTest.playerGroupTag)
+		end
 		PVP.suppressTest = nil
 	end
 
@@ -1583,12 +1593,24 @@ local function Take3DMeasurements()
 	end
 
 	PVP.currentCameraInfo = PVP.currentCameraInfo or {}
-	PVP.currentCameraInfo = { adjustedHeading = GetAdjustedPlayerCameraHeading(true), cameraX = cameraX,
-		cameraY = cameraY, cameraZ = cameraZ, cameraAngleX = heading, cameraAngleZ = cameraAngleZ,
-		cameraDistance = cameraDistance, timeStamp = GetFrameTimeMilliseconds(),
-		lastDeltaX = PVP.currentCameraInfo.lastDeltaX, lastDeltaY = PVP.currentCameraInfo.lastDeltaY,
-		current3DX = current3DX, current3DY = current3DY, currentMapX = currentMapX, currentMapY = currentMapY,
-		player3dX = player3dX, player3dY = player3dY }
+	PVP.currentCameraInfo = {
+		adjustedHeading = GetAdjustedPlayerCameraHeading(true),
+		cameraX = cameraX,
+		cameraY = cameraY,
+		cameraZ = cameraZ,
+		cameraAngleX = heading,
+		cameraAngleZ = cameraAngleZ,
+		cameraDistance = cameraDistance,
+		timeStamp = GetFrameTimeMilliseconds(),
+		lastDeltaX = PVP.currentCameraInfo.lastDeltaX,
+		lastDeltaY = PVP.currentCameraInfo.lastDeltaY,
+		current3DX = current3DX,
+		current3DY = current3DY,
+		currentMapX = currentMapX,
+		currentMapY = currentMapY,
+		player3dX = player3dX,
+		player3dY = player3dY
+	}
 
 	-- local mouseOverControl = PVP:GetMouseOverControl()
 	-- if mouseOverControl then
@@ -1751,30 +1773,30 @@ end
 
 local function IsKeepLocked(keepId)
 	local connectedKeepsArray = {
-		[3] = { 109, 110, 5 },         --warden
-		[4] = { 109, 110, 5 },         --rayles
-		[5] = { 3, 4, 6, 7 },          --glade
-		[6] = { 5, 7, 18, 132 },       --ash
-		[7] = { 5, 6, 8, 134 },        --aw
+		[3] = { 109, 110, 5 },           --warden
+		[4] = { 109, 110, 5 },           --rayles
+		[5] = { 3, 4, 6, 7 },            --glade
+		[6] = { 5, 7, 18, 132 },         --ash
+		[7] = { 5, 6, 8, 134 },          --aw
 		[8] = { 109, 110, 7, 9, 107, 108 }, --claw
-		[9] = { 10, 13, 8, 134 },      --chal
-		[10] = { 11, 12, 9, 13 },      --arrius
-		[11] = { 107, 108, 10 },       --king
-		[12] = { 107, 108, 10 },       --farra
-		[13] = { 10, 9, 14, 133 },     --brk
+		[9] = { 10, 13, 8, 134 },        --chal
+		[10] = { 11, 12, 9, 13 },        --arrius
+		[11] = { 107, 108, 10 },         --king
+		[12] = { 107, 108, 10 },         --farra
+		[13] = { 10, 9, 14, 133 },       --brk
 		[14] = { 107, 108, 13, 15, 105, 106 }, --drake
-		[15] = { 16, 17, 14, 133 },    --alessia
-		[16] = { 19, 20, 15, 17 },     --fare
-		[17] = { 16, 15, 18, 132 },    --roe
+		[15] = { 16, 17, 14, 133 },      --alessia
+		[16] = { 19, 20, 15, 17 },       --fare
+		[17] = { 16, 15, 18, 132 },      --roe
 		[18] = { 105, 106, 109, 110, 17, 6 }, --brindle
-		[19] = { 105, 106, 16 },       --bb
-		[20] = { 105, 106, 16 },       --bm
-		[132] = { 6, 17 },             --nik
-		[133] = { 13, 15 },            --sej
-		[134] = { 7, 9 },              --bleaks
-		[163] = { 8 },                 --Winter's Peak
-		[164] = { 18 },                --Carmala
-		[165] = { 14 },                --Harlun's
+		[19] = { 105, 106, 16 },         --bb
+		[20] = { 105, 106, 16 },         --bm
+		[132] = { 6, 17 },               --nik
+		[133] = { 13, 15 },              --sej
+		[134] = { 7, 9 },                --bleaks
+		[163] = { 8 },                   --Winter's Peak
+		[164] = { 18 },                  --Carmala
+		[165] = { 14 },                  --Harlun's
 	}
 
 	local adLinks = {
@@ -1859,7 +1881,7 @@ local function SetupNormalWorldTooltip(altAlign)
 	PVP_WorldTooltipLabel:ClearAnchors()
 	PVP_WorldTooltipLabel:SetAnchor(TOPLEFT, PVP_WorldTooltip, TOPLEFT, 0, 0)
 	PVP_WorldTooltipLabel:SetFont('$(BOLD_FONT)|$(KB_20)|thick-outline')
-    PVP_WorldTooltipSubLabel:ClearAnchors()
+	PVP_WorldTooltipSubLabel:ClearAnchors()
 	PVP_WorldTooltipSiegeLabel:ClearAnchors()
 	if altAlign then
 		PVP_WorldTooltipSubLabel:SetAnchor(TOPLEFT, PVP_WorldTooltipLabel, BOTTOMLEFT, 0, 4)
@@ -1871,7 +1893,7 @@ local function SetupNormalWorldTooltip(altAlign)
 	PVP_WorldTooltipCampaignScoreLabel:SetText('')
 	PVP_WorldTooltipCampaignHoldingsLabel:SetText('')
 	PVP_WorldTooltipEmperorInfoLabel:SetText('')
-    PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
+	PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
 end
 
 local function SetControlInitialSize(control, isCtfBase)
@@ -1923,7 +1945,7 @@ local function ControlHasMouseOver(control, multiplier, heading)
 		lowerBoundZ = atan2((deltaZ - 0.5 * controlSize), distance)
 		higherBoundZ = atan2((deltaZ + 0.5 * controlSize), distance)
 		local distanceCheck = control.params.distance and PVP.currentTooltip and PVP.currentTooltip.params.distance and
-		control.params.distance < PVP.currentTooltip.params.distance
+			control.params.distance < PVP.currentTooltip.params.distance
 
 
 		local validTooltipStatus = not PVP.currentTooltip or PVP.currentTooltip == control or distanceCheck
@@ -1971,30 +1993,34 @@ end
 
 
 local function GetEmperorInfoString(isWorldCrown)
-	local text
+	local text, accountNameFromDB, unitCharNameFromDB, formattedEmperorName
 	local currentCampaignId = GetCurrentCampaignId()
-	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
+	local userDisplayNameType = PVP.SV.userDisplayNameType or PVP.defaults.userDisplayNameType
+	emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
 	if emperorAlliance == ALLIANCE_NONE then
 		text = PVP:Colorize("No emperor is currently reigning!", 'CCCCCC')
 	else
-		local maleName = PVP:GetTargetChar(emperorRawName .. "^Mx", 35, 35)
-		local femaleName = PVP:GetTargetChar(emperorRawName .. "^Fx", 35, 35)
-
-		local formattedEmperorName
-
-		if maleName then
-			formattedEmperorName = maleName
-		elseif femaleName then
-			formattedEmperorName = femaleName
+		accountNameFromDB, unitCharNameFromDB = GetPvpDbPlayerInfo(emperorRawName, false)
+		if unitCharNameFromDB and (unitCharNameFromDB ~= "") then
+			formattedEmperorName = PVP:GetTargetChar(unitCharNameFromDB, 35, 35)
 		else
-			formattedEmperorName = PVP:GetEmperorIcon(45, PVP:GetTrueAllianceColorsHex(emperorAlliance)) ..
-			GetAllianceColoredString(emperorRawName, emperorAlliance)
+			if userDisplayNameType == "both" then
+				formattedEmperorName = PVP:GetEmperorIcon(35, PVP:GetTrueAllianceColorsHex(emperorAlliance)) ..
+					GetAllianceColoredString(emperorRawName, emperorAlliance) .. PVP:Colorize(emperorAccName, 'CCCCCC')
+			elseif userDisplayNameType == "character" then
+				formattedEmperorName = PVP:GetEmperorIcon(35, PVP:GetTrueAllianceColorsHex(emperorAlliance)) ..
+					GetAllianceColoredString(emperorRawName, emperorAlliance)
+			elseif userDisplayNameType == "user" then
+				formattedEmperorName = PVP:GetEmperorIcon(35, PVP:GetTrueAllianceColorsHex(emperorAlliance)) ..
+					GetAllianceColoredString(emperorAccName, emperorAlliance)
+			end
 		end
+
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)
 			text = PVP:Colorize('Emperor ', 'CCCCCC') ..
-			formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(math.floor(reignTime)),
-				'CCCCCC')
+				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(math.floor(reignTime)),
+					'CCCCCC')
 		else
 			text = PVP:Colorize('Current Emperor is: ', 'CCCCCC') .. formattedEmperorName
 		end
@@ -2004,7 +2030,8 @@ end
 
 local function ControlOnUpdate(control)
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
-	local keepNotClaimable = keepType == KEEPTYPE_ARTIFACT_GATE or keepType == PVP_KEEPTYPE_ARTIFACT_KEEP or keepType == PVP_KEEPTYPE_BORDER_KEEP
+	local keepNotClaimable = keepType == KEEPTYPE_ARTIFACT_GATE or keepType == PVP_KEEPTYPE_ARTIFACT_KEEP or
+		keepType == PVP_KEEPTYPE_BORDER_KEEP
 	local currentTime = GetFrameTimeMilliseconds()
 	if (currentTime - control.params.lastUpdate) >= 10 then
 		control.params.lastUpdate = currentTime
@@ -2018,9 +2045,9 @@ local function ControlOnUpdate(control)
 	control.multiplier = multiplier
 	local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
 	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
-	control.params.borderKeepAnimationHandler:IsPlaying()
+		control.params.borderKeepAnimationHandler:IsPlaying()
 	local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
-	control.borderKeepSelectedAnimationHandler:IsPlaying()
+		control.borderKeepSelectedAnimationHandler:IsPlaying()
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
 
 	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[control.params.keepId] then
@@ -2064,15 +2091,15 @@ local function ControlOnUpdate(control)
 				end
 				local currentCampaignName = GetCampaignName(currentCampaignId)
 				local text = PVP:Colorize('Welcome to the ', 'CCCCCC') ..
-				PVP:Colorize(currentCampaignName, PVP:AllianceToColor(alliance)) ..
-				PVP:Colorize(campaignTypeString .. ' campaign!', 'CCCCCC')
+					PVP:Colorize(currentCampaignName, PVP:AllianceToColor(alliance)) ..
+					PVP:Colorize(campaignTypeString .. ' campaign!', 'CCCCCC')
 				return text
 			end
 
 			local function GetBorderKeepInfoString()
 				local text = PVP:Colorize("You're at ", 'CCCCCC') ..
-				PVP:Colorize(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)),
-					PVP:AllianceToColor(alliance)) .. PVP:Colorize(' border keep!', 'CCCCCC')
+					PVP:Colorize(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)),
+						PVP:AllianceToColor(alliance)) .. PVP:Colorize(' border keep!', 'CCCCCC')
 				return text
 			end
 
@@ -2087,23 +2114,23 @@ local function ControlOnUpdate(control)
 				local numResources = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_RESOURCE, alliance)
 				local numOutposts = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OUTPOST, alliance)
 				local numScrolls = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_DEFENSIVE_ARTIFACT, alliance) +
-				GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OFFENSIVE_ARTIFACT, alliance)
+					GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OFFENSIVE_ARTIFACT, alliance)
 				local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] ..
-				'.dds'
+					'.dds'
 				local keepIcon = 'esoui/art/campaign/overview_keepicon_' .. allianceToIconName[alliance] .. '.dds'
 				local outpostIcon = 'esoui/art/campaign/overview_outposticon_' .. allianceToIconName[alliance] .. '.dds'
 				local resourceIcon = 'esoui/art/campaign/overview_resourcesicon_' .. allianceToIconName[alliance] ..
-				'.dds'
+					'.dds'
 				local scrollIcon = 'esoui/art/campaign/overview_scrollicon_' .. allianceToIconName[alliance] .. '.dds'
 				local text = GetAllianceColoredString(GetAllianceName(alliance), alliance) ..
-				PVP:Colorize(' holds: ', 'CCCCCC') ..
-				zo_iconFormat(keepIcon, 45, 45) ..
-				GetAllianceColoredString(tostring(numKeeps) .. "(18)", alliance) ..
-				zo_iconFormat(outpostIcon, 41, 41) ..
-				GetAllianceColoredString(tostring(numOutposts) .. "(3)", alliance) ..
-				zo_iconFormat(resourceIcon, 38, 38) ..
-				GetAllianceColoredString(tostring(numResources) .. "(54)", alliance) ..
-				zo_iconFormat(scrollIcon, 44, 44) .. GetAllianceColoredString(numScrolls, alliance)
+					PVP:Colorize(' holds: ', 'CCCCCC') ..
+					zo_iconFormat(keepIcon, 45, 45) ..
+					GetAllianceColoredString(tostring(numKeeps) .. "(18)", alliance) ..
+					zo_iconFormat(outpostIcon, 41, 41) ..
+					GetAllianceColoredString(tostring(numOutposts) .. "(3)", alliance) ..
+					zo_iconFormat(resourceIcon, 38, 38) ..
+					GetAllianceColoredString(tostring(numResources) .. "(54)", alliance) ..
+					zo_iconFormat(scrollIcon, 44, 44) .. GetAllianceColoredString(numScrolls, alliance)
 				return text
 			end
 
@@ -2143,7 +2170,7 @@ local function ControlOnUpdate(control)
 				local formattedPlayerName = PVP:GetFormattedName(PVP.playerName)
 				for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
 					local isPlayer, ranking, charName, alliancePoints = GetCampaignAllianceLeaderboardEntryInfo(
-					currentCampaignId, alliance, i)
+						currentCampaignId, alliance, i)
 					if isPlayer and formattedPlayerName == charName then
 						currentRanking = ranking
 						currentAP = alliancePoints
@@ -2157,9 +2184,9 @@ local function ControlOnUpdate(control)
 					text = "There're no records about you in this campaign yet!"
 				else
 					text = PVP:Colorize('You are ', 'CCCCCC') ..
-					PVP:Colorize('#' .. currentRanking, PVP:AllianceToColor(alliance)) ..
-					PVP:Colorize(' in your alliance with ', 'CCCCCC') ..
-					PVP:Colorize(currentAP, PVP:AllianceToColor(alliance)) .. PVP:Colorize(' AP!', 'CCCCCC')
+						PVP:Colorize('#' .. currentRanking, PVP:AllianceToColor(alliance)) ..
+						PVP:Colorize(' in your alliance with ', 'CCCCCC') ..
+						PVP:Colorize(currentAP, PVP:AllianceToColor(alliance)) .. PVP:Colorize(' AP!', 'CCCCCC')
 				end
 				return text
 			end
@@ -2187,53 +2214,53 @@ local function ControlOnUpdate(control)
 			local x, y = PVP_WorldTooltip:GetDimensions()
 			PVP_WorldTooltipBackdrop:SetDimensions(x + 35, y + 50)
 			PVP_WorldTooltipSubLabel:ClearAnchors()
-            PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 4)
+			PVP_WorldTooltipSubLabel:SetAnchor(TOP, PVP_WorldTooltipLabel, BOTTOM, 0, 4)
 			PVP_WorldTooltipSiegeLabel:ClearAnchors()
 			PVP_WorldTooltipSiegeLabel:SetAnchor(TOP, PVP_WorldTooltipSubLabel, BOTTOM, 0, 0)
-        else
+		else
 			local guildClaimName, siegeCount
-            if keepNotClaimable then
+			if keepNotClaimable then
 				guildClaimName = ''
-            else
-                guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or ''
-                if guildClaimName and guildClaimName ~= "" then
-                    guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
-                        PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
-                else
+			else
+				guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or ''
+				if guildClaimName and guildClaimName ~= "" then
+					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
+						PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
+				else
 					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
-                end
-            end
-			
-            if control.totalSieges > 0 then
-                local siegeAD = control.params.siegesAD > 0 and
-                    (' ' .. PVP:Colorize(tostring(control.params.siegesAD), PVP:AllianceToColor(1))) or ""
-                local siegeDC = control.params.siegesDC > 0 and
-                    (' ' .. PVP:Colorize(tostring(control.params.siegesDC), PVP:AllianceToColor(3))) or ""
-                local siegeEP = control.params.siegesEP > 0 and
-                    (' ' .. PVP:Colorize(tostring(control.params.siegesEP), PVP:AllianceToColor(2))) or ""
-                siegeCount = 'Siege:' .. siegeAD .. siegeDC .. siegeEP
-            else
+				end
+			end
+
+			if control.totalSieges > 0 then
+				local siegeAD = control.params.siegesAD > 0 and
+					(' ' .. PVP:Colorize(tostring(control.params.siegesAD), PVP:AllianceToColor(1))) or ""
+				local siegeDC = control.params.siegesDC > 0 and
+					(' ' .. PVP:Colorize(tostring(control.params.siegesDC), PVP:AllianceToColor(3))) or ""
+				local siegeEP = control.params.siegesEP > 0 and
+					(' ' .. PVP:Colorize(tostring(control.params.siegesEP), PVP:AllianceToColor(2))) or ""
+				siegeCount = 'Siege:' .. siegeAD .. siegeDC .. siegeEP
+			else
 				siegeCount = ''
-            end
-			
+			end
+
 			if keepNotClaimable then
 				PVP_WorldTooltipSubLabel:SetText(siegeCount)
-                PVP_WorldTooltipSiegeLabel:SetText('')
-            else
+				PVP_WorldTooltipSiegeLabel:SetText('')
+			else
 				PVP_WorldTooltipSubLabel:SetText(guildClaimName)
 				PVP_WorldTooltipSiegeLabel:SetText(siegeCount)
 			end
 
 			local distanceText = GetUpgradeLevelString(control) .. GetFormattedDistanceText(control)
 			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)) ..
-			distanceText)
+				distanceText)
 
-            SetupNormalWorldTooltip(true)
+			SetupNormalWorldTooltip(true)
 		end
 		showingTooltipStart = PVP.currentTooltip ~= control
 		if showingTooltipStart then
 			control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
-			1
+				1
 		end
 
 		PVP.currentTooltip = control
@@ -2248,7 +2275,7 @@ local function ControlOnUpdate(control)
 		ResetWorldTooltip()
 		SetCaptureBarVisibility(control)
 		control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
-		GetNumberOfAnimationPhases()
+			GetNumberOfAnimationPhases()
 	end
 
 
@@ -2288,10 +2315,10 @@ local function PoiOnUpdate(control)
 	local showTooltip
 	local type = control.params.type
 	local isBattlegroundTeamSignAnimationPlaying = control.battlegroundTeamSignAnimationHandler and
-	control.battlegroundTeamSignAnimationHandler:IsPlaying()
+		control.battlegroundTeamSignAnimationHandler:IsPlaying()
 	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and
-	control.params.alliance == GetUnitBattlegroundAlliance('player') and
-	GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
+		control.params.alliance == GetUnitBattlegroundTeam('player') and
+		GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
 
 	if control.params.type == 'RALLY' or control.params.hasRally then
 		ProcessRallyAnimation(control)
@@ -2337,21 +2364,21 @@ local function PoiOnUpdate(control)
 
 			local function GetBattlegroundNameString()
 				local text = PVP:Colorize('Welcome to ', 'CCCCCC') ..
-				PVP:Colorize(GetPlayerLocationName(), bgAllianceHexColor) .. PVP:Colorize(' battleground!', 'CCCCCC')
+					PVP:Colorize(GetPlayerLocationName(), bgAllianceHexColor) .. PVP:Colorize(' battleground!', 'CCCCCC')
 				return text
 			end
 
 			local function GetBattlegroundTypeString()
 				local text = PVP:Colorize('The gametype is ', 'CCCCCC') ..
-				PVP:Colorize(PVP:GetBattlegroundTypeText(battlegroundGameType), bgAllianceHexColor) ..
-				PVP:Colorize('!', 'CCCCCC')
+					PVP:Colorize(PVP:GetBattlegroundTypeText(battlegroundGameType), bgAllianceHexColor) ..
+					PVP:Colorize('!', 'CCCCCC')
 				return text
 			end
 
 			local function GetBattlegroundAllianceString()
 				local text = PVP:Colorize("You're playing on ", 'CCCCCC') ..
-				PVP:Colorize(GetBattlegroundAllianceName(control.params.alliance), bgAllianceHexColor) ..
-				PVP:Colorize(' team!', 'CCCCCC')
+					PVP:Colorize(GetBattlegroundTeamName(control.params.alliance), bgAllianceHexColor) ..
+					PVP:Colorize(' team!', 'CCCCCC')
 				return text
 			end
 
@@ -2366,7 +2393,7 @@ local function PoiOnUpdate(control)
 					battlegroundStateString = "Waiting for players..."
 				elseif battlegroundState == BATTLEGROUND_STATE_STARTING then
 					battlegroundStateString = "The match starts in " ..
-					tostring(zo_round(GetCurrentBattlegroundStateTimeRemaining() / 1000))
+						tostring(zo_round(GetCurrentBattlegroundStateTimeRemaining() / 1000))
 				elseif battlegroundState == BATTLEGROUND_STATE_RUNNING then
 					battlegroundStateString = "The match is running"
 				else
@@ -2382,11 +2409,11 @@ local function PoiOnUpdate(control)
 
 				for i = 1, GetNumScoreboardEntries() do
 					local alliance = GetScoreboardEntryBattlegroundAlliance(i)
-					if alliance == BATTLEGROUND_ALLIANCE_FIRE_DRAKES then
+					if alliance == BATTLEGROUND_TEAM_FIRE_DRAKES then
 						countFD = countFD + 1
-					elseif alliance == BATTLEGROUND_ALLIANCE_PIT_DAEMONS then
+					elseif alliance == BATTLEGROUND_TEAM_PIT_DAEMONS then
 						countPD = countPD + 1
-					elseif alliance == BATTLEGROUND_ALLIANCE_STORM_LORDS then
+					elseif alliance == BATTLEGROUND_TEAM_STORM_LORDS then
 						countSL = countSL + 1
 					end
 				end
@@ -2394,10 +2421,10 @@ local function PoiOnUpdate(control)
 				local text
 				-- FD/SL/PD
 				text = PVP:Colorize('The teams currently have: ', 'CCCCCC') ..
-				PVP:Colorize(countFD, PVP:BgAllianceToHexColor(BATTLEGROUND_ALLIANCE_FIRE_DRAKES)) ..
-				' ' ..
-				PVP:Colorize(countSL, PVP:BgAllianceToHexColor(BATTLEGROUND_ALLIANCE_STORM_LORDS)) ..
-				' ' .. PVP:Colorize(countPD, PVP:BgAllianceToHexColor(BATTLEGROUND_ALLIANCE_PIT_DAEMONS))
+					PVP:Colorize(countFD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_FIRE_DRAKES)) ..
+					' ' ..
+					PVP:Colorize(countSL, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_STORM_LORDS)) ..
+					' ' .. PVP:Colorize(countPD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_PIT_DAEMONS))
 				return text
 			end
 
@@ -2425,9 +2452,9 @@ local function PoiOnUpdate(control)
 					text = PVP:Colorize("There're no records about you in this leaderboard yet!", 'CCCCCC')
 				else
 					text = PVP:Colorize('You are ', 'CCCCCC') ..
-					PVP:Colorize('#' .. position, bgAllianceHexColor) ..
-					PVP:Colorize(' in the leaderboards ', 'CCCCCC') ..
-					PVP:Colorize(points, bgAllianceHexColor) .. PVP:Colorize(' points!', 'CCCCCC')
+						PVP:Colorize('#' .. position, bgAllianceHexColor) ..
+						PVP:Colorize(' in the leaderboards ', 'CCCCCC') ..
+						PVP:Colorize(points, bgAllianceHexColor) .. PVP:Colorize(' points!', 'CCCCCC')
 				end
 				return text
 			end
@@ -2449,10 +2476,10 @@ local function PoiOnUpdate(control)
 					prefix = 'From '
 				end
 				mainText = PVP:Colorize(prefix, '808080') ..
-				PVP:Colorize(control.params.name,
-					PVP:AllianceToColor(GetKeepAlliance(control.params.doorDistrictKeepId, 1)))
+					PVP:Colorize(control.params.name,
+						PVP:AllianceToColor(GetKeepAlliance(control.params.doorDistrictKeepId, 1)))
 			elseif type == 'BG_BASE' then
-				mainText = GetBattlegroundAllianceName(control.params.alliance) .. ' base'
+				mainText = GetBattlegroundTeamName(control.params.alliance) .. ' base'
 			elseif type == 'GROUP' then
 				local formattedName = PVP:GetTargetChar(control.params.name)
 				mainText = formattedName and formattedName or zo_strformat(SI_PLAYER_NAME, control.params.name)
@@ -2519,9 +2546,9 @@ local function PoiOnUpdate(control)
 						BGQUERY_LOCAL)
 					if carrierName and carrierName ~= "" then
 						mainText = mainText ..
-						PVP:Colorize(' carried by ', '808080') ..
-						PVP:Colorize(zo_strformat(SI_UNIT_NAME, carrierName),
-							PVP:BgAllianceToHexColor(control.params.scrollAlliance))
+							PVP:Colorize(' carried by ', '808080') ..
+							PVP:Colorize(zo_strformat(SI_UNIT_NAME, carrierName),
+								PVP:BgAllianceToHexColor(control.params.scrollAlliance))
 					end
 				else
 					if control.params.scrollAlliance ~= ALLIANCE_NONE then
@@ -2531,8 +2558,8 @@ local function PoiOnUpdate(control)
 					end
 					if control.params.scrollOriginalAlliance ~= 0 then
 						mainText = PVP:Colorize(
-						zo_iconFormatInheritColor(
-						PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, control.params.scrollOriginalAlliance), 48, 48),
+							zo_iconFormatInheritColor(
+								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, control.params.scrollOriginalAlliance), 48, 48),
 							PVP:AllianceToColor(control.params.scrollOriginalAlliance)) .. mainText
 					end
 				end
@@ -2554,7 +2581,7 @@ local function PoiOnUpdate(control)
 				end
 			else
 				control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and
-				control.params.currentPhase or 1
+					control.params.currentPhase or 1
 			end
 		end
 
@@ -2586,7 +2613,7 @@ local function PoiOnUpdate(control)
 			PVP_WorldTooltipLabel:SetText(mainText)
 			PVP_WorldTooltipLabel:SetColor(0.8, 0.8, 0.8)
 			SetupNormalWorldTooltip(false)
-            PVP_WorldTooltipSubLabel:SetText('')
+			PVP_WorldTooltipSubLabel:SetText('')
 			PVP_WorldTooltipSiegeLabel:SetText('')
 		end
 		PVP_WorldTooltip:SetHidden(false)
@@ -2597,7 +2624,7 @@ local function PoiOnUpdate(control)
 	if not showTooltip and PVP.currentTooltip == control then
 		ResetWorldTooltip()
 		control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
-		GetNumberOfAnimationPhases()
+			GetNumberOfAnimationPhases()
 	end
 
 	local adjustedMultiplier = GetPOIControlSelectedSizeMultiplier(control, scaleAdjustment, multiplier)
@@ -2629,7 +2656,7 @@ local function PoiOnUpdate(control)
 			control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
 	end
 
-	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and control.params.alliance ~= GetUnitBattlegroundAlliance('player') then
+	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and control.params.alliance ~= GetUnitBattlegroundTeam('player') then
 		control:SetAlpha(0.5)
 	elseif type == 'GROUP' and not (PVP.SV.allgroup3d or (control.params.isGroupLeader and PVP.SV.groupleader3d)) then
 		local distanceThreshold = 0.1 * scaleAdjustment * PVP_MAX_DISTANCE
@@ -2727,7 +2754,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 					GetKeepAlliance(control.params.keepId, 1), control.params.keepId),
 				GetKeepAlliance(control.params.keepId, 1))
 			control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
-			1
+				1
 		else
 			control.params.alliance = GetKeepAlliance(control.params.keepId, 1)
 			icon:SetTexture(iconTexture)
@@ -2735,8 +2762,9 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	end
 
 	local isSkirmish = IsSkirmishCloseToObjective(
-	PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_ARTIFACT_GATE or
-	PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_ARTIFACT_KEEP, coordsNewX, coordsNewY, scaleAdjustment)
+		PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_ARTIFACT_GATE or
+		PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_ARTIFACT_KEEP, coordsNewX, coordsNewY,
+		scaleAdjustment)
 	iconUA:SetTexture('/esoui/art/mappins/ava_attackburst_64.dds')
 	local shouldHideUA = not (GetKeepUnderAttack(control.params.keepId, 1) or isSkirmish)
 	iconUA:SetHidden(shouldHideUA)
@@ -2804,10 +2832,14 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		naveAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, naveId, 1)
 		apseAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, apseId, 1)
 
-		if naveAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then naveAlliance = GetKeepAlliance(
-			control.params.keepId, 1) end
-		if apseAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then apseAlliance = GetKeepAlliance(
-			control.params.keepId, 1) end
+		if naveAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then
+			naveAlliance = GetKeepAlliance(
+				control.params.keepId, 1)
+		end
+		if apseAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then
+			apseAlliance = GetKeepAlliance(
+				control.params.keepId, 1)
+		end
 
 		navePercent = PVP:GetCapturePercentFromAlliance(naveObjectiveState, GetKeepAlliance(control.params.keepId, 1),
 			naveAlliance)
@@ -2818,8 +2850,10 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 			otherId = PVP.AVAids[control.params.keepId][3].objectiveId
 			otherObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, otherId, 1))
 			otherAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, otherId, 1)
-			if otherAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then otherAlliance =
-				GetKeepAlliance(control.params.keepId, 1) end
+			if otherAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then
+				otherAlliance =
+					GetKeepAlliance(control.params.keepId, 1)
+			end
 			otherPercent = PVP:GetCapturePercentFromAlliance(otherObjectiveState,
 				GetKeepAlliance(control.params.keepId, 1), otherAlliance)
 		end
@@ -2868,7 +2902,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	-- PVP.m3 = GetGameTimeMilliseconds()
 
 	local showCaptureTexture = objectiveId and
-	(GetKeepResourceType(control.params.keepId) ~= 0 or GetKeepType(control.params.keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT)
+		(GetKeepResourceType(control.params.keepId) ~= 0 or GetKeepType(control.params.keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT)
 
 	control.params.showCaptureTexture = showCaptureTexture
 	local captureTexture = ""
@@ -2878,8 +2912,10 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		local _, _, objectiveState = GetObjectiveInfo(control.params.keepId, objectiveId, 1)
 		local captureAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, objectiveId, 1)
 
-		if captureAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then captureAlliance =
-			GetKeepAlliance(control.params.keepId, 1) end
+		if captureAlliance == 0 and not GetKeepUnderAttack(control.params.keepId, 1) then
+			captureAlliance =
+				GetKeepAlliance(control.params.keepId, 1)
+		end
 
 		local percentage = PVP:GetCapturePercentFromAlliance(objectiveState, GetKeepAlliance(control.params.keepId, 1),
 			captureAlliance)
@@ -2952,7 +2988,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
 	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
-	control.params.borderKeepAnimationHandler:IsPlaying()
+		control.params.borderKeepAnimationHandler:IsPlaying()
 
 	local currentCampaignId = GetCurrentCampaignId()
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
@@ -2961,7 +2997,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 	Hide3DControl(control, scaleAdjustment)
 	local keepName = zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)) ..
-	GetUpgradeLevelString(control)
+		GetUpgradeLevelString(control)
 
 	if PVP.SV.showOnScreen and not PVP.SV.unlocked then
 		local neighbors = IsPlayerNearObjective(control.params.keepId)
@@ -3097,9 +3133,9 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 			PVP_World3DCrownIcon:Set3DLocalDimensions(165, 165)
 			local crownX, crownY
 			crownX = PVP.currentCameraInfo.current3DX +
-			(PVP.icCoords.x - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
+				(PVP.icCoords.x - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
 			crownY = PVP.currentCameraInfo.current3DY +
-			(PVP.icCoords.y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+				(PVP.icCoords.y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 			PVP_World3DCrown:Set3DRenderSpaceOrigin(crownX, PVP.icCoords.z, crownY)
 			PVP_World3DCrown:SetHidden(false)
 			PVP_World3DCrown.params.mainControl = nil
@@ -3540,7 +3576,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 					higherBoundZ = atan2((deltaZ + 0.5 * controlSize), distance)
 
 					local validTooltipStatus = not PVP.currentTooltip or PVP.currentTooltip == control or
-					control.params.distance < PVP.currentTooltip.params.distance
+						control.params.distance < PVP.currentTooltip.params.distance
 
 					if (-angleZ > lowerBoundZ and -angleZ < higherBoundZ) and validTooltipStatus then
 						if control.params.type == 'CTF_BASE' then
@@ -3568,7 +3604,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 
 						if showingTooltipStart then
 							control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and
-							control.params.currentPhase or 1
+								control.params.currentPhase or 1
 						end
 
 						PVP.currentTooltip = control
@@ -3583,7 +3619,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 				if hidingTooltipStart then
 					ResetWorldTooltip()
 					control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and
-					control.params.currentPhase or GetNumberOfAnimationPhases()
+						control.params.currentPhase or GetNumberOfAnimationPhases()
 				end
 
 
@@ -3754,8 +3790,15 @@ local function FindNearbyPOIs()
 						bgBases[i].z
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 					table.insert(foundPOI,
-						{ pinType = alliance, targetX = targetX, targetY = targetY, targetZ = targetZ,
-							distance = distance, alliance = alliance, isBgBase = true })
+						{
+							pinType = alliance,
+							targetX = targetX,
+							targetY = targetY,
+							targetZ = targetZ,
+							distance = distance,
+							alliance = alliance,
+							isBgBase = true
+						})
 				end
 			end
 		end
@@ -3781,8 +3824,15 @@ local function FindNearbyPOIs()
 							local holdingAlliance = GetCarryableObjectiveHoldingAllianceInfo(0, objectiveId,
 								BGQUERY_LOCAL)
 							table.insert(foundPOI,
-								{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance,
-									name = name, controllingAlliance = holdingAlliance, isBgFlag = objectiveId })
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									distance = distance,
+									name = name,
+									controllingAlliance = holdingAlliance,
+									isBgFlag = objectiveId
+								})
 						end
 					end
 				end
@@ -3800,8 +3850,14 @@ local function FindNearbyPOIs()
 						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_POI_MAX_DISTANCE then
 							table.insert(foundPOI,
-								{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-									distance = distance, name = 'Damage PowerUp' })
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = 'Damage PowerUp'
+								})
 						end
 					end
 				end
@@ -3809,7 +3865,7 @@ local function FindNearbyPOIs()
 		end
 	else
 		for i = 1, GetNumKillLocations() do
-            local pinType, targetX, targetY = GetKillLocationPinInfo(i)
+			local pinType, targetX, targetY = GetKillLocationPinInfo(i)
 			if targetX ~= 0 and targetY ~= 0 then
 				local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 				if distance <= adjusted_POI_MAX_DISTANCE * 1.5 and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_SKIRMISH_MIN_DISTANCE then
@@ -3820,11 +3876,11 @@ local function FindNearbyPOIs()
 					end
 					local name = PVP.killLocationPintypeToName[pinType]
 					local name_long = (name or "Fight!") ..
-					"\nBattle Victories:\n|cEFD13CAD " ..
+						"\nBattle Victories:\n|cEFD13CAD " ..
 						(allianceKills[ALLIANCE_ALDMERI_DOMINION] or 0) ..
 						"|r, |cFF7161EP " ..
 						(allianceKills[ALLIANCE_EBONHEART_PACT] or 0) ..
-                        "|r, |c80AFFFDC " .. (allianceKills[ALLIANCE_DAGGERFALL_COVENANT] or 0) ..
+						"|r, |c80AFFFDC " .. (allianceKills[ALLIANCE_DAGGERFALL_COVENANT] or 0) ..
 						"|r"
 					table.insert(foundPOI,
 						{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance, name = name_long })
@@ -3846,9 +3902,17 @@ local function FindNearbyPOIs()
 					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
 					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
 						table.insert(foundPOI,
-							{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance, name = name,
-								controllingAlliance = controllingAlliance, scrollKeepId = k, scrollObjectiveId = v,
-								originalAlliance = originalAlliance })
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								distance = distance,
+								name = name,
+								controllingAlliance = controllingAlliance,
+								scrollKeepId = k,
+								scrollObjectiveId = v,
+								originalAlliance = originalAlliance
+							})
 					end
 				end
 			end
@@ -3889,8 +3953,16 @@ local function FindNearbyPOIs()
 				local name = 'Shadow Image'
 				if distance <= adjusted_MAX_DISTANCE then
 					table.insert(foundPOI,
-						{ pinType = PVP_PINTYPE_SHADOWIMAGE, targetX = targetX, targetY = targetY, distance = distance,
-							name = name, targetZ = targetZ, globalX = globalX, globalY = globalY })
+						{
+							pinType = PVP_PINTYPE_SHADOWIMAGE,
+							targetX = targetX,
+							targetY = targetY,
+							distance = distance,
+							name = name,
+							targetZ = targetZ,
+							globalX = globalX,
+							globalY = globalY
+						})
 				end
 			end
 		end
@@ -3903,8 +3975,13 @@ local function FindNearbyPOIs()
 				-- if distance<=PVP_MAX_DISTANCE and distance<=radius and distance>PVP_POI_MIN_DISTANCE/1.8 then
 				if distance <= adjusted_MAX_DISTANCE and distance <= radius then
 					table.insert(foundPOI,
-						{ pinType = pinType, targetX = targetX, targetY = targetY, distance = distance,
-							name = 'Forward Camp' })
+						{
+							pinType = pinType,
+							targetX = targetX,
+							targetY = targetY,
+							distance = distance,
+							name = 'Forward Camp'
+						})
 				end
 			end
 		end
@@ -3918,8 +3995,14 @@ local function FindNearbyPOIs()
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_POI_MAX_DISTANCE then
 						table.insert(foundPOI,
-							{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-								distance = distance, name = 'Ayleid Well' })
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								targetZ = targetZ,
+								distance = distance,
+								name = 'Ayleid Well'
+							})
 					end
 				end
 			end
@@ -3936,26 +4019,50 @@ local function FindNearbyPOIs()
 			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 
 			table.insert(foundPOI,
-				{ pinType = PVP_PINTYPE_COMPASS, targetX = targetX, targetY = targetY, targetZ = targetZ,
-					distance = distance, name = 'WEST' })
+				{
+					pinType = PVP_PINTYPE_COMPASS,
+					targetX = targetX,
+					targetY = targetY,
+					targetZ = targetZ,
+					distance = distance,
+					name = 'WEST'
+				})
 
 			targetX, targetY = selfX + 0.05, selfY
 			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 			table.insert(foundPOI,
-				{ pinType = PVP_PINTYPE_COMPASS, targetX = targetX, targetY = targetY, targetZ = targetZ,
-					distance = distance, name = 'EAST' })
+				{
+					pinType = PVP_PINTYPE_COMPASS,
+					targetX = targetX,
+					targetY = targetY,
+					targetZ = targetZ,
+					distance = distance,
+					name = 'EAST'
+				})
 
 			targetX, targetY = selfX, selfY - 0.05
 			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 			table.insert(foundPOI,
-				{ pinType = PVP_PINTYPE_COMPASS, targetX = targetX, targetY = targetY, targetZ = targetZ,
-					distance = distance, name = 'NORTH' })
+				{
+					pinType = PVP_PINTYPE_COMPASS,
+					targetX = targetX,
+					targetY = targetY,
+					targetZ = targetZ,
+					distance = distance,
+					name = 'NORTH'
+				})
 
 			targetX, targetY = selfX, selfY + 0.05
 			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 			table.insert(foundPOI,
-				{ pinType = PVP_PINTYPE_COMPASS, targetX = targetX, targetY = targetY, targetZ = targetZ,
-					distance = distance, name = 'SOUTH' })
+				{
+					pinType = PVP_PINTYPE_COMPASS,
+					targetX = targetX,
+					targetY = targetY,
+					targetZ = targetZ,
+					distance = distance,
+					name = 'SOUTH'
+				})
 		end
 
 
@@ -3985,9 +4092,17 @@ local function FindNearbyPOIs()
 						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_POI_MAX_DISTANCE then
 							table.insert(foundPOI,
-								{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-									distance = distance, name = name, alliance = alliance, keepId = keepId,
-									objectiveId = objectiveId })
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = name,
+									alliance = alliance,
+									keepId = keepId,
+									objectiveId = objectiveId
+								})
 						end
 					end
 				end
@@ -4002,8 +4117,16 @@ local function FindNearbyPOIs()
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_MAX_DISTANCE then
 						table.insert(foundPOI,
-							{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-								distance = distance, name = name, alliance = alliance, keepId = keepId })
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								targetZ = targetZ,
+								distance = distance,
+								name = name,
+								alliance = alliance,
+								keepId = keepId
+							})
 					end
 				end
 			end
@@ -4016,8 +4139,14 @@ local function FindNearbyPOIs()
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_POI_MAX_DISTANCE then
 						table.insert(foundPOI,
-							{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-								distance = distance, name = name })
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								targetZ = targetZ,
+								distance = distance,
+								name = name
+							})
 					end
 				end
 			end
@@ -4036,8 +4165,16 @@ local function FindNearbyPOIs()
 							local isCurrent = k == subzoneId
 							if distance <= adjusted_MAX_DISTANCE then
 								table.insert(foundPOI,
-									{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-										distance = distance, name = name, alliance = alliance, isCurrent = isCurrent })
+									{
+										pinType = pinType,
+										targetX = targetX,
+										targetY = targetY,
+										targetZ = targetZ,
+										distance = distance,
+										name = name,
+										alliance = alliance,
+										isCurrent = isCurrent
+									})
 							end
 						end
 					end
@@ -4056,9 +4193,18 @@ local function FindNearbyPOIs()
 						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_MAX_DISTANCE then
 							table.insert(foundPOI,
-								{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-									distance = distance, name = name, isCurrent = isCurrent, doorType = doorType,
-									orientation3d = angle, doorDistrictKeepId = PVP.icDoors[subzoneId][k].location })
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = name,
+									isCurrent = isCurrent,
+									doorType = doorType,
+									orientation3d = angle,
+									doorDistrictKeepId = PVP.icDoors[subzoneId][k].location
+								})
 						end
 					end
 				end
@@ -4070,8 +4216,16 @@ local function FindNearbyPOIs()
 						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_MAX_DISTANCE then
 							table.insert(foundPOI,
-								{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-									distance = distance, name = name, isCurrent = isCurrent, poiId = poiId })
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = name,
+									isCurrent = isCurrent,
+									poiId = poiId
+								})
 						end
 					end
 				end
@@ -4082,8 +4236,15 @@ local function FindNearbyPOIs()
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_MAX_DISTANCE then
 						table.insert(foundPOI,
-							{ pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ,
-								distance = distance, name = name, isCurrent = isCurrent })
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								targetZ = targetZ,
+								distance = distance,
+								name = name,
+								isCurrent = isCurrent
+							})
 					end
 				end
 			end
@@ -4106,13 +4267,13 @@ local function FindNearbyPOIs()
 			if not PVP.currentMapPings[i].pingObject then
 				if PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
 					PVP.currentMapPings[i].targetX, PVP.currentMapPings[i].targetY = PVP.LMP:GetMapPing(
-					MAP_PIN_TYPE_PLAYER_WAYPOINT)
+						MAP_PIN_TYPE_PLAYER_WAYPOINT)
 				elseif PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
 					PVP.currentMapPings[i].targetX, PVP.currentMapPings[i].targetY = PVP.LMP:GetMapPing(
-					MAP_PIN_TYPE_RALLY_POINT)
+						MAP_PIN_TYPE_RALLY_POINT)
 				elseif PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
 					PVP.currentMapPings[i].targetX, PVP.currentMapPings[i].targetY = PVP.LMP:GetMapPing(
-					MAP_PIN_TYPE_PING, PVP.currentMapPings[i].pingTag)
+						MAP_PIN_TYPE_PING, PVP.currentMapPings[i].pingTag)
 				end
 
 				if PVP.currentMapPings[i].targetX ~= 0 and PVP.currentMapPings[i].targetY ~= 0 then
@@ -4143,9 +4304,14 @@ local function FindNearbyPOIs()
 							end
 						end
 						table.insert(foundPOI,
-							{ pinType = PVP.currentMapPings[i].pinType, pingTag = PVP.currentMapPings[i].pingTag,
-								targetX = PVP.currentMapPings[i].targetX, targetY = PVP.currentMapPings[i].targetY,
-								distance = distance, name = name })
+							{
+								pinType = PVP.currentMapPings[i].pinType,
+								pingTag = PVP.currentMapPings[i].pingTag,
+								targetX = PVP.currentMapPings[i].targetX,
+								targetY = PVP.currentMapPings[i].targetY,
+								distance = distance,
+								name = name
+							})
 					end
 				end
 			end
@@ -4302,7 +4468,7 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 
 		for k, v in pairs(foundBgObjectives) do
 			SetupNewBattlegroundObjective3DMarker(k, v.distance, isActivated, not self.currentObjectivesIds[k],
-				v.isCtfBase)                                                                                        -- // sets up the 3d icons for each relevant keep //
+				v.isCtfBase) -- // sets up the 3d icons for each relevant keep //
 		end
 	else
 		for k, v in pairs(self.currentObjectivesIds) do
@@ -4318,8 +4484,8 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 				if foundPOI[k].pinType == self.currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or PVP.killLocationPintypeToName[foundPOI[k].pinType] or
 						(foundPOI[k].targetX == self.currentNearbyPOIIds[i].targetX and
 							foundPOI[k].targetY == self.currentNearbyPOIIds[i].targetY and
-                            (not foundPOI[k].pingTag or foundPOI[k].pingTag == self.currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
-                    found = k
+							(not foundPOI[k].pingTag or foundPOI[k].pingTag == self.currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
+					found = k
 					self.currentNearbyPOIIds[i].name = foundPOI[k].name
 					self.currentNearbyPOIIds[i].distance = foundPOI[k].distance
 					break
@@ -4382,7 +4548,7 @@ function PVP:GetMouseOverControl()
 			lowerBoundZ = atan2((deltaZ - 0.5 * controlSize), distance)
 			higherBoundZ = atan2((deltaZ + 0.5 * controlSize), distance)
 			local distanceCheck = control.params.distance and PVP.currentTooltip and PVP.currentTooltip.params.distance and
-			control.params.distance < PVP.currentTooltip.params.distance
+				control.params.distance < PVP.currentTooltip.params.distance
 
 
 			local validTooltipStatus = not PVP.currentTooltip or PVP.currentTooltip == control or distanceCheck
