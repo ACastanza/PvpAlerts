@@ -855,9 +855,15 @@
 					</Controls>
 				</Backdrop>
 
-				<Control name="$(parent)Cancel" inherits="ZO_CustomDialogButton"/>
-				<Control name="$(parent)Delete" inherits="ZO_CustomDialogButton"/>
-				<Control name="$(parent)Save" inherits="ZO_CustomDialogButton"/>
+				<Control name="$(parent)Cancel" inherits="ZO_CustomDialogButton">
+					<Anchor point="BOTTOMRIGHT" relativeTo="$(parent)Note" relativePoint="BOTTOMRIGHT"/>
+				</Control>
+				<Control name="$(parent)Delete" inherits="ZO_CustomDialogButton">
+					<Anchor point="RIGHT" relativeTo="$(parent)Save" relativePoint="LEFT" offsetX="-30"/>
+				</Control>
+				<Control name="$(parent)Save" inherits="ZO_CustomDialogButton">
+					<Anchor point="BOTTOMLEFT" relativeTo="$(parent)Note" relativePoint="BOTTOMLEFT"/>
+				</Control>
 			</Controls>
 		</TopLevelControl>
 
