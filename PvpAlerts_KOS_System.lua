@@ -831,7 +831,7 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
 	return unitId, newName
 end
 
-function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
+function PVP:FindPotentialAllies(includeFriends, includeGuildmates, showPlayerNotes)
 	local currentTime = GetFrameTimeMilliseconds()
 
 	for k, v in pairs(self.idToName) do
@@ -841,8 +841,8 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 			local isPlayerGrouped = IsPlayerInGroup(v)
 			local playerNote = self.SV.playerNotes[playerDbRecord.unitAccName]
 			local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
-			local isFriend = IsFriend(v)
-			local isGuildmate = IsGuildMate(v)
+			local isFriend = includeFriends and IsFriend(v) or false
+			local isGuildmate = includeGuildmates and IsGuildMate(v) or false
 			if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 				self.potentialAllies[v] = {
 					currentTime = currentTime,
@@ -852,7 +852,7 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 					isFriend = isFriend,
 					isGuildmate = isGuildmate,
 					isCool = isCool,
-					playerNote = hasPlayerNote and playerNote or nil,
+					playerNote = showPlayerNotes and hasPlayerNote and playerNote or nil,
 					isResurrect = false
 				}
 			end
@@ -867,8 +867,8 @@ function PVP:FindPotentialAllies(includeFriends, includeGuildmates)
 				local isCool = self:FindAccInCOOL(k, playerDbRecord.unitAccName)
 				local playerNote = self.SV.playerNotes[playerDbRecord.unitAccName]
 				local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
-				local isFriend = IsFriend(k)
-				local isGuildmate = IsGuildMate(k)
+				local isFriend = includeFriends and IsFriend(v) or false
+				local isGuildmate = includeGuildmates and IsGuildMate(v) or false
 				if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 					self.potentialAllies[k] = {
 						currentTime = currentTime,
@@ -978,7 +978,7 @@ function PVP:PopulateKOSBuffer()
 		CheckActive()
 	end
 
-	self:FindPotentialAllies(true, true)
+	self:FindPotentialAllies(true, true, true)
 
 	if next(self.potentialAllies) ~= nil then
 		for rawName, v in pairs(self.potentialAllies) do
