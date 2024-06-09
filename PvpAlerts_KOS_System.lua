@@ -721,8 +721,8 @@ function PVP:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 	if IsPlayerInGroup(playerName) then return "group" end
 	if self:IsAccNameInKOS(unitAccName) then return "KOS" end
 	if IsFriend(playerName) then return "friend" end
-
 	if self:FindAccInCOOL(playerName, unitAccName) then return "cool" end
+	if IsGuildMate(playerName) then return "guild" end
 
 	return false
 end
