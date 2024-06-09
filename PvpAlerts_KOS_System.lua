@@ -991,20 +991,18 @@ function PVP:PopulateKOSBuffer()
 					playerNoteToken = ""
 				end
 				if not self.KOSNamesList[v.unitAccName] then
-					local importantIcon, guildIcon, guildNames, firstGuildAllianceColor, resurrectIcon
+					local firstGuildAllianceColor, resurrectIcon
+					local importantIcon = ""
+					local guildNames = ""
 					if v.isFriend then
-						importantIcon = self:GetFriendIcon()
-					elseif v.isCool then
-						importantIcon = self:GetCoolIcon()
-					else
-						importantIcon = ""
+						importantIcon = importantIcon .. self:GetFriendIcon()
+					end
+					if v.isCool then
+						importantIcon = importantIcon .. self:GetCoolIcon()
 					end
 					if v.isGuildmate then
 						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(v.unitAccName)
-						guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
-					else
-						guildIcon = ""
-						guildNames = ""
+						importantIcon = importantIcon .. self:GetGuildIcon(nil, firstGuildAllianceColor)
 					end
 					if v.isResurrect then
 						resurrectIcon = self:GetResurrectIcon()
@@ -1014,7 +1012,7 @@ function PVP:PopulateKOSBuffer()
 					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(v.unitAccName, "40BB40") ..
 						resurrectIcon ..
-						importantIcon .. guildIcon .. (((not v.isPlayerGrouped) and guildNames) or "") .. playerNoteToken)
+						importantIcon .. (((not v.isPlayerGrouped) and guildNames) or "") .. playerNoteToken)
 					self.KOSNamesList[v.unitAccName] = true
 				end
 			end
