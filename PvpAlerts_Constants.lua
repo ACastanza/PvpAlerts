@@ -64,14 +64,17 @@ PVP.defaults = {
 	-- showNumberStealthed=true,
 
 	showKOSFrame = true,
+	showPlayerNotes = true,
+	showFriends = true,
+	showGuildMates = false,
 	showCounterFrame = true,
 	showCampFrame = true,
 	showCaptureFrame = true,
 	showNeighbourCaptureFrame = true,
 	showKillFeedFrame = true,
 	showKillFeedChat = true,
-    showKillFeedInMainChat = false,
-    userDisplayNameType = "character",
+	showKillFeedInMainChat = false,
+	userDisplayNameType = "character",
 	killFeedNameType = "link",
 	showOnlyOwnKillingBlows = false,
 	showNamesFrame = true,
@@ -3238,7 +3241,8 @@ PVP.objectiveIcons = {
 
 	[KEEPTYPE_ARTIFACT_GATE] = {
 		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_ALDMERI_DOMINION]    = "/esoui/art/compass/ava_artifactgate_aldmeri_closed.dds",
-		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_DAGGERFALL_COVENANT] = "/esoui/art/compass/ava_artifactgate_daggerfall_closed.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_DAGGERFALL_COVENANT] =
+		"/esoui/art/compass/ava_artifactgate_daggerfall_closed.dds",
 		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_EBONHEART_PACT]      = "/esoui/art/compass/ava_artifactgate_ebonheart_closed.dds",
 		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_ALDMERI_DOMINION]      = "/esoui/art/compass/ava_artifactgate_aldmeri_open.dds",
 		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_DAGGERFALL_COVENANT]   = "/esoui/art/compass/ava_artifactgate_daggerfall_open.dds",
