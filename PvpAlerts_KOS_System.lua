@@ -865,7 +865,7 @@ function PVP:FindPotentialAllies()
 			if playerDbRecord then
 				local isPlayerGrouped = IsPlayerInGroup(k)
 				local isCool = self:FindAccInCOOL(k, playerDbRecord.unitAccName)
-				local playerNote = self.SV.playerNotes[playerDbRecord.unitAccName]
+				local playerNote = self.SV.showPlayerNotes and self.SV.playerNotes[playerDbRecord.unitAccName] or nil
 				local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
 				local isFriend = showFriends and IsFriend(v) or false
 				local isGuildmate = showGuildmates and IsGuildMate(v) or false
@@ -875,8 +875,8 @@ function PVP:FindPotentialAllies()
 						unitAccName = playerDbRecord.unitAccName,
 						unitAlliance = playerDbRecord.unitAlliance,
 						isPlayerGrouped = isPlayerGrouped,
-						isFriend = isFriend,
-						isGuildmate = isGuildmate,
+						isFriend = self.SV.showFriends and isFriend,
+						isGuildmate = self.SV.showGuildmates and isGuildmate,
 						isCool = isCool,
 						playerNote = hasPlayerNote and playerNote or nil,
 						isResurrect = false
