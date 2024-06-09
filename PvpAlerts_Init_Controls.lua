@@ -535,7 +535,7 @@ function PVP:RegisterCustomDialog()
 				[2] =
 				{
 					control = GetControl(dialogControl, "Delete"),
-					text = SI_MAIL_DELETE,
+					text = SI_NOTIFICATIONS_DELETE,
 					callback = function(dialog)
 						local data = dialog.data
 						if data.noteString then

@@ -3,15 +3,15 @@ local PVP = PVP_Alerts_Main_Table
 
 PVP.globalConstants = {
 	-- ['PVP_BRIGHT_AD_COLOR']="EFD13C",
-	['PVP_BRIGHT_AD_COLOR']="C2AA49",
+	['PVP_BRIGHT_AD_COLOR'] = "C2AA49",
 	-- ['PVP_BRIGHT_EP_COLOR']="FF7161",
-	['PVP_BRIGHT_EP_COLOR']="DE5B4E",
+	['PVP_BRIGHT_EP_COLOR'] = "DE5B4E",
 	-- ['PVP_BRIGHT_DC_COLOR']="80AFFF",
-	['PVP_BRIGHT_DC_COLOR']="4F81BD",
+	['PVP_BRIGHT_DC_COLOR'] = "4F81BD",
 
-	['PVP_DIMMED_AD_COLOR']="7B714A",
-	['PVP_DIMMED_EP_COLOR']="85514D",
-	['PVP_DIMMED_DC_COLOR']="566674",
+	['PVP_DIMMED_AD_COLOR'] = "7B714A",
+	['PVP_DIMMED_EP_COLOR'] = "85514D",
+	['PVP_DIMMED_DC_COLOR'] = "566674",
 
 
 
@@ -25,6 +25,7 @@ PVP.globalConstants = {
 	['PVP_GROUPLEADER_ICON'] = "esoui/art/icons/mapkey/mapkey_groupleader.dds",
 	['PVP_IMPORTANT_ICON'] = "esoui/art/tutorial/ava_rankicon_general.dds",
 	['PVP_FRIEND_ICON'] = "esoui/art/tutorial/gamepad/gp_overview_friends.dds",
+	['PVP_GUILD_ICON'] = "esoui/art/tutorial/gamepad/gp_overview_guild.dds",
 	['PVP_DEATH_ICON'] = "esoui/art/treeicons/tutorial_idexicon_death_up.dds",
 	['PVP_KILLING_BLOW'] = "esoui/art/treeicons/gamepad/gp_tutorial_idexicon_death.dds",
 	['PVP_STEALTH_ICON'] = "esoui/art/tutorial/stealth-seen.dds",
@@ -47,10 +48,10 @@ PVP.globalConstants = {
 	['PVP_ATTACKER'] = "/esoui/art/compass/ava_returnpoint_ebonheart.dds",
 
 	['PVP_RESURRECT'] = "/esoui/art/compass/ava_flagcarrier_neutral.dds",
-	
+
 	['PVP_6STAR'] = "PvpAlerts/textures/6star1.dds",
 	['PVP_EMPEROR'] = "/esoui/art/campaign/overview_indexicon_emperor_up.dds",
-	
+
 	['PVP_AP'] = "esoui/art/currency/alliancepoints_32.dds",
 
 	['PVP_NAME_FONT'] = "$(BOLD_FONT)|29|thick-outline",

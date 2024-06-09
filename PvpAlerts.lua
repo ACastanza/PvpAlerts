@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.10.0"
+PVP.textVersion = "3.11.0"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = os.time(os.date("!*t"))
@@ -1660,6 +1660,10 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				return self:GetGroupLeaderIcon(32), false
 			elseif KOSOrFriend == "group" then
 				return self:GetGroupIcon(32), false
+			elseif KOSOrFriend == "guild" then
+				return self:GetGuildIcon(24,
+						unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040"),
+					false
 			end
 		else
 			return ""
@@ -2317,6 +2321,9 @@ function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 		formattedName = formattedName .. self:GetGroupLeaderIcon(not isTargetFrame and 45 or nil)
 	elseif KOSOrFriend == "group" then
 		formattedName = formattedName .. self:GetGroupIcon(not isTargetFrame and 45 or nil)
+	elseif KOSOrFriend == "guild" then
+		formattedName = formattedName .. self:GetGuildIcon(not isTargetFrame and 35 or 19,
+			playerDbRecord.unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
 	end
 
 	if isTargetFrame then
@@ -2712,7 +2719,7 @@ function PVP:FullReset()
 	self.namesToDisplay = {}
 	self.onEffect = {}
 
-	self.friends = {}
+	self.potentialAllies = {}
 
 	self.attackSoundDelay = 0
 	self.friendSoundDelay = 0
@@ -2883,6 +2890,8 @@ function PVP:GetAllianceCountPlayers()
 						formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
 					elseif KOSOrFriend == "group" then
 						formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+					elseif KOSOrFriend == "guild" then
+						formattedName = formattedName .. self:GetGuildIcon() .. statusIcon .. "+"
 					end
 				else
 					formattedName = formattedName .. statusIcon
@@ -2997,6 +3006,8 @@ function PVP:GetAllianceCountPlayers()
 					formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
 				elseif KOSOrFriend == "group" then
 					formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+				elseif KOSOrFriend == "guild" then
+					formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon .. "+"
 				end
 			else
 				formattedName = formattedName .. statusIcon
@@ -3098,6 +3109,8 @@ function PVP:GetAllianceCountPlayers()
 							formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
 						elseif KOSOrFriend == "group" then
 							formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+						elseif KOSOrFriend == "guild" then
+							formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon .. "+"
 						end
 					else
 						formattedName = formattedName .. statusIcon
@@ -3330,6 +3343,9 @@ function PVP:PopulateReticleOverNamesBuffer()
 					formattedName = formattedName .. self:GetGroupLeaderIcon()
 				elseif KOSOrFriend == "group" then
 					formattedName = formattedName .. self:GetGroupIcon()
+				elseif KOSOrFriend == "guild" then
+					formattedName = formattedName .. self:GetGuildIcon(nil,
+						playerDbRecord.unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
 				end
 			end
 			local endIcon
@@ -3509,6 +3525,9 @@ function PVP.OnTargetChanged()
 					targetIcon = PVP:GetGroupLeaderIcon(iconSize * 1.3)
 				elseif KOSOrFriend == "group" then
 					targetIcon = PVP:GetGroupIcon(iconSize * 1.3)
+				elseif KOSOrFriend == "guild" then
+					targetIcon = PVP:GetGuildIcon(iconSize * 1,
+						unitAlliance == PVP.allianceOfPlayer and "40BB40" or "BB4040")
 				end
 			end
 		end

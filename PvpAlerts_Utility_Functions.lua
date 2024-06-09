@@ -14,6 +14,7 @@ local PVP_HYBRID_COLOR = PVP:GetGlobal('PVP_HYBRID_COLOR')
 
 local PVP_SPACER_ICON = PVP:GetGlobal('PVP_SPACER_ICON')
 
+local PVP_GUILD_ICON = PVP:GetGlobal('PVP_GUILD_ICON')
 local PVP_GROUP_ICON = PVP:GetGlobal('PVP_GROUP_ICON')
 local PVP_GROUPLEADER_ICON = PVP:GetGlobal('PVP_GROUPLEADER_ICON')
 local PVP_FRIEND_ICON = PVP:GetGlobal('PVP_FRIEND_ICON')
@@ -549,6 +550,12 @@ end
 function PVP:GetFriendIcon(dimension)
 	dimension = dimension or 20
 	return self:Colorize(zo_iconFormatInheritColor(PVP_FRIEND_ICON, dimension, dimension), "40BB40")
+end
+
+function PVP:GetGuildIcon(dimension, color)
+	dimension = dimension or 20
+	color = color or "FFFFFF"
+	return self:Colorize(zo_iconFormatInheritColor(PVP_GUILD_ICON, dimension, dimension), color)
 end
 
 function PVP:GetCoolIcon(dimension, dimmed)
@@ -1155,6 +1162,38 @@ end
 function PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 	local distance = sqrt(((targetX - selfX) * (targetX - selfX)) + ((targetY - selfY) * (targetY - selfY)))
 	return distance
+end
+
+function PVP:GetGuildmateSharedGuilds(displayName)
+	if (not displayName) or (displayName == "") then return "" end
+	if not IsGuildMate(displayName) then return "" end
+
+	local guildNamesToken = ""
+	local firstGuildAllianceColor
+	local foundGuilds = 0
+
+	for i = 1, GetNumGuilds() do
+		local guildId = GetGuildId(i)
+		local memberIndex = GetGuildMemberIndexFromDisplayName(guildId, displayName)
+		if memberIndex then
+			foundGuilds = foundGuilds + 1
+			local guildName = GetGuildName(guildId)
+			local guildAlliance = GetGuildAlliance(guildId)
+			local guildAllianceColor = self:GetTrueAllianceColorsHex(guildAlliance)
+
+			if foundGuilds > 1 then
+				guildNamesToken = guildNamesToken .. ", "
+			end
+
+			guildNamesToken = guildNamesToken .. self:Colorize(guildName, guildAllianceColor)
+
+			if not firstGuildAllianceColor then
+				firstGuildAllianceColor = guildAllianceColor
+			end
+		end
+	end
+
+	return guildNamesToken, firstGuildAllianceColor
 end
 
 function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
