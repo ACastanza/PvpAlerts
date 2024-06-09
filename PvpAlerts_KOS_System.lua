@@ -868,7 +868,7 @@ function PVP:FindPotentialAllies()
 				local playerNote = self.SV.showPlayerNotes and self.SV.playerNotes[playerDbRecord.unitAccName] or nil
 				local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
 				local isFriend = showFriends and IsFriend(v) or false
-				local isGuildmate = showGuildmates and IsGuildMate(v) or false
+				local isGuildmate = self.SV.showGuildmates and IsGuildMate(v) or false
 				if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 					self.potentialAllies[k] = {
 						currentTime = currentTime,
