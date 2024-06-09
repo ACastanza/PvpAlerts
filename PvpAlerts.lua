@@ -3527,7 +3527,7 @@ function PVP.OnTargetChanged()
 					targetIcon = PVP:GetGroupIcon(iconSize * 1.3)
 				elseif KOSOrFriend == "guild" then
 					targetIcon = PVP:GetGuildIcon(iconSize * 1,
-						unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
+						unitAlliance == PVP.allianceOfPlayer and "40BB40" or "BB4040")
 				end
 			end
 		end
