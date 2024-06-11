@@ -686,7 +686,7 @@ function PVP:IsPlayerCCImmune(graceTimeInSec)
 	for i = 1, GetNumBuffs('player') do
 		local buffName, timeStarted, timeEnding, _, _, _, _, _, _, _, abilityId, _, castByPlayer = GetUnitBuffInfo(
 			'player', i)
-		if buffName == "CC Immunity" or buffName == "Unstoppable" or buffName == "Immovable" then
+		if buffName == "CC Immunity" or buffName == "Crowd Control Immunity" or buffName == "Unstoppable" or buffName == "Immovable" then
 			if timeEnding - GetFrameTimeSeconds() >= graceTimeInSec then
 				return true
 			end
