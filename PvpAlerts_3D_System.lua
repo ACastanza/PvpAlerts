@@ -2706,6 +2706,7 @@ local function CrownOnUpdate()
 end
 
 local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
+	if not keepId or keepId == 0 or keepId == "" then return end
 	-- PVP.m1 = GetGameTimeMilliseconds()
 	local coordsNewX, coordsNewY, objectiveId, keepInfoInDB, scaleAdjustment = GetCurrentMapCoordsFromKeepId(keepId,
 		scaleAdjustment)
@@ -2726,9 +2727,9 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	local icon = control:GetNamedChild('Icon')
 	local iconUA = control:GetNamedChild('IconUA')
 	local iconBG = control:GetNamedChild('BG')
-	--local captureBG = control:GetNamedChild('CaptureBG')
+	local captureBG = control:GetNamedChild('CaptureBG')
 	local captureBar = control:GetNamedChild('CaptureBar')
-	--local divider = control:GetNamedChild('Divider')
+	local divider = control:GetNamedChild('Divider')
 	local scroll = control:GetNamedChild('Scroll')
 	local lock = control:GetNamedChild('Locked')
 	local flags = control:GetNamedChild('Flags')
