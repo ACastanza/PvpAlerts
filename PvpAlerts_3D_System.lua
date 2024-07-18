@@ -340,6 +340,7 @@ local function GetPOIControlSelectedSizeMultiplier(control, scaleAdjustment, mul
 end
 
 local function IsPlayerNearObjective(keepId, isCheck)
+	if (not keepId) or keepId == "" then return false end
 	local zoneId, subzoneId = GetCurrentSubZonePOIIndices()
 	local isBruma = zoneId == 37 and subzoneId == 106
 	local zoneName = GetPlayerLocationName()
@@ -2725,9 +2726,9 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	local icon = control:GetNamedChild('Icon')
 	local iconUA = control:GetNamedChild('IconUA')
 	local iconBG = control:GetNamedChild('BG')
-	local captureBG = control:GetNamedChild('CaptureBG')
+	--local captureBG = control:GetNamedChild('CaptureBG')
 	local captureBar = control:GetNamedChild('CaptureBar')
-	local divider = control:GetNamedChild('Divider')
+	--local divider = control:GetNamedChild('Divider')
 	local scroll = control:GetNamedChild('Scroll')
 	local lock = control:GetNamedChild('Locked')
 	local flags = control:GetNamedChild('Flags')
