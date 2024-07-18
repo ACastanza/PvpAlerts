@@ -1027,8 +1027,9 @@ function PVP:PopulateKOSBuffer()
 		local ally = self.SV.playersDB[rawName].unitAlliance == self.allianceOfPlayer
 		local isActive = PVP.kosActivityList.activeChars[accName]
 		local isResurrect, playerNote, guildNames, firstGuildAllianceColor, guildIcon
+		local isGuildmate = self.SV.showGuildMates and IsGuildMate(accName) or false
 
-		if self.SV.showGuildMates and IsGuildMate(rawName) then
+		if isGuildmate then
 			guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(accName)
 			guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
 		else
