@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.11.0"
+PVP.textVersion = "3.11.1"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = os.time(os.date("!*t"))
@@ -44,6 +44,8 @@ local PVP_BRIGHT_EP_COLOR = PVP:GetGlobal('PVP_BRIGHT_EP_COLOR')
 local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 
 local currentCampaignActiveEmperor, currentCampaignActiveEmperorAcc, currentCampaignActiveEmperorAlliance
+
+local localActivePlayerCache = {}
 
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
@@ -589,7 +591,8 @@ function PVP:MainRefresh(currentTime)
 	PVP.endCamp = GetGameTimeMilliseconds()
 	if self.SV.showCounterFrame then
 		PVP.beforeC = GetGameTimeMilliseconds()
-		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
+        local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
+		localActivePlayerCache = {numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP}
 		PVP.afterC = GetGameTimeMilliseconds()
 
 		local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
@@ -760,7 +763,7 @@ end
 local function FillCurrentTooltip(control)
 	if not PVP.SV.enabled or not PVP.SV.showCounterFrame or not PVP:IsInPVPZone() then return end
 
-	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
+	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = unpack(localActivePlayerCache)
 
 	local currentTable, currentNumber, currentLength
 
@@ -1516,10 +1519,13 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	end
 
 	local function ProcessImportantAttacks()
-		if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
+		if sourceName == self.playerName then return end
+		if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
+			if self.abilityIdIgnoreList[abilityId] then return end
+
 			local CC_IMMUNITY_GRACE_TIME = 1
 			local ccImmune = self:IsPlayerCCImmune(CC_IMMUNITY_GRACE_TIME)
-			if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.smallImportantAbilitiesNames[abilityName] then
+			if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName] then
 				if self.smallImportantAbilitiesNames[abilityName] then
 					local abilityIcon = GetAbilityIcon(abilityId)
 					-- PVP_Main.currentChannel = nil

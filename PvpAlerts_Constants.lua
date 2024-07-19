@@ -921,6 +921,9 @@ PVP.magickaSkillLines = {
 }
 
 PVP.importantAbilities = {
+	["Meteor"] = true,
+	["Ice Comet"] = true,
+	["Shooting Star"] = true,
 	["Assassin's Will"] = true,
 	["Assassin's Scourge"] = true,
 	["Crystal Fragments"] = true,
@@ -938,6 +941,31 @@ PVP.importantAbilities = {
 	["Stone Giant"] = true,
 	-- ["Unrelenting Grip"] = true,
 	["The Tide King's Gaze"] = true,
+	["Rush of Agony"] = true,
+	-- ["Warden's Knife"] = true,
+	-- ["Warden's Vault"] = true,
+	-- ["Warden's Soul"] = true,
+	-- ["Warden's Burst"] = true,
+	-- ["Warden's Throw"] = true,
+	-- ["Warden's Contingency"] = true,
+	-- ["Warden's Explosion"] = true,
+	-- ["Warden's Trample"] = true,
+	-- ["Warden's Torch"] = true,
+	-- ["Warden's Smash"] = true,
+}
+
+PVP.majorImportantAbilitiesNames = {
+	-- Intended to be used with Scribing Abilities, ignore specific IDs in PVP.abilityIdIgnoreList
+	-- ["Warden's Knife"] = true,
+	-- ["Warden's Vault"] = true,
+	-- ["Warden's Soul"] = true,
+	-- ["Warden's Burst"] = true,
+	-- ["Warden's Throw"] = true,
+	-- ["Warden's Contingency"] = true,
+	-- ["Warden's Explosion"] = true,
+	-- ["Warden's Trample"] = true,
+	-- ["Warden's Torch"] = true,
+	-- ["Warden's Smash"] = true,
 }
 
 PVP.smallImportantAbilitiesNames = {
@@ -1087,6 +1115,13 @@ PVP.importantAbilitiesId = {
 	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
 	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
 	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
+
+	[159276] = 1, -- Rush of Agony
+	[159277] = 2, -- Rush of Agony
+
+	[16536] = 1,  -- Meteor (Called)
+	[40489] = 1,  -- Ice Comet (Called)
+	[40493] = 1,  -- Shooting Star (Called)
 }
 
 PVP.majorImportantAbilitiesId = {
@@ -1148,6 +1183,16 @@ PVP.majorImportantAbilitiesId = {
 	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
 	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
 	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
+
+	[159276] = 1, -- Rush of Agony
+	[159277] = 2, -- Rush of Agony
+
+	[16536] = 1,  -- Meteor (Called)
+	[40489] = 1,  -- Ice Comet (Called)
+	[40493] = 1,  -- Shooting Star (Called)
+}
+
+PVP.abilityIdIgnoreList = {
 }
 
 PVP.heavyAttackNames = {

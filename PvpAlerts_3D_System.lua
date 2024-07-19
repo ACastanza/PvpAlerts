@@ -2040,7 +2040,11 @@ local function ControlOnUpdate(control)
 		return
 	end
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
-	if Hide3DControl(control, scaleAdjustment) then return end
+    if Hide3DControl(control, scaleAdjustment) then
+		-- Unregister the control once it is no longer in visible range
+		control:SetHandler('OnUpdate', nil)
+        return
+	 end
 	local showingTooltipStart
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	control.multiplier = multiplier
