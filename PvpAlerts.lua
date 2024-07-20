@@ -591,8 +591,8 @@ function PVP:MainRefresh(currentTime)
 	PVP.endCamp = GetGameTimeMilliseconds()
 	if self.SV.showCounterFrame then
 		PVP.beforeC = GetGameTimeMilliseconds()
-        local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
-		localActivePlayerCache = {numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP}
+        local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
+		localActivePlayerCache = {numberAD, numberDC, numberEP, tableAD, tableDC, tableEP}
 		PVP.afterC = GetGameTimeMilliseconds()
 
 		local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
@@ -622,17 +622,17 @@ function PVP:MainRefresh(currentTime)
 
 
 		if numberAD > 0 then
-			self.SetToolTip(adControl, self:ProcessLengths(tableAD, maxAD), true, unpack(tableAD))
+			self.SetToolTip(adControl, nil, true, unpack(tableAD))
 		else
 			self.ReleaseToolTip(adControl, self.detailedTooltipCalc == adControl)
 		end
 		if numberDC > 0 then
-			self.SetToolTip(dcControl, self:ProcessLengths(tableDC, maxDC), true, unpack(tableDC))
+			self.SetToolTip(dcControl, nil, true, unpack(tableDC))
 		else
 			self.ReleaseToolTip(dcControl, self.detailedTooltipCalc == dcControl)
 		end
 		if numberEP > 0 then
-			self.SetToolTip(epControl, self:ProcessLengths(tableEP, maxEP), true, unpack(tableEP))
+			self.SetToolTip(epControl, nil, true, unpack(tableEP))
 		else
 			self.ReleaseToolTip(epControl, self.detailedTooltipCalc == epControl)
 		end
@@ -763,22 +763,19 @@ end
 local function FillCurrentTooltip(control)
 	if not PVP.SV.enabled or not PVP.SV.showCounterFrame or not PVP:IsInPVPZone() then return end
 
-	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = unpack(localActivePlayerCache)
+	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = unpack(localActivePlayerCache)
 
-	local currentTable, currentNumber, currentLength
+	local currentTable, currentNumber
 
 	if control == PVP_Counter_CountContainer_CountAD then
 		currentTable = tableAD
 		currentNumber = numberAD
-		currentLength = maxAD
 	elseif control == PVP_Counter_CountContainer_CountDC then
 		currentTable = tableDC
 		currentNumber = numberDC
-		currentLength = maxDC
 	elseif control == PVP_Counter_CountContainer_CountEP then
 		currentTable = tableEP
 		currentNumber = numberEP
-		currentLength = maxEP
 	else
 		return
 	end
@@ -790,7 +787,7 @@ local function FillCurrentTooltip(control)
 	if centerY < (GuiRoot:GetHeight() / 2) then side = BOTTOM end
 
 	if currentNumber > 0 then
-		PVP.Tooltips_ShowTextTooltip(control, side, PVP:ProcessLengths(currentTable, currentLength), true,
+		PVP.Tooltips_ShowTextTooltip(control, side, nil, true,
 			unpack(currentTable))
 	else
 		PVP_ClearTooltip(control)
@@ -2743,7 +2740,6 @@ function PVP:GetAllianceCountPlayers()
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
-	local maxLengthAD, maxLengthDC, maxLengthEP = 0, 0, 0
 	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP =
 		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
 
@@ -2870,7 +2866,6 @@ function PVP:GetAllianceCountPlayers()
 			PVP.bgNames[playerName] = bgAlliance
 
 			local formattedName = self:GetFormattedClassNameLink(playerName, bgColor, nil, nil, nil, nil, entryClass)
-			local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
 
 			if not PVP.bgScoreBoardData[playerName] then
 				PVP.bgScoreBoardData[playerName] = formattedName
@@ -2907,7 +2902,6 @@ function PVP:GetAllianceCountPlayers()
 			end
 			if addStatus then formattedName = formattedName .. "**" end
 			if bgAlliance == 1 then
-				if nameLength > maxLengthAD then maxLengthAD = nameLength end
 				numberAD = numberAD + 1
 				table.insert(tableAD, formattedName)
 				tableNameToIndexAD[playerName] = numberAD
@@ -2925,7 +2919,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableAD, playerName)
 				end
 			elseif bgAlliance == 2 then
-				if nameLength > maxLengthEP then maxLengthEP = nameLength end
 				numberEP = numberEP + 1
 				table.insert(tableEP, formattedName)
 				tableNameToIndexEP[playerName] = numberEP
@@ -2944,7 +2937,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableEP, playerName)
 				end
 			elseif bgAlliance == 3 then
-				if nameLength > maxLengthDC then maxLengthDC = nameLength end
 				numberDC = numberDC + 1
 				table.insert(tableDC, formattedName)
 				tableNameToIndexDC[playerName] = numberDC
@@ -3022,7 +3014,6 @@ function PVP:GetAllianceCountPlayers()
 			local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
 
 			if v == 1 then
-				if nameLength > maxLengthAD then maxLengthAD = nameLength end
 				numberAD = numberAD + 1
 				table.insert(tableAD, formattedName)
 				tableNameToIndexAD[playerName] = numberAD
@@ -3040,7 +3031,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableAD, playerName)
 				end
 			elseif v == 2 then
-				if nameLength > maxLengthEP then maxLengthEP = nameLength end
 				numberEP = numberEP + 1
 				table.insert(tableEP, formattedName)
 				tableNameToIndexEP[playerName] = numberEP
@@ -3059,7 +3049,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableEP, playerName)
 				end
 			elseif v == 3 then
-				if nameLength > maxLengthDC then maxLengthDC = nameLength end
 				numberDC = numberDC + 1
 				table.insert(tableDC, formattedName)
 				tableNameToIndexDC[playerName] = numberDC
@@ -3130,7 +3119,6 @@ function PVP:GetAllianceCountPlayers()
 
 					unitAllianceFromPlayersDb = self.SV.playersDB[playerName].unitAlliance
 					if unitAllianceFromPlayersDb == 1 then
-						if nameLength > maxLengthAD then maxLengthAD = nameLength end
 						numberAD = numberAD + 1
 						table.insert(tableAD, formattedName)
 						tableNameToIndexAD[playerName] = numberAD
@@ -3149,7 +3137,6 @@ function PVP:GetAllianceCountPlayers()
 							table.insert(othersTableAD, playerName)
 						end
 					elseif unitAllianceFromPlayersDb == 2 then
-						if nameLength > maxLengthEP then maxLengthEP = nameLength end
 						numberEP = numberEP + 1
 						table.insert(tableEP, formattedName)
 						tableNameToIndexEP[playerName] = numberEP
@@ -3167,7 +3154,6 @@ function PVP:GetAllianceCountPlayers()
 							table.insert(othersTableEP, playerName)
 						end
 					elseif unitAllianceFromPlayersDb == 3 then
-						if nameLength > maxLengthDC then maxLengthDC = nameLength end
 						numberDC = numberDC + 1
 						table.insert(tableDC, formattedName)
 						tableNameToIndexDC[playerName] = numberDC
@@ -3310,7 +3296,7 @@ function PVP:GetAllianceCountPlayers()
 		tableEP = PVP:TableConcat(groupMembersTable, tableEP)
 	end
 	-- d('Damn table time: '..tostring(GetGameTimeMilliseconds() - countAllianceStart)..'ms')
-	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxLengthAD, maxLengthDC, maxLengthEP
+	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP
 end
 
 function PVP:PopulateReticleOverNamesBuffer()

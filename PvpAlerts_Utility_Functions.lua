@@ -727,7 +727,7 @@ function PVP:InsertAnimationType(animHandler, animType, control, animDuration, a
 	end
 end
 
-function PVP:ProcessLengths(namesTable, maxLength)
+function PVP:ProcessLengths(namesTable, maxLength, addedLength)
 	-- local function GetTextWidthInPixels(text)
 	-- PVP_Counter_TestWidth:SetFont("ZoFontWinH5")
 	-- PVP_Counter_TestWidth:SetText(text)
@@ -737,7 +737,7 @@ function PVP:ProcessLengths(namesTable, maxLength)
 	-- end
 
 	-- local maxLength=0
-	local addedLength = 0
+	addedLength = addedLength or 0
 	for i = 1, #namesTable do
 		if self:StringEnd(namesTable[i], "+") then
 			if addedLength < 35 then addedLength = 35 end
