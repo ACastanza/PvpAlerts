@@ -2814,11 +2814,10 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
 	local shouldHideFlags = not (keepType == KEEPTYPE_KEEP or keepType == KEEPTYPE_OUTPOST or keepType == KEEPTYPE_TOWN)
-
+	local naveFlag, apseFlag, otherFlag, naveAlliance, apseAlliance, otherAlliance
 	-- PVP.m2 = GetGameTimeMilliseconds()
 
 	if not shouldHideFlags then
-		local naveFlag, apseFlag, otherFlag, naveAlliance, apseAlliance, otherAlliance
 		local flags = control:GetNamedChild('Flags')
 		local apse = control:GetNamedChild('Apse')
 		local nave = control:GetNamedChild('Nave')
