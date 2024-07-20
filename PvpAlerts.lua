@@ -6,7 +6,7 @@ PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole
 PVP.textVersion = "3.12.0"
 PVP.name = "PvpAlerts"
 
-local sessionTimeEpoch = os.time(os.date("!*t"))
+local sessionTimeEpoch = GetTimeStamp()
 local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
 local killingBlows = {}
 local cachedPlayerDbUpdates = {}
