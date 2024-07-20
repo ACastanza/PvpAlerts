@@ -371,7 +371,33 @@ local function IsPlayerNearObjective(keepId, isCheck)
 end
 
 local function Hide3DControl(control, scaleAdjustment)
+	if ZO_WorldMap_IsWorldMapShowing() then
+		control:SetHidden(true)
+		return true
+	end
+
+	local controlTooClose = (type ~= "SHADOW_IMAGE") and
+		control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
+	if controlTooClose then
+		control:SetHidden(true)
+		return true
+	end
+
+	local onScreenKeeps = {
+		[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
+		[PVP_KEEPTYPE_BORDER_KEEP] = true,
+		[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
+	}
+
 	local type = control.params.type
+	local onScreenCheck = (IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(control.params.keepId)])) or
+		(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
+
+	local controlOnScreen = PVP.SV.showOnScreen and PVP.SV.onScreenReplace and onScreenCheck
+	if controlOnScreen then
+		control:SetHidden(true)
+		return true
+	end
 
 	local utilityControls = {
 		['RALLY'] = true,
@@ -380,32 +406,27 @@ local function Hide3DControl(control, scaleAdjustment)
 		['GROUP'] = true,
 		['COMPASS'] = true,
 	}
+	local controlTooFar = (not utilityControls[type]) and
+		control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance
+	if controlTooFar then
+		control:SetHidden(true)
+		return true
+	end
 
-	local onScreenKeeps = {
-		[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
-		[PVP_KEEPTYPE_BORDER_KEEP] = true,
-		[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
-	}
+	if icControls[type] and not control.params.isCurrent then
+		control:SetHidden(true)
+		return true
+	end
 
-	local notCurrentDistrict = icControls[type] and not control.params.isCurrent
-	local controlTooClose = (type ~= "SHADOW_IMAGE") and
-		control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
-	local isControlUtility = utilityControls[type]
-	-- local onScreenCheck = IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or (PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_ARTIFACT_KEEP) or (PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_BORDER_KEEP) or (PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT)) or (IsPlayerNearObjective(control.params.name) and control.params.type == 'MILEGATE'))
-	local onScreenCheck = (IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(control.params.keepId)])) or
-		(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
-	local isMapShowing = ZO_WorldMap_IsWorldMapShowing()
-	local controlTooFar = not isControlUtility and control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance
-	local controlOnScreen = PVP.SV.showOnScreen and PVP.SV.onScreenReplace and onScreenCheck
 	local keepCheck = control.params.keepId and GetKeepResourceType(control.params.keepId) ~= 0 and
 		(control.params.distance > scaleAdjustment * PVP.SV.maxResource3DIconsDistance or control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance)
+	if keepCheck then
+		control:SetHidden(true)
+		return true
+	end
 
-	local shouldHideControl = isMapShowing or notCurrentDistrict or controlTooClose or controlTooFar or controlOnScreen or
-		keepCheck
-
-	control:SetHidden(shouldHideControl)
-	return shouldHideControl
-	-- return true
+	control:SetHidden(false)
+	return false
 end
 
 local function IsInImperialCityDistrict(renew)
@@ -2284,12 +2305,10 @@ local function ControlOnUpdate(control)
 
 	if PVP.currentTooltip == control or isControlFlipping then
 		popMultiplier = GetPopInMultiplier(multiplier, control)
-	else
-		popMultiplier = GetPopOutMultiplier(multiplier, control)
+		SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
+			control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
 	end
 
-	SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
-		control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
 
 	if showBorderKeepInfo and PVP.currentTooltip ~= control then
 		if not isBorderKeepAnimationPlaying then
@@ -2724,19 +2743,12 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		control = PVP.currentNearbyKeepIds[keepId]
 	end
 
+	-- local vars for controls
 	local icon = control:GetNamedChild('Icon')
 	local iconUA = control:GetNamedChild('IconUA')
 	local iconBG = control:GetNamedChild('BG')
-	local captureBG = control:GetNamedChild('CaptureBG')
-	local captureBar = control:GetNamedChild('CaptureBar')
-	local divider = control:GetNamedChild('Divider')
 	local scroll = control:GetNamedChild('Scroll')
 	local lock = control:GetNamedChild('Locked')
-	local flags = control:GetNamedChild('Flags')
-	local apse = control:GetNamedChild('Apse')
-	local nave = control:GetNamedChild('Nave')
-	local other = control:GetNamedChild('Other')
-	local middle = control:GetNamedChild('Middle')
 	local ping = control:GetNamedChild('Ping')
 
 
@@ -2802,11 +2814,17 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
 	local shouldHideFlags = not (keepType == KEEPTYPE_KEEP or keepType == KEEPTYPE_OUTPOST or keepType == KEEPTYPE_TOWN)
-	local naveFlag, apseFlag, otherFlag, naveAlliance, apseAlliance, otherAlliance
 
 	-- PVP.m2 = GetGameTimeMilliseconds()
 
 	if not shouldHideFlags then
+		local naveFlag, apseFlag, otherFlag, naveAlliance, apseAlliance, otherAlliance
+		local flags = control:GetNamedChild('Flags')
+		local apse = control:GetNamedChild('Apse')
+		local nave = control:GetNamedChild('Nave')
+		local other = control:GetNamedChild('Other')
+		local middle = control:GetNamedChild('Middle')
+
 		local isTown = keepType == KEEPTYPE_TOWN
 		local isKeep = keepType == KEEPTYPE_KEEP
 		if isTown then
@@ -2893,12 +2911,6 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 			other:SetColor(PVP:GetTrueAllianceColors(otherAlliance))
 			other:SetHidden(false)
 		end
-	else
-		flags:SetHidden(true)
-		middle:SetHidden(true)
-		nave:SetHidden(true)
-		apse:SetHidden(true)
-		other:SetHidden(true)
 	end
 
 	-- PVP.m3 = GetGameTimeMilliseconds()
@@ -2950,6 +2962,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		if not (toHide or neutral) then
 			captureTexture = PVP:GetCaptureTexture(captureAlliance, isCapture, percentage)
+			local captureBar = control:GetNamedChild('CaptureBar')
 			captureBar:SetTexture(captureTexture)
 		end
 	end
