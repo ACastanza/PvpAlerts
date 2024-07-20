@@ -1119,9 +1119,9 @@ PVP.importantAbilitiesId = {
 	[159276] = 1, -- Rush of Agony
 	[159277] = 2, -- Rush of Agony
 
-	[16536] = 1,  -- Meteor (Called)
-	[40489] = 1,  -- Ice Comet (Called)
-	[40493] = 1,  -- Shooting Star (Called)
+	[16536] = 1, -- Meteor (Called)
+	[40489] = 1, -- Ice Comet (Called)
+	[40493] = 1, -- Shooting Star (Called)
 }
 
 PVP.majorImportantAbilitiesId = {
@@ -1187,9 +1187,9 @@ PVP.majorImportantAbilitiesId = {
 	[159276] = 1, -- Rush of Agony
 	[159277] = 2, -- Rush of Agony
 
-	[16536] = 1,  -- Meteor (Called)
-	[40489] = 1,  -- Ice Comet (Called)
-	[40493] = 1,  -- Shooting Star (Called)
+	[16536] = 1, -- Meteor (Called)
+	[40489] = 1, -- Ice Comet (Called)
+	[40493] = 1, -- Shooting Star (Called)
 }
 
 PVP.abilityIdIgnoreList = {
@@ -2929,40 +2929,40 @@ PVP.icDoors = {
 	},
 
 	[25] = { --Aboretum
-		{ x = 0.69019985, y = 0.51663780, z = 310.49, location = 146, type = 1, angle = math.pi * 21 / 64 },
-		{ x = 0.76671969, y = 0.50919640, z = 309.84, location = 146, type = 1, angle = math.pi * 21 / 64 },
-		{ x = 0.67379605, y = 0.79480004, z = 312.68, location = 147, type = 1, angle = math.pi * 21 / 64 },
-		{ x = 0.63417887, y = 0.74053448, z = 309.90, location = 147, type = 1, angle = math.pi * 21 / 64 },
+		{ x = 0.69019985, y = 0.51663780, z = 310.49, location = 146, type = 1, angle = ZO_PI * 21 / 64 },
+		{ x = 0.76671969, y = 0.50919640, z = 309.84, location = 146, type = 1, angle = ZO_PI * 21 / 64 },
+		{ x = 0.67379605, y = 0.79480004, z = 312.68, location = 147, type = 1, angle = ZO_PI * 21 / 64 },
+		{ x = 0.63417887, y = 0.74053448, z = 309.90, location = 147, type = 1, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.60658961, y = 0.68100339, z = 315.26, location = 147, type = 2, angle = math.pi * 21 / 64 },
+		{ x = 0.60658961, y = 0.68100339, z = 315.26, location = 147, type = 2, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.82346612, y = 0.51460194, z = 314.95, location = 146, type = 2, angle = math.pi * 21 / 64 },
+		{ x = 0.82346612, y = 0.51460194, z = 314.95, location = 146, type = 2, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.83359855, y = 0.51516354, z = 313.88, location = 146, type = 1, angle = math.pi * 21 / 64 },
-		{ x = 0.71062856, y = 0.51574856, z = 315.30, location = 146, type = 2, angle = math.pi * 21 / 64 },
+		{ x = 0.83359855, y = 0.51516354, z = 313.88, location = 146, type = 1, angle = ZO_PI * 21 / 64 },
+		{ x = 0.71062856, y = 0.51574856, z = 315.30, location = 146, type = 2, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.66258716, y = 0.77708613, z = 316.10, location = 147, type = 2, angle = math.pi * 21 / 64 },
-		{ x = 0.60169887, y = 0.67204099, z = 310.70, location = 147, type = 1, angle = math.pi * 21 / 64 },
+		{ x = 0.66258716, y = 0.77708613, z = 316.10, location = 147, type = 2, angle = ZO_PI * 21 / 64 },
+		{ x = 0.60169887, y = 0.67204099, z = 310.70, location = 147, type = 1, angle = ZO_PI * 21 / 64 },
 	},
 
 	[26] = { --Arena
-		{ x = 0.66193193, y = 0.23807740, z = 314.88, location = 142, type = 2, angle = math.pi * 21 / 64 },
-		{ x = 0.61115270, y = 0.32650816, z = 314.76, location = 142, type = 2, angle = math.pi * 21 / 64 },
-		{ x = 0.66700989, y = 0.22909158, z = 311.96, location = 142, type = 1, angle = math.pi * 21 / 64 },
-		{ x = 0.60132449, y = 0.34431600, z = 310.26, location = 142, type = 1, angle = math.pi * 21 / 64 },
-		{ x = 0.63352364, y = 0.27460569, z = 309.83, location = 142, type = 1, angle = math.pi * 21 / 64 },
+		{ x = 0.66193193, y = 0.23807740, z = 314.88, location = 142, type = 2, angle = ZO_PI * 21 / 64 },
+		{ x = 0.61115270, y = 0.32650816, z = 314.76, location = 142, type = 2, angle = ZO_PI * 21 / 64 },
+		{ x = 0.66700989, y = 0.22909158, z = 311.96, location = 142, type = 1, angle = ZO_PI * 21 / 64 },
+		{ x = 0.60132449, y = 0.34431600, z = 310.26, location = 142, type = 1, angle = ZO_PI * 21 / 64 },
+		{ x = 0.63352364, y = 0.27460569, z = 309.83, location = 142, type = 1, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.84412878, y = 0.49836194, z = 310.25, location = 143, type = 1, angle = math.pi * 21 / 64 },
+		{ x = 0.84412878, y = 0.49836194, z = 310.25, location = 143, type = 1, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.70218092, y = 0.49913418, z = 314.69, location = 143, type = 2, angle = math.pi * 21 / 64 },
+		{ x = 0.70218092, y = 0.49913418, z = 314.69, location = 143, type = 2, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.69181448, y = 0.49899378, z = 310.25, location = 143, type = 1, angle = math.pi * 21 / 64 },
+		{ x = 0.69181448, y = 0.49899378, z = 310.25, location = 143, type = 1, angle = ZO_PI * 21 / 64 },
 
-		{ x = 0.76723450, y = 0.50507789, z = 309.90, location = 143, type = 1, angle = math.pi * 21 / 64 },
+		{ x = 0.76723450, y = 0.50507789, z = 309.90, location = 143, type = 1, angle = ZO_PI * 21 / 64 },
 
 
 
-		{ x = 0.82381707, y = 0.49857255, z = 314.77, location = 143, type = 2, angle = math.pi * 21 / 64 },
+		{ x = 0.82381707, y = 0.49857255, z = 314.77, location = 143, type = 2, angle = ZO_PI * 21 / 64 },
 	},
 
 	[30] = { --Temple

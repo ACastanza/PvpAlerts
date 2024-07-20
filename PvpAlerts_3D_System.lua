@@ -18,19 +18,19 @@ local GetKeepKeysByIndex = GetKeepKeysByIndex
 local GetKeepPinInfo = GetKeepPinInfo
 local GetPlayerLocationName = GetPlayerLocationName
 
-local ceil = math.ceil
+local ceil = zo_ceil
 local asin = math.asin
-local acos = math.cos
-local tan = math.tan
+local acos = zo_cos
+local tan = zo_tan
 local atan = math.atan
-local atan2 = math.atan2
-local sqrt = math.sqrt
-local cos = math.cos
-local sin = math.sin
-local floor = math.floor
-local abs = math.abs
+local atan2 = zo_atan2
+local sqrt = zo_sqrt
+local cos = zo_cos
+local sin = zo_sin
+local floor = zo_floor
+local abs = zo_abs
 local pairs = pairs
-local pi = math.pi
+local pi = ZO_PI
 
 local IC_ZONEID = 341
 
@@ -449,7 +449,7 @@ local function IsInBorderKeepArea(renew)
 
 		for k, v in pairs(PVP.borderKeepsIds) do
 			local keepName = GetKeepName(k)
-			if keepName == locationName or string.gsub(locationName, ' Gate', '') == string.gsub(keepName, 'Gate', '') then
+			if keepName == locationName or zo_strgsub(locationName, ' Gate', '') == zo_strgsub(keepName, 'Gate', '') then
 				return
 					k
 			end --hax because typo in English client for dc border keep names
@@ -924,7 +924,7 @@ local function SetShadowImageColor(control)
 	local timeLeft
 
 	if PVP.shadowInfo.endTime then
-		timeLeft = math.ceil(PVP.shadowInfo.endTime - GetFrameTimeSeconds())
+		timeLeft = zo_ceil(PVP.shadowInfo.endTime - GetFrameTimeSeconds())
 	end
 end
 
@@ -1055,10 +1055,10 @@ local function GetControlTexture(control, data, iconType)
 
 	if iconType == "POI" then
 		if type == 'KILL_LOCATION' then
-			texture = string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+			texture = zo_strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'SCROLL' then
 			texture = data.isBgFlag and ZO_MapPin.PIN_DATA[data.pinType].texture or
-				string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+				zo_strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'GROUP' then
 			if control.params.isGroupLeader then
 				texture = 'esoui/art/icons/mapkey/mapkey_groupleader.dds'
@@ -1141,7 +1141,7 @@ local function GetControlColor(control, data, iconType)
 			colorR, colorG, colorB, alpha = 1, 0, 0, 1
 		end
 	elseif type == 'PING' then
-		local groupNumber = string.gsub(data.pingTag, 'group', '')
+		local groupNumber = zo_strgsub(data.pingTag, 'group', '')
 		if not control.params.pingColor then control.params.pingColor = PVP.pingsColors[tonumber(groupNumber)] end
 		colorR, colorG, colorB, alpha = control.params.pingColor[1] / 255, control.params.pingColor[2] / 255,
 			control.params.pingColor[3] / 255
@@ -1776,7 +1776,7 @@ local function IsScrollInKeepId(keepId)
 		_, _, scrollState = GetObjectiveInfo(k, v, 1)
 		if isArtifactKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and keepId == k then
 			local mappin = GetObjectivePinInfo(k, v, 1)
-			return true, string.gsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
+			return true, zo_strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
 		end
 		if isKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then
 			local keepArtifactStorage = PVP.AVAids[keepId][3]
@@ -1786,7 +1786,7 @@ local function IsScrollInKeepId(keepId)
 			local _, keepCapturePointX, keepCapturePointY = GetObjectivePinInfo(keepId, keepArtifactNodeId, 1)
 			local mappin, scrollX, scrollY = GetObjectivePinInfo(k, v, 1)
 			if keepCapturePointX == scrollX and keepCapturePointY == scrollY then
-				return true, string.gsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
+				return true, zo_strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
 			end
 		end
 	end
@@ -2041,7 +2041,7 @@ local function GetEmperorInfoString(isWorldCrown)
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)
 			text = PVP:Colorize('Emperor ', 'CCCCCC') ..
-				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(math.floor(reignTime)),
+				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(zo_floor(reignTime)),
 					'CCCCCC')
 		else
 			text = PVP:Colorize('Current Emperor is: ', 'CCCCCC') .. formattedEmperorName

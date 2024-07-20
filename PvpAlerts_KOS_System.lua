@@ -70,11 +70,11 @@ function PVP:Who(name, contains)
 					table.insert(lowercaseMatch, k)
 				elseif currentDeaccentedName == deaccentName then
 					table.insert(deaccentedMatch, k)
-				elseif string.match(currentDeaccentedName, deaccentName) then
-					local accentBias = string.len(string.lower(strippedName)) - string.len(currentDeaccentedName)
+				elseif zo_strmatch(currentDeaccentedName, deaccentName) then
+					local accentBias = zo_strlen(string.lower(strippedName)) - zo_strlen(currentDeaccentedName)
 
 					if accentBias > 0 then
-						local startChar, endChar = string.find(currentDeaccentedName, deaccentName)
+						local startChar, endChar = zo_strfind(currentDeaccentedName, deaccentName)
 
 						local indice = PVP:FindUTFIndice(string.lower(strippedName))
 
@@ -93,7 +93,7 @@ function PVP:Who(name, contains)
 
 						stringPositionsArray[k] = { startChar = newStartChar, endChar = newEndChar }
 					else
-						local startChar, endChar = string.find(currentDeaccentedName, deaccentName)
+						local startChar, endChar = zo_strfind(currentDeaccentedName, deaccentName)
 						stringPositionsArray[k] = { startChar = startChar, endChar = endChar }
 					end
 
@@ -143,14 +143,14 @@ function PVP:Who(name, contains)
 
 	local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
 		local strippedName  = zo_strformat(SI_UNIT_NAME, rawName)
-		local nameLength    = string.len(strippedName)
+		local nameLength    = zo_strlen(strippedName)
 		local allianceColor = self:NameToAllianceColor(rawName, nil, true)
 		local icon          = self:GetFormattedClassIcon(rawName, nil, allianceColor)
 
 		local normalPartBefore, normalPartAfter, highlightPart
 
 		highlightPart       = self:Colorize(
-			ZO_LinkHandler_CreateLinkWithoutBrackets(string.sub(strippedName, startIndex, endIndex), nil,
+			ZO_LinkHandler_CreateLinkWithoutBrackets(zo_strsub(strippedName, startIndex, endIndex), nil,
 				CHARACTER_LINK_TYPE,
 				rawName), 'FF00FF')
 
@@ -159,14 +159,14 @@ function PVP:Who(name, contains)
 			if endIndex >= nameLength then
 				normalPartAfter = ""
 			else
-				normalPartAfter = string.sub(strippedName, endIndex + 1, nameLength)
+				normalPartAfter = zo_strsub(strippedName, endIndex + 1, nameLength)
 			end
 		elseif endIndex >= nameLength then
-			normalPartBefore = string.sub(strippedName, 1, startIndex - 1)
+			normalPartBefore = zo_strsub(strippedName, 1, startIndex - 1)
 			normalPartAfter = ""
 		else
-			normalPartBefore = string.sub(strippedName, 1, startIndex - 1)
-			normalPartAfter = string.sub(strippedName, endIndex + 1, nameLength)
+			normalPartBefore = zo_strsub(strippedName, 1, startIndex - 1)
+			normalPartAfter = zo_strsub(strippedName, endIndex + 1, nameLength)
 		end
 
 		if normalPartBefore ~= "" then
@@ -212,7 +212,7 @@ function PVP:Who(name, contains)
 	end
 
 
-	if string.len(name) <= 2 then
+	if zo_strlen(name) <= 2 then
 		d('Name has to be longer than 2 characters!')
 		return
 	end
@@ -266,7 +266,7 @@ function PVP:Who(name, contains)
 		end
 	else -- multiple players information returned
 		local patternName = zo_strformat(SI_UNIT_NAME, trimmedName)
-		local patternLength = string.len(patternName)
+		local patternLength = zo_strlen(patternName)
 		local highlightedName = PVP:Colorize(patternName, 'FF00FF')
 
 		d('Found ' .. tostring(#foundPlayerNames + #looseMatch) .. ' players, similar to ' .. highlightedName .. ':')
@@ -287,13 +287,13 @@ function PVP:Who(name, contains)
 			for i = 1, #looseMatch do
 				local currentName = looseMatch[i]
 				local strippedCurrentName = zo_strformat(SI_UNIT_NAME, currentName)
-				local currentNameLength = string.len(strippedCurrentName)
+				local currentNameLength = zo_strlen(strippedCurrentName)
 				local first, last = stringPositionsArray[currentName].startChar,
 					stringPositionsArray[currentName].endChar
-				local startsFullWord = string.sub(strippedCurrentName, first - 1, first - 1) == " " or
-					string.sub(strippedCurrentName, first - 1, first - 1) == "-"
-				local endsFullWord = last == currentNameLength or string.sub(strippedCurrentName, last + 1, last + 1) ==
-					" " or string.sub(strippedCurrentName, last + 1, last + 1) == "-"
+				local startsFullWord = zo_strsub(strippedCurrentName, first - 1, first - 1) == " " or
+					zo_strsub(strippedCurrentName, first - 1, first - 1) == "-"
+				local endsFullWord = last == currentNameLength or zo_strsub(strippedCurrentName, last + 1, last + 1) ==
+					" " or zo_strsub(strippedCurrentName, last + 1, last + 1) == "-"
 
 				if first == 1 then
 					if endsFullWord then
@@ -331,7 +331,7 @@ function PVP:Who(name, contains)
 
 				local nameLink
 
-				if i >= indexToHighlight and (string.len(string.gsub(strippedCurrentName, "%s+", "")) - patternLength) > 2 then
+				if i >= indexToHighlight and (zo_strlen(zo_strgsub(strippedCurrentName, "%s+", "")) - patternLength) > 2 then
 					nameLink = GetHighlightedCharAccLink(currentName, stringPositionsArray[currentName].startChar,
 						stringPositionsArray[currentName].endChar)
 				else
@@ -489,7 +489,7 @@ function PVP:CheckKOSValidity(unitCharName, playerDbRecord)
 					return
 						femaleName
 				end
-				if math.random() > 0.5 then return maleName else return femaleName end
+				if zo_random() > 0.5 then return maleName else return femaleName end
 			end
 			return rawName, true
 		end

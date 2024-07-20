@@ -84,7 +84,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		local function average(n)
 			if #t == period then table.remove(t, 1) end
 			t[#t + 1] = n
-			return sum(unpack(t)) / #t, math.max(unpack(t))
+			return sum(unpack(t)) / #t, zo_max(unpack(t))
 		end
 
 		return average
@@ -190,10 +190,10 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		-- PVP.addonPerformance.averageSum = PVP.addonPerformance.averageSum + (end_all - start_main)
 
 		-- if PVP.addonPerformance.averageCounts >= 240 then
-		-- chat:Printf('Average in last minute processing time = '..tostring(math.ceil(PVP.addonPerformance.averageSum/PVP.addonPerformance.averageCounts)))
+		-- chat:Printf('Average in last minute processing time = '..tostring(zo_ceil(PVP.addonPerformance.averageSum/PVP.addonPerformance.averageCounts)))
 		-- chat:Printf('Max in last minute processing time = '..tostring(PVP.addonPerformance.maxMinute))
 		local avg, maxMin = PVP.addonPerformance.sma(end_all - start_main)
-		chat:Printf('Last 30 sec average processing time = %dms', math.ceil(avg))
+		chat:Printf('Last 30 sec average processing time = %dms', zo_ceil(avg))
 		chat:Printf('Last 30 sec max processing time = %dms', maxMin)
 		-- PVP.addonPerformance.averageCounts = 0
 		-- PVP.addonPerformance.maxMinute = 0
@@ -310,12 +310,12 @@ function PVP_test_SV()
 		table.sort(temp)
 
 		-- If we have an even number of table elements or odd.
-		if math.fmod(#temp, 2) == 0 then
+		if zo_mod(#temp, 2) == 0 then
 			-- return mean value of middle two elements
 			return (temp[#temp / 2] + temp[(#temp / 2) + 1]) / 2
 		else
 			-- return middle element
-			return temp[math.ceil(#temp / 2)]
+			return temp[zo_ceil(#temp / 2)]
 		end
 	end
 
@@ -337,7 +337,7 @@ function PVP_test_SV()
 			end
 		end
 
-		result = math.sqrt(sum / (count - 1))
+		result = zo_sqrt(sum / (count - 1))
 
 		return result
 	end
@@ -608,7 +608,7 @@ function PVP:MainRefresh(currentTime)
 
 		local targetWidth = containerControl:GetWidth()
 		local labelWidth = labelControl:GetWidth()
-		bgControl:SetWidth(math.max(targetWidth, labelWidth) * 1.2)
+		bgControl:SetWidth(zo_max(targetWidth, labelWidth) * 1.2)
 
 		local tug = PVP_TUG
 		local tugADcount = PVP_TUG_Frame_ADbar
@@ -1075,7 +1075,7 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 		self.onEffect[unitId] = iconName
 		if self.SV.playersDB[unitName] then
 			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
-			self.SV.playersDB[unitName].mundus = string.sub(effectName, 11)
+			self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
 			self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		end
 	end
@@ -1147,9 +1147,9 @@ function PVP:SecondsToClock(seconds)
 	if seconds <= 0 then
 		return "0sec";
 	else
-		hours = string.format("%2.f", math.floor(seconds / 3600));
-		mins = string.format("%2.f", math.floor(seconds / 60 - (hours * 60)));
-		secs = string.format("%2.f", math.floor(seconds - hours * 3600 - mins * 60));
+		hours = string.format("%2.f", zo_floor(seconds / 3600));
+		mins = string.format("%2.f", zo_floor(seconds / 60 - (hours * 60)));
+		secs = string.format("%2.f", zo_floor(seconds - hours * 3600 - mins * 60));
 		return (tonumber(hours) > 0 and hours .. " hours, " or "") ..
 			(((tonumber(mins) > 0 or tonumber(hours) > 0)) and mins .. " min, " or "") .. secs .. " sec"
 	end
@@ -1171,8 +1171,8 @@ function PVP:BattleReport()
 
 		local battleTime = self:Colorize(" lasted ", "BBBBBB") ..
 			self:Colorize(
-				self:SecondsToClock(math.ceil(GetFrameTimeSeconds() - data.startTime -
-					math.floor(PVP_BATTLE_INTERVAL / 1000))),
+				self:SecondsToClock(zo_ceil(GetFrameTimeSeconds() - data.startTime -
+					zo_floor(PVP_BATTLE_INTERVAL / 1000))),
 				"AF7500") .. self:Colorize(".", "BBBBBB")
 
 		local outputTitle = self:Colorize(
@@ -1527,7 +1527,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 					local abilityIcon = GetAbilityIcon(abilityId)
 					-- PVP_Main.currentChannel = nil
 					-- self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false)
-					local displayHitValue = math.max(1450, hitValue or 0)
+					local displayHitValue = zo_max(1450, hitValue or 0)
 					self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false, false, displayHitValue)
 					PVP_Main.currentChannel = {
 						abilityId = abilityId,
@@ -3011,7 +3011,7 @@ function PVP:GetAllianceCountPlayers()
 				formattedName = formattedName .. statusIcon
 			end
 			if addStatus then formattedName = formattedName .. "**" end
-			local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
+			local nameLength = zo_strlen(zo_strformat(SI_UNIT_NAME, playerName))
 
 			if v == 1 then
 				numberAD = numberAD + 1
@@ -3074,7 +3074,7 @@ function PVP:GetAllianceCountPlayers()
 			if not foundNames[k] then
 				local playerName = k
 				local formattedName, unitAllianceFromPlayersDb
-				local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
+				local nameLength = zo_strlen(zo_strformat(SI_UNIT_NAME, playerName))
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
@@ -3737,7 +3737,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 				if PVP.SV.playersDB[maleName] and not PVP.SV.playersDB[femaleName] then return maleName end
 				if not PVP.SV.playersDB[maleName] and PVP.SV.playersDB[femaleName] then return femaleName end
 				if PVP.SV.playersDB[maleName].unitAccName == PVP.SV.playersDB[femaleName].unitAccName then
-					if math.random() > 0.5 then
+					if zo_random() > 0.5 then
 						return
 							maleName
 					else
