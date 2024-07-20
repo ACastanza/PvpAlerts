@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.11.1"
+PVP.textVersion = "3.12.0"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = os.time(os.date("!*t"))
@@ -591,8 +591,8 @@ function PVP:MainRefresh(currentTime)
 	PVP.endCamp = GetGameTimeMilliseconds()
 	if self.SV.showCounterFrame then
 		PVP.beforeC = GetGameTimeMilliseconds()
-        local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
-		localActivePlayerCache = {numberAD, numberDC, numberEP, tableAD, tableDC, tableEP}
+		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
+		localActivePlayerCache = { numberAD, numberDC, numberEP, tableAD, tableDC, tableEP }
 		PVP.afterC = GetGameTimeMilliseconds()
 
 		local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
