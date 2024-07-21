@@ -1386,8 +1386,8 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	local isSnipe = self.SV.showSnipes and (self.snipeId[abilityId] or self.snipeNames[abilityName])
 
 	local function ProcessKillingBlows()
-		if KILLING_BLOW_ACTION_RESULTS[result] and targetUnitId and targetUnitId ~= 0 and (self.totalPlayers[targetUnitId] or targetName == self.playerName) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
-			local targetNameFromId = PVP.idToName[targetUnitId]
+		if KILLING_BLOW_ACTION_RESULTS[result] and ((targetUnitId and targetUnitId ~= 0 and self.totalPlayers[targetUnitId]) or (targetName and targetName ~= "" or targetName == self.playerName)) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
+			local targetNameFromId = PVP.idToName[targetUnitId] or targetName
 			if targetNameFromId then
 				local validTargetName = PVP:GetValidName(targetNameFromId)
 				killingBlows[validTargetName] = abilityId
