@@ -7,7 +7,7 @@ function PVP:DetectSpec(unitId, abilityId, result, sourceName, isBuff, damageBuf
 
 	self.playerSpec[unitName] = self.playerSpec[unitName] or { spec_counterStam = 0, spec_counterMag = 0 }
 
-	if self.playerSpec[unitName].spec_decision then return end
+	if self.playerSpec[unitName].spec_decision then return self.playerSpec[unitName].spec_decision end
 
 	local spec = self.playerSpec[unitName]
 	local counterStam, counterMag = spec.spec_counterStam, spec.spec_counterMag
@@ -26,8 +26,7 @@ function PVP:DetectSpec(unitId, abilityId, result, sourceName, isBuff, damageBuf
 	end
 
 	if CountSpec() then
-		self:MakeSpecDecision(unitName)
-		return
+		return self:MakeSpecDecision(unitName)
 	end
 
 	local abilityName
@@ -72,18 +71,16 @@ function PVP:DetectSpec(unitId, abilityId, result, sourceName, isBuff, damageBuf
 		self.playerSpec[unitName] = spec
 
 		if CountSpec() then
-			self:MakeSpecDecision(unitName)
-			return
+			return self:MakeSpecDecision(unitName)
 		end
 	end
 end
 
 function PVP:MakeSpecDecision(unitName)
-	local playerDbRecord = self.SV.playersDB[unitName]
-	if not self.SV.playersDB[unitName] then return end
 	local decision, threshold
 
-	local counterStam, counterMag = self.playerSpec[unitName].spec_counterStam, self.playerSpec[unitName].spec_counterMag
+	local counterStam, counterMag = self.playerSpec[unitName].spec_counterStam, self.playerSpec[unitName]
+		.spec_counterMag
 
 	if counterStam + counterMag >= 7 then
 		threshold = 2
@@ -109,8 +106,8 @@ function PVP:MakeSpecDecision(unitName)
 		d('end of abilities list')
 	end
 
-	playerDbRecord.unitSpec = decision
 	self.playerSpec[unitName] = { spec_decision = decision }
+	return decision
 end
 
 function PVP:DetectAbilitySpec(abilityName)

@@ -54,7 +54,6 @@ function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays
 		PVP.playerAlliance[id] = nil
 		PVP.idToName[id] = nil
 		PVP.totalPlayers[id] = nil
-		PVP.onEffect[id] = nil
 	end
 	if next(PVP.idToName) ~= nil then
 		local foundNames = {}
@@ -220,7 +219,8 @@ function PVP:OnCombatState(eventCode, combatState)
 				unitAccName = v.unitAccName,
 				unitAlliance = v.unitAlliance,
 				unitAvARank = v.unitAvARank,
-				lastSeen = v.lastSeen
+				lastSeen = v.lastSeen,
+				mundus = v.mundus,
 			}
 		else
 			if playerDbRecord.unitAlliance ~= v.unitAlliance then
@@ -231,6 +231,12 @@ function PVP:OnCombatState(eventCode, combatState)
 			end
 			if playerDbRecord.lastSeen ~= v.lastSeen then
 				PVP.SV.playersDB[k].lastSeen = v.lastSeen
+			end
+			if v.mundus and v.mundus ~= "" then
+				PVP.SV.playersDB[k].mundus = v.mundus
+			end
+			if v.unitSpec and v.unitSpec ~= "" then
+				PVP.SV.playersDB[k].unitSpec = v.unitSpec
 			end
 			if playerDbRecord.unitAccName ~= v.unitAccName then
 				PVP:UpdatePlayerDbAccountName(k, v.unitAccName, playerDbRecord.unitAccName)
@@ -487,7 +493,6 @@ function PVP:CountTotal(currentTime)
 			self.miscAbilities[self.idToName[k]] = nil
 			self.playerAlliance[k] = nil
 			self.idToName[k] = nil
-			self.onEffect[k] = nil
 		end
 	end
 
@@ -525,7 +530,6 @@ function PVP:CountTotal(currentTime)
 		end
 		self.playerAlliance[k] = nil
 		self.idToName[k] = nil
-		self.onEffect[k] = nil
 		-- if (currentTime-v.currentTime)>PVP_ID_RETAIN_TIME then self.currentlyDead[k]=nil end
 	end
 
@@ -913,7 +917,6 @@ function PVP:OnDeactivated()
 		PVP.playerAlliance[id] = nil
 		PVP.idToName[id] = nil
 		PVP.totalPlayers[id] = nil
-		PVP.onEffect[id] = nil
 	end
 
 	for k, v in pairs(PVP.totalPlayers) do
@@ -928,7 +931,6 @@ function PVP:OnZoneChange(_, zoneName, newZone)
 	-- 	PVP.playerAlliance[id]=nil
 	-- 	PVP.idToName[id]=nil
 	-- 	PVP.totalPlayers[id]=nil
-	-- 	PVP.onEffect[id] = nil
 	-- end
 	-- for k,v in pairs (PVP.totalPlayers) do
 	-- 	ClearId(k)
@@ -1057,12 +1059,20 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 		if self:CheckName(unitName) then
 			self.idToName[unitId] = unitName
 			self.totalPlayers[unitId] = currentTime
-			self:DetectSpec(nil, abilityId, nil, unitName, true)
-			if self.SV.playersDB[unitName] then
+			if cachedPlayerDbUpdates[unitName] then
+				self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
+				self.playerNames[unitName] = currentTime
+				if self:StringStart(effectName, "Boon:") then
+					cachedPlayerDbUpdates.mundus = zo_strsub(effectName, 11)
+				end
+				cachedPlayerDbUpdates.unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
+			elseif self.SV.playersDB[unitName] then
 				self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
+				self.playerNames[unitName] = currentTime
 				if self:StringStart(effectName, "Boon:") then
 					self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
 				end
+				self.SV.playersDB[unitName].unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
 			end
 		else
 			self.totalPlayers[unitId] = nil
@@ -1075,13 +1085,20 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 	elseif (unitName ~= "") and (self.totalPlayers[unitId] == nil) and self:CheckName(unitName) then
 		self.totalPlayers[unitId] = currentTime
 		self.idToName[unitId] = unitName
-		self.onEffect[unitId] = iconName
-		if self.SV.playersDB[unitName] then
-			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
+		if cachedPlayerDbUpdates[unitName] then
+			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
+			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
 				self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
 			end
-			self:DetectSpec(unitId, abilityId, nil, unitName, true)
+			cachedPlayerDbUpdates.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
+		elseif self.SV.playersDB[unitName] then
+			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
+			self.playerNames[unitName] = currentTime
+			if self:StringStart(effectName, "Boon:") then
+				self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+			end
+			self.SV.playersDB[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		end
 	end
 end
@@ -1387,7 +1404,6 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 			-- 	PVP.playerAlliance[id]=nil
 			-- 	PVP.idToName[id]=nil
 			-- 	PVP.totalPlayers[id]=nil
-			-- 	PVP.onEffect[id] = nil
 			-- end
 
 
@@ -1416,7 +1432,6 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 			PVP.miscAbilities[PVP.idToName[targetUnitId]] = nil
 			PVP.idToName[targetUnitId] = nil
 			PVP.playerAlliance[targetUnitId] = nil
-			PVP.onEffect[targetUnitId] = nil
 			-- ClearId(targetUnitId)
 		end
 	end
@@ -2725,7 +2740,6 @@ function PVP:FullReset()
 	self.currentlyDead = {}
 	self.KOSNamesList = {}
 	self.namesToDisplay = {}
-	self.onEffect = {}
 
 	self.potentialAllies = {}
 
