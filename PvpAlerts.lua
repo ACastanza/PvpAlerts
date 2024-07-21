@@ -1060,6 +1060,9 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self:DetectSpec(nil, abilityId, nil, unitName, true)
 			if self.SV.playersDB[unitName] then
 				self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
+				if self:StringStart(effectName, "Boon:") then
+					self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+				end
 			end
 		else
 			self.totalPlayers[unitId] = nil
@@ -1069,13 +1072,15 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self.idToName[unitId] = nil
 			self.npcExclude[unitId] = currentTime
 		end
-	elseif (unitName ~= "") and (self.totalPlayers[unitId] == nil) and self:CheckName(unitName) and (changeType == 1) and self:StringStart(effectName, "Boon:") then
+	elseif (unitName ~= "") and (self.totalPlayers[unitId] == nil) and self:CheckName(unitName) then
 		self.totalPlayers[unitId] = currentTime
 		self.idToName[unitId] = unitName
 		self.onEffect[unitId] = iconName
 		if self.SV.playersDB[unitName] then
 			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
-			self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+			if self:StringStart(effectName, "Boon:") then
+				self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+			end
 			self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		end
 	end
