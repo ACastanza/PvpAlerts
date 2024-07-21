@@ -2076,7 +2076,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	local classIconSize = 45
 	-- local abilityIcon = self:GetIcon(abilityIcon, abilityIconSize)..heavyAttackSpacer
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
-
+	local playerDbRecord = self.SV.playersDB[nameFromDB]
 	if sourceUnitId == "unlock" then
 		playerAlliance = "BBBBBB"
 		nameFromDB = sourceName
@@ -2086,12 +2086,13 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	elseif not isDebuff then
 		nameFromDB = self.idToName[sourceUnitId]
 		if nameFromDB then
-			accountNameFromDB = self.SV.playersDB[nameFromDB].unitAccName or "@name unknown"
+			accountNameFromDB = playerDbRecord.unitAccName or "@name unknown"
 		else
 			accountNameFromDB = "@name unknown"
 		end
 		playerAlliance = self:IdToAllianceColor(sourceUnitId)
-		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance) or
+		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance, nil, nil,
+				nil, nil, nil, nil, nil, playerDbRecord) or
 			heavyAttackSpacer
 	else
 		classIcon = ""
@@ -2312,10 +2313,11 @@ function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 
 	if isDeadOrResurrect then
 		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, isDeadorResurrect, isTargetFrame,
-			not isTargetFrame)
+			not isTargetFrame, nil, nil, nil, nil, playerDbRecord)
 		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, false), nameColor)
 	else
-		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, nil, true, not isTargetFrame)
+		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, nil, true, not isTargetFrame, nil, nil, nil,
+			nil, playerDbRecord)
 		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, nil), nameColor)
 	end
 
@@ -2756,6 +2758,7 @@ function PVP:FullReset()
 end
 
 function PVP:GetAllianceCountPlayers()
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
@@ -2995,22 +2998,30 @@ function PVP:GetAllianceCountPlayers()
 	if not IsActiveWorldBattleground() then
 		for k, v in pairs(self.playerAlliance) do
 			local playerName                      = self.idToName[k]
-			local formattedName
+			local playerDbRecord                  = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+			local unitClass                       = playerDbRecord.unitClass or self.SV.playersDB[playerName].unitClass
+			local formattedName, allianceColor, classIcons
 			local KOSOrFriend                     = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 			local statusIcon, isResurrect, isDead = FindInNames(playerName)
 			local addStatus
 			if statusIcon == "" then addStatus = true end
 
 			if isDead or isResurrect then
-				formattedName = self:GetFormattedClassNameLink(playerName,
-					self:GetTimeFadedColor(self:NameToAllianceColor(playerName, true), k, currentTime), false, true, k,
-					nil, nil, k, currentTime)
-				-- formattedName = self:GetFormattedClassNameLink(playerName, self:NameToAllianceColor(playerName, true), false, true)
+				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, true), k,
+					currentTime)
+				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, nil, k,
+					unitClass, k, currentTime, playerDbRecord.unitAvARank, playerDbRecord)
 			else
-				formattedName = self:GetFormattedClassNameLink(playerName,
-					self:GetTimeFadedColor(self:NameToAllianceColor(playerName, false), k, currentTime), nil, nil, nil,
-					nil, nil, k, currentTime)
+				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, false), k,
+					currentTime)
+				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, nil, nil,
+					unitClass, k, currentTime, playerDbRecord.unitAvARank, playerDbRecord)
 			end
+
+			formattedName = classIcons .. (userDisplayNameType == "character" and
+				(self:Colorize(self:GetFormattedName(playerName) or "unknown player", allianceColor)) or
+				(userDisplayNameType == "user" and self:Colorize(accountNameFromDB or playerName or "unknown player", allianceColor) or
+					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. accountNameFromDB) or "unknown player")))
 
 			if KOSOrFriend then
 				if KOSOrFriend == "KOS" then
@@ -3338,7 +3349,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			isResurrect = nil
 		end
 		if playerName then
-			local playerDbRecord = self.SV.playersDB[playerName]
+			local playerDbRecord = self.SV.playersDB[playerName] or cachedPlayerDbUpdates[playerName]
 			local iconsCount = 0
 			local formattedName = ""
 			KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
@@ -3391,7 +3402,8 @@ function PVP:PopulateReticleOverNamesBuffer()
 			if iconsCount == 0 then iconsCount = nil end
 
 			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect)
-			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect)
+			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil,
+				nil, nil, playerDbRecord.unitAvaRank, playerDbRecord)
 			local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
 			local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
 			if userDisplayNameType == "both" then

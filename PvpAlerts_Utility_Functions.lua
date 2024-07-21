@@ -343,11 +343,11 @@ function PVP:GetUnitSpecColor(playerName)
 end
 
 function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeadorResurrect, isTargetFrame,
-								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank)
-	local classIcon, playerDbRecord, isPlayer
+								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank, playerDbRecord)
+	local classIcon, isPlayer
 
 	isPlayer = playerName == self.playerName
-	playerDbRecord = self.SV.playersDB[playerName]
+	playerDbRecord = playerDbRecord or self.SV.playersDB[playerName]
 
 	if not playerDbRecord and not isPlayer and not unitClass then
 		if unitAvARank and not isPlayer then
