@@ -748,7 +748,8 @@ function PVP:FindKOSPlayer(index)
 	local unitId = 0
 	if next(self.idToName) ~= nil then
 		for k, v in pairs(self.idToName) do
-			if self.SV.playersDB[v] and self.SV.playersDB[v].unitAccName == self.SV.KOSList[index].unitAccName then
+			local playerDbRecord = self.SV.playersDB[v]
+			if self.playerDbRecord and playerDbRecord.unitAccName == self.SV.KOSList[index].unitAccName then
 				local hasPlayerNote = (self.SV.playerNotes[self.SV.KOSList[index].unitAccName] ~= nil)
 				if v ~= self.SV.KOSList[index].unitName then self.SV.KOSList[index].unitName = v end
 				if hasPlayerNote or not IsPlayerInGroup(v) then unitId = k end
@@ -759,7 +760,8 @@ function PVP:FindKOSPlayer(index)
 
 	if unitId == 0 and next(self.playerNames) ~= nil then
 		for k, _ in pairs(self.playerNames) do
-			if self.SV.playersDB[k].unitAccName == self.SV.KOSList[index].unitAccName then
+			local playerDbRecord = self.SV.playersDB[k]
+			if playerDbRecord and playerDbRecord.unitAccName == self.SV.KOSList[index].unitAccName then
 				local hasPlayerNote = (self.SV.playerNotes[self.SV.KOSList[index].unitAccName] ~= nil)
 				if k ~= self.SV.KOSList[index].unitName then self.SV.KOSList[index].unitName = k end
 				if hasPlayerNote or not IsPlayerInGroup(k) then unitId = 1234567890 end
