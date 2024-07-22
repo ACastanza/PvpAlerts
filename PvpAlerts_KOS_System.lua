@@ -975,7 +975,7 @@ function PVP:PopulateKOSBuffer()
 
 	local currentTime = GetFrameTimeMilliseconds()
 
-	if not PVP.lastActiveCheckedTime or ((currentTime - PVP.lastActiveCheckedTime) >= 5000) then
+	if not PVP.lastActiveCheckedTime or ((currentTime - PVP.lastActiveCheckedTime) >= 900000) then
 		PVP.lastActiveCheckedTime = currentTime
 		CheckActive()
 	end
