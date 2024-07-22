@@ -3020,8 +3020,8 @@ function PVP:GetAllianceCountPlayers()
 
 			formattedName = classIcons .. (userDisplayNameType == "character" and
 				(self:Colorize(self:GetFormattedName(playerName) or "unknown player", allianceColor)) or
-				(userDisplayNameType == "user" and self:Colorize(accountNameFromDB or playerName or "unknown player", allianceColor) or
-					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. accountNameFromDB) or "unknown player")))
+				(userDisplayNameType == "user" and self:Colorize(playerDbRecord.unitAccName or self:GetFormattedName(playerName) or "unknown player", allianceColor) or
+					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. playerDbRecord.unitAccName) or "unknown player")))
 
 			if KOSOrFriend then
 				if KOSOrFriend == "KOS" then
