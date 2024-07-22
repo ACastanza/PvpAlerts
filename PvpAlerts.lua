@@ -3147,7 +3147,7 @@ function PVP:GetAllianceCountPlayers()
 						formattedName = formattedName .. "**"
 					end
 
-					unitAllianceFromPlayersDb = self.SV.playersDB[playerName].unitAlliance
+					unitAllianceFromPlayersDb = playerDbRecord.unitAlliance
 					if unitAllianceFromPlayersDb == 1 then
 						numberAD = numberAD + 1
 						table.insert(tableAD, formattedName)
