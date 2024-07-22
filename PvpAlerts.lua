@@ -1391,6 +1391,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 			local targetNameFromId = targetUnitId and PVP.idToName[targetUnitId] or targetName
 			if targetNameFromId then
 				local validTargetName = PVP:GetValidName(targetNameFromId)
+				if not validTargetName then return end
 				killingBlows[validTargetName] = abilityId
 				zo_callLater(function() killingBlows[validTargetName] = nil end, 5000)
 			end
