@@ -1038,7 +1038,7 @@ end
 function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName,
 					  buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId)
 	if not PVP:IsInPVPZone() then return end
-
+	if unitName == self.playerName then return end
 	if IsActiveWorldBattleground() then
 		PVP.bgNames = PVP.bgNames or {}
 		if unitName and unitName ~= '' and not PVP.bgNames[unitName] then PVP.bgNames[unitName] = 0 end
@@ -1387,7 +1387,8 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 
 	local function ProcessKillingBlows()
 		if KILLING_BLOW_ACTION_RESULTS[result] and ((targetUnitId and targetUnitId ~= 0 and self.totalPlayers[targetUnitId]) or (targetName and targetName ~= "" or targetName == self.playerName)) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
-			local targetNameFromId = PVP.idToName[targetUnitId] or targetName
+			-- targetUnitId and targetUnitId ~= 0 and (self.totalPlayers[targetUnitId] or targetName == self.playerName
+			local targetNameFromId = targetUnitId and PVP.idToName[targetUnitId] or targetName
 			if targetNameFromId then
 				local validTargetName = PVP:GetValidName(targetNameFromId)
 				killingBlows[validTargetName] = abilityId
@@ -2076,16 +2077,15 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	local classIconSize = 45
 	-- local abilityIcon = self:GetIcon(abilityIcon, abilityIconSize)..heavyAttackSpacer
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
-	local playerDbRecord = self.SV.playersDB[nameFromDB]
+	sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
+	local playerDbRecord = self.SV.playersDB[sourceName]
 	if sourceUnitId == "unlock" then
 		playerAlliance = "BBBBBB"
-		nameFromDB = sourceName
 		classIcon = playerAlliance and
 			self:Colorize(zo_iconFormatInheritColor(self.classIcons[3], classIconSize, classIconSize), playerAlliance) or
 			heavyAttackSpacer
 	elseif not isDebuff then
-		nameFromDB = self.idToName[sourceUnitId]
-		if nameFromDB then
+		if sourceName then
 			accountNameFromDB = playerDbRecord.unitAccName or "@name unknown"
 		else
 			accountNameFromDB = "@name unknown"
@@ -3104,7 +3104,6 @@ function PVP:GetAllianceCountPlayers()
 			if not foundNames[k] then
 				local playerName = k
 				local formattedName, unitAllianceFromPlayersDb
-				local nameLength = zo_strlen(zo_strformat(SI_UNIT_NAME, playerName))
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
@@ -3147,7 +3146,7 @@ function PVP:GetAllianceCountPlayers()
 						formattedName = formattedName .. "**"
 					end
 
-					unitAllianceFromPlayersDb = playerDbRecord.unitAlliance
+					unitAllianceFromPlayersDb = playerDbRecord and playerDbRecord.unitAlliance
 					if unitAllianceFromPlayersDb == 1 then
 						numberAD = numberAD + 1
 						table.insert(tableAD, formattedName)
