@@ -3001,8 +3001,8 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
-	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
-		control.params.borderKeepAnimationHandler:IsPlaying()
+	-- local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
+	-- 	control.params.borderKeepAnimationHandler:IsPlaying()
 
 	local currentCampaignId = GetCurrentCampaignId()
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
