@@ -593,168 +593,168 @@ function PVP:MainRefresh(currentTime)
 	PVP.endN = GetGameTimeMilliseconds()
 	if self:ShouldShowCampFrame() then self:ManageCampFrame() end
 	PVP.endCamp = GetGameTimeMilliseconds()
-	if self.SV.showCounterFrame then
+	if self.SV.showCounterFrame or self.SV.showTug then
 		PVP.beforeC = GetGameTimeMilliseconds()
 		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
 		localActivePlayerCache = { numberAD, numberDC, numberEP, tableAD, tableDC, tableEP }
 		PVP.afterC = GetGameTimeMilliseconds()
+		if self.SV.showCounterFrame then
+			local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
+			local labelControl = PVP_Counter:GetNamedChild('_Label')
+			local bgControl = PVP_Counter:GetNamedChild('_Backdrop')
+			local adControl = containerControl:GetNamedChild('_CountAD')
+			local dcControl = containerControl:GetNamedChild('_CountDC')
+			local epControl = containerControl:GetNamedChild('_CountEP')
 
-		local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
-		local labelControl = PVP_Counter:GetNamedChild('_Label')
-		local bgControl = PVP_Counter:GetNamedChild('_Backdrop')
-		local adControl = containerControl:GetNamedChild('_CountAD')
-		local dcControl = containerControl:GetNamedChild('_CountDC')
-		local epControl = containerControl:GetNamedChild('_CountEP')
+			adControl:SetText(tostring(numberAD))
+			dcControl:SetText(tostring(numberDC))
+			epControl:SetText(tostring(numberEP))
 
-		adControl:SetText(tostring(numberAD))
-		dcControl:SetText(tostring(numberDC))
-		epControl:SetText(tostring(numberEP))
+			local targetWidth = containerControl:GetWidth()
+			local labelWidth = labelControl:GetWidth()
+			bgControl:SetWidth(zo_max(targetWidth, labelWidth) * 1.2)
 
-		local targetWidth = containerControl:GetWidth()
-		local labelWidth = labelControl:GetWidth()
-		bgControl:SetWidth(zo_max(targetWidth, labelWidth) * 1.2)
-
-		local tug = PVP_TUG
-		local tugADcount = PVP_TUG_Frame_ADbar
-		local tugADbar = PVP_TUG_Frame_ADbar_BG
-		local tugDCcount = PVP_TUG_Frame_DCbar
-		local tugDCbar = PVP_TUG_Frame_DCbar_BG
-		local tugEPcount = PVP_TUG_Frame_EPbar
-		local tugEPbar = PVP_TUG_Frame_EPbar_BG
-
-
-
-
-		if numberAD > 0 then
-			self.SetToolTip(adControl, nil, true, unpack(tableAD))
-		else
-			self.ReleaseToolTip(adControl, self.detailedTooltipCalc == adControl)
-		end
-		if numberDC > 0 then
-			self.SetToolTip(dcControl, nil, true, unpack(tableDC))
-		else
-			self.ReleaseToolTip(dcControl, self.detailedTooltipCalc == dcControl)
-		end
-		if numberEP > 0 then
-			self.SetToolTip(epControl, nil, true, unpack(tableEP))
-		else
-			self.ReleaseToolTip(epControl, self.detailedTooltipCalc == epControl)
-		end
-
-		local totalNumber = numberAD + numberDC + numberEP
-		tugADcount:SetText(numberAD)
-		tugDCcount:SetText(numberDC)
-		tugEPcount:SetText(numberEP)
-		tugADcount:SetHidden(numberAD == 0)
-		tugDCcount:SetHidden(numberDC == 0)
-		tugEPcount:SetHidden(numberEP == 0)
-
-
-		-- tug:SetHidden(totalNumber == 0)
-		local lowestWidth = 14
-		local tugwidth = tug:GetWidth()
-		local adwidth = tugwidth * numberAD / totalNumber
-		local dcwidth = tugwidth * numberDC / totalNumber
-		local epwidth = tugwidth * numberEP / totalNumber
-		local widthmargin = 0
-
-		local adlarge, dclarge, eplarge = true, true, true
-
-		if (numberAD > 0) and (adwidth < lowestWidth) then
-			adwidth = lowestWidth
-			widthmargin = widthmargin + lowestWidth
-			tugADcount:SetWidth(adwidth)
-			tugADbar:SetWidth(adwidth)
-			adlarge = false
-		end
-		if (numberDC > 0) and (dcwidth < lowestWidth) then
-			dcwidth = lowestWidth
-			widthmargin = widthmargin + lowestWidth
-			tugDCcount:SetWidth(dcwidth)
-			tugDCbar:SetWidth(dcwidth)
-			dclarge = false
-		end
-		if (numberEP > 0) and (epwidth < lowestWidth) then
-			epwidth = lowestWidth
-			widthmargin = widthmargin + lowestWidth
-			tugEPcount:SetWidth(epwidth)
-			tugEPbar:SetWidth(epwidth)
-			eplarge = false
-		end
-
-		local reducedTotal = totalNumber
-
-		if adlarge then
-			if not dclarge then
-				if not eplarge then
-					tugADcount:SetWidth(tugwidth - widthmargin)
-					tugADbar:SetWidth(tugwidth - widthmargin)
-				else
-					tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
-					tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
-					tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
-					tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
-				end
+			if numberAD > 0 then
+				self.SetToolTip(adControl, nil, true, unpack(tableAD))
 			else
-				if not eplarge then
-					tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
-					tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
-					tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
-					tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
-				else
-					tugADcount:SetWidth(tugwidth * numberAD / totalNumber)
-					tugADbar:SetWidth(tugwidth * numberAD / totalNumber)
-					tugDCcount:SetWidth(tugwidth * numberDC / totalNumber)
-					tugDCbar:SetWidth(tugwidth * numberDC / totalNumber)
-					tugEPcount:SetWidth(tugwidth * numberEP / totalNumber)
-					tugEPbar:SetWidth(tugwidth * numberEP / totalNumber)
-				end
+				self.ReleaseToolTip(adControl, self.detailedTooltipCalc == adControl)
 			end
-		else
-			if not dclarge then
-				if not eplarge then
-				else
-					tugEPcount:SetWidth(tugwidth - widthmargin)
-					tugEPbar:SetWidth(tugwidth - widthmargin)
-				end
+			if numberDC > 0 then
+				self.SetToolTip(dcControl, nil, true, unpack(tableDC))
 			else
-				if not eplarge then
-					tugDCcount:SetWidth(tugwidth - widthmargin)
-					tugDCbar:SetWidth(tugwidth - widthmargin)
-				else
-					tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
-					tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
-					tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
-					tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
-				end
+				self.ReleaseToolTip(dcControl, self.detailedTooltipCalc == dcControl)
+			end
+			if numberEP > 0 then
+				self.SetToolTip(epControl, nil, true, unpack(tableEP))
+			else
+				self.ReleaseToolTip(epControl, self.detailedTooltipCalc == epControl)
 			end
 		end
+		if self.SV.showTug then
+			local tug = PVP_TUG
+			local tugADcount = PVP_TUG_Frame_ADbar
+			local tugADbar = PVP_TUG_Frame_ADbar_BG
+			local tugDCcount = PVP_TUG_Frame_DCbar
+			local tugDCbar = PVP_TUG_Frame_DCbar_BG
+			local tugEPcount = PVP_TUG_Frame_EPbar
+			local tugEPbar = PVP_TUG_Frame_EPbar_BG
+
+			local totalNumber = numberAD + numberDC + numberEP
+			tugADcount:SetText(numberAD)
+			tugDCcount:SetText(numberDC)
+			tugEPcount:SetText(numberEP)
+			tugADcount:SetHidden(numberAD == 0)
+			tugDCcount:SetHidden(numberDC == 0)
+			tugEPcount:SetHidden(numberEP == 0)
 
 
-		if (numberAD > 0) and (numberDC > 0) then
-			tugADcount:ClearAnchors()
-			tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
-			tugDCcount:ClearAnchors()
-			tugDCcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
-			tugEPcount:ClearAnchors()
-			tugEPcount:SetAnchor(LEFT, tugDCcount, RIGHT, 0, 0)
-		elseif (numberAD == 0) then
-			if (numberDC > 0) then
+			-- tug:SetHidden(totalNumber == 0)
+			local lowestWidth = 14
+			local tugwidth = tug:GetWidth()
+			local adwidth = tugwidth * numberAD / totalNumber
+			local dcwidth = tugwidth * numberDC / totalNumber
+			local epwidth = tugwidth * numberEP / totalNumber
+			local widthmargin = 0
+
+			local adlarge, dclarge, eplarge = true, true, true
+
+			if (numberAD > 0) and (adwidth < lowestWidth) then
+				adwidth = lowestWidth
+				widthmargin = widthmargin + lowestWidth
+				tugADcount:SetWidth(adwidth)
+				tugADbar:SetWidth(adwidth)
+				adlarge = false
+			end
+			if (numberDC > 0) and (dcwidth < lowestWidth) then
+				dcwidth = lowestWidth
+				widthmargin = widthmargin + lowestWidth
+				tugDCcount:SetWidth(dcwidth)
+				tugDCbar:SetWidth(dcwidth)
+				dclarge = false
+			end
+			if (numberEP > 0) and (epwidth < lowestWidth) then
+				epwidth = lowestWidth
+				widthmargin = widthmargin + lowestWidth
+				tugEPcount:SetWidth(epwidth)
+				tugEPbar:SetWidth(epwidth)
+				eplarge = false
+			end
+
+			local reducedTotal = totalNumber
+
+			if adlarge then
+				if not dclarge then
+					if not eplarge then
+						tugADcount:SetWidth(tugwidth - widthmargin)
+						tugADbar:SetWidth(tugwidth - widthmargin)
+					else
+						tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
+						tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
+						tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
+						tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
+					end
+				else
+					if not eplarge then
+						tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
+						tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
+						tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
+						tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
+					else
+						tugADcount:SetWidth(tugwidth * numberAD / totalNumber)
+						tugADbar:SetWidth(tugwidth * numberAD / totalNumber)
+						tugDCcount:SetWidth(tugwidth * numberDC / totalNumber)
+						tugDCbar:SetWidth(tugwidth * numberDC / totalNumber)
+						tugEPcount:SetWidth(tugwidth * numberEP / totalNumber)
+						tugEPbar:SetWidth(tugwidth * numberEP / totalNumber)
+					end
+				end
+			else
+				if not dclarge then
+					if not eplarge then
+					else
+						tugEPcount:SetWidth(tugwidth - widthmargin)
+						tugEPbar:SetWidth(tugwidth - widthmargin)
+					end
+				else
+					if not eplarge then
+						tugDCcount:SetWidth(tugwidth - widthmargin)
+						tugDCbar:SetWidth(tugwidth - widthmargin)
+					else
+						tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
+						tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
+						tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
+						tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
+					end
+				end
+			end
+
+
+			if (numberAD > 0) and (numberDC > 0) then
+				tugADcount:ClearAnchors()
+				tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
 				tugDCcount:ClearAnchors()
-				tugDCcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+				tugDCcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
 				tugEPcount:ClearAnchors()
 				tugEPcount:SetAnchor(LEFT, tugDCcount, RIGHT, 0, 0)
+			elseif (numberAD == 0) then
+				if (numberDC > 0) then
+					tugDCcount:ClearAnchors()
+					tugDCcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+					tugEPcount:ClearAnchors()
+					tugEPcount:SetAnchor(LEFT, tugDCcount, RIGHT, 0, 0)
+				else
+					tugEPcount:ClearAnchors()
+					tugEPcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+				end
 			else
+				tugADcount:ClearAnchors()
+				tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
 				tugEPcount:ClearAnchors()
-				tugEPcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+				tugEPcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
 			end
-		else
-			tugADcount:ClearAnchors()
-			tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
-			tugEPcount:ClearAnchors()
-			tugEPcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
 		end
 	end
+
 	PVP.endCounter = GetGameTimeMilliseconds()
 	PVP.Timer = currentTime
 
