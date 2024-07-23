@@ -2068,8 +2068,8 @@ local function ControlOnUpdate(control)
 	local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
 	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
 		control.params.borderKeepAnimationHandler:IsPlaying()
-	local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
-		control.borderKeepSelectedAnimationHandler:IsPlaying()
+	-- local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
+	-- 	control.borderKeepSelectedAnimationHandler:IsPlaying()
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
 
 	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[control.params.keepId] then
@@ -2137,8 +2137,8 @@ local function ControlOnUpdate(control)
 				local numOutposts = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OUTPOST, alliance)
 				local numScrolls = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_DEFENSIVE_ARTIFACT, alliance) +
 					GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OFFENSIVE_ARTIFACT, alliance)
-				local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] ..
-					'.dds'
+				-- local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] ..
+				-- 	'.dds'
 				local keepIcon = 'esoui/art/campaign/overview_keepicon_' .. allianceToIconName[alliance] .. '.dds'
 				local outpostIcon = 'esoui/art/campaign/overview_outposticon_' .. allianceToIconName[alliance] .. '.dds'
 				local resourceIcon = 'esoui/art/campaign/overview_resourcesicon_' .. allianceToIconName[alliance] ..
