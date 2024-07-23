@@ -2334,8 +2334,6 @@ local function PoiOnUpdate(control)
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	local showTooltip
 	local type = control.params.type
-	local isBattlegroundTeamSignAnimationPlaying = control.battlegroundTeamSignAnimationHandler and
-		control.battlegroundTeamSignAnimationHandler:IsPlaying()
 	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and
 		control.params.alliance == GetUnitBattlegroundTeam('player') and
 		GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
@@ -2376,7 +2374,7 @@ local function PoiOnUpdate(control)
 		if shouldBgBaseHasEnhancedTooltip then
 			local battlegroundId = GetCurrentBattlegroundId()
 			local battlegroundGameType = GetBattlegroundGameType(battlegroundId)
-			local battlegroundName = GetBattlegroundName(battlegroundId)
+			--local battlegroundName = GetBattlegroundName(battlegroundId)
 			local battlegroundDescription = GetBattlegroundDescription(battlegroundId)
 			local battlegroundState = GetCurrentBattlegroundState()
 			local bgAllianceHexColor = PVP:BgAllianceToHexColor(control.params.alliance)
@@ -2658,12 +2656,13 @@ local function PoiOnUpdate(control)
 	end
 
 	if type == 'BG_BASE' and GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING and PVP.currentTooltip ~= control then
-		if not isBattlegroundTeamSignAnimationPlaying then
+		if not (control.battlegroundTeamSignAnimationHandler and control.battlegroundTeamSignAnimationHandler:IsPlaying()) then
 			control.battlegroundTeamSignAnimationHandler = StartBorderKeep3DAnimation(control)
 		end
 	else
-		if isBattlegroundTeamSignAnimationPlaying then control.battlegroundTeamSignAnimationHandler:Stop() end
-
+		if (control.battlegroundTeamSignAnimationHandler and control.battlegroundTeamSignAnimationHandler:IsPlaying()) then
+			control.battlegroundTeamSignAnimationHandler:Stop()
+		end
 		if type ~= 'SEWERS_SIGN' then
 			control:Set3DRenderSpaceOrientation(0, heading, 0)
 		else
