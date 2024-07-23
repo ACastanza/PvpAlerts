@@ -3483,9 +3483,9 @@ function PVP.OnTargetChanged()
 
 		local unitMundus, unitSpec, unitDbAccName
 		if unitName then
-            local playerDbRecord = PVP.SV.playersDB[unitName]
-            local cachedplayerRecord = cachedPlayerDbUpdates[unitName]
-			
+			local playerDbRecord = PVP.SV.playersDB[unitName]
+			local cachedplayerRecord = cachedPlayerDbUpdates[unitName]
+
 			if playerDbRecord then
 				unitSpec = playerDbRecord.unitSpec
 				unitMundus = playerDbRecord.mundus
@@ -3496,9 +3496,9 @@ function PVP.OnTargetChanged()
 				PVP.SV.CP[unitAccName] = unitCP
 			end
 
-            if unitDbAccName and (unitDbAccName ~= unitAccName) then
-                PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
-            end
+			if unitDbAccName and (unitDbAccName ~= unitAccName) then
+				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
+			end
 
 			PVP.SV.playersDB[unitName] = {
 				unitAccName = unitAccName,
@@ -3511,10 +3511,10 @@ function PVP.OnTargetChanged()
 				lastSeen = sessionTimeEpoch
 			}
 
-            if cachedPlayerDbUpdates[unitName] then
-                cachedPlayerDbUpdates[unitName] = nil
-            end
-			
+			if cachedPlayerDbUpdates[unitName] then
+				cachedPlayerDbUpdates[unitName] = nil
+			end
+
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
 				PVP.bgNames[unitName] = GetUnitBattlegroundTeam('reticleover')
