@@ -3001,8 +3001,6 @@ function PVP:GetAllianceCountPlayers()
 			local formattedName, allianceColor, classIcons
 			local KOSOrFriend                     = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 			local statusIcon, isResurrect, isDead = FindInNames(playerName)
-			local addStatus
-			if statusIcon == "" then addStatus = true end
 
 			if isDead or isResurrect then
 				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, true), k,
@@ -3023,22 +3021,21 @@ function PVP:GetAllianceCountPlayers()
 
 			if KOSOrFriend then
 				if KOSOrFriend == "KOS" then
-					formattedName = formattedName .. self:GetKOSIcon() .. statusIcon .. "%"
+					formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
 				elseif KOSOrFriend == "friend" then
-					formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon .. "+"
+					formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
 				elseif KOSOrFriend == "cool" then
-					formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon .. "+"
+					formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
 				elseif KOSOrFriend == "groupleader" then
-					formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
+					formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
 				elseif KOSOrFriend == "group" then
-					formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+					formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
 				elseif KOSOrFriend == "guild" then
-					formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon .. "+"
+					formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon
 				end
 			else
 				formattedName = formattedName .. statusIcon
 			end
-			if addStatus then formattedName = formattedName .. "**" end
 
 			if v == 1 then
 				numberAD = numberAD + 1
