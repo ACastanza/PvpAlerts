@@ -3042,7 +3042,6 @@ function PVP:GetAllianceCountPlayers()
 				formattedName = formattedName .. statusIcon
 			end
 			if addStatus then formattedName = formattedName .. "**" end
-			local nameLength = zo_strlen(zo_strformat(SI_UNIT_NAME, playerName))
 
 			if v == 1 then
 				numberAD = numberAD + 1
