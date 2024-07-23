@@ -1089,7 +1089,7 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
 			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
-				self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+				cachedPlayerDbUpdates[unitName].mundus = zo_strsub("Boon: The Lover", 11)
 			end
 			cachedPlayerDbUpdates.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		elseif self.SV.playersDB[unitName] then
@@ -3483,7 +3483,9 @@ function PVP.OnTargetChanged()
 
 		local unitMundus, unitSpec, unitDbAccName
 		if unitName then
-			local playerDbRecord = PVP.SV.playersDB[unitName]
+            local playerDbRecord = PVP.SV.playersDB[unitName]
+            local cachedplayerRecord = cachedPlayerDbUpdates[unitName]
+			
 			if playerDbRecord then
 				unitSpec = playerDbRecord.unitSpec
 				unitMundus = playerDbRecord.mundus
@@ -3494,24 +3496,25 @@ function PVP.OnTargetChanged()
 				PVP.SV.CP[unitAccName] = unitCP
 			end
 
-			if unitDbAccName and (unitDbAccName ~= unitAccName) then
-				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
-			end
-
-			if cachedPlayerDbUpdates[unitName] then
-				cachedPlayerDbUpdates[unitName] = nil
-			end
+            if unitDbAccName and (unitDbAccName ~= unitAccName) then
+                PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
+            end
 
 			PVP.SV.playersDB[unitName] = {
 				unitAccName = unitAccName,
 				unitAlliance = unitAlliance,
 				unitClass = unitClass,
 				unitRace = unitRace,
-				unitSpec = unitSpec,
-				mundus = unitMundus,
+				unitSpec = (cachedplayerDbRecord and cachedplayerRecord.unitSpec) or unitSpec,
+				mundus = (cachedplayerDbRecord and cachedplayerRecord.mundus) or unitMundus,
 				unitAvARank = unitAllianceRank,
 				lastSeen = sessionTimeEpoch
 			}
+
+            if cachedPlayerDbUpdates[unitName] then
+                cachedPlayerDbUpdates[unitName] = nil
+            end
+			
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
 				PVP.bgNames[unitName] = GetUnitBattlegroundTeam('reticleover')
