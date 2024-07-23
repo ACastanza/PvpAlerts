@@ -2900,22 +2900,20 @@ function PVP:GetAllianceCountPlayers()
 			if playerName ~= self.playerName then
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
-				local addStatus
 
-				if statusIcon == "" then addStatus = true end
 				if KOSOrFriend then
 					if KOSOrFriend == "KOS" then
-						formattedName = formattedName .. self:GetKOSIcon() .. statusIcon .. "%"
+						formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
 					elseif KOSOrFriend == "friend" then
-						formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon .. "+"
+						formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
 					elseif KOSOrFriend == "cool" then
-						formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon .. "+"
+						formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
 					elseif KOSOrFriend == "groupleader" then
-						formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
+						formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
 					elseif KOSOrFriend == "group" then
-						formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+						formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
 					elseif KOSOrFriend == "guild" then
-						formattedName = formattedName .. self:GetGuildIcon() .. statusIcon .. "+"
+						formattedName = formattedName .. self:GetGuildIcon() .. statusIcon
 					end
 				else
 					formattedName = formattedName .. statusIcon
@@ -2923,7 +2921,6 @@ function PVP:GetAllianceCountPlayers()
 			else
 				formattedName = formattedName .. self:Colorize(' - YOU', 'FFFFFF')
 			end
-			if addStatus then formattedName = formattedName .. "**" end
 			if bgAlliance == 1 then
 				numberAD = numberAD + 1
 				table.insert(tableAD, formattedName)
@@ -3109,10 +3106,8 @@ function PVP:GetAllianceCountPlayers()
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
 
 				if (not isDead) and (not isResurrect) then
-					local addEye
 					if statusIcon == "" then
 						statusIcon = self:GetEyeIcon()
-						addEye = true
 					end
 
 					-- if isDead or isResurrect then
@@ -3124,27 +3119,22 @@ function PVP:GetAllianceCountPlayers()
 
 					if KOSOrFriend then
 						if KOSOrFriend == "KOS" then
-							formattedName = formattedName .. self:GetKOSIcon() .. statusIcon .. "%"
+							formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
 						elseif KOSOrFriend == "friend" then
-							formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon .. "+"
+							formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
 						elseif KOSOrFriend == "cool" then
-							formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon .. "+"
+							formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
 						elseif KOSOrFriend == "groupleader" then
-							formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
+							formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
 						elseif KOSOrFriend == "group" then
-							formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+							formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
 						elseif KOSOrFriend == "guild" then
-							formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon .. "+"
+							formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon
 						end
 					else
 						formattedName = formattedName .. statusIcon
 					end
 
-					if addEye then
-						formattedName = formattedName .. "*"
-					else
-						formattedName = formattedName .. "**"
-					end
 
 					unitAllianceFromPlayersDb = playerDbRecord and playerDbRecord.unitAlliance
 					if unitAllianceFromPlayersDb == 1 then
