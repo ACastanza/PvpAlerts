@@ -18,19 +18,19 @@ local GetKeepKeysByIndex = GetKeepKeysByIndex
 local GetKeepPinInfo = GetKeepPinInfo
 local GetPlayerLocationName = GetPlayerLocationName
 
-local ceil = math.ceil
+local ceil = zo_ceil
 local asin = math.asin
-local acos = math.cos
-local tan = math.tan
+local acos = zo_cos
+local tan = zo_tan
 local atan = math.atan
-local atan2 = math.atan2
-local sqrt = math.sqrt
-local cos = math.cos
-local sin = math.sin
-local floor = math.floor
-local abs = math.abs
+local atan2 = zo_atan2
+local sqrt = zo_sqrt
+local cos = zo_cos
+local sin = zo_sin
+local floor = zo_floor
+local abs = zo_abs
 local pairs = pairs
-local pi = math.pi
+local pi = ZO_PI
 
 local IC_ZONEID = 341
 
@@ -340,6 +340,7 @@ local function GetPOIControlSelectedSizeMultiplier(control, scaleAdjustment, mul
 end
 
 local function IsPlayerNearObjective(keepId, isCheck)
+	if (not keepId) or keepId == "" then return false end
 	local zoneId, subzoneId = GetCurrentSubZonePOIIndices()
 	local isBruma = zoneId == 37 and subzoneId == 106
 	local zoneName = GetPlayerLocationName()
@@ -370,7 +371,33 @@ local function IsPlayerNearObjective(keepId, isCheck)
 end
 
 local function Hide3DControl(control, scaleAdjustment)
+	if ZO_WorldMap_IsWorldMapShowing() then
+		control:SetHidden(true)
+		return true
+	end
+
+	local controlTooClose = (type ~= "SHADOW_IMAGE") and
+		control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
+	if controlTooClose then
+		control:SetHidden(true)
+		return true
+	end
+
+	local onScreenKeeps = {
+		[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
+		[PVP_KEEPTYPE_BORDER_KEEP] = true,
+		[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
+	}
+
 	local type = control.params.type
+	local onScreenCheck = (IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(control.params.keepId)])) or
+		(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
+
+	local controlOnScreen = PVP.SV.showOnScreen and PVP.SV.onScreenReplace and onScreenCheck
+	if controlOnScreen then
+		control:SetHidden(true)
+		return true
+	end
 
 	local utilityControls = {
 		['RALLY'] = true,
@@ -379,32 +406,27 @@ local function Hide3DControl(control, scaleAdjustment)
 		['GROUP'] = true,
 		['COMPASS'] = true,
 	}
+	local controlTooFar = (not utilityControls[type]) and
+		control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance
+	if controlTooFar then
+		control:SetHidden(true)
+		return true
+	end
 
-	local onScreenKeeps = {
-		[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
-		[PVP_KEEPTYPE_BORDER_KEEP] = true,
-		[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
-	}
+	if icControls[type] and not control.params.isCurrent then
+		control:SetHidden(true)
+		return true
+	end
 
-	local notCurrentDistrict = icControls[type] and not control.params.isCurrent
-	local controlTooClose = (type ~= "SHADOW_IMAGE") and
-		control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
-	local isControlUtility = utilityControls[type]
-	-- local onScreenCheck = IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or (PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_ARTIFACT_KEEP) or (PVP:KeepIdToKeepType(control.params.keepId) == PVP_KEEPTYPE_BORDER_KEEP) or (PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT)) or (IsPlayerNearObjective(control.params.name) and control.params.type == 'MILEGATE'))
-	local onScreenCheck = (IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(control.params.keepId)])) or
-		(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
-	local isMapShowing = ZO_WorldMap_IsWorldMapShowing()
-	local controlTooFar = not isControlUtility and control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance
-	local controlOnScreen = PVP.SV.showOnScreen and PVP.SV.onScreenReplace and onScreenCheck
 	local keepCheck = control.params.keepId and GetKeepResourceType(control.params.keepId) ~= 0 and
 		(control.params.distance > scaleAdjustment * PVP.SV.maxResource3DIconsDistance or control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance)
+	if keepCheck then
+		control:SetHidden(true)
+		return true
+	end
 
-	local shouldHideControl = isMapShowing or notCurrentDistrict or controlTooClose or controlTooFar or controlOnScreen or
-		keepCheck
-
-	control:SetHidden(shouldHideControl)
-	return shouldHideControl
-	-- return true
+	control:SetHidden(false)
+	return false
 end
 
 local function IsInImperialCityDistrict(renew)
@@ -427,7 +449,7 @@ local function IsInBorderKeepArea(renew)
 
 		for k, v in pairs(PVP.borderKeepsIds) do
 			local keepName = GetKeepName(k)
-			if keepName == locationName or string.gsub(locationName, ' Gate', '') == string.gsub(keepName, 'Gate', '') then
+			if keepName == locationName or zo_strgsub(locationName, ' Gate', '') == zo_strgsub(keepName, 'Gate', '') then
 				return
 					k
 			end --hax because typo in English client for dc border keep names
@@ -902,7 +924,7 @@ local function SetShadowImageColor(control)
 	local timeLeft
 
 	if PVP.shadowInfo.endTime then
-		timeLeft = math.ceil(PVP.shadowInfo.endTime - GetFrameTimeSeconds())
+		timeLeft = zo_ceil(PVP.shadowInfo.endTime - GetFrameTimeSeconds())
 	end
 end
 
@@ -1033,10 +1055,10 @@ local function GetControlTexture(control, data, iconType)
 
 	if iconType == "POI" then
 		if type == 'KILL_LOCATION' then
-			texture = string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+			texture = zo_strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'SCROLL' then
 			texture = data.isBgFlag and ZO_MapPin.PIN_DATA[data.pinType].texture or
-				string.gsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+				zo_strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'GROUP' then
 			if control.params.isGroupLeader then
 				texture = 'esoui/art/icons/mapkey/mapkey_groupleader.dds'
@@ -1119,7 +1141,7 @@ local function GetControlColor(control, data, iconType)
 			colorR, colorG, colorB, alpha = 1, 0, 0, 1
 		end
 	elseif type == 'PING' then
-		local groupNumber = string.gsub(data.pingTag, 'group', '')
+		local groupNumber = zo_strgsub(data.pingTag, 'group', '')
 		if not control.params.pingColor then control.params.pingColor = PVP.pingsColors[tonumber(groupNumber)] end
 		colorR, colorG, colorB, alpha = control.params.pingColor[1] / 255, control.params.pingColor[2] / 255,
 			control.params.pingColor[3] / 255
@@ -1754,7 +1776,7 @@ local function IsScrollInKeepId(keepId)
 		_, _, scrollState = GetObjectiveInfo(k, v, 1)
 		if isArtifactKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and keepId == k then
 			local mappin = GetObjectivePinInfo(k, v, 1)
-			return true, string.gsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
+			return true, zo_strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
 		end
 		if isKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then
 			local keepArtifactStorage = PVP.AVAids[keepId][3]
@@ -1764,7 +1786,7 @@ local function IsScrollInKeepId(keepId)
 			local _, keepCapturePointX, keepCapturePointY = GetObjectivePinInfo(keepId, keepArtifactNodeId, 1)
 			local mappin, scrollX, scrollY = GetObjectivePinInfo(k, v, 1)
 			if keepCapturePointX == scrollX and keepCapturePointY == scrollY then
-				return true, string.gsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
+				return true, zo_strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
 			end
 		end
 	end
@@ -2019,7 +2041,7 @@ local function GetEmperorInfoString(isWorldCrown)
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)
 			text = PVP:Colorize('Emperor ', 'CCCCCC') ..
-				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(math.floor(reignTime)),
+				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(zo_floor(reignTime)),
 					'CCCCCC')
 		else
 			text = PVP:Colorize('Current Emperor is: ', 'CCCCCC') .. formattedEmperorName
@@ -2046,8 +2068,8 @@ local function ControlOnUpdate(control)
 	local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
 	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
 		control.params.borderKeepAnimationHandler:IsPlaying()
-	local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
-		control.borderKeepSelectedAnimationHandler:IsPlaying()
+	-- local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
+	-- 	control.borderKeepSelectedAnimationHandler:IsPlaying()
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
 
 	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[control.params.keepId] then
@@ -2115,8 +2137,8 @@ local function ControlOnUpdate(control)
 				local numOutposts = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OUTPOST, alliance)
 				local numScrolls = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_DEFENSIVE_ARTIFACT, alliance) +
 					GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OFFENSIVE_ARTIFACT, alliance)
-				local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] ..
-					'.dds'
+				-- local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] ..
+				-- 	'.dds'
 				local keepIcon = 'esoui/art/campaign/overview_keepicon_' .. allianceToIconName[alliance] .. '.dds'
 				local outpostIcon = 'esoui/art/campaign/overview_outposticon_' .. allianceToIconName[alliance] .. '.dds'
 				local resourceIcon = 'esoui/art/campaign/overview_resourcesicon_' .. allianceToIconName[alliance] ..
@@ -2283,12 +2305,10 @@ local function ControlOnUpdate(control)
 
 	if PVP.currentTooltip == control or isControlFlipping then
 		popMultiplier = GetPopInMultiplier(multiplier, control)
-	else
-		popMultiplier = GetPopOutMultiplier(multiplier, control)
+		SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
+			control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
 	end
 
-	SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
-		control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
 
 	if showBorderKeepInfo and PVP.currentTooltip ~= control then
 		if not isBorderKeepAnimationPlaying then
@@ -2314,8 +2334,6 @@ local function PoiOnUpdate(control)
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	local showTooltip
 	local type = control.params.type
-	local isBattlegroundTeamSignAnimationPlaying = control.battlegroundTeamSignAnimationHandler and
-		control.battlegroundTeamSignAnimationHandler:IsPlaying()
 	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and
 		control.params.alliance == GetUnitBattlegroundTeam('player') and
 		GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
@@ -2356,7 +2374,7 @@ local function PoiOnUpdate(control)
 		if shouldBgBaseHasEnhancedTooltip then
 			local battlegroundId = GetCurrentBattlegroundId()
 			local battlegroundGameType = GetBattlegroundGameType(battlegroundId)
-			local battlegroundName = GetBattlegroundName(battlegroundId)
+			--local battlegroundName = GetBattlegroundName(battlegroundId)
 			local battlegroundDescription = GetBattlegroundDescription(battlegroundId)
 			local battlegroundState = GetCurrentBattlegroundState()
 			local bgAllianceHexColor = PVP:BgAllianceToHexColor(control.params.alliance)
@@ -2638,12 +2656,13 @@ local function PoiOnUpdate(control)
 	end
 
 	if type == 'BG_BASE' and GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING and PVP.currentTooltip ~= control then
-		if not isBattlegroundTeamSignAnimationPlaying then
+		if not (control.battlegroundTeamSignAnimationHandler and control.battlegroundTeamSignAnimationHandler:IsPlaying()) then
 			control.battlegroundTeamSignAnimationHandler = StartBorderKeep3DAnimation(control)
 		end
 	else
-		if isBattlegroundTeamSignAnimationPlaying then control.battlegroundTeamSignAnimationHandler:Stop() end
-
+		if (control.battlegroundTeamSignAnimationHandler and control.battlegroundTeamSignAnimationHandler:IsPlaying()) then
+			control.battlegroundTeamSignAnimationHandler:Stop()
+		end
 		if type ~= 'SEWERS_SIGN' then
 			control:Set3DRenderSpaceOrientation(0, heading, 0)
 		else
@@ -2705,6 +2724,7 @@ local function CrownOnUpdate()
 end
 
 local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
+	if not keepId or keepId == 0 or keepId == "" then return end
 	-- PVP.m1 = GetGameTimeMilliseconds()
 	local coordsNewX, coordsNewY, objectiveId, keepInfoInDB, scaleAdjustment = GetCurrentMapCoordsFromKeepId(keepId,
 		scaleAdjustment)
@@ -2722,19 +2742,12 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		control = PVP.currentNearbyKeepIds[keepId]
 	end
 
+	-- local vars for controls
 	local icon = control:GetNamedChild('Icon')
 	local iconUA = control:GetNamedChild('IconUA')
 	local iconBG = control:GetNamedChild('BG')
-	local captureBG = control:GetNamedChild('CaptureBG')
-	local captureBar = control:GetNamedChild('CaptureBar')
-	local divider = control:GetNamedChild('Divider')
 	local scroll = control:GetNamedChild('Scroll')
 	local lock = control:GetNamedChild('Locked')
-	local flags = control:GetNamedChild('Flags')
-	local apse = control:GetNamedChild('Apse')
-	local nave = control:GetNamedChild('Nave')
-	local other = control:GetNamedChild('Other')
-	local middle = control:GetNamedChild('Middle')
 	local ping = control:GetNamedChild('Ping')
 
 
@@ -2801,10 +2814,15 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
 	local shouldHideFlags = not (keepType == KEEPTYPE_KEEP or keepType == KEEPTYPE_OUTPOST or keepType == KEEPTYPE_TOWN)
 	local naveFlag, apseFlag, otherFlag, naveAlliance, apseAlliance, otherAlliance
-
 	-- PVP.m2 = GetGameTimeMilliseconds()
 
 	if not shouldHideFlags then
+		local flags = control:GetNamedChild('Flags')
+		local apse = control:GetNamedChild('Apse')
+		local nave = control:GetNamedChild('Nave')
+		local other = control:GetNamedChild('Other')
+		local middle = control:GetNamedChild('Middle')
+
 		local isTown = keepType == KEEPTYPE_TOWN
 		local isKeep = keepType == KEEPTYPE_KEEP
 		if isTown then
@@ -2891,12 +2909,6 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 			other:SetColor(PVP:GetTrueAllianceColors(otherAlliance))
 			other:SetHidden(false)
 		end
-	else
-		flags:SetHidden(true)
-		middle:SetHidden(true)
-		nave:SetHidden(true)
-		apse:SetHidden(true)
-		other:SetHidden(true)
 	end
 
 	-- PVP.m3 = GetGameTimeMilliseconds()
@@ -2948,6 +2960,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		if not (toHide or neutral) then
 			captureTexture = PVP:GetCaptureTexture(captureAlliance, isCapture, percentage)
+			local captureBar = control:GetNamedChild('CaptureBar')
 			captureBar:SetTexture(captureTexture)
 		end
 	end
@@ -2987,8 +3000,8 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
-	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
-		control.params.borderKeepAnimationHandler:IsPlaying()
+	-- local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
+	-- 	control.params.borderKeepAnimationHandler:IsPlaying()
 
 	local currentCampaignId = GetCurrentCampaignId()
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)

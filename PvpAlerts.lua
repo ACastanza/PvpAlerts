@@ -3,10 +3,10 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.11.0"
+PVP.textVersion = "3.12.0"
 PVP.name = "PvpAlerts"
 
-local sessionTimeEpoch = os.time(os.date("!*t"))
+local sessionTimeEpoch = GetTimeStamp()
 local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
 local killingBlows = {}
 local cachedPlayerDbUpdates = {}
@@ -45,6 +45,8 @@ local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 
 local currentCampaignActiveEmperor, currentCampaignActiveEmperorAcc, currentCampaignActiveEmperorAlliance
 
+local localActivePlayerCache = {}
+
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
 		PVP.playerSpec[PVP.idToName[id]] = nil
@@ -52,7 +54,6 @@ function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays
 		PVP.playerAlliance[id] = nil
 		PVP.idToName[id] = nil
 		PVP.totalPlayers[id] = nil
-		PVP.onEffect[id] = nil
 	end
 	if next(PVP.idToName) ~= nil then
 		local foundNames = {}
@@ -82,7 +83,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		local function average(n)
 			if #t == period then table.remove(t, 1) end
 			t[#t + 1] = n
-			return sum(unpack(t)) / #t, math.max(unpack(t))
+			return sum(unpack(t)) / #t, zo_max(unpack(t))
 		end
 
 		return average
@@ -188,10 +189,10 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		-- PVP.addonPerformance.averageSum = PVP.addonPerformance.averageSum + (end_all - start_main)
 
 		-- if PVP.addonPerformance.averageCounts >= 240 then
-		-- chat:Printf('Average in last minute processing time = '..tostring(math.ceil(PVP.addonPerformance.averageSum/PVP.addonPerformance.averageCounts)))
+		-- chat:Printf('Average in last minute processing time = '..tostring(zo_ceil(PVP.addonPerformance.averageSum/PVP.addonPerformance.averageCounts)))
 		-- chat:Printf('Max in last minute processing time = '..tostring(PVP.addonPerformance.maxMinute))
 		local avg, maxMin = PVP.addonPerformance.sma(end_all - start_main)
-		chat:Printf('Last 30 sec average processing time = %dms', math.ceil(avg))
+		chat:Printf('Last 30 sec average processing time = %dms', zo_ceil(avg))
 		chat:Printf('Last 30 sec max processing time = %dms', maxMin)
 		-- PVP.addonPerformance.averageCounts = 0
 		-- PVP.addonPerformance.maxMinute = 0
@@ -218,7 +219,8 @@ function PVP:OnCombatState(eventCode, combatState)
 				unitAccName = v.unitAccName,
 				unitAlliance = v.unitAlliance,
 				unitAvARank = v.unitAvARank,
-				lastSeen = v.lastSeen
+				lastSeen = v.lastSeen,
+				mundus = v.mundus,
 			}
 		else
 			if playerDbRecord.unitAlliance ~= v.unitAlliance then
@@ -229,6 +231,12 @@ function PVP:OnCombatState(eventCode, combatState)
 			end
 			if playerDbRecord.lastSeen ~= v.lastSeen then
 				PVP.SV.playersDB[k].lastSeen = v.lastSeen
+			end
+			if v.mundus and v.mundus ~= "" then
+				PVP.SV.playersDB[k].mundus = v.mundus
+			end
+			if v.unitSpec and v.unitSpec ~= "" then
+				PVP.SV.playersDB[k].unitSpec = v.unitSpec
 			end
 			if playerDbRecord.unitAccName ~= v.unitAccName then
 				PVP:UpdatePlayerDbAccountName(k, v.unitAccName, playerDbRecord.unitAccName)
@@ -308,12 +316,12 @@ function PVP_test_SV()
 		table.sort(temp)
 
 		-- If we have an even number of table elements or odd.
-		if math.fmod(#temp, 2) == 0 then
+		if zo_mod(#temp, 2) == 0 then
 			-- return mean value of middle two elements
 			return (temp[#temp / 2] + temp[(#temp / 2) + 1]) / 2
 		else
 			-- return middle element
-			return temp[math.ceil(#temp / 2)]
+			return temp[zo_ceil(#temp / 2)]
 		end
 	end
 
@@ -335,7 +343,7 @@ function PVP_test_SV()
 			end
 		end
 
-		result = math.sqrt(sum / (count - 1))
+		result = zo_sqrt(sum / (count - 1))
 
 		return result
 	end
@@ -485,7 +493,6 @@ function PVP:CountTotal(currentTime)
 			self.miscAbilities[self.idToName[k]] = nil
 			self.playerAlliance[k] = nil
 			self.idToName[k] = nil
-			self.onEffect[k] = nil
 		end
 	end
 
@@ -523,7 +530,6 @@ function PVP:CountTotal(currentTime)
 		end
 		self.playerAlliance[k] = nil
 		self.idToName[k] = nil
-		self.onEffect[k] = nil
 		-- if (currentTime-v.currentTime)>PVP_ID_RETAIN_TIME then self.currentlyDead[k]=nil end
 	end
 
@@ -587,167 +593,168 @@ function PVP:MainRefresh(currentTime)
 	PVP.endN = GetGameTimeMilliseconds()
 	if self:ShouldShowCampFrame() then self:ManageCampFrame() end
 	PVP.endCamp = GetGameTimeMilliseconds()
-	if self.SV.showCounterFrame then
+	if self.SV.showCounterFrame or self.SV.showTug then
 		PVP.beforeC = GetGameTimeMilliseconds()
-		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
+		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
+		localActivePlayerCache = { numberAD, numberDC, numberEP, tableAD, tableDC, tableEP }
 		PVP.afterC = GetGameTimeMilliseconds()
+		if self.SV.showCounterFrame then
+			local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
+			local labelControl = PVP_Counter:GetNamedChild('_Label')
+			local bgControl = PVP_Counter:GetNamedChild('_Backdrop')
+			local adControl = containerControl:GetNamedChild('_CountAD')
+			local dcControl = containerControl:GetNamedChild('_CountDC')
+			local epControl = containerControl:GetNamedChild('_CountEP')
 
-		local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
-		local labelControl = PVP_Counter:GetNamedChild('_Label')
-		local bgControl = PVP_Counter:GetNamedChild('_Backdrop')
-		local adControl = containerControl:GetNamedChild('_CountAD')
-		local dcControl = containerControl:GetNamedChild('_CountDC')
-		local epControl = containerControl:GetNamedChild('_CountEP')
+			adControl:SetText(tostring(numberAD))
+			dcControl:SetText(tostring(numberDC))
+			epControl:SetText(tostring(numberEP))
 
-		adControl:SetText(tostring(numberAD))
-		dcControl:SetText(tostring(numberDC))
-		epControl:SetText(tostring(numberEP))
+			local targetWidth = containerControl:GetWidth()
+			local labelWidth = labelControl:GetWidth()
+			bgControl:SetWidth(zo_max(targetWidth, labelWidth) * 1.2)
 
-		local targetWidth = containerControl:GetWidth()
-		local labelWidth = labelControl:GetWidth()
-		bgControl:SetWidth(math.max(targetWidth, labelWidth) * 1.2)
-
-		local tug = PVP_TUG
-		local tugADcount = PVP_TUG_Frame_ADbar
-		local tugADbar = PVP_TUG_Frame_ADbar_BG
-		local tugDCcount = PVP_TUG_Frame_DCbar
-		local tugDCbar = PVP_TUG_Frame_DCbar_BG
-		local tugEPcount = PVP_TUG_Frame_EPbar
-		local tugEPbar = PVP_TUG_Frame_EPbar_BG
-
-
-
-
-		if numberAD > 0 then
-			self.SetToolTip(adControl, self:ProcessLengths(tableAD, maxAD), true, unpack(tableAD))
-		else
-			self.ReleaseToolTip(adControl, self.detailedTooltipCalc == adControl)
-		end
-		if numberDC > 0 then
-			self.SetToolTip(dcControl, self:ProcessLengths(tableDC, maxDC), true, unpack(tableDC))
-		else
-			self.ReleaseToolTip(dcControl, self.detailedTooltipCalc == dcControl)
-		end
-		if numberEP > 0 then
-			self.SetToolTip(epControl, self:ProcessLengths(tableEP, maxEP), true, unpack(tableEP))
-		else
-			self.ReleaseToolTip(epControl, self.detailedTooltipCalc == epControl)
-		end
-
-		local totalNumber = numberAD + numberDC + numberEP
-		tugADcount:SetText(numberAD)
-		tugDCcount:SetText(numberDC)
-		tugEPcount:SetText(numberEP)
-		tugADcount:SetHidden(numberAD == 0)
-		tugDCcount:SetHidden(numberDC == 0)
-		tugEPcount:SetHidden(numberEP == 0)
-
-
-		-- tug:SetHidden(totalNumber == 0)
-		local lowestWidth = 14
-		local tugwidth = tug:GetWidth()
-		local adwidth = tugwidth * numberAD / totalNumber
-		local dcwidth = tugwidth * numberDC / totalNumber
-		local epwidth = tugwidth * numberEP / totalNumber
-		local widthmargin = 0
-
-		local adlarge, dclarge, eplarge = true, true, true
-
-		if (numberAD > 0) and (adwidth < lowestWidth) then
-			adwidth = lowestWidth
-			widthmargin = widthmargin + lowestWidth
-			tugADcount:SetWidth(adwidth)
-			tugADbar:SetWidth(adwidth)
-			adlarge = false
-		end
-		if (numberDC > 0) and (dcwidth < lowestWidth) then
-			dcwidth = lowestWidth
-			widthmargin = widthmargin + lowestWidth
-			tugDCcount:SetWidth(dcwidth)
-			tugDCbar:SetWidth(dcwidth)
-			dclarge = false
-		end
-		if (numberEP > 0) and (epwidth < lowestWidth) then
-			epwidth = lowestWidth
-			widthmargin = widthmargin + lowestWidth
-			tugEPcount:SetWidth(epwidth)
-			tugEPbar:SetWidth(epwidth)
-			eplarge = false
-		end
-
-		local reducedTotal = totalNumber
-
-		if adlarge then
-			if not dclarge then
-				if not eplarge then
-					tugADcount:SetWidth(tugwidth - widthmargin)
-					tugADbar:SetWidth(tugwidth - widthmargin)
-				else
-					tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
-					tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
-					tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
-					tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
-				end
+			if numberAD > 0 then
+				self.SetToolTip(adControl, nil, true, unpack(tableAD))
 			else
-				if not eplarge then
-					tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
-					tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
-					tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
-					tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
-				else
-					tugADcount:SetWidth(tugwidth * numberAD / totalNumber)
-					tugADbar:SetWidth(tugwidth * numberAD / totalNumber)
-					tugDCcount:SetWidth(tugwidth * numberDC / totalNumber)
-					tugDCbar:SetWidth(tugwidth * numberDC / totalNumber)
-					tugEPcount:SetWidth(tugwidth * numberEP / totalNumber)
-					tugEPbar:SetWidth(tugwidth * numberEP / totalNumber)
-				end
+				self.ReleaseToolTip(adControl, self.detailedTooltipCalc == adControl)
 			end
-		else
-			if not dclarge then
-				if not eplarge then
-				else
-					tugEPcount:SetWidth(tugwidth - widthmargin)
-					tugEPbar:SetWidth(tugwidth - widthmargin)
-				end
+			if numberDC > 0 then
+				self.SetToolTip(dcControl, nil, true, unpack(tableDC))
 			else
-				if not eplarge then
-					tugDCcount:SetWidth(tugwidth - widthmargin)
-					tugDCbar:SetWidth(tugwidth - widthmargin)
-				else
-					tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
-					tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
-					tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
-					tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
-				end
+				self.ReleaseToolTip(dcControl, self.detailedTooltipCalc == dcControl)
+			end
+			if numberEP > 0 then
+				self.SetToolTip(epControl, nil, true, unpack(tableEP))
+			else
+				self.ReleaseToolTip(epControl, self.detailedTooltipCalc == epControl)
 			end
 		end
+		if self.SV.showTug then
+			local tug = PVP_TUG
+			local tugADcount = PVP_TUG_Frame_ADbar
+			local tugADbar = PVP_TUG_Frame_ADbar_BG
+			local tugDCcount = PVP_TUG_Frame_DCbar
+			local tugDCbar = PVP_TUG_Frame_DCbar_BG
+			local tugEPcount = PVP_TUG_Frame_EPbar
+			local tugEPbar = PVP_TUG_Frame_EPbar_BG
+
+			local totalNumber = numberAD + numberDC + numberEP
+			tugADcount:SetText(numberAD)
+			tugDCcount:SetText(numberDC)
+			tugEPcount:SetText(numberEP)
+			tugADcount:SetHidden(numberAD == 0)
+			tugDCcount:SetHidden(numberDC == 0)
+			tugEPcount:SetHidden(numberEP == 0)
 
 
-		if (numberAD > 0) and (numberDC > 0) then
-			tugADcount:ClearAnchors()
-			tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
-			tugDCcount:ClearAnchors()
-			tugDCcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
-			tugEPcount:ClearAnchors()
-			tugEPcount:SetAnchor(LEFT, tugDCcount, RIGHT, 0, 0)
-		elseif (numberAD == 0) then
-			if (numberDC > 0) then
+			-- tug:SetHidden(totalNumber == 0)
+			local lowestWidth = 14
+			local tugwidth = tug:GetWidth()
+			local adwidth = tugwidth * numberAD / totalNumber
+			local dcwidth = tugwidth * numberDC / totalNumber
+			local epwidth = tugwidth * numberEP / totalNumber
+			local widthmargin = 0
+
+			local adlarge, dclarge, eplarge = true, true, true
+
+			if (numberAD > 0) and (adwidth < lowestWidth) then
+				adwidth = lowestWidth
+				widthmargin = widthmargin + lowestWidth
+				tugADcount:SetWidth(adwidth)
+				tugADbar:SetWidth(adwidth)
+				adlarge = false
+			end
+			if (numberDC > 0) and (dcwidth < lowestWidth) then
+				dcwidth = lowestWidth
+				widthmargin = widthmargin + lowestWidth
+				tugDCcount:SetWidth(dcwidth)
+				tugDCbar:SetWidth(dcwidth)
+				dclarge = false
+			end
+			if (numberEP > 0) and (epwidth < lowestWidth) then
+				epwidth = lowestWidth
+				widthmargin = widthmargin + lowestWidth
+				tugEPcount:SetWidth(epwidth)
+				tugEPbar:SetWidth(epwidth)
+				eplarge = false
+			end
+
+			local reducedTotal = totalNumber
+
+			if adlarge then
+				if not dclarge then
+					if not eplarge then
+						tugADcount:SetWidth(tugwidth - widthmargin)
+						tugADbar:SetWidth(tugwidth - widthmargin)
+					else
+						tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
+						tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberEP))
+						tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
+						tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberAD + numberEP))
+					end
+				else
+					if not eplarge then
+						tugADcount:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
+						tugADbar:SetWidth((tugwidth - widthmargin) * numberAD / (numberAD + numberDC))
+						tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
+						tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberAD + numberDC))
+					else
+						tugADcount:SetWidth(tugwidth * numberAD / totalNumber)
+						tugADbar:SetWidth(tugwidth * numberAD / totalNumber)
+						tugDCcount:SetWidth(tugwidth * numberDC / totalNumber)
+						tugDCbar:SetWidth(tugwidth * numberDC / totalNumber)
+						tugEPcount:SetWidth(tugwidth * numberEP / totalNumber)
+						tugEPbar:SetWidth(tugwidth * numberEP / totalNumber)
+					end
+				end
+			else
+				if not dclarge then
+					if not eplarge then
+					else
+						tugEPcount:SetWidth(tugwidth - widthmargin)
+						tugEPbar:SetWidth(tugwidth - widthmargin)
+					end
+				else
+					if not eplarge then
+						tugDCcount:SetWidth(tugwidth - widthmargin)
+						tugDCbar:SetWidth(tugwidth - widthmargin)
+					else
+						tugDCcount:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
+						tugDCbar:SetWidth((tugwidth - widthmargin) * numberDC / (numberDC + numberEP))
+						tugEPcount:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
+						tugEPbar:SetWidth((tugwidth - widthmargin) * numberEP / (numberDC + numberEP))
+					end
+				end
+			end
+
+
+			if (numberAD > 0) and (numberDC > 0) then
+				tugADcount:ClearAnchors()
+				tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
 				tugDCcount:ClearAnchors()
-				tugDCcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+				tugDCcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
 				tugEPcount:ClearAnchors()
 				tugEPcount:SetAnchor(LEFT, tugDCcount, RIGHT, 0, 0)
+			elseif (numberAD == 0) then
+				if (numberDC > 0) then
+					tugDCcount:ClearAnchors()
+					tugDCcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+					tugEPcount:ClearAnchors()
+					tugEPcount:SetAnchor(LEFT, tugDCcount, RIGHT, 0, 0)
+				else
+					tugEPcount:ClearAnchors()
+					tugEPcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+				end
 			else
+				tugADcount:ClearAnchors()
+				tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
 				tugEPcount:ClearAnchors()
-				tugEPcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
+				tugEPcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
 			end
-		else
-			tugADcount:ClearAnchors()
-			tugADcount:SetAnchor(LEFT, PVP_TUG_Frame, LEFT, 3, -6)
-			tugEPcount:ClearAnchors()
-			tugEPcount:SetAnchor(LEFT, tugADcount, RIGHT, 0, 0)
 		end
 	end
+
 	PVP.endCounter = GetGameTimeMilliseconds()
 	PVP.Timer = currentTime
 
@@ -760,22 +767,19 @@ end
 local function FillCurrentTooltip(control)
 	if not PVP.SV.enabled or not PVP.SV.showCounterFrame or not PVP:IsInPVPZone() then return end
 
-	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxAD, maxDC, maxEP = PVP:GetAllianceCountPlayers()
+	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = unpack(localActivePlayerCache)
 
-	local currentTable, currentNumber, currentLength
+	local currentTable, currentNumber
 
 	if control == PVP_Counter_CountContainer_CountAD then
 		currentTable = tableAD
 		currentNumber = numberAD
-		currentLength = maxAD
 	elseif control == PVP_Counter_CountContainer_CountDC then
 		currentTable = tableDC
 		currentNumber = numberDC
-		currentLength = maxDC
 	elseif control == PVP_Counter_CountContainer_CountEP then
 		currentTable = tableEP
 		currentNumber = numberEP
-		currentLength = maxEP
 	else
 		return
 	end
@@ -787,7 +791,7 @@ local function FillCurrentTooltip(control)
 	if centerY < (GuiRoot:GetHeight() / 2) then side = BOTTOM end
 
 	if currentNumber > 0 then
-		PVP.Tooltips_ShowTextTooltip(control, side, PVP:ProcessLengths(currentTable, currentLength), true,
+		PVP.Tooltips_ShowTextTooltip(control, side, nil, true,
 			unpack(currentTable))
 	else
 		PVP_ClearTooltip(control)
@@ -913,7 +917,6 @@ function PVP:OnDeactivated()
 		PVP.playerAlliance[id] = nil
 		PVP.idToName[id] = nil
 		PVP.totalPlayers[id] = nil
-		PVP.onEffect[id] = nil
 	end
 
 	for k, v in pairs(PVP.totalPlayers) do
@@ -928,7 +931,6 @@ function PVP:OnZoneChange(_, zoneName, newZone)
 	-- 	PVP.playerAlliance[id]=nil
 	-- 	PVP.idToName[id]=nil
 	-- 	PVP.totalPlayers[id]=nil
-	-- 	PVP.onEffect[id] = nil
 	-- end
 	-- for k,v in pairs (PVP.totalPlayers) do
 	-- 	ClearId(k)
@@ -1036,7 +1038,7 @@ end
 function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName,
 					  buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId)
 	if not PVP:IsInPVPZone() then return end
-
+	if unitName == self.playerName then return end
 	if IsActiveWorldBattleground() then
 		PVP.bgNames = PVP.bgNames or {}
 		if unitName and unitName ~= '' and not PVP.bgNames[unitName] then PVP.bgNames[unitName] = 0 end
@@ -1057,9 +1059,20 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 		if self:CheckName(unitName) then
 			self.idToName[unitId] = unitName
 			self.totalPlayers[unitId] = currentTime
-			self:DetectSpec(nil, abilityId, nil, unitName, true)
-			if self.SV.playersDB[unitName] then
+			if cachedPlayerDbUpdates[unitName] then
+				self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
+				self.playerNames[unitName] = currentTime
+				if self:StringStart(effectName, "Boon:") then
+					cachedPlayerDbUpdates.mundus = zo_strsub(effectName, 11)
+				end
+				cachedPlayerDbUpdates.unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
+			elseif self.SV.playersDB[unitName] then
 				self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
+				self.playerNames[unitName] = currentTime
+				if self:StringStart(effectName, "Boon:") then
+					self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+				end
+				self.SV.playersDB[unitName].unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
 			end
 		else
 			self.totalPlayers[unitId] = nil
@@ -1069,14 +1082,23 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self.idToName[unitId] = nil
 			self.npcExclude[unitId] = currentTime
 		end
-	elseif (unitName ~= "") and (self.totalPlayers[unitId] == nil) and self:CheckName(unitName) and (changeType == 1) and self:StringStart(effectName, "Boon:") then
+	elseif (unitName ~= "") and (self.totalPlayers[unitId] == nil) and self:CheckName(unitName) then
 		self.totalPlayers[unitId] = currentTime
 		self.idToName[unitId] = unitName
-		self.onEffect[unitId] = iconName
-		if self.SV.playersDB[unitName] then
+		if cachedPlayerDbUpdates[unitName] then
+			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
+			self.playerNames[unitName] = currentTime
+			if self:StringStart(effectName, "Boon:") then
+				cachedPlayerDbUpdates[unitName].mundus = zo_strsub("Boon: The Lover", 11)
+			end
+			cachedPlayerDbUpdates.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
+		elseif self.SV.playersDB[unitName] then
 			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
-			self.SV.playersDB[unitName].mundus = string.sub(effectName, 11)
-			self:DetectSpec(unitId, abilityId, nil, unitName, true)
+			self.playerNames[unitName] = currentTime
+			if self:StringStart(effectName, "Boon:") then
+				self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
+			end
+			self.SV.playersDB[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		end
 	end
 end
@@ -1147,9 +1169,9 @@ function PVP:SecondsToClock(seconds)
 	if seconds <= 0 then
 		return "0sec";
 	else
-		hours = string.format("%2.f", math.floor(seconds / 3600));
-		mins = string.format("%2.f", math.floor(seconds / 60 - (hours * 60)));
-		secs = string.format("%2.f", math.floor(seconds - hours * 3600 - mins * 60));
+		hours = string.format("%2.f", zo_floor(seconds / 3600));
+		mins = string.format("%2.f", zo_floor(seconds / 60 - (hours * 60)));
+		secs = string.format("%2.f", zo_floor(seconds - hours * 3600 - mins * 60));
 		return (tonumber(hours) > 0 and hours .. " hours, " or "") ..
 			(((tonumber(mins) > 0 or tonumber(hours) > 0)) and mins .. " min, " or "") .. secs .. " sec"
 	end
@@ -1171,8 +1193,8 @@ function PVP:BattleReport()
 
 		local battleTime = self:Colorize(" lasted ", "BBBBBB") ..
 			self:Colorize(
-				self:SecondsToClock(math.ceil(GetFrameTimeSeconds() - data.startTime -
-					math.floor(PVP_BATTLE_INTERVAL / 1000))),
+				self:SecondsToClock(zo_ceil(GetFrameTimeSeconds() - data.startTime -
+					zo_floor(PVP_BATTLE_INTERVAL / 1000))),
 				"AF7500") .. self:Colorize(".", "BBBBBB")
 
 		local outputTitle = self:Colorize(
@@ -1364,10 +1386,12 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	local isSnipe = self.SV.showSnipes and (self.snipeId[abilityId] or self.snipeNames[abilityName])
 
 	local function ProcessKillingBlows()
-		if KILLING_BLOW_ACTION_RESULTS[result] and targetUnitId and targetUnitId ~= 0 and (self.totalPlayers[targetUnitId] or targetName == self.playerName) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
-			local targetNameFromId = PVP.idToName[targetUnitId]
+		if KILLING_BLOW_ACTION_RESULTS[result] and ((targetUnitId and targetUnitId ~= 0 and self.totalPlayers[targetUnitId]) or (targetName and targetName ~= "" or targetName == self.playerName)) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
+			-- targetUnitId and targetUnitId ~= 0 and (self.totalPlayers[targetUnitId] or targetName == self.playerName
+			local targetNameFromId = targetUnitId and PVP.idToName[targetUnitId] or targetName
 			if targetNameFromId then
 				local validTargetName = PVP:GetValidName(targetNameFromId)
+				if not validTargetName then return end
 				killingBlows[validTargetName] = abilityId
 				zo_callLater(function() killingBlows[validTargetName] = nil end, 5000)
 			end
@@ -1382,7 +1406,6 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 			-- 	PVP.playerAlliance[id]=nil
 			-- 	PVP.idToName[id]=nil
 			-- 	PVP.totalPlayers[id]=nil
-			-- 	PVP.onEffect[id] = nil
 			-- end
 
 
@@ -1411,7 +1434,6 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 			PVP.miscAbilities[PVP.idToName[targetUnitId]] = nil
 			PVP.idToName[targetUnitId] = nil
 			PVP.playerAlliance[targetUnitId] = nil
-			PVP.onEffect[targetUnitId] = nil
 			-- ClearId(targetUnitId)
 		end
 	end
@@ -1516,15 +1538,18 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	end
 
 	local function ProcessImportantAttacks()
-		if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
+		if sourceName == self.playerName then return end
+		if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
+			if self.abilityIdIgnoreList[abilityId] then return end
+
 			local CC_IMMUNITY_GRACE_TIME = 1
 			local ccImmune = self:IsPlayerCCImmune(CC_IMMUNITY_GRACE_TIME)
-			if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.smallImportantAbilitiesNames[abilityName] then
+			if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName] then
 				if self.smallImportantAbilitiesNames[abilityName] then
 					local abilityIcon = GetAbilityIcon(abilityId)
 					-- PVP_Main.currentChannel = nil
 					-- self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false)
-					local displayHitValue = math.max(1450, hitValue or 0)
+					local displayHitValue = zo_max(1450, hitValue or 0)
 					self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false, false, displayHitValue)
 					PVP_Main.currentChannel = {
 						abilityId = abilityId,
@@ -2053,22 +2078,22 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	local classIconSize = 45
 	-- local abilityIcon = self:GetIcon(abilityIcon, abilityIconSize)..heavyAttackSpacer
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
-
+	sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
+	local playerDbRecord = self.SV.playersDB[sourceName]
 	if sourceUnitId == "unlock" then
 		playerAlliance = "BBBBBB"
-		nameFromDB = sourceName
 		classIcon = playerAlliance and
 			self:Colorize(zo_iconFormatInheritColor(self.classIcons[3], classIconSize, classIconSize), playerAlliance) or
 			heavyAttackSpacer
 	elseif not isDebuff then
-		nameFromDB = self.idToName[sourceUnitId]
-		if nameFromDB then
-			accountNameFromDB = self.SV.playersDB[nameFromDB].unitAccName or "@name unknown"
+		if sourceName then
+			accountNameFromDB = playerDbRecord.unitAccName or "@name unknown"
 		else
 			accountNameFromDB = "@name unknown"
 		end
 		playerAlliance = self:IdToAllianceColor(sourceUnitId)
-		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance) or
+		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance, nil, nil,
+				nil, nil, nil, nil, nil, playerDbRecord) or
 			heavyAttackSpacer
 	else
 		classIcon = ""
@@ -2289,10 +2314,11 @@ function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 
 	if isDeadOrResurrect then
 		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, isDeadorResurrect, isTargetFrame,
-			not isTargetFrame)
+			not isTargetFrame, nil, nil, nil, nil, playerDbRecord)
 		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, false), nameColor)
 	else
-		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, nil, true, not isTargetFrame)
+		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, nil, true, not isTargetFrame, nil, nil, nil,
+			nil, playerDbRecord)
 		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, nil), nameColor)
 	end
 
@@ -2717,7 +2743,6 @@ function PVP:FullReset()
 	self.currentlyDead = {}
 	self.KOSNamesList = {}
 	self.namesToDisplay = {}
-	self.onEffect = {}
 
 	self.potentialAllies = {}
 
@@ -2734,10 +2759,10 @@ function PVP:FullReset()
 end
 
 function PVP:GetAllianceCountPlayers()
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
-	local maxLengthAD, maxLengthDC, maxLengthEP = 0, 0, 0
 	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP =
 		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
 
@@ -2864,7 +2889,6 @@ function PVP:GetAllianceCountPlayers()
 			PVP.bgNames[playerName] = bgAlliance
 
 			local formattedName = self:GetFormattedClassNameLink(playerName, bgColor, nil, nil, nil, nil, entryClass)
-			local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
 
 			if not PVP.bgScoreBoardData[playerName] then
 				PVP.bgScoreBoardData[playerName] = formattedName
@@ -2876,22 +2900,20 @@ function PVP:GetAllianceCountPlayers()
 			if playerName ~= self.playerName then
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
-				local addStatus
 
-				if statusIcon == "" then addStatus = true end
 				if KOSOrFriend then
 					if KOSOrFriend == "KOS" then
-						formattedName = formattedName .. self:GetKOSIcon() .. statusIcon .. "%"
+						formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
 					elseif KOSOrFriend == "friend" then
-						formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon .. "+"
+						formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
 					elseif KOSOrFriend == "cool" then
-						formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon .. "+"
+						formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
 					elseif KOSOrFriend == "groupleader" then
-						formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
+						formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
 					elseif KOSOrFriend == "group" then
-						formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+						formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
 					elseif KOSOrFriend == "guild" then
-						formattedName = formattedName .. self:GetGuildIcon() .. statusIcon .. "+"
+						formattedName = formattedName .. self:GetGuildIcon() .. statusIcon
 					end
 				else
 					formattedName = formattedName .. statusIcon
@@ -2899,9 +2921,7 @@ function PVP:GetAllianceCountPlayers()
 			else
 				formattedName = formattedName .. self:Colorize(' - YOU', 'FFFFFF')
 			end
-			if addStatus then formattedName = formattedName .. "**" end
 			if bgAlliance == 1 then
-				if nameLength > maxLengthAD then maxLengthAD = nameLength end
 				numberAD = numberAD + 1
 				table.insert(tableAD, formattedName)
 				tableNameToIndexAD[playerName] = numberAD
@@ -2919,7 +2939,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableAD, playerName)
 				end
 			elseif bgAlliance == 2 then
-				if nameLength > maxLengthEP then maxLengthEP = nameLength end
 				numberEP = numberEP + 1
 				table.insert(tableEP, formattedName)
 				tableNameToIndexEP[playerName] = numberEP
@@ -2938,7 +2957,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableEP, playerName)
 				end
 			elseif bgAlliance == 3 then
-				if nameLength > maxLengthDC then maxLengthDC = nameLength end
 				numberDC = numberDC + 1
 				table.insert(tableDC, formattedName)
 				tableNameToIndexDC[playerName] = numberDC
@@ -2978,45 +2996,48 @@ function PVP:GetAllianceCountPlayers()
 	if not IsActiveWorldBattleground() then
 		for k, v in pairs(self.playerAlliance) do
 			local playerName                      = self.idToName[k]
-			local formattedName
+			local playerDbRecord                  = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+			local unitClass                       = playerDbRecord.unitClass or self.SV.playersDB[playerName].unitClass
+			local formattedName, allianceColor, classIcons
 			local KOSOrFriend                     = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 			local statusIcon, isResurrect, isDead = FindInNames(playerName)
-			local addStatus
-			if statusIcon == "" then addStatus = true end
 
 			if isDead or isResurrect then
-				formattedName = self:GetFormattedClassNameLink(playerName,
-					self:GetTimeFadedColor(self:NameToAllianceColor(playerName, true), k, currentTime), false, true, k,
-					nil, nil, k, currentTime)
-				-- formattedName = self:GetFormattedClassNameLink(playerName, self:NameToAllianceColor(playerName, true), false, true)
+				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, true), k,
+					currentTime)
+				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, nil, k,
+					unitClass, k, currentTime, playerDbRecord.unitAvARank, playerDbRecord)
 			else
-				formattedName = self:GetFormattedClassNameLink(playerName,
-					self:GetTimeFadedColor(self:NameToAllianceColor(playerName, false), k, currentTime), nil, nil, nil,
-					nil, nil, k, currentTime)
+				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, false), k,
+					currentTime)
+				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, nil, nil,
+					unitClass, k, currentTime, playerDbRecord.unitAvARank, playerDbRecord)
 			end
+
+			formattedName = classIcons .. (userDisplayNameType == "character" and
+				(self:Colorize(self:GetFormattedName(playerName) or "unknown player", allianceColor)) or
+				(userDisplayNameType == "user" and self:Colorize(playerDbRecord.unitAccName or self:GetFormattedName(playerName) or "unknown player", allianceColor) or
+					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. playerDbRecord.unitAccName) or "unknown player")))
 
 			if KOSOrFriend then
 				if KOSOrFriend == "KOS" then
-					formattedName = formattedName .. self:GetKOSIcon() .. statusIcon .. "%"
+					formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
 				elseif KOSOrFriend == "friend" then
-					formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon .. "+"
+					formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
 				elseif KOSOrFriend == "cool" then
-					formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon .. "+"
+					formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
 				elseif KOSOrFriend == "groupleader" then
-					formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
+					formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
 				elseif KOSOrFriend == "group" then
-					formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+					formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
 				elseif KOSOrFriend == "guild" then
-					formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon .. "+"
+					formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon
 				end
 			else
 				formattedName = formattedName .. statusIcon
 			end
-			if addStatus then formattedName = formattedName .. "**" end
-			local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
 
 			if v == 1 then
-				if nameLength > maxLengthAD then maxLengthAD = nameLength end
 				numberAD = numberAD + 1
 				table.insert(tableAD, formattedName)
 				tableNameToIndexAD[playerName] = numberAD
@@ -3034,7 +3055,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableAD, playerName)
 				end
 			elseif v == 2 then
-				if nameLength > maxLengthEP then maxLengthEP = nameLength end
 				numberEP = numberEP + 1
 				table.insert(tableEP, formattedName)
 				tableNameToIndexEP[playerName] = numberEP
@@ -3053,7 +3073,6 @@ function PVP:GetAllianceCountPlayers()
 					table.insert(othersTableEP, playerName)
 				end
 			elseif v == 3 then
-				if nameLength > maxLengthDC then maxLengthDC = nameLength end
 				numberDC = numberDC + 1
 				table.insert(tableDC, formattedName)
 				tableNameToIndexDC[playerName] = numberDC
@@ -3079,16 +3098,13 @@ function PVP:GetAllianceCountPlayers()
 			if not foundNames[k] then
 				local playerName = k
 				local formattedName, unitAllianceFromPlayersDb
-				local nameLength = string.len(zo_strformat(SI_UNIT_NAME, playerName))
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 
 				local statusIcon, isResurrect, isDead = FindInNames(playerName)
 
 				if (not isDead) and (not isResurrect) then
-					local addEye
 					if statusIcon == "" then
 						statusIcon = self:GetEyeIcon()
-						addEye = true
 					end
 
 					-- if isDead or isResurrect then
@@ -3100,31 +3116,25 @@ function PVP:GetAllianceCountPlayers()
 
 					if KOSOrFriend then
 						if KOSOrFriend == "KOS" then
-							formattedName = formattedName .. self:GetKOSIcon() .. statusIcon .. "%"
+							formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
 						elseif KOSOrFriend == "friend" then
-							formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon .. "+"
+							formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
 						elseif KOSOrFriend == "cool" then
-							formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon .. "+"
+							formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
 						elseif KOSOrFriend == "groupleader" then
-							formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon .. "%"
+							formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
 						elseif KOSOrFriend == "group" then
-							formattedName = formattedName .. self:GetGroupIcon() .. statusIcon .. "%"
+							formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
 						elseif KOSOrFriend == "guild" then
-							formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon .. "+"
+							formattedName = formattedName .. self:GetGuildIcon(19) .. statusIcon
 						end
 					else
 						formattedName = formattedName .. statusIcon
 					end
 
-					if addEye then
-						formattedName = formattedName .. "*"
-					else
-						formattedName = formattedName .. "**"
-					end
 
-					unitAllianceFromPlayersDb = self.SV.playersDB[playerName].unitAlliance
+					unitAllianceFromPlayersDb = playerDbRecord and playerDbRecord.unitAlliance
 					if unitAllianceFromPlayersDb == 1 then
-						if nameLength > maxLengthAD then maxLengthAD = nameLength end
 						numberAD = numberAD + 1
 						table.insert(tableAD, formattedName)
 						tableNameToIndexAD[playerName] = numberAD
@@ -3143,7 +3153,6 @@ function PVP:GetAllianceCountPlayers()
 							table.insert(othersTableAD, playerName)
 						end
 					elseif unitAllianceFromPlayersDb == 2 then
-						if nameLength > maxLengthEP then maxLengthEP = nameLength end
 						numberEP = numberEP + 1
 						table.insert(tableEP, formattedName)
 						tableNameToIndexEP[playerName] = numberEP
@@ -3161,7 +3170,6 @@ function PVP:GetAllianceCountPlayers()
 							table.insert(othersTableEP, playerName)
 						end
 					elseif unitAllianceFromPlayersDb == 3 then
-						if nameLength > maxLengthDC then maxLengthDC = nameLength end
 						numberDC = numberDC + 1
 						table.insert(tableDC, formattedName)
 						tableNameToIndexDC[playerName] = numberDC
@@ -3304,7 +3312,7 @@ function PVP:GetAllianceCountPlayers()
 		tableEP = PVP:TableConcat(groupMembersTable, tableEP)
 	end
 	-- d('Damn table time: '..tostring(GetGameTimeMilliseconds() - countAllianceStart)..'ms')
-	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, maxLengthAD, maxLengthDC, maxLengthEP
+	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP
 end
 
 function PVP:PopulateReticleOverNamesBuffer()
@@ -3327,7 +3335,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			isResurrect = nil
 		end
 		if playerName then
-			local playerDbRecord = self.SV.playersDB[playerName]
+			local playerDbRecord = self.SV.playersDB[playerName] or cachedPlayerDbUpdates[playerName]
 			local iconsCount = 0
 			local formattedName = ""
 			KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
@@ -3380,7 +3388,8 @@ function PVP:PopulateReticleOverNamesBuffer()
 			if iconsCount == 0 then iconsCount = nil end
 
 			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect)
-			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect)
+			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil,
+				nil, nil, playerDbRecord.unitAvaRank, playerDbRecord)
 			local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
 			local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
 			if userDisplayNameType == "both" then
@@ -3475,6 +3484,8 @@ function PVP.OnTargetChanged()
 		local unitMundus, unitSpec, unitDbAccName
 		if unitName then
 			local playerDbRecord = PVP.SV.playersDB[unitName]
+			local cachedplayerRecord = cachedPlayerDbUpdates[unitName]
+
 			if playerDbRecord then
 				unitSpec = playerDbRecord.unitSpec
 				unitMundus = playerDbRecord.mundus
@@ -3489,20 +3500,21 @@ function PVP.OnTargetChanged()
 				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
 			end
 
-			if cachedPlayerDbUpdates[unitName] then
-				cachedPlayerDbUpdates[unitName] = nil
-			end
-
 			PVP.SV.playersDB[unitName] = {
 				unitAccName = unitAccName,
 				unitAlliance = unitAlliance,
 				unitClass = unitClass,
 				unitRace = unitRace,
-				unitSpec = unitSpec,
-				mundus = unitMundus,
+				unitSpec = (cachedplayerDbRecord and cachedplayerRecord.unitSpec) or unitSpec,
+				mundus = (cachedplayerDbRecord and cachedplayerRecord.mundus) or unitMundus,
 				unitAvARank = unitAllianceRank,
 				lastSeen = sessionTimeEpoch
 			}
+
+			if cachedPlayerDbUpdates[unitName] then
+				cachedPlayerDbUpdates[unitName] = nil
+			end
+
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
 				PVP.bgNames[unitName] = GetUnitBattlegroundTeam('reticleover')
@@ -3745,7 +3757,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 				if PVP.SV.playersDB[maleName] and not PVP.SV.playersDB[femaleName] then return maleName end
 				if not PVP.SV.playersDB[maleName] and PVP.SV.playersDB[femaleName] then return femaleName end
 				if PVP.SV.playersDB[maleName].unitAccName == PVP.SV.playersDB[femaleName].unitAccName then
-					if math.random() > 0.5 then
+					if zo_random() > 0.5 then
 						return
 							maleName
 					else

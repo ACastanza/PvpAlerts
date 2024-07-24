@@ -79,13 +79,13 @@ function PVP:SetupOnScreen()
 	end
 
 	control:SetScale(PVP.SV.onScreenScale)
-	control.neighbors:SetScale(PVP.SV.onScreenScale/2.5)
+	control.neighbors:SetScale(PVP.SV.onScreenScale / 2.5)
 
-	local namesFontSize = 18 + math.min(math.ceil((PVP.SV.onScreenScale - 0.5) * 8), 8)
-	local siegeFontSize = 16 + math.min(math.ceil((PVP.SV.onScreenScale - 0.5) * 6), 6)
+	local namesFontSize = 18 + zo_min(zo_ceil((PVP.SV.onScreenScale - 0.5) * 8), 8)
+	local siegeFontSize = 16 + zo_min(zo_ceil((PVP.SV.onScreenScale - 0.5) * 6), 6)
 
-	control.name:SetFont("$(BOLD_FONT)|$(KB_"..tostring(namesFontSize)..")|thick-outline")
-	control.siege:SetFont("$(BOLD_FONT)|$(KB_"..tostring(siegeFontSize)..")|thick-outline")
+	control.name:SetFont("$(BOLD_FONT)|$(KB_" .. tostring(namesFontSize) .. ")|thick-outline")
+	control.siege:SetFont("$(BOLD_FONT)|$(KB_" .. tostring(siegeFontSize) .. ")|thick-outline")
 
 	control:ClearAnchors()
 	control:SetAnchor(CENTER, GuiRoot, CENTER, PVP.SV.onScreenOffsetX, PVP.SV.onScreenOffsetY)
@@ -100,18 +100,20 @@ function PVP:SetupOnScreen()
 	control:SetHidden(not (PVP.SV.unlocked and PVP.SV.showOnScreen))
 end
 
-
-function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag, apseFlag, otherFlag, naveAlliance, apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, shouldHideScroll, shouldHideCapture, shouldHideFlags, shouldHideSieges, siegesAD, siegesDC, siegesEP, keepName, keepId, control, isMisc)
+function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag, apseFlag, otherFlag, naveAlliance,
+							apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, shouldHideScroll,
+							shouldHideCapture, shouldHideFlags, shouldHideSieges, siegesAD, siegesDC, siegesEP, keepName,
+							keepId, control, isMisc)
 	local isMainControl = not control or control == 'main'
 	if isMainControl then
 		control = PVP_OnScreen
 		control.name:SetText(keepName)
 		local shouldMoveResources
 		if not shouldHideSieges then
-			local siegeADText = siegesAD>0 and (' '..PVP:Colorize(tostring(siegesAD), PVP:AllianceToColor(1))) or ""
-			local siegeDCText = siegesDC>0 and (' '..PVP:Colorize(tostring(siegesDC), PVP:AllianceToColor(3))) or ""
-			local siegeEPText = siegesEP>0 and (' '..PVP:Colorize(tostring(siegesEP), PVP:AllianceToColor(2))) or ""
-			control.siege:SetText('Siege:'..siegeADText..siegeDCText..siegeEPText)
+			local siegeADText = siegesAD > 0 and (' ' .. PVP:Colorize(tostring(siegesAD), PVP:AllianceToColor(1))) or ""
+			local siegeDCText = siegesDC > 0 and (' ' .. PVP:Colorize(tostring(siegesDC), PVP:AllianceToColor(3))) or ""
+			local siegeEPText = siegesEP > 0 and (' ' .. PVP:Colorize(tostring(siegesEP), PVP:AllianceToColor(2))) or ""
+			control.siege:SetText('Siege:' .. siegeADText .. siegeDCText .. siegeEPText)
 		else
 			control.siege:SetText('')
 			shouldMoveResources = true
@@ -154,19 +156,19 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 	if keepId then
 		if isMisc then
 			if PVP:IsMiscPassable(keepId) then
-				control.icon:SetColor(0,1,0)
+				control.icon:SetColor(0, 1, 0)
 			else
-				control.icon:SetColor(1,0,0)
+				control.icon:SetColor(1, 0, 0)
 			end
 		else
-			control.icon:SetColor(1,1,1)
+			control.icon:SetColor(1, 1, 1)
 		end
 		if isMainControl then
 			if isMisc then
 				if PVP:IsMiscPassable(keepId) then
-					control.name:SetColor(0,1,0)
+					control.name:SetColor(0, 1, 0)
 				else
-					control.name:SetColor(1,0,0)
+					control.name:SetColor(1, 0, 0)
 				end
 			else
 				control.name:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(keepId, 1)))
@@ -201,8 +203,8 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 		end
 	else
 		if otherAlliance == ALLIANCE_NONE then
-			if isMainControl then control.name:SetColor(0.5,0.5,0.5) end
-			control.icon:SetColor(0.5,0.5,0.5)
+			if isMainControl then control.name:SetColor(0.5, 0.5, 0.5) end
+			control.icon:SetColor(0.5, 0.5, 0.5)
 		else
 			if isMainControl then control.name:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(otherAlliance, 1))) end
 			control.icon:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(otherAlliance, 1)))

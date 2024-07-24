@@ -13,9 +13,6 @@ PVP.globalConstants = {
 	['PVP_DIMMED_EP_COLOR'] = "85514D",
 	['PVP_DIMMED_DC_COLOR'] = "566674",
 
-
-
-
 	['PVP_STAMINA_COLOR'] = "00CC00",
 	['PVP_MAGICKA_COLOR'] = "AAAAFF",
 	['PVP_HYBRID_COLOR'] = "FF4444",

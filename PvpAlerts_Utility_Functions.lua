@@ -48,14 +48,14 @@ function PVP:RGBtoHEX(rgb)
 		local hex = ''
 		-- d("RGB: " .. key .. " " .. value)
 		while (value > 0) do
-			local index = math.fmod(value, 16) + 1
-			value = math.floor(value / 16)
-			hex = string.sub('0123456789ABCDEF', index, index) .. hex
+			local index = zo_mod(value, 16) + 1
+			value = zo_floor(value / 16)
+			hex = zo_strsub('0123456789ABCDEF', index, index) .. hex
 		end
 		-- d(value .. ' : ' .. hex)
-		if (string.len(hex) == 0) then
+		if (zo_strlen(hex) == 0) then
 			hex = '00'
-		elseif (string.len(hex) == 1) then
+		elseif (zo_strlen(hex) == 1) then
 			hex = '0' .. hex
 		end
 		-- d("hex: " .. hex)
@@ -75,7 +75,7 @@ function PVP:HSVToRGB(hue, saturation, value)
 	;
 
 	-- Get the hue sector
-	local hue_sector = math.floor(hue / 60)
+	local hue_sector = zo_floor(hue / 60)
 	local hue_sector_offset = (hue / 60) - hue_sector
 
 	local p = value * (1 - saturation)
@@ -100,8 +100,8 @@ end
 function PVP:RGBToHSV(red, green, blue)
 	local hue, saturation, value
 
-	local min_value = math.min(red, green, blue)
-	local max_value = math.max(red, green, blue)
+	local min_value = zo_min(red, green, blue)
+	local max_value = zo_max(red, green, blue)
 
 	value = max_value;
 
@@ -131,9 +131,9 @@ function PVP:RGBToHSV(red, green, blue)
 end
 
 function PVP:GetColorBrightnessAdjusted(originalColor, percent)
-	-- local red = string.sub(originalColor, 1, 2)
-	-- local green = string.sub(originalColor, 3, 4)
-	-- local blue = string.sub(originalColor, 5, 6)
+	-- local red = zo_strsub(originalColor, 1, 2)
+	-- local green = zo_strsub(originalColor, 3, 4)
+	-- local blue = zo_strsub(originalColor, 5, 6)
 	local hue, saturation, value = self:RGBToHSV(self:HtmlToColor(originalColor))
 	-- d(hue)
 	-- d(saturation)
@@ -168,11 +168,11 @@ function PVP:IsValidBattlegroundContext(battlegroundContext)
 end
 
 function PVP:IsScrollTemple(zoneName)
-	local startIndex, endIndex = string.find(zoneName, 'Scroll Temple')
+	local startIndex, endIndex = zo_strfind(zoneName, 'Scroll Temple')
 
 	if startIndex then
-		zoneName = string.sub(zoneName, startIndex, endIndex) ..
-			' of' .. string.sub(zoneName, endIndex + 1, string.len(zoneName))
+		zoneName = zo_strsub(zoneName, startIndex, endIndex) ..
+			' of' .. zo_strsub(zoneName, endIndex + 1, zo_strlen(zoneName))
 	end
 
 	return zoneName
@@ -198,11 +198,11 @@ function PVP:CombineAllianceInfo(alliance1, alliance2)
 end
 
 function PVP:StringStart(String, Start)
-	return string.sub(String, 1, string.len(Start)) == Start
+	return zo_strsub(String, 1, zo_strlen(Start)) == Start
 end
 
 function PVP:StringEnd(String, End)
-	return End == '' or string.sub(String, -string.len(End)) == End
+	return End == '' or zo_strsub(String, -zo_strlen(End)) == End
 end
 
 function PVP:Colorize(text, color)
@@ -212,9 +212,9 @@ end
 
 function PVP:HtmlToColor(html, isDark, isBright)
 	local r, g, b
-	r = tonumber(string.sub(html, 1, 2), 16) / 255
-	g = tonumber(string.sub(html, 3, 4), 16) / 255
-	b = tonumber(string.sub(html, 5, 6), 16) / 255
+	r = tonumber(zo_strsub(html, 1, 2), 16) / 255
+	g = tonumber(zo_strsub(html, 3, 4), 16) / 255
+	b = tonumber(zo_strsub(html, 5, 6), 16) / 255
 
 	if isDark then
 		return 0.5 * r, 0.5 * g, 0.5 * b
@@ -232,7 +232,7 @@ end
 function PVP:DeaccentString(inputString)
 	if inputString == "" then return end
 	for k, v in pairs(self.accents) do
-		inputString = string.gsub(inputString, k, v)
+		inputString = zo_strgsub(inputString, k, v)
 	end
 	return inputString
 end
@@ -343,11 +343,11 @@ function PVP:GetUnitSpecColor(playerName)
 end
 
 function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeadorResurrect, isTargetFrame,
-								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank)
-	local classIcon, playerDbRecord, isPlayer
+								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank, playerDbRecord)
+	local classIcon, isPlayer
 
 	isPlayer = playerName == self.playerName
-	playerDbRecord = self.SV.playersDB[playerName]
+	playerDbRecord = playerDbRecord or self.SV.playersDB[playerName]
 
 	if not playerDbRecord and not isPlayer and not unitClass then
 		if unitAvARank and not isPlayer then
@@ -502,8 +502,8 @@ function PVP:GetFormattedName(playerName, truncate)
 		end
 
 
-		if string.len(formattedName) >= cutOff then
-			formattedName = string.sub(formattedName, 1, substringCutOff) .. ".."
+		if zo_strlen(formattedName) >= cutOff then
+			formattedName = zo_strsub(formattedName, 1, substringCutOff) .. ".."
 		end
 	end
 
@@ -651,12 +651,12 @@ function PVP:FindUTFIndice(name)
 	local substring = name
 	local before, after, skip
 	local count = 0
-	for i = 1, string.len(name) - 1 do
-		if string.len(substring) == string.len(PVP:DeaccentString(substring)) then break end
+	for i = 1, zo_strlen(name) - 1 do
+		if zo_strlen(substring) == zo_strlen(PVP:DeaccentString(substring)) then break end
 		if not skip then
-			before = string.len(PVP:DeaccentString(substring))
-			substring = string.sub(substring, 2, string.len(substring))
-			after = string.len(PVP:DeaccentString(substring))
+			before = zo_strlen(PVP:DeaccentString(substring))
+			substring = zo_strsub(substring, 2, zo_strlen(substring))
+			after = zo_strlen(PVP:DeaccentString(substring))
 			if after - before == 0 then
 				table.insert(indice, (i - count))
 				table.insert(indiceAccented, i)
@@ -664,7 +664,7 @@ function PVP:FindUTFIndice(name)
 				skip = true
 			end
 		else
-			substring = string.sub(substring, 2, string.len(substring))
+			substring = zo_strsub(substring, 2, zo_strlen(substring))
 			skip = false
 		end
 	end
@@ -686,7 +686,7 @@ function PVP:IsPlayerCCImmune(graceTimeInSec)
 	for i = 1, GetNumBuffs('player') do
 		local buffName, timeStarted, timeEnding, _, _, _, _, _, _, _, abilityId, _, castByPlayer = GetUnitBuffInfo(
 			'player', i)
-		if buffName == "CC Immunity" or buffName == "Unstoppable" or buffName == "Immovable" then
+		if buffName == "CC Immunity" or buffName == "Crowd Control Immunity" or buffName == "Unstoppable" or buffName == "Immovable" then
 			if timeEnding - GetFrameTimeSeconds() >= graceTimeInSec then
 				return true
 			end
@@ -727,42 +727,42 @@ function PVP:InsertAnimationType(animHandler, animType, control, animDuration, a
 	end
 end
 
-function PVP:ProcessLengths(namesTable, maxLength)
+function PVP:ProcessLengths(namesTable, maxLength, addedLength)
 	-- local function GetTextWidthInPixels(text)
 	-- PVP_Counter_TestWidth:SetFont("ZoFontWinH5")
 	-- PVP_Counter_TestWidth:SetText(text)
 	-- local width = PVP_Counter_TestWidth:GetTextWidth()
 	-- return width
-	-- return string.len(text) * 2
+	-- return zo_strlen(text) * 2
 	-- end
 
 	-- local maxLength=0
-	local addedLength = 0
+	addedLength = addedLength or 0
 	for i = 1, #namesTable do
 		if self:StringEnd(namesTable[i], "+") then
 			if addedLength < 35 then addedLength = 35 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 1))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 1))
 		elseif self:StringEnd(namesTable[i], "%") then
 			if addedLength < 45 then addedLength = 45 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 1))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 1))
 		elseif self:StringEnd(namesTable[i], "%*") then
 			if addedLength < 65 then addedLength = 65 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 2))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 2))
 		elseif self:StringEnd(namesTable[i], "+*") then
 			if addedLength < 55 then addedLength = 55 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 2))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 2))
 		elseif self:StringEnd(namesTable[i], "%**") then
 			if addedLength < 75 then addedLength = 75 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 3))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 3))
 		elseif self:StringEnd(namesTable[i], "+**") then
 			if addedLength < 65 then addedLength = 65 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 3))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 3))
 		elseif self:StringEnd(namesTable[i], "**") then
 			if addedLength < 45 then addedLength = 45 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 2))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 2))
 		elseif self:StringEnd(namesTable[i], "*") then
 			if addedLength < 40 then addedLength = 40 end
-			namesTable[i] = string.sub(namesTable[i], 1, (string.len(namesTable[i]) - 1))
+			namesTable[i] = zo_strsub(namesTable[i], 1, (zo_strlen(namesTable[i]) - 1))
 		end
 	end
 	return 6 * maxLength + 90 + addedLength
@@ -1122,17 +1122,17 @@ function PVP:TestThisScale()
 			-- d('control.y3d', control.y3d)
 			local controlTrueX, controlTrueZ, controlTrueY = control:Get3DRenderSpaceOrigin()
 			local targetX, targetZ, targetY = control.x3d, control.newZ, control.y3d
-			local currentDeviation = math.abs(targetX - controlTrueX) + math.abs(targetZ - controlTrueZ) +
-				math.abs(targetY - controlTrueY)
+			local currentDeviation = zo_abs(targetX - controlTrueX) + zo_abs(targetZ - controlTrueZ) +
+				zo_abs(targetY - controlTrueY)
 
 			if currentDeviation < PVP.minDeviation then
 				PVP.minDeviation = currentDeviation
 				PVP.bestScale = i
 			end
 			d('Current deviation = ' .. tostring(currentDeviation))
-			d('X deviation = ' .. tostring(math.abs(targetX - controlTrueX)))
-			d('Y deviation = ' .. tostring(math.abs(targetY - controlTrueY)))
-			d('Z deviation = ' .. tostring(math.abs(targetZ - controlTrueZ)))
+			d('X deviation = ' .. tostring(zo_abs(targetX - controlTrueX)))
+			d('Y deviation = ' .. tostring(zo_abs(targetY - controlTrueY)))
+			d('Z deviation = ' .. tostring(zo_abs(targetZ - controlTrueZ)))
 			break
 		end
 	end

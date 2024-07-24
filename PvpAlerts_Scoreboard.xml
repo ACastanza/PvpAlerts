@@ -164,7 +164,7 @@
 					</OnInitialized>
 				</Label>
 				<Texture name="$(parent)BG" textureFile="EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_orange.dds" level="2" alpha="1" color="FFFFFF">
-					<Dimensions x="160" y="210"/> -->
+					<Dimensions x="160" y="210"/>
 					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="BOTTOM" offsetX="0" offsetY="-25"/>
 					<TextureCoords top="0" bottom="1" left="0.018" right="0.86"/>
 				</Texture>

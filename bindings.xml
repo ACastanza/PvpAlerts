@@ -3,8 +3,8 @@
 		<Category name="Miat's PVP Alerts">
 			<Action name="PVP_ALERTS_ADD_KOS_MOUSEOVER">
 				<Up>PVP_Add_KOS_Mouseover()</Up>
-				<Down> -->
-				</Down> -->
+				<Down>
+				</Down>
 
 			</Action>
 			<Action name="PVP_ALERTS_ADD_COOL_MOUSEOVER">
