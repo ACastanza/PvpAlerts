@@ -2068,7 +2068,7 @@ function PVP_SetupHighlightAnimation(control)
 end
 
 function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImportant, isPiercingMark, isDebuff, hitValue)
-	local playerAlliance, nameFromDB, accountNameFromDB, classIcon, nameColor, nameFont, enemyName, formattedName, pureNameWidth
+	local playerAlliance, nameFromDB, accountNameFromDB, classIcon, nameColor, nameFont, enemyName, formattedName, pureNameWidth, playerDbRecord
 	local importantMode = isImportant and not isPiercingMark
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local heavyAttackSpacer = isHeavyAttack and "" or " "
@@ -2078,19 +2078,17 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	local classIconSize = 45
 	-- local abilityIcon = self:GetIcon(abilityIcon, abilityIconSize)..heavyAttackSpacer
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
-	sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
-	local playerDbRecord = self.SV.playersDB[sourceName] or cachedPlayerDbUpdates[sourceName]
+    sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
+	if sourceName then
+        playerDbRecord = self.SV.playersDB[sourceName] or cachedPlayerDbUpdates[sourceName]
+		accountNameFromDB = playerDbRecord and playerDbRecord.unitAccName
+	end
 	if sourceUnitId == "unlock" then
 		playerAlliance = "BBBBBB"
 		classIcon = playerAlliance and
 			self:Colorize(zo_iconFormatInheritColor(self.classIcons[3], classIconSize, classIconSize), playerAlliance) or
 			heavyAttackSpacer
 	elseif not isDebuff then
-		if sourceName then
-			accountNameFromDB = playerDbRecord and playerDbRecord.unitAccName or "@name unknown"
-		else
-			accountNameFromDB = "@name unknown"
-		end
 		playerAlliance = self:IdToAllianceColor(sourceUnitId)
 		classIcon = playerAlliance and self:GetFormattedClassIcon(nameFromDB, classIconSize, playerAlliance, nil, nil,
 				nil, nil, nil, nil, nil, playerDbRecord) or
@@ -2103,7 +2101,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	enemyName = isDebuff and sourceName or
 		(userDisplayNameType == "character" and (self:GetFormattedName(sourceName) or "unknown player") or
 			(userDisplayNameType == "user" and (accountNameFromDB or sourceName or "unknown player") or
-				(userDisplayNameType == "both" and (self:GetFormattedName(sourceName) .. accountNameFromDB) or "unknown player")))
+				(userDisplayNameType == "both" and (self:GetFormattedName(sourceName) .. (accountNameFromDB or "")) or "unknown player")))
 
 	if importantMode then
 		nameColor = self.SV.colors.stealthed
@@ -3001,7 +2999,6 @@ function PVP:GetAllianceCountPlayers()
 			local formattedName, allianceColor, classIcons
 			local KOSOrFriend                     = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 			local statusIcon, isResurrect, isDead = FindInNames(playerName)
-
 			if isDead or isResurrect then
 				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, true), k,
 					currentTime)
@@ -3016,8 +3013,8 @@ function PVP:GetAllianceCountPlayers()
 
 			formattedName = classIcons .. (userDisplayNameType == "character" and
 				(self:Colorize(self:GetFormattedName(playerName) or "unknown player", allianceColor)) or
-				(userDisplayNameType == "user" and self:Colorize(playerDbRecord.unitAccName or self:GetFormattedName(playerName) or "unknown player", allianceColor) or
-					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. playerDbRecord.unitAccName) or "unknown player")))
+				(userDisplayNameType == "user" and self:Colorize(playerDbRecord and playerDbRecord.unitAccName or self:GetFormattedName(playerName) or "unknown player", allianceColor) or
+					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. (playerDbRecord and playerDbRecord.unitAccName or "")) or "unknown player")))
 
 			if KOSOrFriend then
 				if KOSOrFriend == "KOS" then
