@@ -2079,7 +2079,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	-- local abilityIcon = self:GetIcon(abilityIcon, abilityIconSize)..heavyAttackSpacer
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
 	sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
-	local playerDbRecord = self.SV.playersDB[sourceName]
+	local playerDbRecord = self.SV.playersDB[sourceName] or cachedPlayerDbUpdates[sourceName]
 	if sourceUnitId == "unlock" then
 		playerAlliance = "BBBBBB"
 		classIcon = playerAlliance and
@@ -2087,7 +2087,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 			heavyAttackSpacer
 	elseif not isDebuff then
 		if sourceName then
-			accountNameFromDB = playerDbRecord.unitAccName or "@name unknown"
+			accountNameFromDB = playerDbRecord and playerDbRecord.unitAccName or "@name unknown"
 		else
 			accountNameFromDB = "@name unknown"
 		end
