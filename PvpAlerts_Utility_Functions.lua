@@ -385,7 +385,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		if isPlayer then
 			unitClass = GetUnitClassId('player')
 		else
-			unitClass = playerDbRecord.unitClass
+			unitClass = playerDbRecord and playerDbRecord.unitClass
 		end
 	end
 
