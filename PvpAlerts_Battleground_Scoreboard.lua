@@ -713,9 +713,10 @@ function ScoreboardList:FilterScrollList()
 
 		PVP_ScoreboardInfo:SetText(GetPlayerLocationName() .. " - " .. PVP:GetBattlegroundTypeText(battlegroundGameType))
 
-		local function ReturnBattlegroundScoresInAscendingOrder()
+		local function ReturnBattlegroundScoresInAscendingOrder(battlegroundId)
 			local scores = {}
-			for i = 1, 3 do
+			local nTeams = GetBattlegroundNumTeams(battlegroundId)
+			for i = 1, nTeams do
 				table.insert(scores, { GetCurrentBattlegroundScore(i), i })
 			end
 
@@ -725,7 +726,7 @@ function ScoreboardList:FilterScrollList()
 
 			table.sort(scores, sortingFn)
 
-			for i = 1, 3 do
+			for i = 1, nTeams do
 				local color
 
 				color = ZO_ColorDef:New(GetBattlegroundAllianceColor(scores[i][2]))
@@ -737,7 +738,7 @@ function ScoreboardList:FilterScrollList()
 			return scores, scores[1][2]
 		end
 
-		local teamScores, winningTeamAlliance = ReturnBattlegroundScoresInAscendingOrder()
+		local teamScores, winningTeamAlliance = ReturnBattlegroundScoresInAscendingOrder(battlegroundId)
 		-- local timeLeft = tostring(zo_round(GetCurrentBattlegroundStateTimeRemaining()/1000))
 		local battlegroundRemainingTime = GetCurrentBattlegroundStateTimeRemaining()
 		local timeLeft = tostring(ZO_FormatTimeMilliseconds(battlegroundRemainingTime, TIME_FORMAT_STYLE_COLONS,
@@ -752,7 +753,8 @@ function ScoreboardList:FilterScrollList()
 			self.frame:GetNamedChild("State"):SetText("WAITING FOR PLAYERS...")
 		elseif bgState == BATTLEGROUND_STATE_STARTING then
 			self.frame:GetNamedChild("State"):SetText("MATCH IS STARTING!")
-		elseif isPostGame then
+        elseif isPostGame then
+			local hasRounds = DoesBattlegroundHaveRounds(battlegroundId)
 			local winningTeamName
 
 			winningTeamName = GetBattlegroundTeamName(winningTeamAlliance):upper()
@@ -763,9 +765,13 @@ function ScoreboardList:FilterScrollList()
 					PVP:GetBattlegroundTeamBadgeTextFormattedIcon(winningTeamAlliance, 48, 48)) ..
 				GetColoredBattlegroundAllianceName(winningTeamAlliance)
 
-			self.frame:GetNamedChild("Title"):SetText(winnerTitleString .. " HAVE WON!")
-			self.frame:GetNamedChild("State"):SetText("MATCH ENDED!")
-
+			if hasRounds then
+				self.frame:GetNamedChild("Title"):SetText(winnerTitleString .. " have won the round!")
+				self.frame:GetNamedChild("State"):SetText("Round Ended!")
+			else
+				self.frame:GetNamedChild("Title"):SetText(winnerTitleString .. " have won!")
+				self.frame:GetNamedChild("State"):SetText("MATCH ENDED!")
+			end
 			if playerAlliance == winningTeamAlliance then
 				self.frame:GetNamedChild("Title"):GetNamedChild("Backdrop1"):SetTexture(
 					"EsoUI/Art/Battlegrounds/battlegrounds_scoreboardBG_green.dds")

@@ -2799,8 +2799,9 @@ function PVP:GetAllianceCountPlayers()
 		PVP.bgNames = PVP.bgNames or {}
 		PVP.bgScoreBoardData = PVP.bgScoreBoardData or {}
 
-		local battlegroundId = GetCurrentBattlegroundId()
-		local battlegroundGameType = GetBattlegroundGameType(battlegroundId)
+        local battlegroundId = GetCurrentBattlegroundId()
+		local battlegrounRound = GetCurrentBattlegroundRoundIndex()
+		local battlegroundGameType = GetBattlegroundGameType(battlegroundId, battlegrounRound)
 		local battlegroundLeaderboardType
 		local battlegroundSpecialsType
 
@@ -2820,16 +2821,16 @@ function PVP:GetAllianceCountPlayers()
 		end
 
 		local currentBgPlayers = {}
-		for i = 1, GetNumScoreboardEntries() do
-			local playerName, accName, bgAlliance = GetScoreboardEntryInfo(i)
-			local entryClass = GetScoreboardEntryClassId(i)
-			local entryKills = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_KILL)
-			local entryDeaths = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DEATH)
-			local entryAssists = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_ASSISTS)
-			local entryDamage = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DAMAGE_DONE)
-			local entryHealing = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_HEALING_DONE)
-			local entryPoints = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_SCORE)
-			local entrySpecials = GetScoreboardEntryScoreByType(i, battlegroundSpecialsType)
+		for i = 1, GetNumScoreboardEntries(battlegrounRound) do
+			local playerName, accName, bgAlliance = GetScoreboardEntryInfo(i, battlegrounRound)
+			local entryClass = GetScoreboardEntryClassId(i, battlegrounRound)
+			local entryKills = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_KILL, battlegrounRound)
+			local entryDeaths = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DEATH, battlegrounRound)
+			local entryAssists = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_ASSISTS, battlegrounRound)
+			local entryDamage = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DAMAGE_DONE, battlegrounRound)
+			local entryHealing = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_HEALING_DONE, battlegrounRound)
+			local entryPoints = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_SCORE, battlegrounRound)
+			local entrySpecials = GetScoreboardEntryScoreByType(i, battlegroundSpecialsType, battlegrounRound)
 
 			local bgColor = PVP:BgAllianceToHexColor(bgAlliance)
 
@@ -2850,11 +2851,11 @@ function PVP:GetAllianceCountPlayers()
 			local medalId = GetNextScoreboardEntryMedalId(i)
 
 			while medalId do
-				local medalCount = GetScoreboardEntryNumEarnedMedalsById(i, medalId)
+				local medalCount = GetScoreboardEntryNumEarnedMedalsById(i, medalId, battlegrounRound)
 				local _, _, _, medalPoints = GetMedalInfo(medalId)
 				table.insert(medalIdTable, { medalId = medalId, medalCount = medalCount, medalPoints = medalPoints })
 				-- table.insert(medalIdTable, {medalId = medalId, medalCount = medalCount})
-				medalId = GetNextScoreboardEntryMedalId(i, medalId)
+				medalId = GetNextScoreboardEntryMedalId(i,battlegrounRound, medalId)
 			end
 
 
