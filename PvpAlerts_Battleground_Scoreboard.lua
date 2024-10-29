@@ -753,7 +753,7 @@ function ScoreboardList:FilterScrollList()
 			self.frame:GetNamedChild("State"):SetText("WAITING FOR PLAYERS...")
 		elseif bgState == BATTLEGROUND_STATE_STARTING then
 			self.frame:GetNamedChild("State"):SetText("MATCH IS STARTING!")
-        elseif isPostGame then
+		elseif isPostGame then
 			local hasRounds = DoesBattlegroundHaveRounds(battlegroundId)
 			local winningTeamName
 
@@ -802,20 +802,15 @@ function ScoreboardList:FilterScrollList()
 
 		self.frame:GetNamedChild("TimerContainer"):GetNamedChild("Label"):SetText(timeLeft)
 
-		GetTeamScoreInfo(teamScores[1][2], teamScores[1][1], 1, playerAlliance == teamScores[1][2])
-		GetTeamScoreInfo(teamScores[2][2], teamScores[2][1], 2, playerAlliance == teamScores[2][2])
-		GetTeamScoreInfo(teamScores[3][2], teamScores[3][1], 3, playerAlliance == teamScores[3][2])
-
-
 		local newControl
-
-		if playerAlliance == teamScores[1][2] then
-			newControl = team1Control
-		elseif playerAlliance == teamScores[2][2] then
-			newControl = team2Control
-		elseif playerAlliance == teamScores[3][2] then
-			newControl = team3Control
+		local teamControls = { team1Control, team2Control, team3Control }
+		for i = 1, GetBattlegroundNumTeams(battlegroundId) do
+			GetTeamScoreInfo(teamScores[i][2], teamScores[i][1], 1, playerAlliance == teamScores[1][2])
+			if playerAlliance == teamScores[i][2] then
+				newControl = teamControls[i]
+			end
 		end
+
 
 		PVP_ScoreboardPlayerIcon:ClearAnchors()
 		PVP_ScoreboardPlayerIcon:SetAnchor(BOTTOM, newControl, TOP, 0, 7)

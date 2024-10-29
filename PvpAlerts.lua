@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.13.0"
+PVP.textVersion = "3.13.1"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -2580,7 +2580,7 @@ function PVP:OnMedalAwarded(eventCode, medalId, medalName, medalIcon, medalPoint
 	if not PVP.SV.showMedalsFrame or PVP.SV.unlocked then return end
 	local alliance = GetUnitBattlegroundTeam('player')
 
-	local medalCount = GetScoreboardEntryNumEarnedMedalsById(GetScoreboardPlayerEntryIndex(), medalId) + 1
+	local medalCount = GetScoreboardEntryNumEarnedMedalsById(GetScoreboardLocalPlayerEntryIndex(), medalId) + 1
 
 	if medalCount > 1 then
 		PVP_MedalsScore:SetText('x' .. tostring(medalCount))
