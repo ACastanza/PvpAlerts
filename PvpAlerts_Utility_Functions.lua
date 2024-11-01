@@ -230,7 +230,7 @@ function PVP:HtmlToColor(html, isDark, isBright)
 end
 
 function PVP:DeaccentString(inputString)
-	if inputString == "" then return end
+	if (not inputString) or (inputString == "") then return end
 	for k, v in pairs(self.accents) do
 		inputString = zo_strgsub(inputString, k, v)
 	end
