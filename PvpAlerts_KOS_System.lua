@@ -816,7 +816,7 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
 
 	if unitId == 0 and next(self.playerNames) ~= nil then
 		for k, _ in pairs(self.playerNames) do
-			if self.SV.playersDB[k].unitAccName == unitAccName then
+			if self.SV.playersDB[k] and self.SV.playersDB[k].unitAccName == unitAccName then
 				local hasPlayerNote = (self.SV.playerNotes[unitAccName] ~= nil)
 				if k ~= unitName then
 					self.SV.coolList[k] = unitAccName
