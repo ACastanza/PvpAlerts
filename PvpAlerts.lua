@@ -1089,7 +1089,6 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
 			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
-				cachedPlayerDbUpdates[unitName].mundus = zo_strsub("Boon: The Lover", 11)
 				cachedPlayerDbUpdates[unitName].mundus = zo_strsub(effectName, 11)
 			end
 			cachedPlayerDbUpdates.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
@@ -1230,12 +1229,15 @@ end
 
 function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType, abilityId, result)
 	-- if not (self.SV.showNamesFrame and self.SV.playersDB[unitName]) then return end
-	if not self.SV.playersDB[unitName] then return end
+	if not (cachedPlayerDbUpdates[unitName] or self.SV.playersDB[unitName]) then return end
 
 	local isInBG = IsActiveWorldBattleground()
 	local isValidBGNameToDisplay = isInBG and PVP.bgNames and PVP.bgNames[unitName] and PVP.bgNames[unitName] ~= 0 and
-		PVP.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
-	local isValidCyroNameToDisplay = not isInBG and self.SV.playersDB[unitName].unitAlliance ~= self.allianceOfPlayer
+        PVP.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
+	local unitAlliance = cachedPlayerDbUpdates[unitName] and cachedPlayerDbUpdates[unitName].unitAlliance or
+	self.SV.playersDB[unitName]
+	 and self.SV.playersDB[unitName].unitAlliance
+	local isValidCyroNameToDisplay = (not isInBG) and (unitAlliance ~= self.allianceOfPlayer)
 
 
 	if isValidBGNameToDisplay or isValidCyroNameToDisplay then
@@ -2081,7 +2083,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
     sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
 	if sourceName then
-        playerDbRecord = self.SV.playersDB[sourceName] or cachedPlayerDbUpdates[sourceName]
+        playerDbRecord = cachedPlayerDbUpdates[sourceName] or self.SV.playersDB[sourceName]
 		accountNameFromDB = playerDbRecord and playerDbRecord.unitAccName
 	end
 	if sourceUnitId == "unlock" then
@@ -3334,7 +3336,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			isResurrect = nil
 		end
 		if playerName then
-			local playerDbRecord = self.SV.playersDB[playerName] or cachedPlayerDbUpdates[playerName]
+			local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
 			local iconsCount = 0
 			local formattedName = ""
 			KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
@@ -3777,7 +3779,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 			if rawName then
 				if PVP.SV.showKOSFrame then
 					local index, unitAccName, kosUnitAccName
-					unitAccName = PVP.SV.playersDB[rawName]
+					unitAccName = cachedPlayerDbUpdates[rawName] and cachedPlayerDbUpdates[rawName].unitAccName or PVP.SV.playersDB[rawName]
 						and PVP.SV.playersDB[rawName].unitAccName or nil
 					for i = 1, #PVP.SV.KOSList do
 						kosUnitAccName = PVP.SV.KOSList[i].unitAccName
