@@ -1090,6 +1090,7 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
 				cachedPlayerDbUpdates[unitName].mundus = zo_strsub("Boon: The Lover", 11)
+				cachedPlayerDbUpdates[unitName].mundus = zo_strsub(effectName, 11)
 			end
 			cachedPlayerDbUpdates.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		elseif self.SV.playersDB[unitName] then
