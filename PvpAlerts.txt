@@ -1,15 +1,13 @@
 ## APIVersion: 101044
 ## Title: Miat's Pvp Alerts
 ## Author: Dorrino, Valandil, Anthonysc
-## AddonVersion: 31302
+## AddonVersion: 31303
 ## SavedVariables: PvpAlertsSettings
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## DependsOn: LibAddonMenu-2.0 LibGPS LibMapPing LibChatMessage
 ## OptionalDependsOn: pChat tom
 
 PvpAlerts_Init_Globals.lua
-PvpAlerts.lua
-
 PvpAlerts_Constants.lua
 PvpAlerts_Utility_Functions.lua
 PvpAlerts_Init_Controls.lua
@@ -23,6 +21,7 @@ PvpAlerts_XML_Functions.lua
 PvpAlerts_Battleground_Scoreboard.lua
 PvpAlerts_Scoreboard.xml
 PvpAlerts_OnScreen.lua
+PvpAlerts.lua
 PvpAlerts.xml
 bindings.xml
 textures/2barsMiddleLineLarge.dds
