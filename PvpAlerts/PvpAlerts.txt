@@ -19,6 +19,7 @@ PvpAlerts_Spec_Detection.lua
 PvpAlerts_Init_Addon_Menu.lua
 PvpAlerts_XML_Functions.lua
 PvpAlerts_Battleground_Scoreboard.lua
+PvpAlerts_Battleground_MMR.lua
 PvpAlerts_Scoreboard.xml
 PvpAlerts_OnScreen.lua
 PvpAlerts.lua
