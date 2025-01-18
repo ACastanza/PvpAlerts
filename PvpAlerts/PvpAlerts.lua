@@ -3801,9 +3801,9 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							table.remove(PVP.SV.KOSList, index)
 							PVP:PopulateKOSBuffer()
 						end)
-						local cool = PVP:FindAccInCOOL(rawName, unitAccName)
-						if cool then
-							PVP.SV.coolList[cool] = nil
+						local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
+						if removeCool then
+							PVP.SV.coolList[removeCool] = nil
 							PVP:PopulateKOSBuffer()
 							PVP:PopulateReticleOverNamesBuffer()
 						end
@@ -3814,8 +3814,8 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							table.remove(PVP.SV.KOSList, index)
 							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
-							local cool = PVP:FindAccInCOOL(rawName, unitAccName)
-							if not cool then PVP.SV.coolList[rawName] = unitAccName end
+							local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
+							if not addCool then PVP.SV.coolList[rawName] = unitAccName end
 							PVP:PopulateKOSBuffer()
 							PVP:PopulateReticleOverNamesBuffer()
 						end)
@@ -3839,9 +3839,9 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 
 							PVP:PopulateKOSBuffer()
 						end)
-						local cool = PVP:FindAccInCOOL(rawName, unitAccName)
+						local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
 
-						if not cool then
+						if not addCool then
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
 								chat:Printf("Added to COOL: %s%s!",
 									PVP:GetFormattedName(rawName),
@@ -3855,9 +3855,9 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								chat:Printf("Removed from COOL: %s%s!",
 									PVP:GetFormattedName(rawName),
 									unitAccName)
-								local cool = PVP:FindAccInCOOL(rawName, unitAccName)
-								if cool then
-									PVP.SV.coolList[cool] = nil
+								local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
+								if removeCool then
+									PVP.SV.coolList[removeCool] = nil
 									PVP:PopulateKOSBuffer()
 									PVP:PopulateReticleOverNamesBuffer()
 								end
