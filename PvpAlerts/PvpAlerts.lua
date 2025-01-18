@@ -149,7 +149,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		for k, v in pairs(PVP.currentNearbyKeepIds) do
 			c = c + 1
 		end
-		chat:Print('#currentNearbyKeepIds = %dms', c)
+		chat:Printf('#currentNearbyKeepIds = %dms', c)
 		c = 0
 		for k, v in pairs(PVP.currentNearbyPOIIds) do
 			c = c + 1
@@ -910,7 +910,7 @@ function PVP.Tooltips_ShowTextTooltip(control, side, maxLength, isCounter, ...)
 	end
 end
 
-function PVP:OnDeactivated()
+function PVP:OnDeactivated(eventId)
 	local function ClearId(id)
 		PVP.playerSpec[PVP.idToName[id]] = nil
 		PVP.miscAbilities[PVP.idToName[id]] = nil
@@ -2845,9 +2845,9 @@ function PVP:GetAllianceCountPlayers()
 
 			local entryRank
 			if battlegroundLeaderboardType then
-				for i = 1, GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) do
+				for j = 1, GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) do
 					local rank, displayName, characterName, score = GetBattlegroundLeaderboardEntryInfo(
-						battlegroundLeaderboardType, i)
+						battlegroundLeaderboardType, j)
 					if '@' .. displayName == accName then
 						entryRank = rank
 						break
