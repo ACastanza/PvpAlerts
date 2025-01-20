@@ -1164,7 +1164,7 @@ end
 
 function PVP:SecondsToClock(seconds)
 	local hours, mins, secs
-	local seconds = tonumber(seconds)
+	seconds = tonumber(seconds)
 
 	if seconds <= 0 then
 		return "0sec";

@@ -129,7 +129,7 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 		local label = GetControl(control, 'Label')
 
 		local function GetIcon(objectiveType, meter, alliance)
-			local icon, flagType
+			local flagType
 
 			if objectiveType == KEEPTYPE_RESOURCE then
 				flagType = FLAGTYPE_OTHER
