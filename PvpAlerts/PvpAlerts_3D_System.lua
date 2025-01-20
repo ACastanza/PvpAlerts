@@ -1503,18 +1503,18 @@ local function Take3DMeasurements()
 	PVP.onUpdateInfo.IsInImperialCityDistrict = IsInImperialCity() and IsInImperialCityDistrict(true) or false
 	PVP.onUpdateInfo.GetPlayerCameraHeading = GetPlayerCameraHeading3D(true)
 
-	local cameraDistance, cameraAngleZ, cameraX, cameraY, cameraZ
+	local cameraDistance, cameraAngleZ, cameraX, cameraY, cameraZ, heading, measurementCameraX, measurementCameraY
 	local control = PVP_World3DCameraMeasurement
 	local textureControl = PVP_World3DCameraMeasurementIcon
 
 	Set3DRenderSpaceToCurrentCamera(control:GetName())
 
-	local cameraX, cameraZ, cameraY = control:Get3DRenderSpaceOrigin()
+	cameraX, cameraZ, cameraY = control:Get3DRenderSpaceOrigin()
 
-	local heading = GetPlayerCameraHeading3D()
+	heading = GetPlayerCameraHeading3D()
 
-	local measurementCameraX = sin(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
-	local measurementCameraY = cos(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
+	measurementCameraX = sin(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
+	measurementCameraY = cos(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
 
 
 	control:Set3DRenderSpaceOrigin(cameraX - measurementCameraX, cameraZ, cameraY - measurementCameraY)
