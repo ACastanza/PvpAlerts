@@ -1384,8 +1384,6 @@ function PVP:Init3D()
 		-- d('New origin callback time: '..tostring(GetFrameTimeMilliseconds()))
 		if PVP.currentCameraInfo.lastDeltaX and PVP.currentCameraInfo.lastDeltaY then
 			d('ORIGIN CHANGED')
-			d('ORIGIN CHANGED')
-			d('ORIGIN CHANGED')
 			local objects = PVP.controls3DPool:GetActiveObjects()
 			-- local objectsCount = 0
 			for k, v in pairs(objects) do
@@ -2959,7 +2957,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		end
 	end
 
-	PVP.m4 = GetGameTimeMilliseconds()
+	--PVP.m4 = GetGameTimeMilliseconds()
 
 	SetCaptureBarVisibility(control)
 
@@ -4429,16 +4427,16 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 	self.currentObjectivesIds = self.currentObjectivesIds or {}
 
 	local foundKeeps, foundKeeps, foundBgObjectives
-	PVP.afterInit3d = GetGameTimeMilliseconds()
+	-- PVP.afterInit3d = GetGameTimeMilliseconds()
 
 	if IsActiveWorldBattleground() then
 		foundBgObjectives = FindBgObjectives()
 	else
 		foundKeeps = FindNearbyKeeps() -- // returns a list of all keep objects nearby //
 	end
-	PVP.afterKeeps3d = GetGameTimeMilliseconds()
+	-- PVP.afterKeeps3d = GetGameTimeMilliseconds()
 	foundPOI = FindNearbyPOIs() -- // returns a list of all non-keep objects nearby //
-	PVP.afterPoi3d = GetGameTimeMilliseconds()
+	-- PVP.afterPoi3d = GetGameTimeMilliseconds()
 	if not foundKeeps and not foundPOI and not foundBgObjectives then
 		PVP:FullReset3DIcons()
 		return
@@ -4464,7 +4462,7 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		end
 		self.currentNearbyKeepIds = {}
 	end
-	PVP.afterKeepsProc3d = GetGameTimeMilliseconds()
+	-- PVP.afterKeepsProc3d = GetGameTimeMilliseconds()
 	if foundBgObjectives then
 		for k, v in pairs(self.currentObjectivesIds) do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
 			if not foundBgObjectives[k] then
@@ -4521,7 +4519,7 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		end
 		self.currentNearbyPOIIds = {}
 	end
-	PVP.afterPoiProc3d = GetGameTimeMilliseconds()
+	-- PVP.afterPoiProc3d = GetGameTimeMilliseconds()
 end
 
 function PVP:GetMouseOverControl()
