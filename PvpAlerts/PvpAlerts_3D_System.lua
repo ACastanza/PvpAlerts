@@ -1396,12 +1396,6 @@ function PVP:Init3D()
 					local newY = PVP.currentCameraInfo.current3DY +
 						(control.params.Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 
-					local newX = PVP.currentCameraInfo.last3dX +
-						(control.params.X - PVP.currentCameraInfo.lastMapX) * GetCurrentMapScaleTo3D()
-					local newY = PVP.currentCameraInfo.last3dY +
-						(control.params.Y - PVP.currentCameraInfo.lastMapY) * GetCurrentMapScaleTo3D()
-
-
 					local oldX, oldZ, oldY = control:Get3DRenderSpaceOrigin()
 					-- control:Set3DRenderSpaceOrigin(oldX+PVP.currentCameraInfo.lastDeltaX, oldZ, oldY+PVP.currentCameraInfo.lastDeltaY)
 					control:Set3DRenderSpaceOrigin(newX + PVP.currentCameraInfo.lastDeltaX, oldZ,
