@@ -283,15 +283,12 @@ function PVP:AllianceToColor(alliance, passive)
 	end
 end
 
-function PVP:NameToAllianceColor(unitName, passive, overrideBgColor)
+function PVP:NameToAllianceColor(unitName, passive, overrideBgColor, unitAlliance)
 	if not overrideBgColor and IsActiveWorldBattleground() and PVP.bgNames and PVP.bgNames[unitName] then
-		return PVP
-			:BgAllianceToHexColor(PVP.bgNames[unitName])
+		return PVP:BgAllianceToHexColor(PVP.bgNames[unitName])
 	end
 
-	local unitAlliance
-
-	if self.SV.playersDB[unitName] then
+	if self.SV.playersDB[unitName] and not unitAlliance then
 		unitAlliance = self.SV.playersDB[unitName].unitAlliance
 	end
 	return PVP:AllianceToColor(unitAlliance, passive)
