@@ -3329,18 +3329,18 @@ function PVP:PopulateReticleOverNamesBuffer()
 	PVP_Names_Text:Clear()
 	if #self.namesToDisplay == 0 then return end
 
-	for _, v in ipairs(self.namesToDisplay) do
+	for k, v in ipairs(self.namesToDisplay) do
 		local playerName = v.unitName
-		local isDead = v.isDead
-		local isAttacker = v.isAttacker
-		local isTarget = v.isTarget
-		local isResurrect = v.isResurrect
-		if isResurrect and (currentTime - isResurrect) > 15000 then
-			v.isResurrect = nil
-			isResurrect = nil
-		end
 		if playerName then
-			local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+			local isDead = v.isDead
+			local isAttacker = v.isAttacker
+			local isTarget = v.isTarget
+			local isResurrect = v.isResurrect
+			if isResurrect and (currentTime - isResurrect) > 15000 then
+				v.isResurrect = nil
+				isResurrect = nil
+			end
+				local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
 			local formattedName = ""
 			local iconsCount = 0
 
