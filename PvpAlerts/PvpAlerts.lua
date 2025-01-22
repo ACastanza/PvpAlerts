@@ -1233,7 +1233,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 
 	local isInBG = IsActiveWorldBattleground()
 	local isValidBGNameToDisplay = isInBG and PVP.bgNames and PVP.bgNames[unitName] and PVP.bgNames[unitName] ~= 0 and
-        PVP.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
+		PVP.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
 	local unitAlliance = cachedPlayerDbUpdates[unitName] and cachedPlayerDbUpdates[unitName].unitAlliance or
 	self.SV.playersDB[unitName]
 	 and self.SV.playersDB[unitName].unitAlliance
@@ -1328,16 +1328,16 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 
 	local KILLING_BLOW_ACTION_RESULTS = {
 		[ACTION_RESULT_KILLING_BLOW] = true,
-		[ACTION_RESULT_DIED_XP]      = true,
+		[ACTION_RESULT_DIED_XP]	  = true,
 	}
 
 	local DEAD_ACTION_RESULTS = {
 		[ACTION_RESULT_KILLING_BLOW]  = true,
 		[ACTION_RESULT_TARGET_DEAD]   = true,
-		[ACTION_RESULT_DIED]          = true,
-		[ACTION_RESULT_DIED_XP]       = true,
+		[ACTION_RESULT_DIED]		  = true,
+		[ACTION_RESULT_DIED_XP]	   = true,
 		[ACTION_RESULT_REINCARNATING] = true,
-		[ACTION_RESULT_RESURRECT]     = true,
+		[ACTION_RESULT_RESURRECT]	 = true,
 		[ACTION_RESULT_CASTER_DEAD]   = true,
 	}
 
@@ -2081,9 +2081,9 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	local classIconSize = 45
 	-- local abilityIcon = self:GetIcon(abilityIcon, abilityIconSize)..heavyAttackSpacer
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
-    sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
+	sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
 	if sourceName then
-        playerDbRecord = cachedPlayerDbUpdates[sourceName] or self.SV.playersDB[sourceName]
+		playerDbRecord = cachedPlayerDbUpdates[sourceName] or self.SV.playersDB[sourceName]
 		accountNameFromDB = playerDbRecord and playerDbRecord.unitAccName
 	end
 	if sourceUnitId == "unlock" then
@@ -2808,7 +2808,7 @@ function PVP:GetAllianceCountPlayers()
 		PVP.bgNames = PVP.bgNames or {}
 		PVP.bgScoreBoardData = PVP.bgScoreBoardData or {}
 
-        local battlegroundId = GetCurrentBattlegroundId()
+		local battlegroundId = GetCurrentBattlegroundId()
 		local battlegrounRound = GetCurrentBattlegroundRoundIndex()
 		local battlegroundGameType = GetBattlegroundGameType(battlegroundId, battlegrounRound)
 		local battlegroundLeaderboardType
@@ -3003,11 +3003,11 @@ function PVP:GetAllianceCountPlayers()
 
 	if not IsActiveWorldBattleground() then
 		for k, v in pairs(self.playerAlliance) do
-			local playerName                      = self.idToName[k]
-			local playerDbRecord                  = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
-			local unitClass                       = playerDbRecord.unitClass or self.SV.playersDB[playerName].unitClass
+			local playerName					  = self.idToName[k]
+			local playerDbRecord				  = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+			local unitClass					   = playerDbRecord.unitClass or self.SV.playersDB[playerName].unitClass
 			local formattedName, allianceColor, classIcons
-			local KOSOrFriend                     = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
+			local KOSOrFriend					 = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 			local statusIcon, isResurrect, isDead = FindInNames(playerName)
 			if isDead or isResurrect then
 				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(playerDbRecord.unitAlliance, true), k,
@@ -3328,10 +3328,8 @@ function PVP:PopulateReticleOverNamesBuffer()
 	local currentTime = GetFrameTimeMilliseconds()
 	PVP_Names_Text:Clear()
 	if #self.namesToDisplay == 0 then return end
-	local KOSOrFriend
 
-	-- for i=1, #self.namesToDisplay do
-	for k, v in ipairs(self.namesToDisplay) do
+	for _, v in ipairs(self.namesToDisplay) do
 		local playerName = v.unitName
 		local isDead = v.isDead
 		local isAttacker = v.isAttacker
@@ -3343,9 +3341,10 @@ function PVP:PopulateReticleOverNamesBuffer()
 		end
 		if playerName then
 			local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
-			local iconsCount = 0
 			local formattedName = ""
-			KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
+			local iconsCount = 0
+
+			local KOSOrFriend = self:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
 			if KOSOrFriend then
 				iconsCount = iconsCount + 1
 				if KOSOrFriend == "KOS" then
@@ -3359,12 +3358,11 @@ function PVP:PopulateReticleOverNamesBuffer()
 				elseif KOSOrFriend == "group" then
 					formattedName = formattedName .. self:GetGroupIcon()
 				elseif KOSOrFriend == "guild" then
-					formattedName = formattedName .. self:GetGuildIcon(nil,
-						playerDbRecord.unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
+					formattedName = formattedName .. self:GetGuildIcon(nil, playerDbRecord.unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
 				end
 			end
-			local endIcon
 
+			local endIcon
 			iconsCount = iconsCount + 1
 			if isDead then
 				endIcon = self:GetDeathIcon(nil, 'AAAAAA')
@@ -3395,8 +3393,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 			if iconsCount == 0 then iconsCount = nil end
 
 			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect)
-			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil,
-				nil, nil, playerDbRecord.unitAvaRank, playerDbRecord)
+			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord)
 			local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
 			local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
 			if userDisplayNameType == "both" then
@@ -3755,7 +3752,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 		end
 
 		local function IsNameInDB(rawName)
-			if PVP:CheckName(rawName) then                                 -- check this function
+			if PVP:CheckName(rawName) then								 -- check this function
 				if PVP.SV.playersDB[rawName] then return rawName else return false end --add cache check here
 			end
 			local maleName = rawName .. "^Mx"
