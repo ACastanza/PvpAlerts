@@ -18,6 +18,11 @@ PVP.CHAT = chat
 -- // initialization of global variables for this file //
 
 local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
+local sort = table.sort
+local insert = table.insert
+local remove = table.remove
+--local concat = table.concat
+
 local PVP_NAME_FONT = PVP:GetGlobal('PVP_NAME_FONT')
 local PVP_NUMBER_FONT = PVP:GetGlobal('PVP_NUMBER_FONT')
 
@@ -81,7 +86,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		end
 
 		local function average(n)
-			if #t == period then table.remove(t, 1) end
+			if #t == period then remove(t, 1) end
 			t[#t + 1] = n
 			return sum(unpack(t)) / #t, zo_max(unpack(t))
 		end
@@ -309,11 +314,11 @@ function PVP_test_SV()
 		-- also weed out any non numbers
 		for k, v in pairs(t) do
 			if type(v) == 'number' then
-				table.insert(temp, v)
+				insert(temp, v)
 			end
 		end
 
-		table.sort(temp)
+		sort(temp)
 
 		-- If we have an even number of table elements or odd.
 		if zo_mod(#temp, 2) == 0 then
@@ -505,7 +510,7 @@ function PVP:CountTotal(currentTime)
 	local wasRemoved
 	for i = #self.namesToDisplay, 1, -1 do
 		if (currentTime - self.namesToDisplay[i].currentTime) >= PVP_ID_RETAIN_TIME then
-			table.remove(self.namesToDisplay, i)
+			remove(self.namesToDisplay, i)
 			wasRemoved = true
 		end
 	end
@@ -1125,7 +1130,7 @@ function PVP:KillFeedRatio_Add(alliance, location)
 	local EP = PVP.killFeedRatio.EP
 	local zone = PVP.killFeedRatio.zone
 
-	table.insert(zone, location)
+	insert(zone, location)
 
 	if alliance == 1 then
 		PVP.killFeedRatio.AD = PVP.killFeedRatio.AD + 1
@@ -1276,9 +1281,9 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 			if attackType == 'source' then
 				local playerToUpdate = self.namesToDisplay[found]
 
-				table.remove(self.namesToDisplay, found)
+				remove(self.namesToDisplay, found)
 
-				table.insert(self.namesToDisplay, playerToUpdate)
+				insert(self.namesToDisplay, playerToUpdate)
 			end
 		else
 			if not updateOnly then
@@ -1301,7 +1306,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 				if abilityId == 0 and result == 2265 and isTarget then
 					isResurrect = currentTime
 				end
-				table.insert(self.namesToDisplay,
+				insert(self.namesToDisplay,
 					{
 						unitName = unitName,
 						currentTime = currentTime,
@@ -2392,7 +2397,7 @@ function PVP:OnMapPing(eventCode, pingEventType, pingType, pingTag, offsetX, off
 				end
 			end
 
-			table.insert(self.currentMapPings,
+			insert(self.currentMapPings,
 				{
 					pinType = pingType,
 					pingTag = pingTag,
@@ -2417,7 +2422,7 @@ function PVP:OnMapPing(eventCode, pingEventType, pingType, pingTag, offsetX, off
 					v.pingObject.params.hasWaypoint = nil
 					v.pingObject.params.hasRally = nil
 				end
-				table.remove(self.currentMapPings, k)
+				remove(self.currentMapPings, k)
 				break
 			end
 		end
@@ -2862,15 +2867,15 @@ function PVP:GetAllianceCountPlayers()
 			while medalId do
 				local medalCount = GetScoreboardEntryNumEarnedMedalsById(i, medalId, battlegrounRound)
 				local _, _, _, medalPoints = GetMedalInfo(medalId)
-				table.insert(medalIdTable, { medalId = medalId, medalCount = medalCount, medalPoints = medalPoints })
-				-- table.insert(medalIdTable, {medalId = medalId, medalCount = medalCount})
+				insert(medalIdTable, { medalId = medalId, medalCount = medalCount, medalPoints = medalPoints })
+				-- insert(medalIdTable, {medalId = medalId, medalCount = medalCount})
 				medalId = GetNextScoreboardEntryMedalId(i,battlegrounRound, medalId)
 			end
 
 
 			if not entryRank then entryRank = 9999 end
 
-			table.insert(PVP.scoreboardListData, {
+			insert(PVP.scoreboardListData, {
 				class = entryClass,
 				name = playerName,
 				kills = entryKills,
@@ -2931,56 +2936,56 @@ function PVP:GetAllianceCountPlayers()
 			end
 			if bgAlliance == 1 then
 				numberAD = numberAD + 1
-				table.insert(tableAD, formattedName)
+				insert(tableAD, formattedName)
 				tableNameToIndexAD[playerName] = numberAD
 				if KOSOrFriend == "groupleader" then
-					table.insert(groupLeaderTable, playerName)
+					insert(groupLeaderTable, playerName)
 				elseif KOSOrFriend == "group" then
-					table.insert(groupMembersTable, playerName)
+					insert(groupMembersTable, playerName)
 				elseif KOSOrFriend == "KOS" then
-					table.insert(kosTableAD, playerName)
+					insert(kosTableAD, playerName)
 				elseif KOSOrFriend == "friend" then
-					table.insert(friendsTableAD, playerName)
+					insert(friendsTableAD, playerName)
 				elseif KOSOrFriend == "cool" then
-					table.insert(friendsTableAD, playerName)
+					insert(friendsTableAD, playerName)
 				else
-					table.insert(othersTableAD, playerName)
+					insert(othersTableAD, playerName)
 				end
 			elseif bgAlliance == 2 then
 				numberEP = numberEP + 1
-				table.insert(tableEP, formattedName)
+				insert(tableEP, formattedName)
 				tableNameToIndexEP[playerName] = numberEP
 
 				if KOSOrFriend == "groupleader" then
-					table.insert(groupLeaderTable, playerName)
+					insert(groupLeaderTable, playerName)
 				elseif KOSOrFriend == "group" then
-					table.insert(groupMembersTable, playerName)
+					insert(groupMembersTable, playerName)
 				elseif KOSOrFriend == "KOS" then
-					table.insert(kosTableEP, playerName)
+					insert(kosTableEP, playerName)
 				elseif KOSOrFriend == "friend" then
-					table.insert(friendsTableEP, playerName)
+					insert(friendsTableEP, playerName)
 				elseif KOSOrFriend == "cool" then
-					table.insert(friendsTableEP, playerName)
+					insert(friendsTableEP, playerName)
 				else
-					table.insert(othersTableEP, playerName)
+					insert(othersTableEP, playerName)
 				end
 			elseif bgAlliance == 3 then
 				numberDC = numberDC + 1
-				table.insert(tableDC, formattedName)
+				insert(tableDC, formattedName)
 				tableNameToIndexDC[playerName] = numberDC
 
 				if KOSOrFriend == "groupleader" then
-					table.insert(groupLeaderTable, playerName)
+					insert(groupLeaderTable, playerName)
 				elseif KOSOrFriend == "group" then
-					table.insert(groupMembersTable, playerName)
+					insert(groupMembersTable, playerName)
 				elseif KOSOrFriend == "KOS" then
-					table.insert(kosTableDC, playerName)
+					insert(kosTableDC, playerName)
 				elseif KOSOrFriend == "friend" then
-					table.insert(friendsTableDC, playerName)
+					insert(friendsTableDC, playerName)
 				elseif KOSOrFriend == "cool" then
-					table.insert(friendsTableDC, playerName)
+					insert(friendsTableDC, playerName)
 				else
-					table.insert(othersTableDC, playerName)
+					insert(othersTableDC, playerName)
 				end
 			end
 		end
@@ -3047,56 +3052,56 @@ function PVP:GetAllianceCountPlayers()
 
 			if v == 1 then
 				numberAD = numberAD + 1
-				table.insert(tableAD, formattedName)
+				insert(tableAD, formattedName)
 				tableNameToIndexAD[playerName] = numberAD
 				if KOSOrFriend == "groupleader" then
-					table.insert(groupLeaderTable, playerName)
+					insert(groupLeaderTable, playerName)
 				elseif KOSOrFriend == "group" then
-					table.insert(groupMembersTable, playerName)
+					insert(groupMembersTable, playerName)
 				elseif KOSOrFriend == "KOS" then
-					table.insert(kosTableAD, playerName)
+					insert(kosTableAD, playerName)
 				elseif KOSOrFriend == "friend" then
-					table.insert(friendsTableAD, playerName)
+					insert(friendsTableAD, playerName)
 				elseif KOSOrFriend == "cool" then
-					table.insert(friendsTableAD, playerName)
+					insert(friendsTableAD, playerName)
 				else
-					table.insert(othersTableAD, playerName)
+					insert(othersTableAD, playerName)
 				end
 			elseif v == 2 then
 				numberEP = numberEP + 1
-				table.insert(tableEP, formattedName)
+				insert(tableEP, formattedName)
 				tableNameToIndexEP[playerName] = numberEP
 
 				if KOSOrFriend == "groupleader" then
-					table.insert(groupLeaderTable, playerName)
+					insert(groupLeaderTable, playerName)
 				elseif KOSOrFriend == "group" then
-					table.insert(groupMembersTable, playerName)
+					insert(groupMembersTable, playerName)
 				elseif KOSOrFriend == "KOS" then
-					table.insert(kosTableEP, playerName)
+					insert(kosTableEP, playerName)
 				elseif KOSOrFriend == "friend" then
-					table.insert(friendsTableEP, playerName)
+					insert(friendsTableEP, playerName)
 				elseif KOSOrFriend == "cool" then
-					table.insert(friendsTableEP, playerName)
+					insert(friendsTableEP, playerName)
 				else
-					table.insert(othersTableEP, playerName)
+					insert(othersTableEP, playerName)
 				end
 			elseif v == 3 then
 				numberDC = numberDC + 1
-				table.insert(tableDC, formattedName)
+				insert(tableDC, formattedName)
 				tableNameToIndexDC[playerName] = numberDC
 
 				if KOSOrFriend == "groupleader" then
-					table.insert(groupLeaderTable, playerName)
+					insert(groupLeaderTable, playerName)
 				elseif KOSOrFriend == "group" then
-					table.insert(groupMembersTable, playerName)
+					insert(groupMembersTable, playerName)
 				elseif KOSOrFriend == "KOS" then
-					table.insert(kosTableDC, playerName)
+					insert(kosTableDC, playerName)
 				elseif KOSOrFriend == "friend" then
-					table.insert(friendsTableDC, playerName)
+					insert(friendsTableDC, playerName)
 				elseif KOSOrFriend == "cool" then
-					table.insert(friendsTableDC, playerName)
+					insert(friendsTableDC, playerName)
 				else
-					table.insert(othersTableDC, playerName)
+					insert(othersTableDC, playerName)
 				end
 			end
 			foundNames[playerName] = true
@@ -3143,55 +3148,55 @@ function PVP:GetAllianceCountPlayers()
 
 					if unitAllianceFromPlayersDb == 1 then
 						numberAD = numberAD + 1
-						table.insert(tableAD, formattedName)
+						insert(tableAD, formattedName)
 						tableNameToIndexAD[playerName] = numberAD
 
 						if KOSOrFriend == "groupleader" then
-							table.insert(groupLeaderTable, playerName)
+							insert(groupLeaderTable, playerName)
 						elseif KOSOrFriend == "group" then
-							table.insert(groupMembersTable, playerName)
+							insert(groupMembersTable, playerName)
 						elseif KOSOrFriend == "KOS" then
-							table.insert(kosTableAD, playerName)
+							insert(kosTableAD, playerName)
 						elseif KOSOrFriend == "friend" then
-							table.insert(friendsTableAD, playerName)
+							insert(friendsTableAD, playerName)
 						elseif KOSOrFriend == "cool" then
-							table.insert(friendsTableAD, playerName)
+							insert(friendsTableAD, playerName)
 						else
-							table.insert(othersTableAD, playerName)
+							insert(othersTableAD, playerName)
 						end
 					elseif unitAllianceFromPlayersDb == 2 then
 						numberEP = numberEP + 1
-						table.insert(tableEP, formattedName)
+						insert(tableEP, formattedName)
 						tableNameToIndexEP[playerName] = numberEP
 						if KOSOrFriend == "groupleader" then
-							table.insert(groupLeaderTable, playerName)
+							insert(groupLeaderTable, playerName)
 						elseif KOSOrFriend == "group" then
-							table.insert(groupMembersTable, playerName)
+							insert(groupMembersTable, playerName)
 						elseif KOSOrFriend == "KOS" then
-							table.insert(kosTableEP, playerName)
+							insert(kosTableEP, playerName)
 						elseif KOSOrFriend == "friend" then
-							table.insert(friendsTableEP, playerName)
+							insert(friendsTableEP, playerName)
 						elseif KOSOrFriend == "cool" then
-							table.insert(friendsTableEP, playerName)
+							insert(friendsTableEP, playerName)
 						else
-							table.insert(othersTableEP, playerName)
+							insert(othersTableEP, playerName)
 						end
 					elseif unitAllianceFromPlayersDb == 3 then
 						numberDC = numberDC + 1
-						table.insert(tableDC, formattedName)
+						insert(tableDC, formattedName)
 						tableNameToIndexDC[playerName] = numberDC
 						if KOSOrFriend == "groupleader" then
-							table.insert(groupLeaderTable, playerName)
+							insert(groupLeaderTable, playerName)
 						elseif KOSOrFriend == "group" then
-							table.insert(groupMembersTable, playerName)
+							insert(groupMembersTable, playerName)
 						elseif KOSOrFriend == "KOS" then
-							table.insert(kosTableDC, playerName)
+							insert(kosTableDC, playerName)
 						elseif KOSOrFriend == "friend" then
-							table.insert(friendsTableDC, playerName)
+							insert(friendsTableDC, playerName)
 						elseif KOSOrFriend == "cool" then
-							table.insert(friendsTableDC, playerName)
+							insert(friendsTableDC, playerName)
 						else
-							table.insert(othersTableDC, playerName)
+							insert(othersTableDC, playerName)
 						end
 					end
 				end
@@ -3202,17 +3207,17 @@ function PVP:GetAllianceCountPlayers()
 	end
 
 
-	if #groupMembersTable > 1 then table.sort(groupMembersTable) end
-	if #kosTableAD > 1 then table.sort(kosTableAD) end
-	if #kosTableDC > 1 then table.sort(kosTableDC) end
-	if #kosTableEP > 1 then table.sort(kosTableEP) end
-	if #friendsTableAD > 1 then table.sort(friendsTableAD) end
-	if #friendsTableDC > 1 then table.sort(friendsTableDC) end
-	if #friendsTableEP > 1 then table.sort(friendsTableEP) end
+	if #groupMembersTable > 1 then sort(groupMembersTable) end
+	if #kosTableAD > 1 then sort(kosTableAD) end
+	if #kosTableDC > 1 then sort(kosTableDC) end
+	if #kosTableEP > 1 then sort(kosTableEP) end
+	if #friendsTableAD > 1 then sort(friendsTableAD) end
+	if #friendsTableDC > 1 then sort(friendsTableDC) end
+	if #friendsTableEP > 1 then sort(friendsTableEP) end
 
-	if #othersTableAD > 1 then table.sort(othersTableAD) end
-	if #othersTableDC > 1 then table.sort(othersTableDC) end
-	if #othersTableEP > 1 then table.sort(othersTableEP) end
+	if #othersTableAD > 1 then sort(othersTableAD) end
+	if #othersTableDC > 1 then sort(othersTableDC) end
+	if #othersTableEP > 1 then sort(othersTableEP) end
 
 
 	local function ArrayConversion(inputArray, indexArray, mainArray)
@@ -3237,9 +3242,9 @@ function PVP:GetAllianceCountPlayers()
 		elseif summaryType == 'others' then
 			summary = ' --- Others (' .. numberInCategory .. ') ---'
 		end
-		table.insert(outputArray, summary)
+		insert(outputArray, summary)
 		for i = 1, #inputArray do
-			table.insert(outputArray, inputArray[i])
+			insert(outputArray, inputArray[i])
 		end
 		return outputArray
 	end
@@ -3798,7 +3803,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_KOS), function()
 							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
-							table.remove(PVP.SV.KOSList, index)
+							remove(PVP.SV.KOSList, index)
 							PVP:PopulateKOSBuffer()
 						end)
 						local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
@@ -3811,7 +3816,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
 							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
-							table.remove(PVP.SV.KOSList, index)
+							remove(PVP.SV.KOSList, index)
 							chat:Printf("Added to COOL: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
 							local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
@@ -3831,7 +3836,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							end
 							chat:Printf("Added to KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
-							table.insert(PVP.SV.KOSList,
+							insert(PVP.SV.KOSList,
 								{
 									unitName = rawName,
 									unitAccName = unitAccName,

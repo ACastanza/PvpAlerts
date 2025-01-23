@@ -1,4 +1,8 @@
 local PVP = PVP_Alerts_Main_Table
+local sort = table.sort
+local insert = table.insert
+local remove = table.remove
+--local concat = table.concat
 
 function PVP_Who_Mouseover()
 	local name
@@ -31,11 +35,11 @@ local function WhoIsAccInDB(accName, contains)
 	local playerNamesForAcc = {}
 	for k, v in pairs(PVP.SV.playersDB) do
 		local dbAccName = contains and PVP:DeaccentString(v.unitAccName) or v.unitAccName
-		if string.lower(dbAccName) == accName then table.insert(playerNamesForAcc, k) end
+		if string.lower(dbAccName) == accName then insert(playerNamesForAcc, k) end
 	end
 
 	if #playerNamesForAcc ~= 0 then
-		table.sort(playerNamesForAcc)
+		sort(playerNamesForAcc)
 		return playerNamesForAcc, accKOSIndex
 	else
 		return false
@@ -47,9 +51,9 @@ local function GetListOfNames(name, contains)
 	local only
 
 	if PVP.SV.playersDB[name .. '^Mx'] then
-		table.insert(rawPlayerNames, name .. '^Mx')
+		insert(rawPlayerNames, name .. '^Mx')
 	elseif PVP.SV.playersDB[name .. '^Fx'] then
-		table.insert(rawPlayerNames, name .. '^Fx')
+		insert(rawPlayerNames, name .. '^Fx')
 	end
 
 	if contains and #rawPlayerNames == 1 then only = true end
@@ -66,9 +70,9 @@ local function GetListOfNames(name, contains)
 			local currentDeaccentedName = string.lower(PVP:DeaccentString(strippedName))
 
 			if lowerName == name then
-				table.insert(lowercaseMatch, k)
+				insert(lowercaseMatch, k)
 			elseif currentDeaccentedName == deaccentName then
-				table.insert(deaccentedMatch, k)
+				insert(deaccentedMatch, k)
 			elseif zo_strmatch(currentDeaccentedName, deaccentName) then
 				local accentBias = zo_strlen(string.lower(strippedName)) - zo_strlen(currentDeaccentedName)
 
@@ -97,7 +101,7 @@ local function GetListOfNames(name, contains)
 				end
 
 
-				table.insert(looseMatch, k)
+				insert(looseMatch, k)
 			end
 		end
 
@@ -298,21 +302,21 @@ function PVP:Who(name, contains)
 
 				if first == 1 then
 					if endsFullWord then
-						table.insert(startFullWord, currentName)
+						insert(startFullWord, currentName)
 					else
-						table.insert(startPartWord, currentName)
+						insert(startPartWord, currentName)
 					end
 				elseif startsFullWord and endsFullWord then
-					table.insert(midFullWord, currentName)
+					insert(midFullWord, currentName)
 				else
-					table.insert(remainder, currentName)
+					insert(remainder, currentName)
 				end
 			end
 
-			if #startFullWord > 1 then table.sort(startFullWord) end
-			if #midFullWord > 1 then table.sort(midFullWord) end
-			if #startPartWord > 1 then table.sort(startPartWord) end
-			if #remainder > 1 then table.sort(remainder) end
+			if #startFullWord > 1 then sort(startFullWord) end
+			if #midFullWord > 1 then sort(midFullWord) end
+			if #startPartWord > 1 then sort(startPartWord) end
+			if #remainder > 1 then sort(remainder) end
 
 			local looseMatchOutput = {}
 
@@ -458,7 +462,7 @@ local function IsKOSAccInDB(unitAccName)
 
 	local foundPlayerNames = {}
 	for k, v in pairs(PVP.SV.playersDB) do
-		if v.unitAccName == unitAccName then table.insert(foundPlayerNames, k) end
+		if v.unitAccName == unitAccName then insert(foundPlayerNames, k) end
 	end
 	if #foundPlayerNames > 0 then
 		if #foundPlayerNames == 1 then return foundPlayerNames[1] end
@@ -498,7 +502,7 @@ local function CheckNameWithoutSuffixes(rawName)
 	local foundNames = {}
 	for k, _ in pairs(playersDB) do
 		if PVP:DeaccentString(maleName) == PVP:DeaccentString(k) or PVP:DeaccentString(femaleName) == PVP:DeaccentString(k) then
-			table.insert(foundNames, k)
+			insert(foundNames, k)
 		end
 	end
 
@@ -652,13 +656,13 @@ function PVP:AddKOS(playerName, isSlashCommand)
 				end
 			end
 		end
-		table.insert(self.SV.KOSList,
+		insert(self.SV.KOSList,
 			{ unitName = rawName, unitAccName = playerDbRecord.unitAccName, unitId = unitId })
 		PVP.CHAT:Printf("Added to KOS: %s%s!", self:GetFormattedName(rawName), playerDbRecord.unitAccName)
 	else
 		PVP.CHAT:Printf("Removed from KOS: %s%s!", self:GetFormattedName(self.SV.KOSList[isInKOS].unitName),
 			self.SV.KOSList[isInKOS].unitAccName)
-		table.remove(self.SV.KOSList, isInKOS)
+		remove(self.SV.KOSList, isInKOS)
 	end
 	self:PopulateKOSBuffer()
 end
@@ -694,7 +698,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 			if self.SV.KOSList[i].unitAccName == playerDbRecord.unitAccName then
 				PVP.CHAT:Printf("Removed from KOS: %s%s!", self:GetFormattedName(self.SV.KOSList[i].unitName),
 					self.SV.KOSList[i].unitAccName)
-				table.remove(self.SV.KOSList, i)
+				remove(self.SV.KOSList, i)
 				break
 			end
 		end
@@ -1079,12 +1083,12 @@ function PVP:PopulateKOSBuffer()
 			if isActive then
 				if ally then
 					-- PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName))..self:GetFormattedAccountNameLink(accName, "FFFFFF").." ACTIVE")
-					table.insert(activeStringsArray,
+					insert(activeStringsArray,
 						self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(accName, "FFFFFF") .. " ACTIVE")
 				else
 					-- PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName))..self:GetFormattedAccountNameLink(accName, "BB4040").." ACTIVE")
-					table.insert(activeStringsArray,
+					insert(activeStringsArray,
 						self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:GetFormattedAccountNameLink(accName, "BB4040") .. " ACTIVE")
 				end

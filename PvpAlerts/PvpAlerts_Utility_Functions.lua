@@ -38,6 +38,10 @@ local PVP_ID_RETAIN_TIME = PVP:GetGlobal('PVP_ID_RETAIN_TIME')
 local PVP_ID_RETAIN_TIME_EFFECT = PVP:GetGlobal('PVP_ID_RETAIN_TIME_EFFECT')
 
 local sqrt = zo_sqrt
+--local sort = table.sort
+local insert = table.insert
+--local remove = table.remove
+local concat = table.concat
 
 local databaseIntegrityCheck = {}
 
@@ -207,7 +211,7 @@ end
 
 function PVP:Colorize(text, color)
 	local combineTable = { "|c", color, tostring(text), "|r" }
-	return table.concat(combineTable)
+	return concat(combineTable)
 end
 
 function PVP:HtmlToColor(html, isDark, isBright)
@@ -655,8 +659,8 @@ function PVP:FindUTFIndice(name)
 			substring = zo_strsub(substring, 2, zo_strlen(substring))
 			after = zo_strlen(PVP:DeaccentString(substring))
 			if after - before == 0 then
-				table.insert(indice, (i - count))
-				table.insert(indiceAccented, i)
+				insert(indice, (i - count))
+				insert(indiceAccented, i)
 				count = count + 1
 				skip = true
 			end
