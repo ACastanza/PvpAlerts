@@ -2770,16 +2770,17 @@ local function FindAlliancePlayerInNames(playerName, unitAlliance)
 	local statusIcon = ""
 	if #PVP.namesToDisplay ~= 0 then
 		for i = 1, #PVP.namesToDisplay do
-			if PVP.namesToDisplay[i].unitName == playerName then
-				if PVP.namesToDisplay[i].isResurrect then
+			local name = PVP.namesToDisplay[i]
+			if name.unitName == playerName then
+				if name.isResurrect then
 					statusIcon = PVP:GetResurrectIcon()
 					isResurrect = true
-				elseif self.namesToDisplay[i].isDead then
+				elseif name.isDead then
 					statusIcon = PVP:GetDeathIcon()
 					isDead = true
-				elseif PVP.namesToDisplay[i].isTarget then
+				elseif name.isTarget then
 					statusIcon = PVP:GetFightIcon(nil, nil, unitAlliance)
-				elseif PVP.namesToDisplay[i].isAttacker then
+				elseif name.isAttacker then
 					statusIcon = PVP:GetAttackerIcon()
 				end
 				break
