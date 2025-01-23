@@ -2766,11 +2766,12 @@ function PVP:FullReset()
 end
 
 local function FindAlliancePlayerInNames(playerName, unitAlliance)
+	local namesToDisplay = PVP.namesToDisplay
 	local isResurrect, isDead
 	local statusIcon = ""
-	if #PVP.namesToDisplay ~= 0 then
-		for i = 1, #PVP.namesToDisplay do
-			local name = PVP.namesToDisplay[i]
+	if #namesToDisplay ~= 0 then
+		for i = 1, #namesToDisplay do
+			local name = namesToDisplay[i]
 			if name.unitName == playerName then
 				if name.isResurrect then
 					statusIcon = PVP:GetResurrectIcon()
