@@ -3,6 +3,9 @@ local sort = table.sort
 local insert = table.insert
 local remove = table.remove
 --local concat = table.concat
+--local upper = string.upper
+local lower = string.lower
+--local format = string.format
 
 function PVP_Who_Mouseover()
 	local name
@@ -24,18 +27,18 @@ end
 local function GetKOSIndex(accName)
 	for k, v in ipairs(PVP.SV.KOSList) do
 		local dbAccName = contains and PVP:DeaccentString(v.unitAccName) or v.unitAccName
-		if string.lower(dbAccName) == accName then return k end
+		if lower(dbAccName) == accName then return k end
 	end
 	return 0
 end
 
 local function WhoIsAccInDB(accName, contains)
-	accName = string.lower(accName)
+	accName = lower(accName)
 	local accKOSIndex = GetKOSIndex(accName)
 	local playerNamesForAcc = {}
 	for k, v in pairs(PVP.SV.playersDB) do
 		local dbAccName = contains and PVP:DeaccentString(v.unitAccName) or v.unitAccName
-		if string.lower(dbAccName) == accName then insert(playerNamesForAcc, k) end
+		if lower(dbAccName) == accName then insert(playerNamesForAcc, k) end
 	end
 
 	if #playerNamesForAcc ~= 0 then
@@ -60,26 +63,26 @@ local function GetListOfNames(name, contains)
 
 
 	if contains and #rawPlayerNames == 0 then
-		local deaccentName = string.lower(PVP:DeaccentString(name))
+		local deaccentName = lower(PVP:DeaccentString(name))
 
-		name = string.lower(name)
+		name = lower(name)
 
 		for k, v in pairs(PVP.SV.playersDB) do
 			local strippedName = zo_strformat(SI_UNIT_NAME, k)
-			local lowerName = string.lower(strippedName)
-			local currentDeaccentedName = string.lower(PVP:DeaccentString(strippedName))
+			local lowerName = lower(strippedName)
+			local currentDeaccentedName = lower(PVP:DeaccentString(strippedName))
 
 			if lowerName == name then
 				insert(lowercaseMatch, k)
 			elseif currentDeaccentedName == deaccentName then
 				insert(deaccentedMatch, k)
 			elseif zo_strmatch(currentDeaccentedName, deaccentName) then
-				local accentBias = zo_strlen(string.lower(strippedName)) - zo_strlen(currentDeaccentedName)
+				local accentBias = zo_strlen(lower(strippedName)) - zo_strlen(currentDeaccentedName)
 
 				if accentBias > 0 then
 					local startChar, endChar = zo_strfind(currentDeaccentedName, deaccentName)
 
-					local indice = PVP:FindUTFIndice(string.lower(strippedName))
+					local indice = PVP:FindUTFIndice(lower(strippedName))
 
 
 					local newStartChar = startChar
@@ -720,16 +723,12 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 	self:PopulateReticleOverNamesBuffer()
 end
 
-function PVP:IsKOSOrFriend(playerName, cachedPlayerDbUpdates)
-	local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
-	if not playerDbRecord then return false end
-	local unitAccName = playerDbRecord.unitAccName
-	-- if GetRawUnitName(GetGroupLeaderUnitTag())==playerName then return "groupleader" end
+function PVP:IsKOSOrFriend(playerName, unitAccName)
 	if PVP:GetValidName(GetRawUnitName(GetGroupLeaderUnitTag())) == playerName then return "groupleader" end
 	if IsPlayerInGroup(playerName) then return "group" end
-	if self:IsAccNameInKOS(unitAccName) then return "KOS" end
+	if unitAccName and self:IsAccNameInKOS(unitAccName) then return "KOS" end
 	if self.SV.showFriends and IsFriend(playerName) then return "friend" end
-	if self:FindAccInCOOL(playerName, unitAccName) then return "cool" end
+	if unitAccName and self:FindAccInCOOL(playerName, unitAccName) then return "cool" end
 	if self.SV.showGuildMates and IsGuildMate(playerName) then return "guild" end
 
 	return false

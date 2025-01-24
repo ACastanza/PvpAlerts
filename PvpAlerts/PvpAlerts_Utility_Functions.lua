@@ -42,6 +42,10 @@ local sqrt = zo_sqrt
 local insert = table.insert
 --local remove = table.remove
 local concat = table.concat
+--local upper = string.upper
+--local lower = string.lower
+--local format = string.format
+
 
 local databaseIntegrityCheck = {}
 
