@@ -753,12 +753,13 @@ end
 function PVP:FindKOSPlayer(index)
 	local currentTime = GetFrameTimeMilliseconds()
 	local unitId = 0
+	local kosPlayer = self.SV.KOSList[index]
 	if next(self.idToName) ~= nil then
 		for k, v in pairs(self.idToName) do
 			local playerDbRecord = self.SV.playersDB[v]
-			if self.playerDbRecord and playerDbRecord.unitAccName == self.SV.KOSList[index].unitAccName then
-				local hasPlayerNote = (self.SV.playerNotes[self.SV.KOSList[index].unitAccName] ~= nil)
-				if v ~= self.SV.KOSList[index].unitName then self.SV.KOSList[index].unitName = v end
+			if self.playerDbRecord and playerDbRecord.unitAccName == kosPlayer.unitAccName then
+				local hasPlayerNote = (self.SV.playerNotes[kosPlayer.unitAccName] ~= nil)
+				if v ~= kosPlayer.unitName then kosPlayer.unitName = v end
 				if hasPlayerNote or not IsPlayerInGroup(v) then unitId = k end
 				break
 			end
@@ -768,19 +769,19 @@ function PVP:FindKOSPlayer(index)
 	if unitId == 0 and next(self.playerNames) ~= nil then
 		for k, _ in pairs(self.playerNames) do
 			local playerDbRecord = self.SV.playersDB[k]
-			if playerDbRecord and playerDbRecord.unitAccName == self.SV.KOSList[index].unitAccName then
-				local hasPlayerNote = (self.SV.playerNotes[self.SV.KOSList[index].unitAccName] ~= nil)
-				if k ~= self.SV.KOSList[index].unitName then self.SV.KOSList[index].unitName = k end
+			if playerDbRecord and playerDbRecord.unitAccName == kosPlayer.unitAccName then
+				local hasPlayerNote = (self.SV.playerNotes[kosPlayer.unitAccName] ~= nil)
+				if k ~= kosPlayer.unitName then kosPlayer.unitName = k end
 				if hasPlayerNote or not IsPlayerInGroup(k) then unitId = 1234567890 end
 				break
 			end
 		end
 	end
 
-	local isInNames = self.playerNames[self.SV.KOSList[index].unitName]
+	local isInNames = self.playerNames[kosPlayer.unitName]
 
-	if self.SV.KOSList[index].unitId == 0 and unitId ~= 0 and self.SV.playKOSSound and (isInNames or self.playerAlliance[unitId]) then
-		if (isInNames and self.SV.playersDB[self.SV.KOSList[index].unitName].unitAlliance == self.allianceOfPlayer) or self.playerAlliance[unitId] == self.allianceOfPlayer or (IsActiveWorldBattleground() and PVP.bgNames and PVP.bgNames[self.SV.KOSList[index].unitName] and PVP.bgNames[self.SV.KOSList[index].unitName] == GetUnitBattlegroundTeam('player')) then
+	if kosPlayer.unitId == 0 and unitId ~= 0 and self.SV.playKOSSound and (isInNames or self.playerAlliance[unitId]) then
+		if (isInNames and self.SV.playersDB[kosPlayer.unitName].unitAlliance == self.allianceOfPlayer) or self.playerAlliance[unitId] == self.allianceOfPlayer or (IsActiveWorldBattleground() and PVP.bgNames and PVP.bgNames[self.SV.KOSList[index].unitName] and PVP.bgNames[self.SV.KOSList[index].unitName] == GetUnitBattlegroundTeam('player')) then
 			-- d('KOS failed here')
 			if PVP.SV.KOSmode == 2 then
 				if currentTime - self.kosSoundDelay > 2000 then
@@ -797,7 +798,7 @@ function PVP:FindKOSPlayer(index)
 			self.kosSoundDelay = currentTime
 		end
 	end
-	self.SV.KOSList[index].unitId = unitId
+	kosPlayer.unitId = unitId
 	return unitId
 end
 
