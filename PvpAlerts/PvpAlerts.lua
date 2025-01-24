@@ -1323,9 +1323,238 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 	end
 end
 
+
+function PVP:ProcessKillingBlows(result, targetUnitId, targetName, abilityId)
+	local KILLING_BLOW_ACTION_RESULTS = {
+		[ACTION_RESULT_KILLING_BLOW] = true,
+		[ACTION_RESULT_DIED_XP]	  = true,
+	}
+	if KILLING_BLOW_ACTION_RESULTS[result] and ((targetUnitId and targetUnitId ~= 0 and self.totalPlayers[targetUnitId]) or (targetName and targetName ~= "" or targetName == self.playerName)) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
+		local targetNameFromId = targetUnitId and PVP.idToName[targetUnitId] or targetName
+		if targetNameFromId then
+			local validTargetName = PVP:GetValidName(targetNameFromId)
+			if not validTargetName then return end
+			killingBlows[validTargetName] = abilityId
+			zo_callLater(function() killingBlows[validTargetName] = nil end, 5000)
+		end
+	end
+end
+
+function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
+	local KILLING_BLOW_ACTION_RESULTS = {
+		[ACTION_RESULT_KILLING_BLOW] = true,
+		[ACTION_RESULT_DIED_XP]	  = true,
+	}
+	if KILLING_BLOW_ACTION_RESULTS[result] and PVP.totalPlayers[targetUnitId] then
+		if PVP.idToName[targetUnitId] then
+			PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = PVP.idToName[targetUnitId] }
+		else
+			PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = "" }
+		end
+
+		local deadName = PVP.idToName[targetUnitId] or targetName
+
+		if deadName and #PVP.namesToDisplay > 0 then
+			for i = 1, #PVP.namesToDisplay do
+				if PVP.namesToDisplay[i].unitName == deadName and not PVP.namesToDisplay[i].isDead then
+					PVP.namesToDisplay[i].isDead = true
+					PVP.namesToDisplay[i].currentTime = currentTime
+					PVP:PopulateReticleOverNamesBuffer()
+					break
+				end
+			end
+		end
+
+		PVP.totalPlayers[targetUnitId] = nil
+		PVP.playerSpec[PVP.idToName[targetUnitId]] = nil
+		PVP.miscAbilities[PVP.idToName[targetUnitId]] = nil
+		PVP.idToName[targetUnitId] = nil
+		PVP.playerAlliance[targetUnitId] = nil
+	end
+end
+
+function PVP:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId, abilityId, currentTime)
+	local DEAD_ACTION_RESULTS = {
+		[ACTION_RESULT_KILLING_BLOW]  = true,
+		[ACTION_RESULT_TARGET_DEAD]   = true,
+		[ACTION_RESULT_DIED]		  = true,
+		[ACTION_RESULT_DIED_XP]	   = true,
+		[ACTION_RESULT_REINCARNATING] = true,
+		[ACTION_RESULT_RESURRECT]	 = true,
+		[ACTION_RESULT_CASTER_DEAD]   = true,
+	}
+	if sourceName == "" and targetName == "" and (not self.npcExclude[targetUnitId]) and (not self.currentlyDead[targetUnitId]) and not DEAD_ACTION_RESULTS[result] then
+		if self:IsNPCAbility(abilityId) then
+			self.npcExclude[targetUnitId] = currentTime
+			if self.totalPlayers[targetUnitId] then
+				self.totalPlayers[targetUnitId] = nil
+				self.playerSpec[self.idToName[targetUnitId]] = nil
+				self.miscAbilities[self.idToName[targetUnitId]] = nil
+				self.idToName[targetUnitId] = nil
+				self.playerAlliance[targetUnitId] = nil
+			end
+		else
+			self.totalPlayers[targetUnitId] = currentTime
+			if self.idToName[targetUnitId] then
+				self:DetectSpec(targetUnitId, abilityId, result, nil, true)
+			end
+		end
+	end
+end
+
+function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetName, currentTime)
+	if sourceName ~= "" and sourceName ~= self.playerName and not (self.currentlyDead[sourceUnitId]) or self.IsCurrentlyDead(sourceName) then
+		if not self:CheckName(sourceName) then
+			self.npcExclude[sourceUnitId] = currentTime
+			if self.totalPlayers[sourceUnitId] then
+				self.totalPlayers[sourceUnitId] = nil
+				self.playerSpec[self.idToName[sourceUnitId]] = nil
+				self.miscAbilities[self.idToName[sourceUnitId]] = nil
+				self.idToName[sourceUnitId] = nil
+				self.playerAlliance[sourceUnitId] = nil
+			end
+		elseif self.SV.playersDB[sourceName] then
+			self.playerAlliance[sourceUnitId] = self.SV.playersDB[sourceName].unitAlliance
+			self.idToName[sourceUnitId] = sourceName
+			self:DetectSpec(sourceUnitId, abilityId, result, sourceName, false)
+			self.totalPlayers[sourceUnitId] = currentTime
+			if targetName == self.playerName then
+				if self.SV.showImportant and self.chargeSnareId[abilityId] then
+					self.miscAbilities[sourceName] = self.miscAbilities[sourceName] or {}
+					self.miscAbilities[sourceName].chargeId = abilityId
+				end
+				self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result)
+			end
+		end
+	end
+end
+
+function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime)
+	if targetName ~= "" and targetName ~= self.playerName and sourceName == self.playerName and not (self.currentlyDead[targetUnitId]) or self.IsCurrentlyDead(targetName) then
+		if not self:CheckName(targetName) then
+			self.npcExclude[targetUnitId] = currentTime
+			if self.totalPlayers[targetUnitId] then
+				self.totalPlayers[targetUnitId] = nil
+				self.playerSpec[self.idToName[targetUnitId]] = nil
+				self.miscAbilities[self.idToName[targetUnitId]] = nil
+				self.idToName[targetUnitId] = nil
+				self.playerAlliance[targetUnitId] = nil
+			end
+		elseif self.SV.playersDB[targetName] then
+			self.playerAlliance[targetUnitId] = self.SV.playersDB[targetName].unitAlliance
+			self.idToName[targetUnitId] = targetName
+			self.totalPlayers[targetUnitId] = currentTime
+			self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result)
+
+			if result == ACTION_RESULT_REFLECTED then
+				self.miscAbilities[targetName] = self.miscAbilities[targetName] or {}
+				if not self.miscAbilities[targetName].reflects then self.miscAbilities[targetName].reflects = {} end
+				self.miscAbilities[targetName].reflects[abilityName] = true
+			end
+		end
+	end
+end
+
+function PVP:ProcessPvpBuffs(result, targetName, abilityId)
+	if self:ShouldShowCampFrame() and targetName == self.playerName then
+		if abilityId == PVP_CONTINUOUS_ATTACK_ID_1 or abilityId == PVP_CONTINUOUS_ATTACK_ID_2 then
+			self:StartAnimation(PVP_ForwardCamp_IconContinuous, 'camp')
+			if self.SV.playBuffsSound then
+				PVP:PlayLoudSound('JUSTICE_NOW_KOS')
+			end
+		elseif abilityId == PVP_AYLEID_WELL_ID then
+			self:StartAnimation(PVP_ForwardCamp_IconAyleid, 'camp')
+			if self.SV.playBuffsSound then
+				PVP:PlayLoudSound('JUSTICE_NOW_KOS')
+			end
+		elseif abilityId == PVP_BLESSING_OF_WAR_ID then
+			self:StartAnimation(PVP_ForwardCamp_IconBlessing, 'camp')
+			if self.SV.playBuffsSound then
+				PVP:PlayLoudSound('JUSTICE_NOW_KOS')
+			end
+		end
+	end
+end
+
+function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if sourceName == self.playerName then return end
+	if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
+		if self.abilityIdIgnoreList[abilityId] then return end
+
+		local CC_IMMUNITY_GRACE_TIME = 1
+		local ccImmune = self:IsPlayerCCImmune(CC_IMMUNITY_GRACE_TIME)
+		if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName] then
+			if self.smallImportantAbilitiesNames[abilityName] then
+				local abilityIcon = GetAbilityIcon(abilityId)
+				local displayHitValue = zo_max(1450, hitValue or 0)
+				self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false, false, displayHitValue)
+				PVP_Main.currentChannel = {
+					abilityId = abilityId,
+					sourceUnitId = sourceUnitId,
+					isHA = false,
+					coolDownStartTime = currentTime
+				}
+			else
+				if currentTime - self.attackSoundDelay > 2000 then
+					PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+				end
+				PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+				zo_callLater(function()
+					if currentTime - self.attackSoundDelay > 2000 then
+						PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+					end
+					PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+				end, 250)
+				self.attackSoundDelay = currentTime
+				local abilityIcon
+
+				if abilityName == "Charge Snare" then
+					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
+				else
+					abilityIcon = GetAbilityIcon(abilityId)
+				end
+				FlashHealthWarningStage(1, 150)
+				PVP_Main.currentChannel = nil
+				self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, true, false)
+			end
+		end
+	end
+end
+
+function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if result == ACTION_RESULT_BEGIN and (isHeavyAttack or isSnipe or self.ambushId[abilityId]) then
+		local abilityIcon = isHeavyAttack and self.heavyAttackId[abilityId] or GetAbilityIcon(abilityId)
+		self:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, false, false, false, hitValue)
+		PVP_Main.currentChannel = {
+			abilityId = abilityId,
+			sourceUnitId = sourceUnitId,
+			isHA = isHeavyAttack,
+			coolDownStartTime = currentTime
+		}
+	end
+end
+
+function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName)
+	if result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Piercing Mark" and not self.piercingDelay then
+		self.piercingDelay = true
+		local iconAbility = GetAbilityIcon(abilityId)
+		PVP_Main.currentChannel = nil
+		self:OnDraw(false, sourceUnitId, iconAbility, sourceName, false, true)
+		zo_callLater(function() self.piercingDelay = false end, 50)
+	end
+end
+
+function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId)
+	if not PVP_Main:IsHidden() and PVP_Main:GetAlpha() > 0 and PVP_Main.currentChannel and PVP_Main.currentChannel.abilityId == abilityId and PVP_Main.currentChannel.sourceUnitId == sourceUnitId and PVP.hitTypes[result] then
+		if not PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:IsPlaying() and not PVP_MainAbilityIconFrameLeftGlow.animData:IsPlaying() then
+			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA, true)
+		end
+	end
+end
+
 function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, abilityActionSlotType, sourceName,
-					  sourceType, targetName, targetType, hitValue, powerType, damageType, combat_log, sourceUnitId,
-					  targetUnitId, abilityId)
+	sourceType, targetName, targetType, hitValue, powerType, damageType, combat_log, sourceUnitId,
+	targetUnitId, abilityId)
 	if not PVP:IsInPVPZone() then return end
 
 	if IsActiveWorldBattleground() then
@@ -1376,7 +1605,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		if shadowSetupIds[abilityId] and result == 2245 then
 			self.shadowTime = hitValue
 		end
-		if shadowReturnIds[abilityId] then
+			if shadowReturnIds[abilityId] then
 			if result == 2245 then
 				if not self.eventCounter then self.eventCounter = 0 end
 				self.eventCounter = self.eventCounter + 1
@@ -1385,260 +1614,34 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 				if not self.eventCounter then self.eventCounter = 1 end
 				self.eventCounter = self.eventCounter - 1
 				if self.eventCounter == 0 then
-					self:ResetShadow()
+				self:ResetShadow()
 				end
 			end
 		end
 	end
-
 
 	local currentTime = GetFrameTimeMilliseconds()
 	local isHeavyAttack = self.SV.showHeavyAttacks and self.heavyAttackId[abilityId]
 	local isSnipe = self.SV.showSnipes and (self.snipeId[abilityId] or self.snipeNames[abilityName])
 
-	local function ProcessKillingBlows()
-		if KILLING_BLOW_ACTION_RESULTS[result] and ((targetUnitId and targetUnitId ~= 0 and self.totalPlayers[targetUnitId]) or (targetName and targetName ~= "" or targetName == self.playerName)) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
-			-- targetUnitId and targetUnitId ~= 0 and (self.totalPlayers[targetUnitId] or targetName == self.playerName
-			local targetNameFromId = targetUnitId and PVP.idToName[targetUnitId] or targetName
-			if targetNameFromId then
-				local validTargetName = PVP:GetValidName(targetNameFromId)
-				if not validTargetName then return end
-				killingBlows[validTargetName] = abilityId
-				zo_callLater(function() killingBlows[validTargetName] = nil end, 5000)
-			end
-		end
+	if KILLING_BLOW_ACTION_RESULTS[result] then
+		self:ProcessKillingBlows(result, targetUnitId, targetName, abilityId)
+		self:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 	end
 
-	local function OnKillingBlow()
-		if KILLING_BLOW_ACTION_RESULTS[result] and PVP.totalPlayers[targetUnitId] then
-			-- local function ClearId(id)
-			-- 	PVP.playerSpec[PVP.idToName[id]]=nil
-			-- 	PVP.miscAbilities[PVP.idToName[id]]=nil
-			-- 	PVP.playerAlliance[id]=nil
-			-- 	PVP.idToName[id]=nil
-			-- 	PVP.totalPlayers[id]=nil
-			-- end
+	self:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId, abilityId, currentTime)
+	self:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetName, currentTime)
+	self:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime)
 
-
-			if PVP.idToName[targetUnitId] then
-				PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = PVP.idToName[targetUnitId] }
-			else
-				PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = "" }
-			end
-
-			local deadName = PVP.idToName[targetUnitId] or targetName
-
-			if deadName and #PVP.namesToDisplay > 0 then
-				for i = 1, #PVP.namesToDisplay do
-					if PVP.namesToDisplay[i].unitName == deadName and not PVP.namesToDisplay[i].isDead then
-						PVP.namesToDisplay[i].isDead = true
-						PVP.namesToDisplay[i].currentTime = currentTime
-						PVP:PopulateReticleOverNamesBuffer()
-						break
-					end
-				end
-			end
-
-			-- d("REMOVED " .. PVP.idToName[targetUnitId])
-			PVP.totalPlayers[targetUnitId] = nil
-			PVP.playerSpec[PVP.idToName[targetUnitId]] = nil
-			PVP.miscAbilities[PVP.idToName[targetUnitId]] = nil
-			PVP.idToName[targetUnitId] = nil
-			PVP.playerAlliance[targetUnitId] = nil
-			-- ClearId(targetUnitId)
-		end
+	if result == ACTION_RESULT_EFFECT_GAINED_DURATION then
+		self:ProcessPvpBuffs(result, targetName, abilityId)
 	end
-
-	local function ProcessAnonymousEvents()
-		if sourceName == "" and targetName == "" and (not self.npcExclude[targetUnitId]) and (not self.currentlyDead[targetUnitId]) and not DEAD_ACTION_RESULTS[result] then
-			if self:IsNPCAbility(abilityId) then
-				self.npcExclude[targetUnitId] = currentTime
-				if self.totalPlayers[targetUnitId] then
-					self.totalPlayers[targetUnitId] = nil
-					self.playerSpec[self.idToName[targetUnitId]] = nil
-					self.miscAbilities[self.idToName[targetUnitId]] = nil
-					self.idToName[targetUnitId] = nil
-					self.playerAlliance[targetUnitId] = nil
-				end
-			else
-				self.totalPlayers[targetUnitId] = currentTime
-				if self.idToName[targetUnitId] then
-					self:DetectSpec(targetUnitId, abilityId, result, nil, true)
-				end
-			end
-		end
-	end
-
-	local function ProcessSources()
-		if sourceName ~= "" and sourceName ~= self.playerName and not (self.currentlyDead[sourceUnitId]) or self.IsCurrentlyDead(sourceName) then
-			if not self:CheckName(sourceName) then
-				self.npcExclude[sourceUnitId] = currentTime
-				if self.totalPlayers[sourceUnitId] then
-					self.totalPlayers[sourceUnitId] = nil
-					self.playerSpec[self.idToName[sourceUnitId]] = nil
-					self.miscAbilities[self.idToName[sourceUnitId]] = nil
-					self.idToName[sourceUnitId] = nil
-					self.playerAlliance[sourceUnitId] = nil
-				end
-			elseif self.SV.playersDB[sourceName] then
-				self.playerAlliance[sourceUnitId] = self.SV.playersDB[sourceName].unitAlliance
-				self.idToName[sourceUnitId] = sourceName
-				self:DetectSpec(sourceUnitId, abilityId, result, sourceName, false)
-				self.totalPlayers[sourceUnitId] = currentTime
-				if targetName == self.playerName then
-					if self.SV.showImportant and self.chargeSnareId[abilityId] then
-						self.miscAbilities[sourceName] = self.miscAbilities[sourceName] or {}
-						self.miscAbilities[sourceName].chargeId = abilityId
-					end
-					self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result)
-				end
-			end
-		end
-	end
-
-	local function ProcessTargets()
-		if targetName ~= "" and targetName ~= self.playerName and sourceName == self.playerName and not (self.currentlyDead[targetUnitId]) or self.IsCurrentlyDead(targetName) then
-			if not self:CheckName(targetName) then
-				self.npcExclude[targetUnitId] = currentTime
-				if self.totalPlayers[targetUnitId] then
-					self.totalPlayers[targetUnitId] = nil
-					self.playerSpec[self.idToName[targetUnitId]] = nil
-					self.miscAbilities[self.idToName[targetUnitId]] = nil
-					self.idToName[targetUnitId] = nil
-					self.playerAlliance[targetUnitId] = nil
-				end
-			elseif self.SV.playersDB[targetName] then
-				self.playerAlliance[targetUnitId] = self.SV.playersDB[targetName].unitAlliance
-				self.idToName[targetUnitId] = targetName
-				self.totalPlayers[targetUnitId] = currentTime
-				self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result)
-
-				if result == ACTION_RESULT_REFLECTED then
-					self.miscAbilities[targetName] = self.miscAbilities[targetName] or {}
-					if not self.miscAbilities[targetName].reflects then self.miscAbilities[targetName].reflects = {} end
-					self.miscAbilities[targetName].reflects[abilityName] = true
-				end
-			end
-		end
-	end
-
-	local function ProcessPvpBuffs()
-		if self:ShouldShowCampFrame() and targetName == self.playerName and result == ACTION_RESULT_EFFECT_GAINED_DURATION then
-			if abilityId == PVP_CONTINUOUS_ATTACK_ID_1 or abilityId == PVP_CONTINUOUS_ATTACK_ID_2 then
-				-- if PVP.keepTickPending then
-				-- PVP:ProcessKeepTicks(PVP.keepTickPending, true)
-				-- PVP.keepTickPending = nil
-				-- end
-
-				self:StartAnimation(PVP_ForwardCamp_IconContinuous, 'camp')
-				if self.SV.playBuffsSound then
-					PVP:PlayLoudSound('JUSTICE_NOW_KOS')
-				end
-			elseif abilityId == PVP_AYLEID_WELL_ID then
-				self:StartAnimation(PVP_ForwardCamp_IconAyleid, 'camp')
-				if self.SV.playBuffsSound then
-					PVP:PlayLoudSound('JUSTICE_NOW_KOS')
-				end
-			elseif abilityId == PVP_BLESSING_OF_WAR_ID then
-				self:StartAnimation(PVP_ForwardCamp_IconBlessing, 'camp')
-				if self.SV.playBuffsSound then
-					PVP:PlayLoudSound('JUSTICE_NOW_KOS')
-				end
-			end
-		end
-	end
-
-	local function ProcessImportantAttacks()
-		if sourceName == self.playerName then return end
-		if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
-			if self.abilityIdIgnoreList[abilityId] then return end
-
-			local CC_IMMUNITY_GRACE_TIME = 1
-			local ccImmune = self:IsPlayerCCImmune(CC_IMMUNITY_GRACE_TIME)
-			if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName] then
-				if self.smallImportantAbilitiesNames[abilityName] then
-					local abilityIcon = GetAbilityIcon(abilityId)
-					-- PVP_Main.currentChannel = nil
-					-- self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false)
-					local displayHitValue = zo_max(1450, hitValue or 0)
-					self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false, false, displayHitValue)
-					PVP_Main.currentChannel = {
-						abilityId = abilityId,
-						sourceUnitId = sourceUnitId,
-						isHA = false,
-						coolDownStartTime = currentTime
-					}
-				else
-					if currentTime - self.attackSoundDelay > 2000 then
-						PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-					end
-					PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-					zo_callLater(function()
-						if currentTime - self.attackSoundDelay > 2000 then
-							PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-						end
-						PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-					end, 250)
-					self.attackSoundDelay = currentTime
-					local abilityIcon
-
-					if abilityName == "Charge Snare" then
-						abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
-					else
-						abilityIcon = GetAbilityIcon(abilityId)
-					end
-					FlashHealthWarningStage(1, 150)
-					PVP_Main.currentChannel = nil
-					self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, true, false)
-				end
-			end
-		end
-	end
-
-	local function ProcessChanneledAttacks()
-		if result == ACTION_RESULT_BEGIN and (isHeavyAttack or isSnipe or self.ambushId[abilityId]) then
-			local abilityIcon = isHeavyAttack and self.heavyAttackId[abilityId] or GetAbilityIcon(abilityId)
-			self:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, false, false, false, hitValue)
-			PVP_Main.currentChannel = {
-				abilityId = abilityId,
-				sourceUnitId = sourceUnitId,
-				isHA = isHeavyAttack,
-				coolDownStartTime = currentTime
-			}
-		end
-	end
-
-	local function ProcessPiercingMarks()
-		if result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Piercing Mark" and not self.piercingDelay then
-			self.piercingDelay = true
-			local iconAbility = GetAbilityIcon(abilityId)
-			PVP_Main.currentChannel = nil
-			self:OnDraw(false, sourceUnitId, iconAbility, sourceName, false, true)
-			zo_callLater(function() self.piercingDelay = false end, 50)
-		end
-	end
-
-	local function ProcessChanneledHits()
-		if not PVP_Main:IsHidden() and PVP_Main:GetAlpha() > 0 and PVP_Main.currentChannel and PVP_Main.currentChannel.abilityId == abilityId and PVP_Main.currentChannel.sourceUnitId == sourceUnitId and PVP.hitTypes[result] then
-			if not PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:IsPlaying() and not PVP_MainAbilityIconFrameLeftGlow.animData:IsPlaying() then
-				PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA, true)
-				-- PVP_Main.currentChannel = nil
-			end
-		end
-	end
-
-	ProcessKillingBlows()
-	OnKillingBlow()
-	ProcessAnonymousEvents()
-	ProcessSources()
-	ProcessTargets()
-	ProcessPvpBuffs()
 
 	if self.SV.showAttacks and targetName == self.playerName and sourceName ~= self.playerName then
-		ProcessImportantAttacks()
-		ProcessChanneledAttacks()
-		ProcessPiercingMarks()
-		ProcessChanneledHits()
+		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName)
+		self:ProcessChanneledHits(result, abilityId, sourceUnitId)
 	end
 end
 
@@ -1690,9 +1693,7 @@ function PVP:GetImportantIcon(unitCharName, unitAccName, unitAlliance)
 end
 
 local function GetFormattedAbilityName(abilityId, color)
-	local abilityName
-	local textAbilityIcon
-	local formattedAbility
+	local abilityName, textAbilityIcon, formattedAbility
 	if abilityId then
 		abilityName = PVP:Colorize(GetAbilityName(abilityId), color)
 		local abilityIcon = GetAbilityIcon(abilityId)
