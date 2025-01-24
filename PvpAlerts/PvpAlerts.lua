@@ -1693,7 +1693,8 @@ function PVP:GetImportantIcon(unitCharName, unitAccName, unitAlliance)
 end
 
 local function GetFormattedAbilityName(abilityId, color)
-	local abilityName, textAbilityIcon, formattedAbility
+	local abilityName, textAbilityIcon
+	local formattedAbility = ""
 	if abilityId then
 		abilityName = PVP:Colorize(GetAbilityName(abilityId), color)
 		local abilityIcon = GetAbilityIcon(abilityId)
@@ -1704,14 +1705,12 @@ local function GetFormattedAbilityName(abilityId, color)
 			textAbilityIcon = zo_iconFormat(abilityIcon, 18, 18)
 		end
 		formattedAbility = textAbilityIcon .. abilityName
-	else
-		formattedAbility = nil
 	end
 	return formattedAbility
 end
 
-function PVP:GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerDisplayName,
-							  victimPlayerAlliance, victimPlayerAllianceRank, allianceColor)
+function PVP:GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerAllianceRank,
+							  allianceColor, killFeedNameType)
 	local text
 	local messageColor = "40BB40"
 	local bracketsToken = self:Colorize("***", messageColor)
@@ -1754,11 +1753,9 @@ function PVP:GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlay
 	return text, isKOS, bracketsToken
 end
 
-function PVP:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, victimPlayerAlliance,
-								 victimPlayerAllianceRank,
+function PVP:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerAllianceRank,
 								 allianceColor, abilityId, sourceValidName, sourceName, killerPlayerAlliance,
-								 killerPlayerAllianceRank,
-								 sourceAllianceColor, killLocation)
+								 killerPlayerAllianceRank, sourceAllianceColor, killLocation, killFeedNameType)
 	local text
 	local endToken
 	local messageColor = "AF7500"
@@ -1827,9 +1824,8 @@ function PVP:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDispla
 	return text
 end
 
-function PVP:GetKbStringPlayer(abilityId, sourceValidName, killerPlayerDisplayName, killerPlayerAlliance,
-								 killerPlayerAllianceRank,
-								 sourceAllianceColor)
+function PVP:GetKbStringPlayer(abilityId, sourceValidName, killerPlayerDisplayName, killerPlayerAlliance, killerPlayerAllianceRank, 
+								 sourceAllianceColor, killFeedNameType)
 	local text
 	local messageColor = "BB4040"
 	local bracketsToken = self:Colorize("***", messageColor)
@@ -1907,7 +1903,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 
 		if kbOnPlayer then
 			outputText, endingBrackets = self:GetKbStringPlayer(abilityId, sourceValidName,
-				killerPlayerDisplayName, killerPlayerAlliance, killerPlayerRank, sourceAllianceColor)
+				killerPlayerDisplayName, killerPlayerAlliance, killerPlayerRank, sourceAllianceColor, killFeedNameType)
 		else
 			if self.SV.showKillFeedFrame then self:KillFeedRatio_Add(victimPlayerAlliance, killLocation) end
 			local targetPlayer = self:GetFormattedClassNameLink(targetValidName, allianceColor, nil, nil, nil, nil, nil,
@@ -1915,7 +1911,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 			if isOwnKillingBlow then
 				local isKOS
 				outputText, isKOS, endingBrackets = self:GetOwnKbString(targetValidName, targetPlayer, abilityId,
-					victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank, allianceColor)
+					victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank, allianceColor, killFeedNameType)
 				if PVP.SV.playKillingBlowSound then
 					self:PlayLoudSound('DUEL_WON')
 					if isKOS then
@@ -1928,7 +1924,7 @@ function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCh
 				outputText = self:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName,
 					victimPlayerAlliance, victimPlayerRank, allianceColor,
 					abilityId, sourceValidName, sourceName, killerPlayerAlliance, killerPlayerRank, sourceAllianceColor,
-					killLocation)
+					killLocation, killFeedNameType)
 			end
 		end
 
