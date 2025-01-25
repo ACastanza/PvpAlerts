@@ -495,11 +495,6 @@ function PVP:ManageFragments(fragment)
 end
 
 function PVP.EditNoteDialogSetup(dialog, data)
-	GetControl(dialog, "DisplayName"):SetText(data.playerName)
-	GetControl(dialog, "NoteEdit"):SetText(data.noteString)
-end
-
-function PVP.EditNoteDialogSetup(dialog, data)
     GetControl(dialog, "DisplayName"):SetText(data.playerName)
     GetControl(dialog, "NoteEdit"):SetText(data.noteString)
 
