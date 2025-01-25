@@ -692,82 +692,6 @@ function PVP:SetupCurrentObjective(zoneText, keepId, foundObjectives, keepIdToUp
 	PVP:UpdateCaptureMeter(keepId, nil, 'zone')
 end
 
-local function FindNeighboursKeepId(zoneName, closestKeepId)
-	local neighborsKeepIdToType, numberDistricts = {}, 0
-	local foundKeepId
-	if not closestKeepId then
-		for i = 1, 200 do
-			if neighbours and IsInImperialCity() then
-				local keepType = GetKeepType(i)
-				if keepType == KEEPTYPE_IMPERIAL_CITY_DISTRICT then
-					neighborsKeepIdToType[i] = keepType
-					numberDistricts = numberDistricts + 1
-					if numberDistricts == 6 then
-						foundKeepId = 666
-						break
-					end
-				end
-			else
-				if GetKeepName(i) == zoneName or (isBruma and i == 151) then
-					foundKeepId = i
-					break
-				end
-			end
-		end
-
-		if not foundKeepId then return false end
-	else
-		foundKeepId = closestKeepId
-	end
-
-	if not neighbours then return foundKeepId end
-
-	if foundKeepId == 666 then
-		return neighborsKeepIdToType
-	end
-
-	local keepType = GetKeepType(foundKeepId)
-
-	if (keepType ~= KEEPTYPE_KEEP and keepType ~= KEEPTYPE_RESOURCE) then
-		neighborsKeepIdToType[foundKeepId] = keepType
-		return neighborsKeepIdToType
-	end
-
-	if keepType == KEEPTYPE_KEEP then
-		neighborsKeepIdToType[foundKeepId] = KEEPTYPE_KEEP
-		for i = 1, 3 do
-			local resourceId = GetResourceKeepForKeep(foundKeepId, i)
-			neighborsKeepIdToType[resourceId] = i
-		end
-	elseif keepType == KEEPTYPE_RESOURCE then
-		local foundResourceKeepId
-		for i = 1, 200 do
-			local resourceKeepType = GetKeepType(i)
-
-			if resourceKeepType == KEEPTYPE_KEEP then
-				for j = 1, 3 do
-					if GetResourceKeepForKeep(i, j) == foundKeepId then
-						foundResourceKeepId = i
-						break
-					end
-				end
-			end
-			if foundResourceKeepId then break end
-		end
-
-		if not foundResourceKeepId then return false end
-
-		neighborsKeepIdToType[foundResourceKeepId] = KEEPTYPE_KEEP
-
-		for i = 1, 3 do
-			local resourceId = GetResourceKeepForKeep(foundResourceKeepId, i)
-			neighborsKeepIdToType[resourceId] = i
-		end
-	end
-
-	return neighborsKeepIdToType
-end
-
 function PVP:FindAVAIds(zoneName, forceCurrentId)
 	if not zoneName or zoneName == "" then return false end
 
@@ -776,6 +700,81 @@ function PVP:FindAVAIds(zoneName, forceCurrentId)
 	local zoneId, subzoneId = GetCurrentSubZonePOIIndices()
 	local isBruma = zoneId == 37 and subzoneId == 106
 
+	local function FindNeighboursKeepId(zoneName, closestKeepId)
+		local neighborsKeepIdToType, numberDistricts = {}, 0
+		local foundKeepId
+		if not closestKeepId then
+			for i = 1, 200 do
+				if neighbours and IsInImperialCity() then
+					local keepType = GetKeepType(i)
+					if keepType == KEEPTYPE_IMPERIAL_CITY_DISTRICT then
+						neighborsKeepIdToType[i] = keepType
+						numberDistricts = numberDistricts + 1
+						if numberDistricts == 6 then
+							foundKeepId = 666
+							break
+						end
+					end
+				else
+					if GetKeepName(i) == zoneName or (isBruma and i == 151) then
+						foundKeepId = i
+						break
+					end
+				end
+			end
+
+			if not foundKeepId then return false end
+		else
+			foundKeepId = closestKeepId
+		end
+
+		if not neighbours then return foundKeepId end
+
+		if foundKeepId == 666 then
+			return neighborsKeepIdToType
+		end
+
+		local keepType = GetKeepType(foundKeepId)
+
+		if (keepType ~= KEEPTYPE_KEEP and keepType ~= KEEPTYPE_RESOURCE) then
+			neighborsKeepIdToType[foundKeepId] = keepType
+			return neighborsKeepIdToType
+		end
+
+		if keepType == KEEPTYPE_KEEP then
+			neighborsKeepIdToType[foundKeepId] = KEEPTYPE_KEEP
+			for i = 1, 3 do
+				local resourceId = GetResourceKeepForKeep(foundKeepId, i)
+				neighborsKeepIdToType[resourceId] = i
+			end
+		elseif keepType == KEEPTYPE_RESOURCE then
+			local foundResourceKeepId
+			for i = 1, 200 do
+				local resourceKeepType = GetKeepType(i)
+
+				if resourceKeepType == KEEPTYPE_KEEP then
+					for j = 1, 3 do
+						if GetResourceKeepForKeep(i, j) == foundKeepId then
+							foundResourceKeepId = i
+							break
+						end
+					end
+				end
+				if foundResourceKeepId then break end
+			end
+
+			if not foundResourceKeepId then return false end
+
+			neighborsKeepIdToType[foundResourceKeepId] = KEEPTYPE_KEEP
+
+			for i = 1, 3 do
+				local resourceId = GetResourceKeepForKeep(foundResourceKeepId, i)
+				neighborsKeepIdToType[resourceId] = i
+			end
+		end
+
+		return neighborsKeepIdToType
+	end
 
 
 	local neighborsKeepIdToType, targetKeepId, closestKeepId
