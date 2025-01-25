@@ -2673,7 +2673,7 @@ function PVP:OnOff()
 
 	SLASH_COMMANDS["/who"] = function(name) PVP.Who(self, name, true) end
 	SLASH_COMMANDS["/pvpnote"] = function(noteString) PVP.managePlayerNote(self, noteString) end
-	SLASH_COMMANDS["/mmr"] = function(update) PVP.ListMMR(self, flag) end
+	--SLASH_COMMANDS["/mmr"] = function(update) PVP.ListMMR(self, flag) end
 	if self.SV.enabled and PVP:IsInPVPZone() then
 		if not self.addonEnabled then
 			self.addonEnabled = true
@@ -2710,8 +2710,8 @@ function PVP:OnOff()
 			CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", OnWorldMapChangedCallback)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED, function(...) self:updateCampaignEmperor(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_COMBAT_STATE, function(...) self:OnCombatState(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED, function(...) self:OnBattlegroundStateChanged(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED, function(...) self:OnBattlegroundMMRLossReduced(...) end)
+			-- EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED, function(...) self:OnBattlegroundStateChanged(...) end)
+			-- EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED, function(...) self:OnBattlegroundMMRLossReduced(...) end)
 		end
 		self:InitEnabledAddon()
 	else
@@ -2735,8 +2735,8 @@ function PVP:OnOff()
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_LEADER_UPDATE)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_PLAYER_COMBAT_STATE)
-			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED)
-			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED)
+			-- EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED)
+			-- EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED)
 			EVENT_MANAGER:UnregisterForUpdate(self.name)
 			DEATH_FRAGMENT:UnregisterCallback("StateChange", OnDeathFragmentStateChange)
 			PVP_SCOREBOARD_FRAGMENT:UnregisterCallback("StateChange", ScoreboardFragmentCallback)
