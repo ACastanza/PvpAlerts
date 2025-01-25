@@ -4530,51 +4530,50 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 	-- PVP.afterPoiProc3d = GetGameTimeMilliseconds()
 end
 
-function PVP:GetMouseOverControl()
-	local function ControlHasMouseOverAdjusted(control, heading, angleZ, cameraX, cameraY, cameraZ, scaleAdjustment)
-		local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
-		local controlSize = GetControlSizeForAngles(control, multiplier)
-		local controlX, controlZ, controlY = ProcessDynamicControlPosition(control)
+local function ControlHasMouseOverAdjusted(control, heading, angleZ, cameraX, cameraY, cameraZ, scaleAdjustment)
+	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
+	local controlSize = GetControlSizeForAngles(control, multiplier)
+	local controlX, controlZ, controlY = ProcessDynamicControlPosition(control)
 
 
-		local distance = PVP:GetCoordsDistance2D(cameraX, cameraY, controlX, controlY)
+	local distance = PVP:GetCoordsDistance2D(cameraX, cameraY, controlX, controlY)
 
-		local deltaX = controlX - cameraX
-		local deltaY = controlY - cameraY
-		local deltaZ = controlZ - cameraZ
+	local deltaX = controlX - cameraX
+	local deltaY = controlY - cameraY
+	local deltaZ = controlZ - cameraZ
 
-		local controlHeading = asin(abs(deltaX) / distance)
+	local controlHeading = asin(abs(deltaX) / distance)
 
-		if deltaY > 0 then
-			controlHeading = pi - controlHeading
-		end
-
-		if deltaX > 0 then
-			controlHeading = -controlHeading
-		end
-
-		local controlGraceAngle = atan(0.5 * controlSize / distance)
-
-		if control.params.type ~= 'COMPASS' and heading > controlHeading - controlGraceAngle and heading < controlHeading + controlGraceAngle then
-			local lowerBoundZ, higherBoundZ
-
-			lowerBoundZ = atan2((deltaZ - 0.5 * controlSize), distance)
-			higherBoundZ = atan2((deltaZ + 0.5 * controlSize), distance)
-			local distanceCheck = control.params.distance and PVP.currentTooltip and PVP.currentTooltip.params.distance and
-				control.params.distance < PVP.currentTooltip.params.distance
-
-
-			local validTooltipStatus = not PVP.currentTooltip or PVP.currentTooltip == control or distanceCheck
-
-			if (-angleZ > lowerBoundZ and -angleZ < higherBoundZ) and validTooltipStatus then
-				return true
-			else
-				return false
-			end
-		end
+	if deltaY > 0 then
+		controlHeading = pi - controlHeading
 	end
 
+	if deltaX > 0 then
+		controlHeading = -controlHeading
+	end
 
+	local controlGraceAngle = atan(0.5 * controlSize / distance)
+
+	if control.params.type ~= 'COMPASS' and heading > controlHeading - controlGraceAngle and heading < controlHeading + controlGraceAngle then
+		local lowerBoundZ, higherBoundZ
+
+		lowerBoundZ = atan2((deltaZ - 0.5 * controlSize), distance)
+		higherBoundZ = atan2((deltaZ + 0.5 * controlSize), distance)
+		local distanceCheck = control.params.distance and PVP.currentTooltip and PVP.currentTooltip.params.distance and
+			control.params.distance < PVP.currentTooltip.params.distance
+
+
+		local validTooltipStatus = not PVP.currentTooltip or PVP.currentTooltip == control or distanceCheck
+
+		if (-angleZ > lowerBoundZ and -angleZ < higherBoundZ) and validTooltipStatus then
+			return true
+		else
+			return false
+		end
+	end
+end
+
+function PVP:GetMouseOverControl()
 	local heading = GetAdjustedPlayerCameraHeading()
 	local oldOrigin, _, angleZ, cameraX, cameraY, cameraZ = GetCameraInfo()
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
