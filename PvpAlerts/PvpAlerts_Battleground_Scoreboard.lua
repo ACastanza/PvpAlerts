@@ -539,11 +539,11 @@ function ScoreboardList:FilterScrollList()
 	ZO_ClearNumericallyIndexedTable(scrollData)
 
 	local bgState = GetCurrentBattlegroundState()
+	local isPregame = bgState == BATTLEGROUND_STATE_PREGAME
 	local isPostGame = bgState == BATTLEGROUND_STATE_POSTGAME
 	local postGameMVP
 
 	local function GetTeamScoreInfo(alliance, score, position, isPlayer)
-		isPregame = bgState == BATTLEGROUND_STATE_PREGAME
 
 		local control = PVP_ScoreboardScore:GetNamedChild('Team' .. tostring(position))
 		local formattedScore, formattedName
