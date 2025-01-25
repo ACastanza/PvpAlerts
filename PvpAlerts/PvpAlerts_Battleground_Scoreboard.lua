@@ -70,24 +70,24 @@ function PVP:ScoreboardToggle(isKeyDown)
 	end
 end
 
+local function MedalsPoolCustomFactory(control)
+	control:SetHidden(false)
+end
+
+local function PlayerMedalsPoolCustomFactory(control)
+	local score = control:GetNamedChild('Score')
+	local icon = control:GetNamedChild('Icon')
+	icon:SetDimensions(75, 75)
+	control:SetHidden(false)
+end
+
+local function MedalsPoolCustomReset(control)
+	control:SetHidden(true)
+end
+
 function ScoreboardList:New(control)
 	local list = ZO_SortFilterList.New(self, control)
 	list.frame = control:GetParent()
-
-	local function MedalsPoolCustomFactory(control)
-		control:SetHidden(false)
-	end
-
-	local function PlayerMedalsPoolCustomFactory(control)
-		local score = control:GetNamedChild('Score')
-		local icon = control:GetNamedChild('Icon')
-		icon:SetDimensions(75, 75)
-		control:SetHidden(false)
-	end
-
-	local function MedalsPoolCustomReset(control)
-		control:SetHidden(true)
-	end
 
 	list.medalsPool = ZO_ControlPool:New("PVP_Scoreboard_Tooltip_Medal_Template")
 	list.playerMedalsPool = ZO_ControlPool:New("PVP_Medals_OnScreen_Template")
@@ -935,40 +935,40 @@ function ScoreboardList:SetupPlayerRow(control, data)
 
 	if numMedals > 0 then
 		for i = 1, numMedals do
-			local name, medalTexture, description, points = GetMedalInfo(data.medals[i].medalId)
+			local medalName, medalTexture, medalDescription, medalPoints = GetMedalInfo(data.medals[i].medalId)
 			medalsText = medalsText .. zo_iconFormat(medalTexture, 20, 20)
 			if isPlayer then
-				local control = self.playerMedalsPool:AcquireObject()
-				control:GetNamedChild('Icon'):SetTexture(medalTexture)
-				control:GetNamedChild('Name'):SetText('')
 				local numActive = self.playerMedalsPool:GetActiveObjectCount()
+				local medalControl = self.playerMedalsPool:AcquireObject()
+				medalControl:GetNamedChild('Icon'):SetTexture(medalTexture)
+				medalControl:GetNamedChild('Name'):SetText('')
 
-				control:ClearAnchors()
+				medalControl:ClearAnchors()
 
 				if numActive == 1 then
-					control:SetAnchor(LEFT, PVP_ScoreboardPlayerMedals, LEFT, 0, 0)
-					control:SetParent(PVP_ScoreboardPlayerMedals)
+					medalControl:SetAnchor(LEFT, PVP_ScoreboardPlayerMedals, LEFT, 0, 0)
+					medalControl:SetParent(PVP_ScoreboardPlayerMedals)
 				elseif numActive == 11 then
-					control:SetAnchor(LEFT, PVP_ScoreboardPlayerMedalsBottom, LEFT, 0, 0)
-					control:SetParent(PVP_ScoreboardPlayerMedalsBottom)
+					medalControl:SetAnchor(LEFT, PVP_ScoreboardPlayerMedalsBottom, LEFT, 0, 0)
+					medalControl:SetParent(PVP_ScoreboardPlayerMedalsBottom)
 				else
 					if numActive > 11 then
-						control:SetParent(PVP_ScoreboardPlayerMedalsBottom)
+						medalControl:SetParent(PVP_ScoreboardPlayerMedalsBottom)
 					else
-						control:SetParent(PVP_ScoreboardPlayerMedals)
+						medalControl:SetParent(PVP_ScoreboardPlayerMedals)
 					end
-					control:SetAnchor(LEFT, self.lastActiveMedal, RIGHT, 25, 0)
+					medalControl:SetAnchor(LEFT, self.lastActiveMedal, RIGHT, 25, 0)
 				end
 				-- control:GetNamedChild('Icon'):SetDesaturation(1)
 				if data.medals[i].medalCount > 1 then
-					control:GetNamedChild('Score'):SetText("x" .. data.medals[i].medalCount)
+					medalControl:GetNamedChild('Score'):SetText("x" .. data.medals[i].medalCount)
 				else
-					control:GetNamedChild('Score'):SetText("")
+					medalControl:GetNamedChild('Score'):SetText("")
 				end
 
-				control.medalId = data.medals[i].medalId
-				control.medalCount = data.medals[i].medalCount
-				self.lastActiveMedal = control
+				medalControl.medalId = data.medals[i].medalId
+				medalControl.medalCount = data.medals[i].medalCount
+				self.lastActiveMedal = medalControl
 			end
 		end
 	end

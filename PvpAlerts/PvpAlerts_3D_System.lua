@@ -18,6 +18,8 @@ local GetKeepKeysByIndex = GetKeepKeysByIndex
 local GetKeepPinInfo = GetKeepPinInfo
 local GetPlayerLocationName = GetPlayerLocationName
 
+local strgsub= zo_strgsub
+
 local ceil = zo_ceil
 local asin = math.asin
 local acos = zo_cos
@@ -522,7 +524,7 @@ local function IsInBorderKeepArea(renew)
 
 		for k, v in pairs(PVP.borderKeepsIds) do
 			local keepName = GetKeepName(k)
-			if keepName == locationName or zo_strgsub(locationName, ' Gate', '') == zo_strgsub(keepName, 'Gate', '') then
+			if keepName == locationName or strgsub(locationName, ' Gate', '') == strgsub(keepName, 'Gate', '') then
 				return
 					k
 			end --hax because typo in English client for dc border keep names
@@ -1127,10 +1129,10 @@ local function GetControlTexture(control, data, iconType)
 
 	if iconType == "POI" then
 		if type == 'KILL_LOCATION' then
-			texture = zo_strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+			texture = strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'SCROLL' then
 			texture = data.isBgFlag and ZO_MapPin.PIN_DATA[data.pinType].texture or
-				zo_strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+				strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
 		elseif type == 'GROUP' then
 			if control.params.isGroupLeader then
 				texture = 'esoui/art/icons/mapkey/mapkey_groupleader.dds'
@@ -1213,7 +1215,7 @@ local function GetControlColor(control, data, iconType)
 			colorR, colorG, colorB, alpha = 1, 0, 0, 1
 		end
 	elseif type == 'PING' then
-		local groupNumber = zo_strgsub(data.pingTag, 'group', '')
+		local groupNumber = strgsub(data.pingTag, 'group', '')
 		if not control.params.pingColor then control.params.pingColor = PVP.pingsColors[tonumber(groupNumber)] end
 		colorR, colorG, colorB, alpha = control.params.pingColor[1] / 255, control.params.pingColor[2] / 255, control.params.pingColor[3] / 255, 1
 	elseif type == 'IC_BASE' then
@@ -1840,7 +1842,7 @@ local function IsScrollInKeepId(keepId)
 		local _, _, scrollState = GetObjectiveInfo(k, v, 1)
 		if isArtifactKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and keepId == k then
 			local mappin = GetObjectivePinInfo(k, v, 1)
-			return true, zo_strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
+			return true, strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
 		end
 		if isKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then
 			local keepArtifactStorage = PVP.AVAids[keepId][3]
@@ -1850,7 +1852,7 @@ local function IsScrollInKeepId(keepId)
 			local _, keepCapturePointX, keepCapturePointY = GetObjectivePinInfo(keepId, keepArtifactNodeId, 1)
 			local mappin, scrollX, scrollY = GetObjectivePinInfo(k, v, 1)
 			if keepCapturePointX == scrollX and keepCapturePointY == scrollY then
-				return true, zo_strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
+				return true, strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
 			end
 		end
 	end
@@ -3349,7 +3351,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		end
 		local realCameraDistance
 
-		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo(isActivated)
+		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo()
 
 		if not realCameraDistance then return end
 
@@ -3590,7 +3592,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 
 	PVP_World3DCrown:SetHidden(true)
 
-	SetControlInitialSize(control, isCtfBase)
+	SetControlInitialSize(control)
 
 	local isFlag, flagTexture = IsFlagInObjectiveId(control.params.objectiveId)
 

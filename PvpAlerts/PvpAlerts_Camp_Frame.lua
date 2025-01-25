@@ -44,23 +44,23 @@ function PVP:RespawnAtNearbyCamp()
 	if campIndex then RespawnAtForwardCamp(campIndex) end
 end
 
-function PVP:ManageCampFrame()
-	local function ColorBuffIcon(control, currentRatio)
-		if currentRatio == 5 then
-			control:SetColor(0.2, 0.2, 0.2)
-			control:SetAlpha(0.75)
-		elseif currentRatio >= 0.90 then
-			control:SetColor(1, 0, 0)
-			control:SetAlpha(1)
-		elseif currentRatio >= 0.75 then
-			control:SetColor(0.9, 0.9, 0)
-			control:SetAlpha(1)
-		else
-			control:SetColor(1, 1, 1)
-			control:SetAlpha(1)
-		end
+local function ColorBuffIcon(control, currentRatio)
+	if currentRatio == 5 then
+		control:SetColor(0.2, 0.2, 0.2)
+		control:SetAlpha(0.75)
+	elseif currentRatio >= 0.90 then
+		control:SetColor(1, 0, 0)
+		control:SetAlpha(1)
+	elseif currentRatio >= 0.75 then
+		control:SetColor(0.9, 0.9, 0)
+		control:SetAlpha(1)
+	else
+		control:SetColor(1, 1, 1)
+		control:SetAlpha(1)
 	end
+end
 
+function PVP:ManageCampFrame()
 	if self.SV.unlocked then
 		PVP_ForwardCamp_Icon:SetColor(1, 1, 1)
 		PVP_ForwardCamp_IconContinuous:SetColor(1, 1, 1)

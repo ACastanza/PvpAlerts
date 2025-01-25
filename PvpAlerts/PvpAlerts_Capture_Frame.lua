@@ -42,6 +42,76 @@ function PVP:GetObjectiveIcon(keepType, alliance, keepId)
 	return icon
 end
 
+local function GetFlagIcon(objectiveType, meter, alliance)
+	local flagType, currentKeepFlag
+
+	if objectiveType == KEEPTYPE_RESOURCE then
+		flagType = FLAGTYPE_OTHER
+		currentKeepFlag = FLAGTYPE_OTHER
+	elseif objectiveType == KEEPTYPE_KEEP then
+		if meter == 1 then
+			flagType = FLAGTYPE_NAVE
+			currentKeepFlag = FLAGTYPE_APSE
+		elseif meter == 2 then
+			flagType = FLAGTYPE_NAVE
+		end
+	elseif objectiveType == KEEPTYPE_TOWN then
+		if meter == 1 then
+			flagType = FLAGTYPE_OTHER
+			currentKeepFlag = FLAGTYPE_OTHER
+		elseif meter == 2 then
+			flagType = FLAGTYPE_NAVE
+		elseif meter == 3 then
+			flagType = FLAGTYPE_NAVE
+			currentKeepFlag = FLAGTYPE_APSE
+		end
+	end
+
+	return PVP:GetObjectiveIcon(flagType, alliance), currentKeepFlag
+end
+
+local function UpdateValues(meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
+	local flag
+
+	if objectiveType == KEEPTYPE_KEEP then
+		if meter == 1 then
+			flag = GetControl(normalControl, 'Flag2')
+			currentKeepFlag = FLAGTYPE_APSE
+		elseif meter == 2 then
+			flag = GetControl(normalControl, 'Flag1')
+			-- currentKeepFlag = FLAGTYPE_NAVE
+		end
+	end
+
+	if not flag then flag = GetControl(normalControl, 'Flag' .. tostring(meter)) end
+
+	local icon = GetControl(flag, 'Icon')
+	local iconUA = GetControl(flag, 'IconUnderAttack')
+	local control = GetControl(flag, 'Meter')
+	local bar = GetControl(control, 'Bar')
+	local label = GetControl(control, 'Label')
+
+
+	iconUA:SetHidden(not (percentage < 100 and underAttack))
+
+	local flagIcon, currentKeepFlag = GetFlagIcon(objectiveType, meter, alliance)
+	icon:SetTexture(flagIcon)
+	if currentKeepFlag == FLAGTYPE_APSE then
+		icon:SetTextureCoords(1, 0, 0, 1)
+	else
+		icon:SetTextureCoords(0, 1, 0, 1)
+	end
+
+	if currentKeepFlag == FLAGTYPE_OTHER then
+		icon:SetDimensions(26, 22)
+	else
+		icon:SetDimensions(26, 26)
+	end
+	bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
+	bar:SetCenterColor(barColorR, barColorG, barColorB)
+	label:SetText(tostring(percentage) .. '%')
+end
+
 function PVP:UpdateNormalCaptureMeter(keepId)
 	local numberObjectives = #PVP.currentObjectiveStatus
 
@@ -106,75 +176,6 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 		objectiveType = KEEPTYPE_RESOURCE
 	end
 
-
-	local function UpdateValues(meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
-		local flag, currentKeepFlag
-
-		if objectiveType == KEEPTYPE_KEEP then
-			if meter == 1 then
-				flag = GetControl(normalControl, 'Flag2')
-				currentKeepFlag = FLAGTYPE_APSE
-			elseif meter == 2 then
-				flag = GetControl(normalControl, 'Flag1')
-				-- currentKeepFlag = FLAGTYPE_NAVE
-			end
-		end
-
-		if not flag then flag = GetControl(normalControl, 'Flag' .. tostring(meter)) end
-
-		local icon = GetControl(flag, 'Icon')
-		local iconUA = GetControl(flag, 'IconUnderAttack')
-		local control = GetControl(flag, 'Meter')
-		local bar = GetControl(control, 'Bar')
-		local label = GetControl(control, 'Label')
-
-		local function GetIcon(objectiveType, meter, alliance)
-			local flagType
-
-			if objectiveType == KEEPTYPE_RESOURCE then
-				flagType = FLAGTYPE_OTHER
-				currentKeepFlag = FLAGTYPE_OTHER
-			elseif objectiveType == KEEPTYPE_KEEP then
-				if meter == 1 then
-					flagType = FLAGTYPE_NAVE
-					currentKeepFlag = FLAGTYPE_APSE
-				elseif meter == 2 then
-					flagType = FLAGTYPE_NAVE
-				end
-			elseif objectiveType == KEEPTYPE_TOWN then
-				if meter == 1 then
-					flagType = FLAGTYPE_OTHER
-					currentKeepFlag = FLAGTYPE_OTHER
-				elseif meter == 2 then
-					flagType = FLAGTYPE_NAVE
-				elseif meter == 3 then
-					flagType = FLAGTYPE_NAVE
-					currentKeepFlag = FLAGTYPE_APSE
-				end
-			end
-
-			return PVP:GetObjectiveIcon(flagType, alliance)
-		end
-
-		iconUA:SetHidden(not (percentage < 100 and underAttack))
-
-		icon:SetTexture(GetIcon(objectiveType, meter, alliance))
-		if currentKeepFlag == FLAGTYPE_APSE then
-			icon:SetTextureCoords(1, 0, 0, 1)
-		else
-			icon:SetTextureCoords(0, 1, 0, 1)
-		end
-
-		if currentKeepFlag == FLAGTYPE_OTHER then
-			icon:SetDimensions(26, 22)
-		else
-			icon:SetDimensions(26, 26)
-		end
-		bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
-		bar:SetCenterColor(barColorR, barColorG, barColorB)
-		label:SetText(tostring(percentage) .. '%')
-	end
-
 	local wasCurrent
 
 	for i = 1, numberObjectives do
@@ -198,6 +199,38 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 	end
 	-- if PVP.SV.showNeighbourCaptureFrame and not wasCurrent then PVP:SetCurrentObjectiveBackdrop() end
 	if not wasCurrent then PVP:SetCurrentObjectiveBackdrop() end
+end
+
+local function FlagsProcessing(control, id)
+	for i = 1, 3 do
+		local flag = GetControl(control, 'Flag' .. tostring(i))
+		if i == 1 then
+			flag:SetHidden(false)
+			local flagIcon = GetControl(flag, 'Icon')
+			flagIcon:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, GetKeepAlliance(id, 1)))
+			-- flagIcon:SetHidden(true)
+		else
+			flag:SetHidden(true)
+		end
+	end
+end
+
+local function UpdateKeepCaptureValues(mainControl, percentage, barColorR, barColorG, barColorB, alliance, meter, keepId)
+	-- local flag = GetControl(mainControl, 'Icon')
+
+	local control = GetControl(mainControl, 'Meter')
+	local bar = GetControl(control, 'Bar')
+	local label = GetControl(control, 'Label')
+
+	local iconUA = GetControl(mainControl, 'IconUnderAttack')
+	iconUA:SetHidden(not (percentage < 100 and GetKeepUnderAttack(keepId, 1)))
+	-- if meter>2 then
+	-- flag:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, alliance))
+	-- end
+
+	bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
+	bar:SetCenterColor(barColorR, barColorG, barColorB)
+	label:SetText(tostring(percentage) .. '%')
 end
 
 function PVP:UpdateKeepCaptureMeter()
@@ -250,20 +283,6 @@ function PVP:UpdateKeepCaptureMeter()
 	mineIcon:SetDimensions(30, 30)
 	mineIconUA:SetDimensions(40, 40)
 	PVP:ReanchorControl(mineIcon, -3, -3)
-
-	local function FlagsProcessing(control, id)
-		for i = 1, 3 do
-			local flag = GetControl(control, 'Flag' .. tostring(i))
-			if i == 1 then
-				flag:SetHidden(false)
-				local flagIcon = GetControl(flag, 'Icon')
-				flagIcon:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, GetKeepAlliance(id, 1)))
-				-- flagIcon:SetHidden(true)
-			else
-				flag:SetHidden(true)
-			end
-		end
-	end
 
 	if numberObjectives > 0 then
 		HUD_SCENE:AddFragment(PVP_CAPTURE_SCENE_FRAGMENT)
@@ -331,25 +350,6 @@ function PVP:UpdateKeepCaptureMeter()
 	farmIconUA:SetHidden(not GetKeepUnderAttack(farmId, 1))
 	mineIconUA:SetHidden(not GetKeepUnderAttack(mineId, 1))
 
-	local function UpdateValues(mainControl, percentage, barColorR, barColorG, barColorB, alliance, meter, keepId)
-		-- local flag = GetControl(mainControl, 'Icon')
-
-		local control = GetControl(mainControl, 'Meter')
-		local bar = GetControl(control, 'Bar')
-		local label = GetControl(control, 'Label')
-
-		local iconUA = GetControl(mainControl, 'IconUnderAttack')
-		iconUA:SetHidden(not (percentage < 100 and GetKeepUnderAttack(keepId, 1)))
-		-- if meter>2 then
-		-- flag:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, alliance))
-		-- end
-
-		bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
-		bar:SetCenterColor(barColorR, barColorG, barColorB)
-		label:SetText(tostring(percentage) .. '%')
-	end
-
-
 	local keepFlagToggle, mainControl, wasCurrent, backdropPoint, playerLeft, playerRight, textWidth, labelLeft, controlType, subControlType, worldControlType, objectiveId
 	for i = 1, numberObjectives do
 		if PVP.currentObjectiveStatus[i].meter ~= 10 then
@@ -406,12 +406,47 @@ function PVP:UpdateKeepCaptureMeter()
 
 			-- self:Set3DMarker(objectiveId, subControlType, isCurrent, worldControlType)
 
-			UpdateValues(mainControl, PVP.currentObjectiveStatus[i].percentage, barColorR, barColorG, barColorB,
+			UpdateKeepCaptureValues(mainControl, PVP.currentObjectiveStatus[i].percentage, barColorR, barColorG, barColorB,
 				PVP.currentObjectiveStatus[i].alliance, PVP.currentObjectiveStatus[i].meter,
 				PVP.currentObjectiveStatus[i].keepId)
 		end
 	end
 	if not wasCurrent then PVP:SetCurrentObjectiveBackdrop() end
+end
+
+local function UpdateDistrictCaptureValues(meter, percentage, barColorR, barColorG, barColorB, keepId, isCurrent)
+	local district = GetControl(icControl, 'District' .. tostring(meter))
+	if isCurrent then
+		PVP:SetCurrentObjectiveBackdrop(district, KEEPTYPE_IMPERIAL_CITY_DISTRICT)
+	end
+	local headerIcon = GetControl(district, 'Icon')
+	local headerIconUA = GetControl(district, 'IconUnderAttack')
+	local headerLabel = GetControl(district, 'Label')
+
+
+
+	local flag = GetControl(district, 'Flag1')
+	local icon = GetControl(flag, 'Icon')
+	-- local iconUA = GetControl(flag, 'IconUnderAttack')
+
+	-- iconUA:SetHidden(not (percentage<100 and GetKeepUnderAttack(keepId, 1)))
+
+	headerLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)))
+	headerLabel:SetColor(PVP:HtmlToColor(PVP:AllianceToColor(GetKeepAlliance(keepId, 1))))
+
+	headerIcon:SetTexture(PVP:GetObjectiveIcon(GetKeepType(keepId), GetKeepAlliance(keepId, 1)))
+
+	icon:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, GetKeepAlliance(keepId, 1)))
+
+	headerIconUA:SetHidden(not GetKeepUnderAttack(keepId, 1))
+
+	local control = GetControl(flag, 'Meter')
+	local bar = GetControl(control, 'Bar')
+	local label = GetControl(control, 'Label')
+
+	bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
+	bar:SetCenterColor(barColorR, barColorG, barColorB)
+	label:SetText(tostring(percentage) .. '%')
 end
 
 function PVP:UpdateDistrictCaptureMeter()
@@ -436,41 +471,6 @@ function PVP:UpdateDistrictCaptureMeter()
 		PVP_Capture:SetHidden(true)
 	end
 
-	local function UpdateValues(meter, percentage, barColorR, barColorG, barColorB, keepId, isCurrent)
-		local district = GetControl(icControl, 'District' .. tostring(meter))
-		if isCurrent then
-			PVP:SetCurrentObjectiveBackdrop(district, KEEPTYPE_IMPERIAL_CITY_DISTRICT)
-		end
-		local headerIcon = GetControl(district, 'Icon')
-		local headerIconUA = GetControl(district, 'IconUnderAttack')
-		local headerLabel = GetControl(district, 'Label')
-
-
-
-		local flag = GetControl(district, 'Flag1')
-		local icon = GetControl(flag, 'Icon')
-		-- local iconUA = GetControl(flag, 'IconUnderAttack')
-
-		-- iconUA:SetHidden(not (percentage<100 and GetKeepUnderAttack(keepId, 1)))
-
-		headerLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)))
-		headerLabel:SetColor(PVP:HtmlToColor(PVP:AllianceToColor(GetKeepAlliance(keepId, 1))))
-
-		headerIcon:SetTexture(PVP:GetObjectiveIcon(GetKeepType(keepId), GetKeepAlliance(keepId, 1)))
-
-		icon:SetTexture(PVP:GetObjectiveIcon(FLAGTYPE_OTHER, GetKeepAlliance(keepId, 1)))
-
-		headerIconUA:SetHidden(not GetKeepUnderAttack(keepId, 1))
-
-		local control = GetControl(flag, 'Meter')
-		local bar = GetControl(control, 'Bar')
-		local label = GetControl(control, 'Label')
-
-		bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
-		bar:SetCenterColor(barColorR, barColorG, barColorB)
-		label:SetText(tostring(percentage) .. '%')
-	end
-
 	local wasCurrent
 	for i = 1, numberObjectives do
 		if PVP.currentObjectiveStatus[i].meter ~= 10 then
@@ -485,7 +485,7 @@ function PVP:UpdateDistrictCaptureMeter()
 				wasCurrent = true
 			end
 
-			UpdateValues(PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
+			UpdateDistrictCaptureValues(PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
 				barColorG, barColorB, PVP.currentObjectiveStatus[i].keepId, PVP.currentObjectiveStatus[i].isCurrent)
 		end
 	end
@@ -692,6 +692,82 @@ function PVP:SetupCurrentObjective(zoneText, keepId, foundObjectives, keepIdToUp
 	PVP:UpdateCaptureMeter(keepId, nil, 'zone')
 end
 
+local function FindNeighboursKeepId(zoneName, closestKeepId)
+	local neighborsKeepIdToType, numberDistricts = {}, 0
+	local foundKeepId
+	if not closestKeepId then
+		for i = 1, 200 do
+			if neighbours and IsInImperialCity() then
+				local keepType = GetKeepType(i)
+				if keepType == KEEPTYPE_IMPERIAL_CITY_DISTRICT then
+					neighborsKeepIdToType[i] = keepType
+					numberDistricts = numberDistricts + 1
+					if numberDistricts == 6 then
+						foundKeepId = 666
+						break
+					end
+				end
+			else
+				if GetKeepName(i) == zoneName or (isBruma and i == 151) then
+					foundKeepId = i
+					break
+				end
+			end
+		end
+
+		if not foundKeepId then return false end
+	else
+		foundKeepId = closestKeepId
+	end
+
+	if not neighbours then return foundKeepId end
+
+	if foundKeepId == 666 then
+		return neighborsKeepIdToType
+	end
+
+	local keepType = GetKeepType(foundKeepId)
+
+	if (keepType ~= KEEPTYPE_KEEP and keepType ~= KEEPTYPE_RESOURCE) then
+		neighborsKeepIdToType[foundKeepId] = keepType
+		return neighborsKeepIdToType
+	end
+
+	if keepType == KEEPTYPE_KEEP then
+		neighborsKeepIdToType[foundKeepId] = KEEPTYPE_KEEP
+		for i = 1, 3 do
+			local resourceId = GetResourceKeepForKeep(foundKeepId, i)
+			neighborsKeepIdToType[resourceId] = i
+		end
+	elseif keepType == KEEPTYPE_RESOURCE then
+		local foundResourceKeepId
+		for i = 1, 200 do
+			local resourceKeepType = GetKeepType(i)
+
+			if resourceKeepType == KEEPTYPE_KEEP then
+				for j = 1, 3 do
+					if GetResourceKeepForKeep(i, j) == foundKeepId then
+						foundResourceKeepId = i
+						break
+					end
+				end
+			end
+			if foundResourceKeepId then break end
+		end
+
+		if not foundResourceKeepId then return false end
+
+		neighborsKeepIdToType[foundResourceKeepId] = KEEPTYPE_KEEP
+
+		for i = 1, 3 do
+			local resourceId = GetResourceKeepForKeep(foundResourceKeepId, i)
+			neighborsKeepIdToType[resourceId] = i
+		end
+	end
+
+	return neighborsKeepIdToType
+end
+
 function PVP:FindAVAIds(zoneName, forceCurrentId)
 	if not zoneName or zoneName == "" then return false end
 
@@ -700,81 +776,6 @@ function PVP:FindAVAIds(zoneName, forceCurrentId)
 	local zoneId, subzoneId = GetCurrentSubZonePOIIndices()
 	local isBruma = zoneId == 37 and subzoneId == 106
 
-	local function FindNeighboursKeepId(zoneName, closestKeepId)
-		local neighborsKeepIdToType, numberDistricts = {}, 0
-		local foundKeepId
-		if not closestKeepId then
-			for i = 1, 200 do
-				if neighbours and IsInImperialCity() then
-					local keepType = GetKeepType(i)
-					if keepType == KEEPTYPE_IMPERIAL_CITY_DISTRICT then
-						neighborsKeepIdToType[i] = keepType
-						numberDistricts = numberDistricts + 1
-						if numberDistricts == 6 then
-							foundKeepId = 666
-							break
-						end
-					end
-				else
-					if GetKeepName(i) == zoneName or (isBruma and i == 151) then
-						foundKeepId = i
-						break
-					end
-				end
-			end
-
-			if not foundKeepId then return false end
-		else
-			foundKeepId = closestKeepId
-		end
-
-		if not neighbours then return foundKeepId end
-
-		if foundKeepId == 666 then
-			return neighborsKeepIdToType
-		end
-
-		local keepType = GetKeepType(foundKeepId)
-
-		if (keepType ~= KEEPTYPE_KEEP and keepType ~= KEEPTYPE_RESOURCE) then
-			neighborsKeepIdToType[foundKeepId] = keepType
-			return neighborsKeepIdToType
-		end
-
-		if keepType == KEEPTYPE_KEEP then
-			neighborsKeepIdToType[foundKeepId] = KEEPTYPE_KEEP
-			for i = 1, 3 do
-				local resourceId = GetResourceKeepForKeep(foundKeepId, i)
-				neighborsKeepIdToType[resourceId] = i
-			end
-		elseif keepType == KEEPTYPE_RESOURCE then
-			local foundResourceKeepId
-			for i = 1, 200 do
-				local resourceKeepType = GetKeepType(i)
-
-				if resourceKeepType == KEEPTYPE_KEEP then
-					for j = 1, 3 do
-						if GetResourceKeepForKeep(i, j) == foundKeepId then
-							foundResourceKeepId = i
-							break
-						end
-					end
-				end
-				if foundResourceKeepId then break end
-			end
-
-			if not foundResourceKeepId then return false end
-
-			neighborsKeepIdToType[foundResourceKeepId] = KEEPTYPE_KEEP
-
-			for i = 1, 3 do
-				local resourceId = GetResourceKeepForKeep(foundResourceKeepId, i)
-				neighborsKeepIdToType[resourceId] = i
-			end
-		end
-
-		return neighborsKeepIdToType
-	end
 
 
 	local neighborsKeepIdToType, targetKeepId, closestKeepId
