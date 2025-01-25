@@ -3102,7 +3102,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		control.params.lastUpdate = GetFrameTimeMilliseconds()
 		if control:GetHandler() == nil then
-			control:SetHandler("OnUpdate", function() ControlOnUpdate(control) end)
+			control:SetHandler("OnUpdate", ControlOnUpdate(control))
 		end
 	else
 		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
