@@ -845,16 +845,19 @@ end
 
 function PVP:FindPotentialAllies()
 	local currentTime = GetFrameTimeMilliseconds()
+	local showPlayerNotes = self.SV.showPlayerNotes
+	local showFriends = self.SV.showFriends
+	local showGuildMates = self.SV.showGuildMates
 
 	for k, v in pairs(self.idToName) do
 		local playerDbRecord = self.SV.playersDB[v]
 		if playerDbRecord then
 			local isCool = self:FindAccInCOOL(v, playerDbRecord.unitAccName)
 			local isPlayerGrouped = IsPlayerInGroup(v)
-			local playerNote = self.SV.showPlayerNotes and self.SV.playerNotes[playerDbRecord.unitAccName] or nil
-			local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
-			local isFriend = self.SV.showFriends and IsFriend(v) or false
-			local isGuildmate = self.SV.showGuildMates and IsGuildMate(v) or false
+			local playerNote = showPlayerNotes and self.SV.playerNotes[playerDbRecord.unitAccName] or nil
+			local hasPlayerNote = showPlayerNotes and (playerNote ~= nil) and (playerNote ~= "")
+			local isFriend = showFriends and IsFriend(v) or false
+			local isGuildmate = showGuildMates and IsGuildMate(v) or false
 			if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 				self.potentialAllies[v] = {
 					currentTime = currentTime,
@@ -877,17 +880,17 @@ function PVP:FindPotentialAllies()
 			if playerDbRecord then
 				local isPlayerGrouped = IsPlayerInGroup(k)
 				local isCool = self:FindAccInCOOL(k, playerDbRecord.unitAccName)
-				local playerNote = self.SV.showPlayerNotes and self.SV.playerNotes[playerDbRecord.unitAccName] or nil
-				local hasPlayerNote = (playerNote ~= nil) and (playerNote ~= "")
+				local playerNote = showPlayerNotes and self.SV.playerNotes[playerDbRecord.unitAccName] or nil
+				local hasPlayerNote = showPlayerNotes and (playerNote ~= nil) and (playerNote ~= "")
 				local isFriend = showFriends and IsFriend(v) or false
-				local isGuildmate = self.SV.showGuildMates and IsGuildMate(v) or false
+				local isGuildmate = showGuildMates and IsGuildMate(v) or false
 				if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
 					self.potentialAllies[k] = {
 						currentTime = currentTime,
 						unitAccName = playerDbRecord.unitAccName,
 						unitAlliance = playerDbRecord.unitAlliance,
 						isPlayerGrouped = isPlayerGrouped,
-						isFriend = self.SV.showFriends and isFriend,
+						isFriend =  isFriend,
 						isGuildmate = isGuildmate,
 						isCool = isCool,
 						playerNote = hasPlayerNote and playerNote or nil,
