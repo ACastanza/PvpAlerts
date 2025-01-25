@@ -86,6 +86,29 @@ function PVP:OnBattlegroundMMRLossReduced(eventCode, reductionReason)
     end
 end
 
+-- Helper function to display MMR stats for a character
+local function DisplayMMR(character, isCurrentPlayer)
+    PVP.CHAT:Printf("Character: %s", PVP:GetFormattedName(character))
+    for activityType, activityName in pairs(activities) do
+        local currentMMR = isCurrentPlayer and (GetPlayerMMRByType(activityType) or 0) or
+            (PVP.SV.mmr[character][activityType] or 0)
+        local lastMMR = PVP.SV.mmr[character][activityType] or 0
+        local mmrDecay = lastMMR - currentMMR
+
+        if isCurrentPlayer and mmrDecay ~= 0 then
+            PVP.CHAT:Printf("Your MMR for %s has decayed by %s (from %s to %s).", activityName, mmrDecay, lastMMR,
+                currentMMR)
+        else
+            PVP.CHAT:Printf("%s MMR: %s", activityName, currentMMR)
+        end
+
+        -- Update saved MMR if flag is set
+        if update and isCurrentPlayer then
+            PVP.SV.mmr[character][activityType] = currentMMR
+        end
+    end
+end
+
 function PVP:ListMMR(flag)
     local player = PVP.playerName or GetRawUnitName('player')
     if not PVP.SV.mmr then PVP.SV.mmr = {} end
@@ -93,29 +116,6 @@ function PVP:ListMMR(flag)
 
     local update = flag == "update" or flag == "updateall"
     local showAll = flag == "all" or flag == "updateall"
-
-    -- Helper function to display MMR stats for a character
-    local function DisplayMMR(character, isCurrentPlayer)
-        PVP.CHAT:Printf("Character: %s", PVP:GetFormattedName(character))
-        for activityType, activityName in pairs(activities) do
-            local currentMMR = isCurrentPlayer and (GetPlayerMMRByType(activityType) or 0) or
-                (PVP.SV.mmr[character][activityType] or 0)
-            local lastMMR = PVP.SV.mmr[character][activityType] or 0
-            local mmrDecay = lastMMR - currentMMR
-
-            if isCurrentPlayer and mmrDecay ~= 0 then
-                PVP.CHAT:Printf("Your MMR for %s has decayed by %s (from %s to %s).", activityName, mmrDecay, lastMMR,
-                    currentMMR)
-            else
-                PVP.CHAT:Printf("%s MMR: %s", activityName, currentMMR)
-            end
-
-            -- Update saved MMR if flag is set
-            if update and isCurrentPlayer then
-                PVP.SV.mmr[character][activityType] = currentMMR
-            end
-        end
-    end
 
     -- Display MMR for the current character
     DisplayMMR(player, true)

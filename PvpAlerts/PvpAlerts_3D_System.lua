@@ -1859,39 +1859,39 @@ local function IsScrollInKeepId(keepId)
 	return false
 end
 
-		local function CheckIfLockedAlliance(keepIdA, keepIdB, links)
-			for _, v in ipairs(links) do
-				if (v[1] == keepIdA and v[2] == keepIdB) or (v[1] == keepIdB and v[2] == keepIdA) then
+local function CheckIfLockedAlliance(keepIdA, keepIdB, links)
+	for _, v in ipairs(links) do
+		if (v[1] == keepIdA and v[2] == keepIdB) or (v[1] == keepIdB and v[2] == keepIdA) then
+			return true
+		end
+	end
+end
+
+local function IsAllianceAllowedLink(keepIdA, keepIdB)
+
+	local keepAlliance = GetKeepAlliance(keepIdA, 1)
+
+	if keepAlliance == 1 and not (CheckIfLockedAlliance(keepIdA, keepIdB, dcLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, epLinks)) then return true end
+	if keepAlliance == 2 and not (CheckIfLockedAlliance(keepIdA, keepIdB, adLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, dcLinks)) then return true end
+	if keepAlliance == 3 and not (CheckIfLockedAlliance(keepIdA, keepIdB, adLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, epLinks)) then return true end
+end
+
+local function CanKeepBeTraveledTo(keepId)
+	if not GetKeepHasResourcesForTravel(keepId, 1) then return end
+	local connectedKeeps = connectedKeepsArray[keepId]
+	if connectedKeeps then
+		for _, v in ipairs(connectedKeeps) do
+			local sameAlliance = GetKeepAlliance(v, 1) == GetKeepAlliance(keepId, 1)
+			local isBorderKeep = GetKeepType(v) == KEEPTYPE_BORDER_KEEP
+
+			if sameAlliance then
+				if isBorderKeep or (IsAllianceAllowedLink(keepId, v) and not GetKeepUnderAttack(v, 1) and GetKeepHasResourcesForTravel(v, 1)) then
 					return true
 				end
 			end
 		end
-
-local function IsAllianceAllowedLink(keepIdA, keepIdB)
-
-		local keepAlliance = GetKeepAlliance(keepIdA, 1)
-
-		if keepAlliance == 1 and not (CheckIfLockedAlliance(keepIdA, keepIdB, dcLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, epLinks)) then return true end
-		if keepAlliance == 2 and not (CheckIfLockedAlliance(keepIdA, keepIdB, adLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, dcLinks)) then return true end
-		if keepAlliance == 3 and not (CheckIfLockedAlliance(keepIdA, keepIdB, adLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, epLinks)) then return true end
 	end
-
-	local function CanKeepBeTraveledTo(keepId)
-		if not GetKeepHasResourcesForTravel(keepId, 1) then return end
-		local connectedKeeps = connectedKeepsArray[keepId]
-		if connectedKeeps then
-			for _, v in ipairs(connectedKeeps) do
-				local sameAlliance = GetKeepAlliance(v, 1) == GetKeepAlliance(keepId, 1)
-				local isBorderKeep = GetKeepType(v) == KEEPTYPE_BORDER_KEEP
-
-				if sameAlliance then
-					if isBorderKeep or (IsAllianceAllowedLink(keepId, v) and not GetKeepUnderAttack(v, 1) and GetKeepHasResourcesForTravel(v, 1)) then
-						return true
-					end
-				end
-			end
-		end
-	end
+end
 
 local function IsKeepLocked(keepId)
 	local keepIdType = PVP:KeepIdToKeepType(keepId)
