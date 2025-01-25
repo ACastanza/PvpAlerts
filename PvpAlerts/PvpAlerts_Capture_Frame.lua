@@ -70,7 +70,7 @@ local function GetFlagIcon(objectiveType, meter, alliance)
 	return PVP:GetObjectiveIcon(flagType, alliance), currentKeepFlag
 end
 
-local function UpdateValues(meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
+local function UpdateValues(normalControl, meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
 	local flag
 
 	if objectiveType == KEEPTYPE_KEEP then
@@ -193,7 +193,7 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 				wasCurrent = true
 			end
 
-			UpdateValues(PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
+			UpdateValues(normalControl, PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
 				barColorG, barColorB, GetKeepAlliance(keepId, 1), GetKeepUnderAttack(keepId, 1))
 		end
 	end
@@ -414,7 +414,7 @@ function PVP:UpdateKeepCaptureMeter()
 	if not wasCurrent then PVP:SetCurrentObjectiveBackdrop() end
 end
 
-local function UpdateDistrictCaptureValues(meter, percentage, barColorR, barColorG, barColorB, keepId, isCurrent)
+local function UpdateDistrictCaptureValues(icControl, meter, percentage, barColorR, barColorG, barColorB, keepId, isCurrent)
 	local district = GetControl(icControl, 'District' .. tostring(meter))
 	if isCurrent then
 		PVP:SetCurrentObjectiveBackdrop(district, KEEPTYPE_IMPERIAL_CITY_DISTRICT)
@@ -485,7 +485,7 @@ function PVP:UpdateDistrictCaptureMeter()
 				wasCurrent = true
 			end
 
-			UpdateDistrictCaptureValues(PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
+			UpdateDistrictCaptureValues(icControl, PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
 				barColorG, barColorB, PVP.currentObjectiveStatus[i].keepId, PVP.currentObjectiveStatus[i].isCurrent)
 		end
 	end
