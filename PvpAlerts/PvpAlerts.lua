@@ -8,9 +8,9 @@ PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
 local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
-local killingBlows = {}
 local cachedPlayerDbUpdates = {}
 local killFeedBuffer = {}
+local killingBlows = {}
 
 local LCM = LibChatMessage
 local chat = LCM.Create('PvpAlerts', 'PVP')
@@ -1336,7 +1336,6 @@ function PVP:ProcessKillingBlows(result, targetUnitId, targetName, abilityId)
 			local validTargetName = PVP:GetValidName(targetNameFromId)
 			if not validTargetName then return end
 			killingBlows[validTargetName] = abilityId
-			zo_callLater(function() killingBlows[validTargetName] = nil end, 5000)
 		end
 	end
 end
@@ -1710,72 +1709,72 @@ local function GetFormattedAbilityName(abilityId, color)
 	return formattedAbility
 end
 
-function PVP:GetOwnKbString(targetValidName, targetPlayer, abilityId, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerAllianceRank, allianceColor, killFeedNameType)
+function PVP:GetOwnKbString(targetValidName, target, abilityId, targetDisplayName, targetAlliance, targetAllianceRank, targetAllianceColor, killFeedNameType)
 	local text
 	local messageColor = "40BB40"
 	local bracketsToken = self:Colorize("***", messageColor)
 	local playerActionKilledToken = self:Colorize("You killed", messageColor)
 
-	local importantToken, isKOS = self:GetImportantIcon(targetValidName, victimPlayerDisplayName, victimPlayerAlliance)
-	local isVictimEmperor = self:IsEmperor(targetValidName, currentCampaignActiveEmperor)
-	if isVictimEmperor then
-		importantToken = self:GetEmperorIcon(32, allianceColor) .. importantToken
+	local importantToken, isKOS = self:GetImportantIcon(targetValidName, targetDisplayName, targetAlliance)
+	local isTargetEmperor = self:IsEmperor(targetValidName, currentCampaignActiveEmperor)
+	if isTargetEmperor then
+		importantToken = self:GetEmperorIcon(32, targetAllianceColor) .. importantToken
 	end
-	local victimPlayerToken
-	local victimNameToken = targetPlayer
+	local targetToken
+	local targetNameToken = target
 
 	local prepToken = self:Colorize("with", messageColor)
 	local suffixToken = self:Colorize("!", messageColor)
 	local kbIconToken = zo_iconFormat(PVP_KILLING_BLOW, 38, 38)
 
 	if killFeedNameType == "both" then
-		victimPlayerToken = victimNameToken .. self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
-			self:Colorize(victimPlayerDisplayName, "CCCCCC")
+		targetToken = targetNameToken .. self:GetFormattedAccountNameLink(targetDisplayName, "CCCCCC") or
+			self:Colorize(targetDisplayName, "CCCCCC")
 	elseif killFeedNameType == "character" then
-		victimPlayerToken = victimNameToken
+		targetToken = targetNameToken
 	elseif killFeedNameType == "user" then
-		victimPlayerToken = self:GetFormattedClassIcon(targetValidName, nil, allianceColor, nil, nil, nil, nil, nil,
-				nil, victimPlayerAllianceRank) ..
-			self:GetFormattedAccountNameLink(victimPlayerDisplayName, allianceColor) or
-			self:Colorize(victimPlayerDisplayName, allianceColor)
+		targetToken = self:GetFormattedClassIcon(targetValidName, nil, targetAllianceColor, nil, nil, nil, nil, nil,
+				nil, targetAllianceRank) ..
+			self:GetFormattedAccountNameLink(targetDisplayName, targetAllianceColor) or
+			self:Colorize(targetDisplayName, targetAllianceColor)
 	end
 
 	if abilityId then
 		local abilityToken = GetFormattedAbilityName(abilityId, messageColor)
 		text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
-			importantToken .. victimPlayerToken,
+			importantToken .. targetToken,
 			prepToken,
 			abilityToken .. suffixToken .. kbIconToken)
 	else
 		text = GetSpacedOutString(bracketsToken, playerActionKilledToken,
-			importantToken .. victimPlayerToken .. suffixToken .. kbIconToken)
+			importantToken .. targetToken .. suffixToken .. kbIconToken)
 	end
 	return text, isKOS, bracketsToken
 end
 
-function PVP:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerAllianceRank, allianceColor, abilityId, sourceValidName, sourceName, killerPlayerAlliance, killerPlayerAllianceRank, sourceAllianceColor, killLocation, killFeedNameType)
+function PVP:GetKbStringTarget(targetValidName, target, targetDisplayName, targetAlliance, targetAllianceRank, targetAllianceColor, abilityId, sourceValidName, sourceDisplayName, sourceAlliance, sourceAllianceRank, sourceAllianceColor, killLocation, killFeedNameType)
 	local text
 	local endToken
 	local messageColor = "AF7500"
 
-	local killerImportantToken = self:GetImportantIcon(sourceValidName, sourceName, killerPlayerAlliance)
-	local isKillerEmperor = self:IsEmperor(sourceValidName, currentCampaignActiveEmperor)
-	if isKillerEmperor then
+	local killerImportantToken = self:GetImportantIcon(sourceValidName, sourceDisplayName, sourceAlliance)
+	local isSourceEmperor = self:IsEmperor(sourceValidName, currentCampaignActiveEmperor)
+	if isSourceEmperor then
 		killerImportantToken = self:GetEmperorIcon(32, sourceAllianceColor) .. killerImportantToken
 	end
-	local killerPlayerToken
+	local sourceToken
 	local killerNameToken = self:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor, nil, nil, nil, nil,
-		nil, nil, nil, killerPlayerAllianceRank)
+		nil, nil, nil, sourceAllianceRank)
 
 	local actionToken = self:Colorize("killed", messageColor)
 
-	local victimImportantToken = self:GetImportantIcon(targetValidName, victimPlayerDisplayName, victimPlayerAlliance)
-	local isVictimEmperor = self:IsEmperor(targetValidName, currentCampaignActiveEmperor)
-	if isVictimEmperor then
-		victimImportantToken = self:GetEmperorIcon(32, allianceColor) .. victimImportantToken
+	local targetImportantToken = self:GetImportantIcon(targetValidName, targetDisplayName, targetAlliance)
+	local isTargetEmperor = self:IsEmperor(targetValidName, currentCampaignActiveEmperor)
+	if isTargetEmperor then
+		targetImportantToken = self:GetEmperorIcon(32, targetAllianceColor) .. targetImportantToken
 	end
-	local victimPlayerToken
-	local victimNameToken = targetPlayer
+	local targetToken
+	local targetNameToken = target
 	local withToken = self:Colorize("with", messageColor)
 
 	local suffixToken = self:Colorize("!", messageColor)
@@ -1788,81 +1787,81 @@ function PVP:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDispla
 	end
 
 	if killFeedNameType == "both" then
-		killerPlayerToken = killerNameToken .. self:GetFormattedAccountNameLink(sourceName, "CCCCCC") or
-			self:Colorize(sourceName, "CCCCCC")
-		victimPlayerToken = victimNameToken .. self:GetFormattedAccountNameLink(victimPlayerDisplayName, "CCCCCC") or
-			self:Colorize(victimPlayerDisplayName, "CCCCCC")
+		sourceToken = killerNameToken .. self:GetFormattedAccountNameLink(sourceDisplayName, "CCCCCC") or
+			self:Colorize(sourceDisplayName, "CCCCCC")
+		targetToken = targetNameToken .. self:GetFormattedAccountNameLink(targetDisplayName, "CCCCCC") or
+			self:Colorize(targetDisplayName, "CCCCCC")
 	elseif killFeedNameType == "character" then
-		killerPlayerToken = killerNameToken
-		victimPlayerToken = victimNameToken
+		sourceToken = killerNameToken
+		targetToken = targetNameToken
 	elseif killFeedNameType == "user" then
-		killerPlayerToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor, nil, nil, nil, nil,
-				nil, nil, killerPlayerAllianceRank) ..
-			self:GetFormattedAccountNameLink(sourceName, sourceAllianceColor) or
-			self:Colorize(sourceName, sourceAllianceColor)
-		victimPlayerToken = self:GetFormattedClassIcon(targetValidName, nil, allianceColor, nil, nil, nil, nil, nil,
-				nil, victimPlayerAllianceRank) ..
-			self:GetFormattedAccountNameLink(victimPlayerDisplayName, allianceColor) or
-			self:Colorize(victimPlayerDisplayName, allianceColor)
+		sourceToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor, nil, nil, nil, nil,
+				nil, nil, sourceAllianceRank) ..
+			self:GetFormattedAccountNameLink(sourceDisplayName, sourceAllianceColor) or
+			self:Colorize(sourceDisplayName, sourceAllianceColor)
+		targetToken = self:GetFormattedClassIcon(targetValidName, nil, targetAllianceColor, nil, nil, nil, nil, nil,
+				nil, targetAllianceRank) ..
+			self:GetFormattedAccountNameLink(targetDisplayName, targetAllianceColor) or
+			self:Colorize(targetDisplayName, targetAllianceColor)
 	end
 	if abilityId then
 		local abilityToken = GetFormattedAbilityName(abilityId, "CCCCCC")
-		text = GetSpacedOutString(killerImportantToken .. killerPlayerToken,
+		text = GetSpacedOutString(killerImportantToken .. sourceToken,
 			actionToken,
-			victimImportantToken .. victimPlayerToken,
+			targetImportantToken .. targetToken,
 			withToken,
 			abilityToken .. endToken)
 	else
-		text = GetSpacedOutString(killerImportantToken .. killerPlayerToken,
+		text = GetSpacedOutString(killerImportantToken .. sourceToken,
 			actionToken,
-			victimImportantToken .. victimPlayerToken ..
+			targetImportantToken .. targetToken ..
 			endToken)
 	end
 
 	return text
 end
 
-function PVP:GetKbStringPlayer(abilityId, sourceValidName, killerPlayerDisplayName, killerPlayerAlliance, killerPlayerAllianceRank, sourceAllianceColor, killFeedNameType)
+function PVP:GetKbStringPlayer(abilityId, sourceValidName, sourceDisplayName, sourceAlliance, sourceAllianceRank, sourceAllianceColor, killFeedNameType)
 	local text
 	local messageColor = "BB4040"
 	local bracketsToken = self:Colorize("***", messageColor)
 	local playerActionDiedToken = self:Colorize("You were killed by", messageColor)
 
-	local importantToken = self:GetImportantIcon(sourceValidName, killerPlayerDisplayName, killerPlayerAlliance)
-	local isKillerEmperor = self:IsEmperor(sourceValidName, currentCampaignActiveEmperor)
-	if isKillerEmperor then
+	local importantToken = self:GetImportantIcon(sourceValidName, sourceDisplayName, sourceAlliance)
+	local isSourceEmperor = self:IsEmperor(sourceValidName, currentCampaignActiveEmperor)
+	if isSourceEmperor then
 		importantToken = self:GetEmperorIcon(32, sourceAllianceColor) .. importantToken
 	end
-	local killerPlayerToken
+	local sourceToken
 	local killedByNameToken = self:GetFormattedClassNameLink(sourceValidName, sourceAllianceColor, nil, nil, nil, nil,
-		nil, nil, nil, killerPlayerAllianceRank)
+		nil, nil, nil, sourceAllianceRank)
 
 	local suffixToken = self:Colorize("!", messageColor)
 	if killFeedNameType == "both" then
-		killerPlayerToken = killedByNameToken .. self:GetFormattedAccountNameLink(killerPlayerDisplayName, "CCCCCC") or
-			self:Colorize(killerPlayerDisplayName, "CCCCCC")
+		sourceToken = killedByNameToken .. self:GetFormattedAccountNameLink(sourceDisplayName, "CCCCCC") or
+			self:Colorize(sourceDisplayName, "CCCCCC")
 	elseif killFeedNameType == "character" then
-		killerPlayerToken = killedByNameToken
+		sourceToken = killedByNameToken
 	elseif killFeedNameType == "user" then
-		killerPlayerToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor, nil, nil, nil, nil,
-				nil, nil, killerPlayerAllianceRank) ..
-			self:GetFormattedAccountNameLink(killerPlayerDisplayName, sourceAllianceColor) or
-			self:Colorize(killerPlayerDisplayName, sourceAllianceColor)
+		sourceToken = self:GetFormattedClassIcon(sourceValidName, nil, sourceAllianceColor, nil, nil, nil, nil,
+				nil, nil, sourceAllianceRank) ..
+			self:GetFormattedAccountNameLink(sourceDisplayName, sourceAllianceColor) or
+			self:Colorize(sourceDisplayName, sourceAllianceColor)
 	end
 	if abilityId then
 		local abilityToken = GetFormattedAbilityName(abilityId, "CCCCCC")
 		local possessiveToken = self:Colorize("'s'", messageColor)
 		text = GetSpacedOutString(playerActionDiedToken,
-			importantToken .. killerPlayerToken .. possessiveToken,
+			importantToken .. sourceToken .. possessiveToken,
 			abilityToken .. suffixToken)
 	else
 		text = GetSpacedOutString(playerActionDiedToken,
-			importantToken .. killerPlayerToken .. suffixToken)
+			importantToken .. sourceToken .. suffixToken)
 	end
 	return text, bracketsToken
 end
 
-function PVP:ProcessKillfeedEntry(targetValidName, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank, allianceColor, sourceValidName, sourceName, killerPlayerAlliance, killerPlayerRank, sourceAllianceColor, killFeedNameType, killLocation)
+function PVP:ProcessKillfeedEntry(targetValidName, targetDisplayName, targetAlliance, targetRank, targetAllianceColor, sourceValidName, sourceDisplayName, sourceAlliance, sourceRank, sourceAllianceColor, killFeedNameType, killLocation)
 	local currentTime = GetFrameTimeMilliseconds()
 	local abilityId = killingBlows[targetValidName]
 	killingBlows[targetValidName] = nil
@@ -1880,15 +1879,15 @@ function PVP:ProcessKillfeedEntry(targetValidName, victimPlayerDisplayName, vict
 
 	if kbOnPlayer then
 		outputText, endingBrackets = self:GetKbStringPlayer(abilityId, sourceValidName,
-			killerPlayerDisplayName, killerPlayerAlliance, killerPlayerRank, sourceAllianceColor, killFeedNameType)
+			sourceDisplayName, sourceAlliance, sourceRank, sourceAllianceColor, killFeedNameType)
 	else
-		if self.SV.showKillFeedFrame then self:KillFeedRatio_Add(victimPlayerAlliance, killLocation) end
-		local targetPlayer = self:GetFormattedClassNameLink(targetValidName, allianceColor, nil, nil, nil, nil, nil,
-			nil, nil, victimPlayerRank)
+		if self.SV.showKillFeedFrame then self:KillFeedRatio_Add(targetAlliance, killLocation) end
+		local target = self:GetFormattedClassNameLink(targetValidName, targetAllianceColor, nil, nil, nil, nil, nil,
+			nil, nil, targetRank)
 		if isOwnKillingBlow then
 			local isKOS
-			outputText, isKOS, endingBrackets = self:GetOwnKbString(targetValidName, targetPlayer, abilityId,
-				victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank, allianceColor, killFeedNameType)
+			outputText, isKOS, endingBrackets = self:GetOwnKbString(targetValidName, target, abilityId,
+				targetDisplayName, targetAlliance, targetRank, targetAllianceColor, killFeedNameType)
 			if PVP.SV.playKillingBlowSound then
 				self:PlayLoudSound('DUEL_WON')
 				if isKOS then
@@ -1898,13 +1897,13 @@ function PVP:ProcessKillfeedEntry(targetValidName, victimPlayerDisplayName, vict
 				end
 			end
 		else
-			outputText = self:GetKbStringTarget(targetValidName, targetPlayer, victimPlayerDisplayName,
-				victimPlayerAlliance, victimPlayerRank, allianceColor, abilityId, sourceValidName, sourceName,
-				killerPlayerAlliance, killerPlayerRank, sourceAllianceColor, killLocation, killFeedNameType)
+			outputText = self:GetKbStringTarget(targetValidName, target, targetDisplayName,
+				targetAlliance, targetRank, targetAllianceColor, abilityId, sourceValidName, sourceDisplayName,
+				sourceAlliance, sourceRank, sourceAllianceColor, killLocation, killFeedNameType)
 		end
 	end
 
-	if self.killingBlowsInfo and victimPlayerAlliance and victimPlayerAlliance ~= PVP.allianceOfPlayer then
+	if self.killingBlowsInfo and targetAlliance and targetAlliance ~= PVP.allianceOfPlayer then
 		outputText = GetSpacedOutString(outputText .. self.killingBlowsInfo.message)
 		self.killingBlowsInfo = nil
 	end
@@ -1925,27 +1924,58 @@ function PVP:ProcessKillfeedEntry(targetValidName, victimPlayerDisplayName, vict
 	end
 end
 
-function PVP:OnKillfeed(_, killLocation, killerPlayerDisplayName, killerPlayerCharacterName, killerPlayerAlliance, killerPlayerRank, victimPlayerDisplayName, victimPlayerCharacterName, victimPlayerAlliance, victimPlayerRank)
+function PVP:OnKillfeed(_, killLocation, sourceDisplayName, sourceCharacterName, sourceAlliance, sourceRank, targetDisplayName, targetCharacterName, targetAlliance, targetRank)
 	local killFeedNameType = self.SV.killFeedNameType or self.defaults.killFeedNameType
 	if killFeedNameType == "link" then
 		killFeedNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	end
-	local messageKey = format("%s->->%s", killerPlayerDisplayName, victimPlayerDisplayName)
+	local messageKey = format("%s->->%s", sourceDisplayName, targetDisplayName)
 	local numOccurrences = killFeedDuplicateTracker:AddValue(messageKey)
 	if numOccurrences > 1 then return end
 
-	local targetValidName = self:GetValidName(victimPlayerCharacterName)
-	local allianceColor = self:GetTrueAllianceColorsHex(victimPlayerAlliance)
-	local sourceValidName = self:GetValidName(killerPlayerCharacterName)
-	local sourceName = killerPlayerDisplayName
-	local sourceAllianceColor = self:GetTrueAllianceColorsHex(killerPlayerAlliance)
+	local targetValidName = self:GetValidName(targetCharacterName)
+	local targetAllianceColor = self:GetTrueAllianceColorsHex(targetAlliance)
+	local sourceValidName = self:GetValidName(sourceCharacterName)
+	local sourceAllianceColor = self:GetTrueAllianceColorsHex(sourceAlliance)
 
-	self:CachePlayerDBUpdate(targetValidName, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank)
-	self:CachePlayerDBUpdate(sourceValidName, sourceName, killerPlayerAlliance, killerPlayerRank)
+	self:CachePlayerDBUpdate(targetValidName, targetDisplayName, targetAlliance, targetRank)
+	self:CachePlayerDBUpdate(sourceValidName, sourceDisplayName, sourceAlliance, sourceRank)
 
-	zo_callLater(function()
-		self:ProcessKillfeedEntry(targetValidName, victimPlayerDisplayName, victimPlayerAlliance, victimPlayerRank, allianceColor, sourceValidName, sourceName, killerPlayerAlliance, killerPlayerRank, sourceAllianceColor, killFeedNameType, killLocation)
-	end, 100)
+	insert(killFeedBuffer, {
+		targetValidName = targetValidName,
+		targetDisplayName = targetDisplayName,
+		targetAlliance = targetAlliance,
+		targetRank = targetRank,
+		targetAllianceColor = targetAllianceColor,
+		sourceValidName = sourceValidName,
+		sourceDisplayName = sourceDisplayName,
+		sourceAlliance = sourceAlliance,
+		sourceRank = sourceRank,
+		sourceAllianceColor = sourceAllianceColor,
+		killFeedNameType = killFeedNameType,
+		killLocation = killLocation
+	})
+end
+
+function PVP:ProcessKillFeedBuffer()
+	for i, entry in ipairs(killFeedBuffer) do
+		self:ProcessKillfeedEntry(
+			entry.targetValidName,
+			entry.targetDisplayName,
+			entry.targetAlliance,
+			entry.targetRank,
+			entry.targetAllianceColor,
+			entry.sourceValidName,
+			entry.sourceDisplayName,
+			entry.sourceAlliance,
+			entry.sourceRank,
+			entry.sourceAllianceColor,
+			entry.killFeedNameType,
+			entry.killLocation
+		)
+		killFeedBuffer[i] = nil
+	end
+	killingBlows = {}
 end
 
 function PVP:ResetMainFrame()
@@ -2649,13 +2679,12 @@ function PVP:OnOff()
 			self.addonEnabled = true
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_COMBAT_EVENT, function(...) self:OnCombat(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PVP_KILL_FEED_DEATH, function(...) self:OnKillfeed(...) end)
+			EVENT_MANAGER:RegisterForUpdate(self.name .. "_KillFeedBufferUpdate", 1000, function() self:ProcessKillFeedBuffer() end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_EFFECT_CHANGED, function(...) self:OnEffect(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_RETICLE_TARGET_PLAYER_CHANGED, self.OnTargetChanged)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_RETICLE_TARGET_CHANGED, self.OnTargetChanged)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_OBJECTIVE_CONTROL_STATE,
-				function(...) self:OnControlState(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_CAPTURE_AREA_STATUS,
-				function(...) self:OnCaptureStatus(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_OBJECTIVE_CONTROL_STATE, function(...) self:OnControlState(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_CAPTURE_AREA_STATUS, function(...) self:OnCaptureStatus(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_KEEP_ALLIANCE_OWNER_CHANGED,
 				function(eventCode, keepId, battlegroundContext, owningAlliance, oldOwningAlliance)
 					if PVP:IsValidBattlegroundContext(battlegroundContext) then
@@ -2672,23 +2701,17 @@ function PVP:OnOff()
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_DEACTIVATED, function(...) self:OnDeactivated(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_MAP_PING, function(...) self:OnMapPing(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_MEDAL_AWARDED, function(...) self:OnMedalAwarded(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ALLIANCE_POINT_UPDATE,
-				function(...) self:OnAlliancePointUpdate(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ACTION_SLOT_ABILITY_USED,
-				function(...) self:OnAbilityUsed(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ALLIANCE_POINT_UPDATE, function(...) self:OnAlliancePointUpdate(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ACTION_SLOT_ABILITY_USED, function(...) self:OnAbilityUsed(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_LEADER_UPDATE, function() PVP:InitControls() end)
 			EVENT_MANAGER:RegisterForUpdate(self.name, 250, PVP.OnUpdate)
 			DEATH_FRAGMENT:RegisterCallback("StateChange", OnDeathFragmentStateChange)
 			PVP_SCOREBOARD_FRAGMENT:RegisterCallback("StateChange", ScoreboardFragmentCallback)
 			CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", OnWorldMapChangedCallback)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED,
-				function(...) self:updateCampaignEmperor(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_COMBAT_STATE,
-				function(...) self:OnCombatState(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED,
-				function(...) self:OnBattlegroundStateChanged(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED,
-				function(...) self:OnBattlegroundMMRLossReduced(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED, function(...) self:updateCampaignEmperor(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_COMBAT_STATE, function(...) self:OnCombatState(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED, function(...) self:OnBattlegroundStateChanged(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED, function(...) self:OnBattlegroundMMRLossReduced(...) end)
 		end
 		self:InitEnabledAddon()
 	else
@@ -2696,6 +2719,7 @@ function PVP:OnOff()
 			self.addonEnabled = nil
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_COMBAT_EVENT)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_PVP_KILL_FEED_DEATH)
+			EVENT_MANAGER:UnregisterForUpdate(self.name .. "_KillFeedBufferUpdate")
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_EFFECT_CHANGED)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_RETICLE_TARGET_PLAYER_CHANGED)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_RETICLE_TARGET_CHANGED)
