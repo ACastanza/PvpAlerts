@@ -250,8 +250,5 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 		end
 	end
 
-
-
-
 	PVP_OnScreen:SetHidden(not (SCENE_MANAGER:GetCurrentScene() == HUD_SCENE or SCENE_MANAGER:GetCurrentScene() == LOOT_SCENE or SCENE_MANAGER:GetCurrentScene() == HUD_UI_SCENE))
 end
