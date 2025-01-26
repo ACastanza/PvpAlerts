@@ -1541,18 +1541,13 @@ local function GetCurrentMapCoordsFromKeepId(keepId)
 	return coordsNewX, coordsNewY, objectiveId, keepInfoInDB, scaleAdjustment
 end
 
-local function TestHalfInterval(textureControl, startAngle, endAngle, count, targetCount)
-	local midPoint = startAngle + (endAngle - startAngle) / 2
-	count = count + 1
+local function IsNew3DOrigin(newX, newY, newZ)
+	local oldX, oldY, oldZ = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ
 
-	if count >= targetCount then return midPoint, count end
-
-	textureControl:Set3DRenderSpaceOrientation(midPoint, 0, 0)
-
-	if textureControl:Is3DQuadFacingCamera() == initialCameraFacing then
-		return TestHalfInterval(textureControl, midPoint, endAngle, count, targetCount)
+	if abs(newX) < 15 and abs(newY) < 15 and (abs(oldX) > 450 or abs(oldY) > 450) then
+		return true
 	else
-		return TestHalfInterval(textureControl, startAngle, midPoint, count, targetCount)
+		return false
 	end
 end
 
@@ -1594,17 +1589,65 @@ local function GetCurrentTrustedCoords()
 	return current3DX, current3DY, currentMapX, currentMapY, success
 end
 
-local function Take3DMeasurements()
-	local function IsNew3DOrigin(newX, newZ, newY)
-		local oldX, oldZ, oldY = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraZ, PVP.currentCameraInfo.cameraY
+local function CalculateCameraOffset()
+	local control = PVP_World3DCameraMeasurement
+	local textureControl = PVP_World3DCameraMeasurementIcon
 
-		if abs(newX) < 15 and abs(newY) < 15 and (abs(oldX) > 450 or abs(oldY) > 450) then
-			return true
+	Set3DRenderSpaceToCurrentCamera(control:GetName())
+
+	local cameraX, cameraZ, cameraY = control:Get3DRenderSpaceOrigin()
+
+	local heading = GetPlayerCameraHeading3D()
+
+	local measurementCameraX = sin(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
+	local measurementCameraY = cos(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
+
+	control:Set3DRenderSpaceOrigin(cameraX - measurementCameraX, cameraZ, cameraY - measurementCameraY)
+
+	textureControl:Set3DRenderSpaceOrientation(0, 0, 0)
+
+	local initialCameraFacing = textureControl:Is3DQuadFacingCamera()
+
+	local count = 0
+	local TARGET_COUNT = 15
+
+	local function TestHalfInterval(startAngle, endAngle)
+		local midPoint = startAngle + (endAngle - startAngle) / 2
+		count = count + 1
+
+		if count >= TARGET_COUNT then return midPoint end
+
+		textureControl:Set3DRenderSpaceOrientation(midPoint, 0, 0)
+
+		if textureControl:Is3DQuadFacingCamera() == initialCameraFacing then
+			return TestHalfInterval(midPoint, endAngle)
 		else
-			return false
+			return TestHalfInterval(startAngle, midPoint)
 		end
 	end
 
+	local cameraAngleZ = pi / 2 - TestHalfInterval(0, pi)
+
+	return cameraX, cameraY, cameraZ, cameraAngleZ
+end
+
+local function CalculatePlayerDistance(cameraX, cameraY, cameraZ, cameraAngleZ)
+	local cameraDistance
+
+	if cameraAngleZ >= 0 then
+		cameraDistance = cos(cameraAngleZ) * PVP.currentCameraDistance
+	else
+		if -cameraAngleZ < 0.2 then
+			cameraDistance = cos(-cameraAngleZ) * PVP.currentCameraDistance
+		else
+			cameraDistance = PVP.currentCameraDistance == 0 and 0 or playerHeight / tan(-cameraAngleZ)
+		end
+	end
+
+	return cameraDistance
+end
+
+function Take3DMeasurements()
 	if PVP.suppressTest and (GetFrameTimeMilliseconds() > (PVP.suppressTest.currentTime + 6000)) then
 		if PVP.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, PVP.suppressTest.playerGroupTag) then
 			PVP.LMP:UnsuppressPing(
@@ -1621,44 +1664,11 @@ local function Take3DMeasurements()
 	PVP.onUpdateInfo.IsInImperialCityDistrict = IsInImperialCity() and IsInImperialCityDistrict(true) or false
 	PVP.onUpdateInfo.GetPlayerCameraHeading = GetPlayerCameraHeading3D(true)
 
-	local cameraDistance, cameraAngleZ, cameraX, cameraY, cameraZ, heading, measurementCameraX, measurementCameraY
-	local control = PVP_World3DCameraMeasurement
-	local textureControl = PVP_World3DCameraMeasurementIcon
-
-	Set3DRenderSpaceToCurrentCamera(control:GetName())
-
-	cameraX, cameraZ, cameraY = control:Get3DRenderSpaceOrigin()
-
-	heading = GetPlayerCameraHeading3D()
-
-	measurementCameraX = sin(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
-	measurementCameraY = cos(heading) * 1.5 * (PVP.currentCameraDistance == 0 and 10 or PVP.currentCameraDistance)
-
-
-	control:Set3DRenderSpaceOrigin(cameraX - measurementCameraX, cameraZ, cameraY - measurementCameraY)
-
-	textureControl:Set3DRenderSpaceOrientation(0, 0, 0)
-
-	local initialCameraFacing = textureControl:Is3DQuadFacingCamera()
-
-	local midPoint
-	local count = 0
-	local TARGET_COUNT = 15
-	midPoint, count = TestHalfInterval(textureControl, 0, pi, count, TARGET_COUNT)
-	cameraAngleZ = pi / 2 - midPoint
-
-	if cameraAngleZ >= 0 then
-		cameraDistance = cos(cameraAngleZ) * PVP.currentCameraDistance
-	else
-		if -cameraAngleZ < 0.2 then
-			cameraDistance = cos(-cameraAngleZ) * PVP.currentCameraDistance
-		else
-			cameraDistance = PVP.currentCameraDistance == 0 and 0 or playerHeight / tan(-cameraAngleZ)
-		end
-	end
+	local cameraX, cameraY, cameraZ, cameraAngleZ = CalculateCameraOffset()
+	local cameraDistance = CalculatePlayerDistance(cameraX, cameraY, cameraZ, cameraAngleZ)
 
 	if PVP.currentCameraInfo then
-		if IsNew3DOrigin(cameraX, cameraZ, cameraY) then
+		if IsNew3DOrigin(cameraX, cameraY, cameraZ) then
 			PVP.currentCameraInfo.lastDeltaX = cameraX - PVP.currentCameraInfo.cameraX
 			PVP.currentCameraInfo.lastDeltaY = cameraY - PVP.currentCameraInfo.cameraY
 			PVP.currentCameraInfo.last3dX = PVP.currentCameraInfo.current3DX
@@ -1699,10 +1709,7 @@ local function Take3DMeasurements()
 		player3dY = player3dY
 	}
 
-	-- local mouseOverControl = PVP:GetMouseOverControl()
-	-- if mouseOverControl then
-	-- d(mouseOverControl.name)
-	-- end
+	return cameraDistance, cameraX, cameraY
 end
 
 local function OnWorldMapHidden(oldState, newState)
