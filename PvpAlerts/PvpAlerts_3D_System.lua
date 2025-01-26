@@ -196,6 +196,13 @@ local fixedHeight = {
 	['SEWERS_SIGN'] = true,
 }
 
+local nonClaimableKeepTypes = {
+	[KEEPTYPE_ARTIFACT_GATE] = true,
+	[KEEPTYPE_ARTIFACT_KEEP] = true,
+	[KEEPTYPE_BORDER_KEEP] = true,
+	[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
+}
+
 local function GetNumberOfAnimationPhases()
 	return ceil(GetFramerate() / 6) --// yep, just like that //
 end
@@ -2077,8 +2084,7 @@ end
 
 local function ControlOnUpdate(control)
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
-	local keepNotClaimable = keepType == KEEPTYPE_ARTIFACT_GATE or keepType == PVP_KEEPTYPE_ARTIFACT_KEEP or
-		keepType == PVP_KEEPTYPE_BORDER_KEEP
+	local keepNotClaimable = nonClaimableKeepTypes[keepType]
 	local currentTime = GetFrameTimeMilliseconds()
 	if (currentTime - control.params.lastUpdate) >= 10 then
 		control.params.lastUpdate = currentTime
