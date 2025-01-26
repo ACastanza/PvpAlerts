@@ -1567,7 +1567,7 @@ end
 function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId)
 	if not PVP_Main:IsHidden() and PVP_Main:GetAlpha() > 0 and PVP_Main.currentChannel and PVP_Main.currentChannel.abilityId == abilityId and PVP_Main.currentChannel.sourceUnitId == sourceUnitId and PVP.hitTypes[result] then
 		if not PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:IsPlaying() and not PVP_MainAbilityIconFrameLeftGlow.animData:IsPlaying() then
-			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA, true)
+			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA)
 		end
 	end
 end
@@ -2035,29 +2035,27 @@ function PVP:SetupMainFrame(text, isImportant, texture, isHA)
 	PVP_Main.isHA = isHA
 end
 
-function PVP:PlayHighlightAnimation(isHA, isChannel)
-	local leadingEdgeControl = PVP_MainAbilityIconFrameLeftLeadingEdge
-	local function PingPong(control, duration)
-		duration = duration or 250
-		control.animData:PingPong(0, 1, duration, 1)
-	end
-	local function FadeOut(control)
-		control.animData:FadeOut(0, 175, ZO_ALPHA_ANIMATION_OPTION_FORCE_ALPHA)
-	end
-	local function StartAnim(control, isChannel)
-		PingPong(control)
-	end
+local function FadeOut(control)
+	control.animData:FadeOut(0, 175, ZO_ALPHA_ANIMATION_OPTION_FORCE_ALPHA)
+end
 
+local function StartAnim(control, duration)
+	control.animData:PingPong(0, 1, duration, 1)
+end
+
+function PVP:PlayHighlightAnimation(isHA, duration)
+	local leadingEdgeControl = PVP_MainAbilityIconFrameLeftLeadingEdge
 	if leadingEdgeControl.animData and leadingEdgeControl.animData:IsPlaying() then leadingEdgeControl.animData:Stop() end
+	duration = duration or 250
 
 	if isHA then
-		StartAnim(PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon, isChannel)
-		StartAnim(PVP_MainAbilityIconFrameRightHeavyAttackHighlightIcon, isChannel)
+		StartAnim(PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon, duration)
+		StartAnim(PVP_MainAbilityIconFrameRightHeavyAttackHighlightIcon, duration)
 		-- PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:PingPong(0, 1, 250, 1)
 		-- PVP_MainAbilityIconFrameRightHeavyAttackHighlightIcon.animData:PingPong(0, 1, 250, 1)
 	else
-		StartAnim(PVP_MainAbilityIconFrameLeftGlow, isChannel)
-		StartAnim(PVP_MainAbilityIconFrameRightGlow, isChannel)
+		StartAnim(PVP_MainAbilityIconFrameLeftGlow, duration)
+		StartAnim(PVP_MainAbilityIconFrameRightGlow, duration)
 		-- PVP_MainAbilityIconFrameLeftGlow.animData:PingPong(0, 1, 250, 1)
 		-- PVP_MainAbilityIconFrameRightGlow.animData:PingPong(0, 1, 250, 1)
 	end
