@@ -71,25 +71,19 @@ local function GetFlagIcon(objectiveType, meter, alliance)
 end
 
 local function UpdateValues(normalControl, meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
-	local flag
+	local flagControl
 
 	if objectiveType == KEEPTYPE_KEEP then
-		if meter == 1 then
-			flag = GetControl(normalControl, 'Flag2')
-			currentKeepFlag = FLAGTYPE_APSE
-		elseif meter == 2 then
-			flag = GetControl(normalControl, 'Flag1')
-			-- currentKeepFlag = FLAGTYPE_NAVE
-		end
+		flagControl = GetControl(normalControl, meter == 2 and 'Flag1' or 'Flag2')
 	end
 
-	if not flag then flag = GetControl(normalControl, 'Flag' .. tostring(meter)) end
+	if not flagControl then flagControl = GetControl(normalControl, 'Flag' .. tostring(meter)) end
 
-	local icon = GetControl(flag, 'Icon')
-	local iconUA = GetControl(flag, 'IconUnderAttack')
-	local control = GetControl(flag, 'Meter')
-	local bar = GetControl(control, 'Bar')
-	local label = GetControl(control, 'Label')
+	local icon = GetControl(flagControl, 'Icon')
+	local iconUA = GetControl(flagControl, 'IconUnderAttack')
+	local meterControl = GetControl(flagControl, 'Meter')
+	local bar = GetControl(meterControl, 'Bar')
+	local label = GetControl(meterControl, 'Label')
 
 
 	iconUA:SetHidden(not (percentage < 100 and underAttack))
@@ -107,7 +101,7 @@ local function UpdateValues(normalControl, meter, percentage, barColorR, barColo
 	else
 		icon:SetDimensions(26, 26)
 	end
-	bar:SetDimensions((control:GetWidth() - 1.5) * percentage / 100, control:GetHeight() - 2)
+	bar:SetDimensions((meterControl:GetWidth() - 1.5) * percentage / 100, meterControl:GetHeight() - 2)
 	bar:SetCenterColor(barColorR, barColorG, barColorB)
 	label:SetText(tostring(percentage) .. '%')
 end
