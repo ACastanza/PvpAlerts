@@ -42,7 +42,7 @@ local remove = table.remove
 --local lower = string.lower
 --local format = string.format
 
-local IC_ZONEID = 348
+local IC_ZONEID = GetZoneIndex(584)
 
 local ICONSIZE = 18
 local ICONUASIZE = ICONSIZE + 4
