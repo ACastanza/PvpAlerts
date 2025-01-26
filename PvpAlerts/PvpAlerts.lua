@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.14.2"
+PVP.textVersion = "3.14.3"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
