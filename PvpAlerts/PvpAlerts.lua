@@ -56,6 +56,43 @@ local currentCampaignActiveEmperor, currentCampaignActiveEmperorAcc, currentCamp
 
 local localActivePlayerCache = {}
 
+local KILLING_BLOW_ACTION_RESULTS = {
+	[ACTION_RESULT_KILLING_BLOW] = true,
+	[ACTION_RESULT_DIED_XP]	  = true,
+}
+
+local DEAD_ACTION_RESULTS = {
+	[ACTION_RESULT_KILLING_BLOW]  = true,
+	[ACTION_RESULT_TARGET_DEAD]   = true,
+	[ACTION_RESULT_DIED]		  = true,
+	[ACTION_RESULT_DIED_XP]	   = true,
+	[ACTION_RESULT_REINCARNATING] = true,
+	[ACTION_RESULT_RESURRECT]	 = true,
+	[ACTION_RESULT_CASTER_DEAD]   = true,
+}
+
+local shadowReturnIds = {
+	[35451] = true,
+	[36290] = true,
+	[36295] = true,
+	[36300] = true,
+}
+
+local shadowSetupIds = {
+	[38528] = true,
+	[38529] = true,
+	[38530] = true,
+	[38531] = true,
+	[88696] = true,
+	[88697] = true,
+	[88699] = true,
+	[88700] = true,
+	[88702] = true,
+	[88703] = true,
+	[88705] = true,
+	[88706] = true,
+}
+
 function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays containing information about players nearby //
 	local function ClearId(id)
 		PVP.playerSpec[PVP.idToName[id]] = nil
@@ -1326,10 +1363,6 @@ end
 
 
 function PVP:ProcessKillingBlows(result, targetUnitId, targetName, abilityId)
-	local KILLING_BLOW_ACTION_RESULTS = {
-		[ACTION_RESULT_KILLING_BLOW] = true,
-		[ACTION_RESULT_DIED_XP]	  = true,
-	}
 	if KILLING_BLOW_ACTION_RESULTS[result] and ((targetUnitId and targetUnitId ~= 0 and self.totalPlayers[targetUnitId]) or (targetName and targetName ~= "" or targetName == self.playerName)) and GetAbilityName(abilityId) and GetAbilityName(abilityId) ~= "" then
 		local targetNameFromId = targetUnitId and PVP.idToName[targetUnitId] or targetName
 		if targetNameFromId then
@@ -1341,10 +1374,6 @@ function PVP:ProcessKillingBlows(result, targetUnitId, targetName, abilityId)
 end
 
 function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
-	local KILLING_BLOW_ACTION_RESULTS = {
-		[ACTION_RESULT_KILLING_BLOW] = true,
-		[ACTION_RESULT_DIED_XP]	  = true,
-	}
 	if KILLING_BLOW_ACTION_RESULTS[result] and PVP.totalPlayers[targetUnitId] then
 		if PVP.idToName[targetUnitId] then
 			PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = PVP.idToName[targetUnitId] }
@@ -1374,15 +1403,6 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 end
 
 function PVP:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId, abilityId, currentTime)
-	local DEAD_ACTION_RESULTS = {
-		[ACTION_RESULT_KILLING_BLOW]  = true,
-		[ACTION_RESULT_TARGET_DEAD]   = true,
-		[ACTION_RESULT_DIED]		  = true,
-		[ACTION_RESULT_DIED_XP]	   = true,
-		[ACTION_RESULT_REINCARNATING] = true,
-		[ACTION_RESULT_RESURRECT]	 = true,
-		[ACTION_RESULT_CASTER_DEAD]   = true,
-	}
 	if sourceName == "" and targetName == "" and (not self.npcExclude[targetUnitId]) and (not self.currentlyDead[targetUnitId]) and not DEAD_ACTION_RESULTS[result] then
 		if self:IsNPCAbility(abilityId) then
 			self.npcExclude[targetUnitId] = currentTime
@@ -1429,7 +1449,7 @@ function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetN
 	end
 end
 
-function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime)
+function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime, hitValue, abilityName)
 	if targetName ~= "" and targetName ~= self.playerName and sourceName == self.playerName and not (self.currentlyDead[targetUnitId]) or self.IsCurrentlyDead(targetName) then
 		if not self:CheckName(targetName) then
 			self.npcExclude[targetUnitId] = currentTime
@@ -1563,43 +1583,6 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		if targetName and targetName ~= '' and not PVP.bgNames[targetName] then PVP.bgNames[targetName] = 0 end
 	end
 
-	local KILLING_BLOW_ACTION_RESULTS = {
-		[ACTION_RESULT_KILLING_BLOW] = true,
-		[ACTION_RESULT_DIED_XP]	  = true,
-	}
-
-	local DEAD_ACTION_RESULTS = {
-		[ACTION_RESULT_KILLING_BLOW]  = true,
-		[ACTION_RESULT_TARGET_DEAD]   = true,
-		[ACTION_RESULT_DIED]		  = true,
-		[ACTION_RESULT_DIED_XP]	   = true,
-		[ACTION_RESULT_REINCARNATING] = true,
-		[ACTION_RESULT_RESURRECT]	 = true,
-		[ACTION_RESULT_CASTER_DEAD]   = true,
-	}
-
-	local shadowReturnIds = {
-		[35451] = true,
-		[36290] = true,
-		[36295] = true,
-		[36300] = true,
-	}
-
-	local shadowSetupIds = {
-		[38528] = true,
-		[38529] = true,
-		[38530] = true,
-		[38531] = true,
-		[88696] = true,
-		[88697] = true,
-		[88699] = true,
-		[88700] = true,
-		[88702] = true,
-		[88703] = true,
-		[88705] = true,
-		[88706] = true,
-	}
-
 	-- if GetUnitClassId('player') == 3 and self.SV.show3DIcons and self.SV.shadowImage3d and targetType == 1 and shadowReturnIds[abilityId] then
 	if GetUnitClassId('player') == 3 and self.SV.show3DIcons and self.SV.shadowImage3d then
 		if shadowSetupIds[abilityId] and result == 2245 then
@@ -1631,7 +1614,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 
 	self:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId, abilityId, currentTime)
 	self:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetName, currentTime)
-	self:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime)
+	self:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime, hitValue, abilityName)
 
 	if result == ACTION_RESULT_EFFECT_GAINED_DURATION then
 		self:ProcessPvpBuffs(result, targetName, abilityId)
