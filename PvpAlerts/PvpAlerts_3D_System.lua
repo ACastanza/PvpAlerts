@@ -2793,6 +2793,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	control.params.Y = coordsNewY
 	control.params.scaleAdjustment = scaleAdjustment
 	control.params.keepId = keepId
+
 	icon:SetColor(1, 1, 1)
 	local iconTexture = PVP:GetObjectiveIcon(PVP:KeepIdToKeepType(control.params.keepId),
 		GetKeepAlliance(control.params.keepId, 1), control.params.keepId)
@@ -3234,6 +3235,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	control.params.type = GetControlType(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
 	control.params.texture = GetControlTexture(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
 	control.params.keepId = PVP.currentNearbyPOIIds[i].keepId
+
 	icon:SetTexture(control.params.texture)
 	local X, Y, Z = PVP.currentNearbyPOIIds[i].targetX, PVP.currentNearbyPOIIds[i].targetY, PVP.currentNearbyPOIIds[i].targetZ
 
