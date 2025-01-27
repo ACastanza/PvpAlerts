@@ -197,8 +197,9 @@ local fixedHeight = {
 }
 
 local nonClaimableKeepTypes = {
-	[KEEPTYPE_ARTIFACT_GATE] = true,
+	[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
 	[KEEPTYPE_ARTIFACT_KEEP] = true,
+	[KEEPTYPE_ARTIFACT_GATE] = true,
 	[KEEPTYPE_BORDER_KEEP] = true,
 	[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
 }

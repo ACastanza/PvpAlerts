@@ -8,6 +8,14 @@ local PVP_KEEPTYPE_BORDER_KEEP = PVP:GetGlobal('PVP_KEEPTYPE_BORDER_KEEP')
 local PVP_ALLIANCE_BASE_IC = PVP:GetGlobal('PVP_ALLIANCE_BASE_IC')
 local PVP_ICON_MISSING = PVP:GetGlobal('PVP_ICON_MISSING')
 
+--local sort = table.sort
+local insert = table.insert
+--local remove = table.remove
+--local concat = table.concat
+--local upper = string.upper
+--local lower = string.lower
+--local format = string.format
+
 
 function PVP:GetObjectiveIcon(keepType, alliance, keepId)
 	if not PVP.objectiveIcons[keepType] then return PVP_ICON_MISSING end
@@ -797,7 +805,7 @@ function PVP:FindAVAIds(zoneName, forceCurrentId)
 
 
 			if not isArtifact then
-				table.insert(foundObjectives,
+				insert(foundObjectives,
 					{
 						isCaptureStatus = false,
 						isCurrent = isCurrent,
