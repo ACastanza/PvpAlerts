@@ -2083,6 +2083,117 @@ local function GetEmperorInfoString(isWorldCrown)
 	return text
 end
 
+local function GetCampaignInfoString(alliance)
+	local currentCampaignId = GetCurrentCampaignId()
+	local isAssignedCampaign = GetAssignedCampaignId() == currentCampaignId
+	local isGuestCampaign = GetGuestCampaignId() == currentCampaignId
+	local campaignTypeString
+	if isAssignedCampaign then
+		campaignTypeString = " (Assigned)"
+	elseif isGuestCampaign then
+		campaignTypeString = " (Guest)"
+	else
+		campaignTypeString = ""
+	end
+	local currentCampaignName = GetCampaignName(currentCampaignId)
+	local text = PVP:Colorize('Welcome to the ', 'CCCCCC') ..
+		PVP:Colorize(currentCampaignName, PVP:AllianceToColor(alliance)) ..
+		PVP:Colorize(campaignTypeString .. ' campaign!', 'CCCCCC')
+	return text
+end
+
+local function GetBorderKeepInfoString(keepId, alliance)
+	local text = PVP:Colorize("You're at ", 'CCCCCC') ..
+		PVP:Colorize(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)),
+			PVP:AllianceToColor(alliance)) .. PVP:Colorize(' border keep!', 'CCCCCC')
+	return text
+end
+
+local function GetHoldingsInfoString(alliance)
+	local allianceToIconName = {
+		[1] = 'aldmeri',
+		[2] = 'ebonheart',
+		[3] = 'daggefall',
+	}
+	local currentCampaignId = GetCurrentCampaignId()
+	local numKeeps = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_KEEP, alliance)
+	local numResources = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_RESOURCE, alliance)
+	local numOutposts = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OUTPOST, alliance)
+	local numScrolls = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_DEFENSIVE_ARTIFACT, alliance) +
+		GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OFFENSIVE_ARTIFACT, alliance)
+	-- local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] .. '.dds'
+	local keepIcon = 'esoui/art/campaign/overview_keepicon_' .. allianceToIconName[alliance] .. '.dds'
+	local outpostIcon = 'esoui/art/campaign/overview_outposticon_' .. allianceToIconName[alliance] .. '.dds'
+	local resourceIcon = 'esoui/art/campaign/overview_resourcesicon_' .. allianceToIconName[alliance] .. '.dds'
+	local scrollIcon = 'esoui/art/campaign/overview_scrollicon_' .. allianceToIconName[alliance] .. '.dds'
+	local text = GetAllianceColoredString(GetAllianceName(alliance), alliance) ..
+		PVP:Colorize(' holds: ', 'CCCCCC') ..
+		zo_iconFormat(keepIcon, 45, 45) ..
+		GetAllianceColoredString(tostring(numKeeps) .. "(18)", alliance) ..
+		zo_iconFormat(outpostIcon, 41, 41) ..
+		GetAllianceColoredString(tostring(numOutposts) .. "(3)", alliance) ..
+		zo_iconFormat(resourceIcon, 38, 38) ..
+		GetAllianceColoredString(tostring(numResources) .. "(54)", alliance) ..
+		zo_iconFormat(scrollIcon, 44, 44) .. GetAllianceColoredString(numScrolls, alliance)
+	return text
+end
+
+local function GetScoringInfoString()
+	local currentCampaignId = GetCurrentCampaignId()
+	local function ReturnCampaignScoresInAscendingOrder()
+		local scores = {}
+		for i = 1, 3 do
+			table.insert(scores, { GetCampaignAllianceScore(currentCampaignId, i), i })
+		end
+
+		local function sortingFn(score1, score2)
+			return score1[1] > score2[1]
+		end
+
+		table.sort(scores, sortingFn)
+
+		return GetAllianceColoredString(scores[1][1], scores[1][2]),
+			GetAllianceColoredString(scores[2][1], scores[2][2]),
+			GetAllianceColoredString(scores[3][1], scores[3][2])
+	end
+
+	if not GetCampaignAllianceScore(currentCampaignId, 1) then
+		return PVP:Colorize("Campaign Score is not available at the moment!", 'CCCCCC')
+	end
+
+	local first, second, third = ReturnCampaignScoresInAscendingOrder()
+
+	local text = PVP:Colorize('Campaign Score is: ', 'CCCCCC') .. first .. ' / ' .. second .. ' / ' .. third
+	return text
+end
+
+local function GetCampaignPositionInfoString(alliance)
+	local currentCampaignId = GetCurrentCampaignId()
+	local currentRanking, currentAP
+	local formattedPlayerName = PVP:GetFormattedName(PVP.playerName)
+	for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
+		local isPlayer, ranking, charName, alliancePoints = GetCampaignAllianceLeaderboardEntryInfo(
+			currentCampaignId, alliance, i)
+		if isPlayer and formattedPlayerName == charName then
+			currentRanking = ranking
+			currentAP = alliancePoints
+			break
+		end
+	end
+
+	local text
+
+	if not currentRanking then
+		text = "There're no records about you in this campaign yet!"
+	else
+		text = PVP:Colorize('You are ', 'CCCCCC') ..
+			PVP:Colorize('#' .. currentRanking, PVP:AllianceToColor(alliance)) ..
+			PVP:Colorize(' in your alliance with ', 'CCCCCC') ..
+			PVP:Colorize(currentAP, PVP:AllianceToColor(alliance)) .. PVP:Colorize(' AP!', 'CCCCCC')
+	end
+	return text
+end
+
 local function ControlOnUpdate(control)
 	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
 	local keepNotClaimable = nonClaimableKeepTypes[keepType]
@@ -2131,133 +2242,18 @@ local function ControlOnUpdate(control)
 		PVP_WorldTooltipLabel:SetColor(PVP:HtmlToColor(PVP:AllianceToColor(alliance)))
 
 		if showBorderKeepInfo then
-			local function GetCampaignInfoString()
-				local currentCampaignId = GetCurrentCampaignId()
-				local isAssignedCampaign = GetAssignedCampaignId() == currentCampaignId
-				local isGuestCampaign = GetGuestCampaignId() == currentCampaignId
-				local campaignTypeString
-				if isAssignedCampaign then
-					campaignTypeString = " (Assigned)"
-				elseif isGuestCampaign then
-					campaignTypeString = " (Guest)"
-				else
-					campaignTypeString = ""
-				end
-				local currentCampaignName = GetCampaignName(currentCampaignId)
-				local text = PVP:Colorize('Welcome to the ', 'CCCCCC') ..
-					PVP:Colorize(currentCampaignName, PVP:AllianceToColor(alliance)) ..
-					PVP:Colorize(campaignTypeString .. ' campaign!', 'CCCCCC')
-				return text
-			end
-
-			local function GetBorderKeepInfoString()
-				local text = PVP:Colorize("You're at ", 'CCCCCC') ..
-					PVP:Colorize(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)),
-						PVP:AllianceToColor(alliance)) .. PVP:Colorize(' border keep!', 'CCCCCC')
-				return text
-			end
-
-			local function GetHoldingsInfoString()
-				local allianceToIconName = {
-					[1] = 'aldmeri',
-					[2] = 'ebonheart',
-					[3] = 'daggefall',
-				}
-				local currentCampaignId = GetCurrentCampaignId()
-				local numKeeps = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_KEEP, alliance)
-				local numResources = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_RESOURCE, alliance)
-				local numOutposts = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OUTPOST, alliance)
-				local numScrolls = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_DEFENSIVE_ARTIFACT, alliance) +
-					GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OFFENSIVE_ARTIFACT, alliance)
-				-- local allianceIcon = 'esoui/art/campaign/overview_allianceicon_' .. allianceToIconName[alliance] ..
-				-- 	'.dds'
-				local keepIcon = 'esoui/art/campaign/overview_keepicon_' .. allianceToIconName[alliance] .. '.dds'
-				local outpostIcon = 'esoui/art/campaign/overview_outposticon_' .. allianceToIconName[alliance] .. '.dds'
-				local resourceIcon = 'esoui/art/campaign/overview_resourcesicon_' .. allianceToIconName[alliance] ..
-					'.dds'
-				local scrollIcon = 'esoui/art/campaign/overview_scrollicon_' .. allianceToIconName[alliance] .. '.dds'
-				local text = GetAllianceColoredString(GetAllianceName(alliance), alliance) ..
-					PVP:Colorize(' holds: ', 'CCCCCC') ..
-					zo_iconFormat(keepIcon, 45, 45) ..
-					GetAllianceColoredString(tostring(numKeeps) .. "(18)", alliance) ..
-					zo_iconFormat(outpostIcon, 41, 41) ..
-					GetAllianceColoredString(tostring(numOutposts) .. "(3)", alliance) ..
-					zo_iconFormat(resourceIcon, 38, 38) ..
-					GetAllianceColoredString(tostring(numResources) .. "(54)", alliance) ..
-					zo_iconFormat(scrollIcon, 44, 44) .. GetAllianceColoredString(numScrolls, alliance)
-				return text
-			end
-
-			local function GetScoringInfoString()
-				local currentCampaignId = GetCurrentCampaignId()
-				local function ReturnCampaignScoresInAscendingOrder()
-					local scores = {}
-					for i = 1, 3 do
-						insert(scores, { GetCampaignAllianceScore(currentCampaignId, i), i })
-					end
-
-					local function sortingFn(score1, score2)
-						return score1[1] > score2[1]
-					end
-
-					sort(scores, sortingFn)
-
-
-					return GetAllianceColoredString(scores[1][1], scores[1][2]),
-						GetAllianceColoredString(scores[2][1], scores[2][2]),
-						GetAllianceColoredString(scores[3][1], scores[3][2])
-				end
-
-				if not GetCampaignAllianceScore(currentCampaignId, 1) then
-					return PVP:Colorize("Campaign Score is not available at the moment!", 'CCCCCC')
-				end
-
-				local first, second, third = ReturnCampaignScoresInAscendingOrder()
-
-				local text = PVP:Colorize('Campaign Score is: ', 'CCCCCC') .. first .. ' / ' .. second .. ' / ' .. third
-				return text
-			end
-
-			local function GetCampaignPositionInfoString()
-				local currentCampaignId = GetCurrentCampaignId()
-				local currentRanking, currentAP
-				local formattedPlayerName = PVP:GetFormattedName(PVP.playerName)
-				for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
-					local isPlayer, ranking, charName, alliancePoints = GetCampaignAllianceLeaderboardEntryInfo(
-						currentCampaignId, alliance, i)
-					if isPlayer and formattedPlayerName == charName then
-						currentRanking = ranking
-						currentAP = alliancePoints
-						break
-					end
-				end
-
-				local text
-
-				if not currentRanking then
-					text = "There're no records about you in this campaign yet!"
-				else
-					text = PVP:Colorize('You are ', 'CCCCCC') ..
-						PVP:Colorize('#' .. currentRanking, PVP:AllianceToColor(alliance)) ..
-						PVP:Colorize(' in your alliance with ', 'CCCCCC') ..
-						PVP:Colorize(currentAP, PVP:AllianceToColor(alliance)) .. PVP:Colorize(' AP!', 'CCCCCC')
-				end
-				return text
-			end
-
-
 			PVP_WorldTooltip:ClearAnchors()
 			PVP_WorldTooltip:SetAnchor(CENTER, GuiRoot, CENTER, 0, 0)
 			PVP_WorldTooltipLabel:ClearAnchors()
 			PVP_WorldTooltipLabel:SetAnchor(TOP, PVP_WorldTooltip, TOP, 0, 0)
 
-			PVP_WorldTooltipLabel:SetText(GetCampaignInfoString())
+			PVP_WorldTooltipLabel:SetText(GetCampaignInfoString(alliance))
 			PVP_WorldTooltipLabel:SetFont('$(BOLD_FONT)|$(KB_28)|thick-outline')
-			PVP_WorldTooltipSubLabel:SetText(GetBorderKeepInfoString())
+			PVP_WorldTooltipSubLabel:SetText(GetBorderKeepInfoString(control.params.keepId, alliance))
 			PVP_WorldTooltipCampaignScoreLabel:SetText(GetScoringInfoString())
-			PVP_WorldTooltipCampaignHoldingsLabel:SetText(GetHoldingsInfoString())
+			PVP_WorldTooltipCampaignHoldingsLabel:SetText(GetHoldingsInfoString(alliance))
 			PVP_WorldTooltipEmperorInfoLabel:SetText(GetEmperorInfoString())
-			PVP_WorldTooltipCampaignPositionInfoLabel:SetText(GetCampaignPositionInfoString())
+			PVP_WorldTooltipCampaignPositionInfoLabel:SetText(GetCampaignPositionInfoString(alliance))
 
 			PVP_WorldTooltipBackdrop:SetHidden(false)
 			PVP_WorldTooltipDividerTop:SetHidden(false)
