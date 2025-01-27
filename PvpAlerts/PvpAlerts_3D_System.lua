@@ -2354,6 +2354,102 @@ local function ControlOnUpdate(control)
 	end
 end
 
+local function GetBattlegroundNameString(bgAllianceHexColor)
+	local text = PVP:Colorize('Welcome to ', 'CCCCCC') ..
+		PVP:Colorize(GetPlayerLocationName(), bgAllianceHexColor) .. PVP:Colorize(' battleground!', 'CCCCCC')
+	return text
+end
+
+local function GetBattlegroundTypeString(battlegroundGameType, bgAllianceHexColor)
+	local text = PVP:Colorize('The gametype is ', 'CCCCCC') ..
+		PVP:Colorize(PVP:GetBattlegroundTypeText(battlegroundGameType), bgAllianceHexColor) ..
+		PVP:Colorize('!', 'CCCCCC')
+	return text
+end
+
+local function GetBattlegroundAllianceString(alliance, bgAllianceHexColor)
+	local text = PVP:Colorize("You're playing on ", 'CCCCCC') ..
+		PVP:Colorize(GetBattlegroundTeamName(alliance), bgAllianceHexColor) ..
+		PVP:Colorize(' team!', 'CCCCCC')
+	return text
+end
+
+local function GetBattlegroundDescriptionString(battlegroundDescription)
+	local text = PVP:Colorize(battlegroundDescription, 'CCCCCC')
+	return text
+end
+
+local function GetBattlegroundStateString(battlegroundState)
+	local battlegroundStateString
+	if battlegroundState == BATTLEGROUND_STATE_PREGAME then
+		battlegroundStateString = "Waiting for players..."
+	elseif battlegroundState == BATTLEGROUND_STATE_STARTING then
+		battlegroundStateString = "The match starts in " ..
+			tostring(zo_round(GetCurrentBattlegroundStateTimeRemaining() / 1000))
+	elseif battlegroundState == BATTLEGROUND_STATE_RUNNING then
+		battlegroundStateString = "The match is running"
+	else
+		battlegroundStateString = ""
+	end
+
+	local text = PVP:Colorize(battlegroundStateString, 'CCCCCC')
+	return text
+end
+
+local function GetBattlegroundTeamsInfo()
+	local countSL, countFD, countPD = 0, 0, 0
+
+	for i = 1, GetNumScoreboardEntries() do
+		local alliance = GetScoreboardEntryBattlegroundAlliance(i)
+		if alliance == BATTLEGROUND_TEAM_FIRE_DRAKES then
+			countFD = countFD + 1
+		elseif alliance == BATTLEGROUND_TEAM_PIT_DAEMONS then
+			countPD = countPD + 1
+		elseif alliance == BATTLEGROUND_TEAM_STORM_LORDS then
+			countSL = countSL + 1
+		end
+	end
+
+	local text
+	-- FD/SL/PD
+	text = PVP:Colorize('The teams currently have: ', 'CCCCCC') ..
+		PVP:Colorize(countFD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_FIRE_DRAKES)) ..
+		' ' ..
+		PVP:Colorize(countSL, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_STORM_LORDS)) ..
+		' ' .. PVP:Colorize(countPD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_PIT_DAEMONS))
+	return text
+end
+
+local function GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianceHexColor)
+	local battlegroundLeaderboardType
+
+	if battlegroundGameType == BATTLEGROUND_GAME_TYPE_DEATHMATCH then
+		battlegroundLeaderboardType = 1
+	elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_DOMINATION then
+		battlegroundLeaderboardType = 2
+	elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG then
+		battlegroundLeaderboardType = 3
+	end
+
+	local position, points
+
+	if battlegroundLeaderboardType then
+		position, points = GetBattlegroundLeaderboardLocalPlayerInfo(battlegroundLeaderboardType)
+	end
+
+	local text
+
+	if not battlegroundLeaderboardType or position == 0 then
+		text = PVP:Colorize("There're no records about you in this leaderboard yet!", 'CCCCCC')
+	else
+		text = PVP:Colorize('You are ', 'CCCCCC') ..
+			PVP:Colorize('#' .. position, bgAllianceHexColor) ..
+			PVP:Colorize(' in the leaderboards ', 'CCCCCC') ..
+			PVP:Colorize(points, bgAllianceHexColor) .. PVP:Colorize(' points!', 'CCCCCC')
+	end
+	return text
+end
+
 local function PoiOnUpdate(control)
 	local currentTime = GetFrameTimeMilliseconds()
 	-- if control.params.type == 'COMPASS' or (currentTime - control.params.lastUpdate) >=5 then
@@ -2411,110 +2507,12 @@ local function PoiOnUpdate(control)
 			local battlegroundState = GetCurrentBattlegroundState()
 			local bgAllianceHexColor = PVP:BgAllianceToHexColor(control.params.alliance)
 
-
-			local function GetBattlegroundNameString()
-				local text = PVP:Colorize('Welcome to ', 'CCCCCC') ..
-					PVP:Colorize(GetPlayerLocationName(), bgAllianceHexColor) .. PVP:Colorize(' battleground!', 'CCCCCC')
-				return text
-			end
-
-			local function GetBattlegroundTypeString()
-				local text = PVP:Colorize('The gametype is ', 'CCCCCC') ..
-					PVP:Colorize(PVP:GetBattlegroundTypeText(battlegroundGameType), bgAllianceHexColor) ..
-					PVP:Colorize('!', 'CCCCCC')
-				return text
-			end
-
-			local function GetBattlegroundAllianceString()
-				local text = PVP:Colorize("You're playing on ", 'CCCCCC') ..
-					PVP:Colorize(GetBattlegroundTeamName(control.params.alliance), bgAllianceHexColor) ..
-					PVP:Colorize(' team!', 'CCCCCC')
-				return text
-			end
-
-			local function GetBattlegroundDescriptionString()
-				local text = PVP:Colorize(battlegroundDescription, 'CCCCCC')
-				return text
-			end
-
-			local function GetBattlegroundStateString()
-				local battlegroundStateString
-				if battlegroundState == BATTLEGROUND_STATE_PREGAME then
-					battlegroundStateString = "Waiting for players..."
-				elseif battlegroundState == BATTLEGROUND_STATE_STARTING then
-					battlegroundStateString = "The match starts in " ..
-						tostring(zo_round(GetCurrentBattlegroundStateTimeRemaining() / 1000))
-				elseif battlegroundState == BATTLEGROUND_STATE_RUNNING then
-					battlegroundStateString = "The match is running"
-				else
-					battlegroundStateString = ""
-				end
-
-				local text = PVP:Colorize(battlegroundStateString, 'CCCCCC')
-				return text
-			end
-
-			local function GetBattlegroundTeamsInfo()
-				local countSL, countFD, countPD = 0, 0, 0
-
-				for i = 1, GetNumScoreboardEntries() do
-					local alliance = GetScoreboardEntryBattlegroundAlliance(i)
-					if alliance == BATTLEGROUND_TEAM_FIRE_DRAKES then
-						countFD = countFD + 1
-					elseif alliance == BATTLEGROUND_TEAM_PIT_DAEMONS then
-						countPD = countPD + 1
-					elseif alliance == BATTLEGROUND_TEAM_STORM_LORDS then
-						countSL = countSL + 1
-					end
-				end
-
-				local text
-				-- FD/SL/PD
-				text = PVP:Colorize('The teams currently have: ', 'CCCCCC') ..
-					PVP:Colorize(countFD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_FIRE_DRAKES)) ..
-					' ' ..
-					PVP:Colorize(countSL, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_STORM_LORDS)) ..
-					' ' .. PVP:Colorize(countPD, PVP:BgAllianceToHexColor(BATTLEGROUND_TEAM_PIT_DAEMONS))
-				return text
-			end
-
-
-			local function GetBattlegroundPositionInfoString()
-				local battlegroundLeaderboardType
-
-				if battlegroundGameType == BATTLEGROUND_GAME_TYPE_DEATHMATCH then
-					battlegroundLeaderboardType = 1
-				elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_DOMINATION then
-					battlegroundLeaderboardType = 2
-				elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG then
-					battlegroundLeaderboardType = 3
-				end
-
-				local position, points
-
-				if battlegroundLeaderboardType then
-					position, points = GetBattlegroundLeaderboardLocalPlayerInfo(battlegroundLeaderboardType)
-				end
-
-				local text
-
-				if not battlegroundLeaderboardType or position == 0 then
-					text = PVP:Colorize("There're no records about you in this leaderboard yet!", 'CCCCCC')
-				else
-					text = PVP:Colorize('You are ', 'CCCCCC') ..
-						PVP:Colorize('#' .. position, bgAllianceHexColor) ..
-						PVP:Colorize(' in the leaderboards ', 'CCCCCC') ..
-						PVP:Colorize(points, bgAllianceHexColor) .. PVP:Colorize(' points!', 'CCCCCC')
-				end
-				return text
-			end
-
-			PVP_WorldTooltipLabel:SetText(GetBattlegroundNameString())
-			PVP_WorldTooltipSubLabel:SetText(GetBattlegroundTypeString())
-			PVP_WorldTooltipCampaignScoreLabel:SetText(GetBattlegroundAllianceString())
+			PVP_WorldTooltipLabel:SetText(GetBattlegroundNameString(bgAllianceHexColor))
+			PVP_WorldTooltipSubLabel:SetText(GetBattlegroundTypeString(battlegroundGameType, bgAllianceHexColor))
+			PVP_WorldTooltipCampaignScoreLabel:SetText(GetBattlegroundAllianceString(control.params.alliance, bgAllianceHexColor))
 			PVP_WorldTooltipCampaignHoldingsLabel:SetText(GetBattlegroundTeamsInfo())
-			PVP_WorldTooltipEmperorInfoLabel:SetText(GetBattlegroundStateString())
-			PVP_WorldTooltipCampaignPositionInfoLabel:SetText(GetBattlegroundPositionInfoString())
+			PVP_WorldTooltipEmperorInfoLabel:SetText(GetBattlegroundStateString(battlegroundState))
+			PVP_WorldTooltipCampaignPositionInfoLabel:SetText(GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianceHexColor))
 		else
 			if type == 'IC_BASE' then
 				mainText = GetAllianceName(control.params.alliance) .. ' base'
