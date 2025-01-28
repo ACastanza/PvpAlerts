@@ -958,10 +958,11 @@ function PVP:RefreshLocalPlayers()
 		end
 	end
 
-	if self.namesToDisplay then
-		for i = 1, #self.namesToDisplay do
-			local name = self.namesToDisplay[i]
-			if potentialAllies[name] and self.namesToDisplay[i].isResurrect then
+	local namesToDisplay = self.namesToDisplay
+	if namesToDisplay then
+		for i = 1, #namesToDisplay do
+			local name = namesToDisplay[i]
+			if potentialAllies[name] and namesToDisplay[i].isResurrect then
 				potentialAllies[name].isResurrect = true
 			end
 		end
