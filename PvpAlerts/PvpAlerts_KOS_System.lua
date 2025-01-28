@@ -473,8 +473,7 @@ local function IsKOSAccInDB(unitAccName)
 		if #foundPlayerNames == 1 then return foundPlayerNames[1] end
 		for i = 1, #foundPlayerNames do
 			if PVP.SV.playersDB[foundPlayerNames[i]].unitAlliance ~= PVP.allianceOfPlayer then
-				return
-					foundPlayerNames[i]
+				return foundPlayerNames[i]
 			end
 		end
 		return foundPlayerNames[1]
@@ -820,50 +819,36 @@ local function CheckActive(KOSNamesList, kosActivityList, SV, allianceOfPlayer)
 	local currentCampaignId = GetCurrentCampaignId()
 
 	if not kosActivityList then
-		kosActivityList = {}
-		kosActivityList.activeChars = {}
+		kosActivityList = { activeChars = {} }
 		for k, v in pairs(KOSNamesList) do
-			kosActivityList[k] = {}
-			kosActivityList[k].chars = {}
+			kosActivityList[k] = { chars = {} }
 		end
 	end
 
 	for k, v in pairs(kosActivityList) do
-		if k ~= "activeChars" then
-			if not KOSNamesList[k] then kosActivityList[k] = nil end
-		end
+		if k ~= "activeChars" and not KOSNamesList[k] then kosActivityList[k] = nil end
 	end
 
 	kosActivityList.measureTime = currentTime
 
 	for alliance = 1, 3 do
 		for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
-			local isPlayer, ranking, charName, alliancePoints, _, accName = GetCampaignAllianceLeaderboardEntryInfo(
-				currentCampaignId, alliance, i)
+			local isPlayer, ranking, charName, alliancePoints, _, accName = GetCampaignAllianceLeaderboardEntryInfo(currentCampaignId, alliance, i)
 
 			if KOSNamesList[accName] then
 				if not kosActivityList[accName] then
-					kosActivityList[accName] = {}
-					kosActivityList[accName].chars = {}
+					kosActivityList[accName] = { chars = {} }
 				end
 				if not kosActivityList[accName].chars[charName] then
-					kosActivityList[accName].chars[charName] = {
-						currentTime = currentTime,
-						points = alliancePoints
-					}
-				else
-					if kosActivityList[accName].chars[charName].points < alliancePoints then
-						if not kosActivityList.activeChars[accName] then
-							if SV.outputNewKos then
-								d("ACTIVE KOS: " .. charName)
-							end
-							kosActivityList.activeChars[accName] = charName
+					kosActivityList[accName].chars[charName] = { currentTime = currentTime, points = alliancePoints }
+				elseif kosActivityList[accName].chars[charName].points < alliancePoints then
+					if not kosActivityList.activeChars[accName] then
+						if SV.outputNewKos then
+							d("ACTIVE KOS: " .. charName)
 						end
-						kosActivityList[accName].chars[charName] = {
-							currentTime = currentTime,
-							points = alliancePoints
-						}
+						kosActivityList.activeChars[accName] = charName
 					end
+					kosActivityList[accName].chars[charName] = { currentTime = currentTime, points = alliancePoints }
 				end
 			end
 		end
