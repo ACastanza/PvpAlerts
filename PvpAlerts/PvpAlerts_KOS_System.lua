@@ -829,7 +829,7 @@ function PVP:FindCOOLPlayer(unitName, unitAccName)
 	return unitId, newName
 end
 
-local function CheckActive(KOSNamesList, kosActivityList, SV, allianceOfPlayer)
+local function CheckActive(KOSNamesList, kosActivityList, reportActive)
 	if not KOSNamesList or KOSNamesList == {} then return end
 	local currentTime = GetFrameTimeSeconds()
 	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return end
@@ -861,7 +861,7 @@ local function CheckActive(KOSNamesList, kosActivityList, SV, allianceOfPlayer)
 					kosActivityList[accName].chars[charName] = { currentTime = currentTime, points = alliancePoints }
 				elseif kosActivityList[accName].chars[charName].points < alliancePoints then
 					if not kosActivityList.activeChars[accName] then
-						if SV.outputNewKos then
+						if reportActive then
 							d("ACTIVE KOS: " .. charName)
 						end
 						kosActivityList.activeChars[accName] = charName
@@ -1014,7 +1014,7 @@ function PVP:PopulateKOSBuffer()
 
 	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
 		self.lastActiveCheckedTime = currentTime
-		PVP.kosActivityList = CheckActive(KOSNamesList, PVP.kosActivityList, SV, allianceOfPlayer)
+		PVP.kosActivityList = CheckActive(KOSNamesList, PVP.kosActivityList, SV.outputNewKos)
 	end
 	
 	self:RefreshLocalPlayers()
