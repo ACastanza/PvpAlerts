@@ -982,40 +982,30 @@ function PVP:PopulateKOSBuffer()
 	self:RefreshLocalPlayers()
 
 	if next(self.potentialAllies) ~= nil then
+
 		for rawName, v in pairs(self.potentialAllies) do
-			local isAlly = v.unitAlliance == self.allianceOfPlayer
-			if (mode == 2 and isAlly) or (mode == 3 and not isAlly) or mode == 1 then
-				local playerNoteToken
-				if v.playerNote then
-					playerNoteToken = PVP:Colorize("- " .. v.playerNote, 'C5C29F')
-				else
-					playerNoteToken = ""
+			local isAlly = (v.unitAlliance == self.allianceOfPlayer)
+			local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
+			if validAlliance and not self.KOSNamesList[v.unitAccName] then
+				local playerNoteToken = v.playerNote and PVP:Colorize("- " .. v.playerNote, 'C5C29F') or ""
+				local importantIcon, resurrectIcon = "", (v.isResurrect and self:GetResurrectIcon() or "")
+
+				if v.isFriend then importantIcon = importantIcon .. self:GetFriendIcon() end
+				if v.isCool   then importantIcon = importantIcon .. self:GetCoolIcon()   end
+				if v.isGuildmate then
+					local guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(v.unitAccName)
+					importantIcon = importantIcon .. self:GetGuildIcon(nil, firstGuildAllianceColor)
+					if not v.isPlayerGrouped then importantIcon = importantIcon .. guildNames end
 				end
-				if not self.KOSNamesList[v.unitAccName] then
-					local firstGuildAllianceColor, resurrectIcon
-					local importantIcon = ""
-					local guildNames = ""
-					if v.isFriend then
-						importantIcon = importantIcon .. self:GetFriendIcon()
-					end
-					if v.isCool then
-						importantIcon = importantIcon .. self:GetCoolIcon()
-					end
-					if v.isGuildmate then
-						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(v.unitAccName)
-						importantIcon = importantIcon .. self:GetGuildIcon(nil, firstGuildAllianceColor)
-					end
-					if v.isResurrect then
-						resurrectIcon = self:GetResurrectIcon()
-					else
-						resurrectIcon = ""
-					end
-					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-						self:GetFormattedAccountNameLink(v.unitAccName, "40BB40") ..
-						resurrectIcon ..
-						importantIcon .. (((not v.isPlayerGrouped) and guildNames) or "") .. playerNoteToken)
-					self.KOSNamesList[v.unitAccName] = true
-				end
+
+				PVP_KOS_Text:AddMessage(
+					self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+					self:GetFormattedAccountNameLink(v.unitAccName, "40BB40") ..
+					resurrectIcon ..
+					importantIcon ..
+					playerNoteToken
+				)
+				self.KOSNamesList[v.unitAccName] = true
 			end
 		end
 	end
@@ -1049,7 +1039,6 @@ function PVP:PopulateKOSBuffer()
 			end
 		end
 
-		-- if (mode==2 and ally) or (mode==3 and not ally) or mode==4 or mode==1 then
 		if (mode == 2 and ally) or (mode == 3 and not ally) or mode == 1 then
 			if unitId ~= 0 then
 				local resurrectIcon
