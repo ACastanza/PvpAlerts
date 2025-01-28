@@ -179,23 +179,23 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 	end
 
 	local wasCurrent
-
+	local currentObjectiveStatus = PVP.currentObjectiveStatus
 	for i = 1, numberObjectives do
-		if PVP.currentObjectiveStatus[i].meter ~= 10 then
+		if currentObjectiveStatus[i].meter ~= 10 then
 			local barColorR, barColorG, barColorB
-			if PVP.currentObjectiveStatus[i].alliance ~= 0 then
-				barColorR, barColorG, barColorB = PVP:HtmlToColor(PVP:AllianceToColor(PVP.currentObjectiveStatus[i]
+			if currentObjectiveStatus[i].alliance ~= 0 then
+				barColorR, barColorG, barColorB = PVP:HtmlToColor(PVP:AllianceToColor(currentObjectiveStatus[i]
 					.alliance))
 			else
 				barColorR, barColorG, barColorB = 0, 0, 0
 			end
 			-- if PVP.SV.showNeighbourCaptureFrame and PVP.currentObjectiveStatus[i].isCurrent then
-			if PVP.currentObjectiveStatus[i].isCurrent then
+			if currentObjectiveStatus[i].isCurrent then
 				PVP:SetCurrentObjectiveBackdrop(normalControl, objectiveType)
 				wasCurrent = true
 			end
 
-			UpdateValues(normalControl, PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
+			UpdateValues(normalControl, currentObjectiveStatus[i].meter, currentObjectiveStatus[i].percentage, barColorR,
 				barColorG, barColorB, GetKeepAlliance(keepId, 1), GetKeepUnderAttack(keepId, 1))
 		end
 	end
@@ -236,7 +236,8 @@ local function UpdateKeepCaptureValues(mainControl, percentage, barColorR, barCo
 end
 
 function PVP:UpdateKeepCaptureMeter()
-	local numberObjectives = #PVP.currentObjectiveStatus
+	local currentObjectiveStatus = PVP.currentObjectiveStatus
+	local numberObjectives = #currentObjectiveStatus
 	local normalControl = GetControl(PVP_Capture, 'Normal')
 	local keepControl = GetControl(PVP_Capture, 'Keep')
 	local icControl = GetControl(PVP_Capture, 'ImperialCity')
@@ -299,8 +300,8 @@ function PVP:UpdateKeepCaptureMeter()
 	end
 
 	local keepId, lmId, farmId, mineId
-
-	for k, v in pairs(PVP.currentKeepIdArray) do
+	local currentKeepIdArray = PVP.currentKeepIdArray
+	for k, v in pairs(currentKeepIdArray) do
 		if v == KEEPTYPE_KEEP then
 			keepId = k
 		elseif v == RESOURCETYPE_FOOD then
@@ -354,16 +355,16 @@ function PVP:UpdateKeepCaptureMeter()
 
 	local keepFlagToggle, mainControl, wasCurrent, backdropPoint, playerLeft, playerRight, textWidth, labelLeft, controlType, subControlType, worldControlType, objectiveId
 	for i = 1, numberObjectives do
-		if PVP.currentObjectiveStatus[i].meter ~= 10 then
+		if currentObjectiveStatus[i].meter ~= 10 then
 			local barColorR, barColorG, barColorB
-			if PVP.currentObjectiveStatus[i].alliance ~= 0 then
-				barColorR, barColorG, barColorB = PVP:HtmlToColor(PVP:AllianceToColor(PVP.currentObjectiveStatus[i]
+			if currentObjectiveStatus[i].alliance ~= 0 then
+				barColorR, barColorG, barColorB = PVP:HtmlToColor(PVP:AllianceToColor(currentObjectiveStatus[i]
 					.alliance))
 			else
 				barColorR, barColorG, barColorB = 0, 0, 0
 			end
 
-			if PVP.currentObjectiveStatus[i].keepId == keepId then
+			if currentObjectiveStatus[i].keepId == keepId then
 				if not keepFlagToggle then
 					mainControl = keepFlag2
 					keepFlagToggle = true
@@ -375,14 +376,14 @@ function PVP:UpdateKeepCaptureMeter()
 				subControlType = KEEPTYPE_KEEP
 				worldControlType = PVP_World
 				objectiveId = keepId
-			elseif PVP.currentObjectiveStatus[i].keepId == lmId then
+			elseif currentObjectiveStatus[i].keepId == lmId then
 				mainControl = GetControl(lm, 'Flag1')
 				backdropPoint = lm
 				controlType = KEEPTYPE_RESOURCE
 				subControlType = RESOURCETYPE_WOOD
 				worldControlType = PVP_WorldLM
 				objectiveId = lmId
-			elseif PVP.currentObjectiveStatus[i].keepId == farmId then
+			elseif currentObjectiveStatus[i].keepId == farmId then
 				mainControl = GetControl(farm, 'Flag1')
 				backdropPoint = farm
 				controlType = KEEPTYPE_RESOURCE
@@ -390,7 +391,7 @@ function PVP:UpdateKeepCaptureMeter()
 				worldControlType = PVP_WorldFarm
 
 				objectiveId = farmId
-			elseif PVP.currentObjectiveStatus[i].keepId == mineId then
+			elseif currentObjectiveStatus[i].keepId == mineId then
 				mainControl = GetControl(mine, 'Flag1')
 				backdropPoint = mine
 				controlType = KEEPTYPE_RESOURCE
@@ -399,7 +400,7 @@ function PVP:UpdateKeepCaptureMeter()
 
 				objectiveId = mineId
 			end
-			local isCurrent = PVP.currentObjectiveStatus[i].isCurrent
+			local isCurrent = currentObjectiveStatus[i].isCurrent
 
 			if isCurrent then
 				PVP:SetCurrentObjectiveBackdrop(backdropPoint, controlType)
@@ -408,9 +409,9 @@ function PVP:UpdateKeepCaptureMeter()
 
 			-- self:Set3DMarker(objectiveId, subControlType, isCurrent, worldControlType)
 
-			UpdateKeepCaptureValues(mainControl, PVP.currentObjectiveStatus[i].percentage, barColorR, barColorG, barColorB,
-				PVP.currentObjectiveStatus[i].alliance, PVP.currentObjectiveStatus[i].meter,
-				PVP.currentObjectiveStatus[i].keepId)
+			UpdateKeepCaptureValues(mainControl, currentObjectiveStatus[i].percentage, barColorR, barColorG, barColorB,
+			currentObjectiveStatus[i].alliance, currentObjectiveStatus[i].meter,
+			currentObjectiveStatus[i].keepId)
 		end
 	end
 	if not wasCurrent then PVP:SetCurrentObjectiveBackdrop() end
@@ -452,7 +453,8 @@ local function UpdateDistrictCaptureValues(icControl, meter, percentage, barColo
 end
 
 function PVP:UpdateDistrictCaptureMeter()
-	local numberObjectives = #PVP.currentObjectiveStatus
+	local currentObjectiveStatus = PVP.currentObjectiveStatus
+	local numberObjectives = #currentObjectiveStatus
 	local normalControl = GetControl(PVP_Capture, 'Normal')
 	local keepControl = GetControl(PVP_Capture, 'Keep')
 	local icControl = GetControl(PVP_Capture, 'ImperialCity')
@@ -475,20 +477,19 @@ function PVP:UpdateDistrictCaptureMeter()
 
 	local wasCurrent
 	for i = 1, numberObjectives do
-		if PVP.currentObjectiveStatus[i].meter ~= 10 then
+		if currentObjectiveStatus[i].meter ~= 10 then
 			local barColorR, barColorG, barColorB
-			if PVP.currentObjectiveStatus[i].alliance ~= 0 then
-				barColorR, barColorG, barColorB = PVP:HtmlToColor(PVP:AllianceToColor(PVP.currentObjectiveStatus[i]
-					.alliance))
+			if currentObjectiveStatus[i].alliance ~= 0 then
+				barColorR, barColorG, barColorB = PVP:HtmlToColor(PVP:AllianceToColor(currentObjectiveStatus[i].alliance))
 			else
 				barColorR, barColorG, barColorB = 0, 0, 0
 			end
-			if PVP.currentObjectiveStatus[i].isCurrent then
+			if currentObjectiveStatus[i].isCurrent then
 				wasCurrent = true
 			end
 
-			UpdateDistrictCaptureValues(icControl, PVP.currentObjectiveStatus[i].meter, PVP.currentObjectiveStatus[i].percentage, barColorR,
-				barColorG, barColorB, PVP.currentObjectiveStatus[i].keepId, PVP.currentObjectiveStatus[i].isCurrent)
+			UpdateDistrictCaptureValues(icControl, currentObjectiveStatus[i].meter, currentObjectiveStatus[i].percentage, barColorR,
+				barColorG, barColorB, currentObjectiveStatus[i].keepId, currentObjectiveStatus[i].isCurrent)
 		end
 	end
 	if not wasCurrent then PVP:SetCurrentObjectiveBackdrop() end
@@ -560,45 +561,45 @@ function PVP:SetCurrentObjectiveBackdrop(currentControl, controlType)
 end
 
 function PVP:UpdateCaptureMeter(keepId, foundObjectives, infoType)
-	if not keepId or keepId == 0 or keepId == {} or not PVP.currentObjectiveStatus then
+	local currentObjectiveStatus = PVP.currentObjectiveStatus
+	if not keepId or keepId == 0 or keepId == {} or not currentObjectiveStatus then
 		HUD_SCENE:RemoveFragment(PVP_CAPTURE_SCENE_FRAGMENT)
 		HUD_UI_SCENE:RemoveFragment(PVP_CAPTURE_SCENE_FRAGMENT)
 		LOOT_SCENE:RemoveFragment(PVP_CAPTURE_SCENE_FRAGMENT)
 		PVP_Capture:SetHidden(true)
 		return
 	end
-	for i = 1, #PVP.currentObjectiveStatus do
-		if infoType ~= 'zone' and PVP.currentObjectiveStatus[i].objectiveId == foundObjectives.objectiveId and PVP.currentObjectiveStatus[i].keepId == keepId and PVP.currentObjectiveStatus[i].meter ~= 10 then
+	local currentObjectiveCount = #currentObjectiveStatus
+	for i = 1, currentObjectiveCount do
+		if infoType ~= 'zone' and currentObjectiveStatus[i].objectiveId == foundObjectives.objectiveId and currentObjectiveStatus[i].keepId == keepId and currentObjectiveStatus[i].meter ~= 10 then
 			if infoType == 'control' then
-				PVP.currentObjectiveStatus[i].objectiveState = foundObjectives.objectiveState
-				PVP.currentObjectiveStatus[i].objectiveEvent = foundObjectives.objectiveEvent
-				PVP.currentObjectiveStatus[i].alliance = PVP:CombineAllianceInfo(foundObjectives.allianceParam1,
-					foundObjectives.allianceParam2)
-				-- PVP.currentObjectiveStatus[i].alliance = GetCaptureAreaObjectiveOwner(PVP.currentObjectiveStatus[i].keepId, PVP.currentObjectiveStatus[i].objectiveId, BGQUERY_LOCAL)
-				if not (PVP.currentObjectiveStatus[i].objectiveState == OBJECTIVE_CONTROL_STATE_AREA_ABOVE_CONTROL_THRESHOLD and PVP.currentObjectiveStatus[i].isCaptureStatus and (GetFrameTimeMilliseconds() - PVP.currentObjectiveStatus[i].isCaptureStatus < 5000)) then
-					PVP.currentObjectiveStatus[i].percentage = PVP:GetCapturePercentFromAlliance(
-						PVP.currentObjectiveStatus[i].objectiveState,
-						GetKeepAlliance(PVP.currentObjectiveStatus[i].keepId, 1), PVP.currentObjectiveStatus[i].alliance)
+				currentObjectiveStatus[i].objectiveState = foundObjectives.objectiveState
+				currentObjectiveStatus[i].objectiveEvent = foundObjectives.objectiveEvent
+				currentObjectiveStatus[i].alliance = PVP:CombineAllianceInfo(foundObjectives.allianceParam1, foundObjectives.allianceParam2)
+				-- currentObjectiveStatus[i].alliance = GetCaptureAreaObjectiveOwner(currentObjectiveStatus[i].keepId, currentObjectiveStatus[i].objectiveId, BGQUERY_LOCAL)
+				if not (currentObjectiveStatus[i].objectiveState == OBJECTIVE_CONTROL_STATE_AREA_ABOVE_CONTROL_THRESHOLD and currentObjectiveStatus[i].isCaptureStatus and (GetFrameTimeMilliseconds() - currentObjectiveStatus[i].isCaptureStatus < 5000)) then
+					currentObjectiveStatus[i].percentage = PVP:GetCapturePercentFromAlliance(
+						currentObjectiveStatus[i].objectiveState, GetKeepAlliance(currentObjectiveStatus[i].keepId, 1), currentObjectiveStatus[i].alliance)
 				end
-				PVP.currentObjectiveStatus[i].allianceParam1 = foundObjectives.allianceParam1
-				PVP.currentObjectiveStatus[i].allianceParam2 = foundObjectives.allianceParam2
-				PVP.currentObjectiveStatus[i].isCaptureStatus = foundObjectives.isCaptureStatus
+				currentObjectiveStatus[i].allianceParam1 = foundObjectives.allianceParam1
+				currentObjectiveStatus[i].allianceParam2 = foundObjectives.allianceParam2
+				currentObjectiveStatus[i].isCaptureStatus = foundObjectives.isCaptureStatus
 			elseif infoType == 'capture' then
-				PVP.currentObjectiveStatus[i].allianceParam1 = foundObjectives.allianceParam1
-				PVP.currentObjectiveStatus[i].allianceParam2 = foundObjectives.allianceParam1
-				PVP.currentObjectiveStatus[i].alliance = foundObjectives.allianceParam1
-				PVP.currentObjectiveStatus[i].percentage = foundObjectives.capturePoolValue
-				PVP.currentObjectiveStatus[i].isCaptureStatus = foundObjectives.isCaptureStatus
+				currentObjectiveStatus[i].allianceParam1 = foundObjectives.allianceParam1
+				currentObjectiveStatus[i].allianceParam2 = foundObjectives.allianceParam1
+				currentObjectiveStatus[i].alliance = foundObjectives.allianceParam1
+				currentObjectiveStatus[i].percentage = foundObjectives.capturePoolValue
+				currentObjectiveStatus[i].isCaptureStatus = foundObjectives.isCaptureStatus
 			end
 		end
 	end
 
 	if self.SV.showNeighbourCaptureFrame then
-		if #PVP.currentObjectiveStatus == 5 then
+		if currentObjectiveCount == 5 then
 			PVP:UpdateKeepCaptureMeter()
-		elseif #PVP.currentObjectiveStatus == 1 or #PVP.currentObjectiveStatus == 2 or #PVP.currentObjectiveStatus == 3 then
-			PVP:UpdateNormalCaptureMeter(PVP.currentObjectiveStatus[1].keepId)
-		elseif #PVP.currentObjectiveStatus == 6 then
+		elseif currentObjectiveCount == 1 or currentObjectiveCount == 2 or currentObjectiveCount == 3 then
+			PVP:UpdateNormalCaptureMeter(currentObjectiveStatus[1].keepId)
+		elseif currentObjectiveCount == 6 then
 			PVP:UpdateDistrictCaptureMeter()
 		end
 	else
@@ -654,41 +655,41 @@ function PVP:SetupCurrentObjective(zoneText, keepId, foundObjectives, keepIdToUp
 			if self.SV.showNeighbourCaptureFrame then
 				PVP.currentKeepIdArray = keepId
 			end
-			PVP.currentObjectiveStatus = foundObjectives
-			for i = 1, #PVP.currentObjectiveStatus do
-				if not PVP.currentObjectiveStatus[i].isArtifact then
-					PVP.currentObjectiveStatus[i].meter = i
+			for i = 1, #foundObjectives do
+				if not foundObjectives[i].isArtifact then
+					foundObjectives[i].meter = i
 
-					-- PVP.currentObjectiveStatus[i].alliance = PVP:CombineAllianceInfo(PVP.currentObjectiveStatus[i].allianceParam1, PVP.currentObjectiveStatus[i].allianceParam2)
+					-- foundObjectives[i].alliance = PVP:CombineAllianceInfo(foundObjectives[i].allianceParam1, foundObjectives[i].allianceParam2)
 
-					local captureAlliance = GetCaptureAreaObjectiveOwner(PVP.currentObjectiveStatus[i].keepId,
-						PVP.currentObjectiveStatus[i].objectiveId, 1)
+					local captureAlliance = GetCaptureAreaObjectiveOwner(foundObjectives[i].keepId,
+					foundObjectives[i].objectiveId, 1)
 
-					if captureAlliance == 0 and not GetKeepUnderAttack(PVP.currentObjectiveStatus[i].keepId, 1) then
+					if captureAlliance == 0 and not GetKeepUnderAttack(foundObjectives[i].keepId, 1) then
 						captureAlliance =
-							GetKeepAlliance(PVP.currentObjectiveStatus[i].keepId, 1)
+							GetKeepAlliance(foundObjectives[i].keepId, 1)
 					end
 
 
-					-- PVP.currentObjectiveStatus[i].alliance = GetCaptureAreaObjectiveLastInfluenceState(PVP.currentObjectiveStatus[i].keepId, PVP.currentObjectiveStatus[i].objectiveId, 1)
-					PVP.currentObjectiveStatus[i].alliance = captureAlliance
+					-- foundObjectives[i].alliance = GetCaptureAreaObjectiveLastInfluenceState(foundObjectives[i].keepId, foundObjectives[i].objectiveId, 1)
+					foundObjectives[i].alliance = captureAlliance
 
-					if keepIdToUpdate and updateType and PVP.currentObjectiveStatus[i].keepId == keepIdToUpdate then
-						if PVP.currentObjectiveStatus[i].objectiveState == OBJECTIVE_CONTROL_STATE_AREA_ABOVE_CONTROL_THRESHOLD then
-							PVP.currentObjectiveStatus[i].percentage = 90
+					if keepIdToUpdate and updateType and foundObjectives[i].keepId == keepIdToUpdate then
+						if foundObjectives[i].objectiveState == OBJECTIVE_CONTROL_STATE_AREA_ABOVE_CONTROL_THRESHOLD then
+							foundObjectives[i].percentage = 90
 						else
-							PVP.currentObjectiveStatus[i].percentage = 100
+							foundObjectives[i].percentage = 100
 						end
 					else
-						PVP.currentObjectiveStatus[i].percentage = PVP:GetCapturePercentFromAlliance(
-							PVP.currentObjectiveStatus[i].objectiveState,
-							GetKeepAlliance(PVP.currentObjectiveStatus[i].keepId, 1),
-							PVP.currentObjectiveStatus[i].alliance)
+						foundObjectives[i].percentage = PVP:GetCapturePercentFromAlliance(
+							foundObjectives[i].objectiveState,
+							GetKeepAlliance(foundObjectives[i].keepId, 1),
+							foundObjectives[i].alliance)
 					end
 				else
-					PVP.currentObjectiveStatus[i].meter = 10
+					foundObjectives[i].meter = 10
 				end
 			end
+			PVP.currentObjectiveStatus = foundObjectives
 		end
 	end
 	PVP:UpdateCaptureMeter(keepId, nil, 'zone')
@@ -843,8 +844,10 @@ function PVP:ProcessDistrictNamePrompt()
 	-- d('propmtStarted!')
 
 	local isInDistrict
-	for i = 1, #PVP.currentObjectiveStatus do
-		if GetPlayerLocationName() == GetKeepName(PVP.currentObjectiveStatus[i].keepId) then
+	local currentObjectiveStatus = PVP.currentObjectiveStatus
+	local currentObjectiveCount = #currentObjectiveStatus
+	for i = 1, currentObjectiveCount do
+		if GetPlayerLocationName() == GetKeepName(currentObjectiveStatus[i].keepId) then
 			isInDistrict = true
 			break
 		end
@@ -855,19 +858,19 @@ function PVP:ProcessDistrictNamePrompt()
 
 		if name and name ~= "" then
 			-- d('nameBefore', name)
-			for i = 1, #PVP.currentObjectiveStatus do
+			for i = 1, currentObjectiveCount do
 				local district = GetControl(PVP_CaptureImperialCity, 'District' .. tostring(i))
 				local districtLabel = GetControl(district, 'Label')
 				if districtLabel:GetText() == zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, name) then
 					-- d('nameAfter', name)
-					PVP.currentObjectiveStatus[i].isCurrent = true
+					currentObjectiveStatus[i].isCurrent = true
 				else
-					PVP.currentObjectiveStatus[i].isCurrent = false
+					currentObjectiveStatus[i].isCurrent = false
 				end
 			end
 		else
-			for i = 1, #PVP.currentObjectiveStatus do
-				PVP.currentObjectiveStatus[i].isCurrent = false
+			for i = 1, currentObjectiveCount do
+				currentObjectiveStatus[i].isCurrent = false
 			end
 		end
 		PVP:UpdateDistrictCaptureMeter()

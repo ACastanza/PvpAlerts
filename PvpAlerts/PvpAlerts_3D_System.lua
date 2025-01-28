@@ -4285,36 +4285,37 @@ local function FindNearbyPOIs()
 		-- end
 	end
 
-	if PVP.currentMapPings and #PVP.currentMapPings > 0 then
-		for i = 1, #PVP.currentMapPings do
-			if not PVP.currentMapPings[i].pingObject then
-				if PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
-					PVP.currentMapPings[i].targetX, PVP.currentMapPings[i].targetY = PVP.LMP:GetMapPing(
+	local currentMapPings = PVP.currentMapPings
+	if currentMapPings and #currentMapPings > 0 then
+		for i = 1, #currentMapPings do
+			if not currentMapPings[i].pingObject then
+				if currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
+					currentMapPings[i].targetX, currentMapPings[i].targetY = PVP.LMP:GetMapPing(
 						MAP_PIN_TYPE_PLAYER_WAYPOINT)
-				elseif PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
-					PVP.currentMapPings[i].targetX, PVP.currentMapPings[i].targetY = PVP.LMP:GetMapPing(
+				elseif currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
+					currentMapPings[i].targetX, currentMapPings[i].targetY = PVP.LMP:GetMapPing(
 						MAP_PIN_TYPE_RALLY_POINT)
-				elseif PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
-					PVP.currentMapPings[i].targetX, PVP.currentMapPings[i].targetY = PVP.LMP:GetMapPing(
-						MAP_PIN_TYPE_PING, PVP.currentMapPings[i].pingTag)
+				elseif currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
+					currentMapPings[i].targetX, currentMapPings[i].targetY = PVP.LMP:GetMapPing(
+						MAP_PIN_TYPE_PING, currentMapPings[i].pingTag)
 				end
 
-				if PVP.currentMapPings[i].targetX ~= 0 and PVP.currentMapPings[i].targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, PVP.currentMapPings[i].targetX,
-						PVP.currentMapPings[i].targetY)
+				if currentMapPings[i].targetX ~= 0 and currentMapPings[i].targetY ~= 0 then
+					local distance = PVP:GetCoordsDistance2D(selfX, selfY, currentMapPings[i].targetX,
+						currentMapPings[i].targetY)
 
 					if distance <= adjusted_MAX_DISTANCE * 2 then
 						local name
-						if PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
+						if currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
 							name = 'My waypoint'
-						elseif PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
+						elseif currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
 							name = 'Group Rally point'
-						elseif PVP.currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
-							if PVP.currentMapPings[i].pingTag then
-								if PVP.currentMapPings[i].isLocalPlayerOwner then
+						elseif currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
+							if currentMapPings[i].pingTag then
+								if currentMapPings[i].isLocalPlayerOwner then
 									name = 'My Ping'
 								else
-									local unitName = PVP:GetValidName(GetRawUnitName(PVP.currentMapPings[i].pingTag))
+									local unitName = PVP:GetValidName(GetRawUnitName(currentMapPings[i].pingTag))
 									local formattedName = PVP:GetTargetChar(unitName)
 									if not formattedName then
 										formattedName = PVP:Colorize(zo_strformat(SI_UNIT_NAME, unitName),
@@ -4328,10 +4329,10 @@ local function FindNearbyPOIs()
 						end
 						insert(foundPOI,
 							{
-								pinType = PVP.currentMapPings[i].pinType,
-								pingTag = PVP.currentMapPings[i].pingTag,
-								targetX = PVP.currentMapPings[i].targetX,
-								targetY = PVP.currentMapPings[i].targetY,
+								pinType = currentMapPings[i].pinType,
+								pingTag = currentMapPings[i].pingTag,
+								targetX = currentMapPings[i].targetX,
+								targetY = currentMapPings[i].targetY,
 								distance = distance,
 								name = name
 							})
