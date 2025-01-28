@@ -896,10 +896,10 @@ function PVP:RefreshLocalPlayers()
 	local playerNames   = self.playerNames
 	local playersDB     = SV.playersDB
 	local playerNotes   = SV.playerNotes
-	local currentTime      = GetFrameTimeMilliseconds()
 	local showPlayerNotes  = SV.showPlayerNotes
 	local showFriends      = SV.showFriends
 	local showGuildMates   = SV.showGuildMates
+	local currentTime      = GetFrameTimeMilliseconds()
 
 	for unitId, rawName in pairs(idToName) do
 		local dbRec = playersDB[rawName]
