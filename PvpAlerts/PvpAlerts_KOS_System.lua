@@ -994,25 +994,26 @@ end
 
 function PVP:PopulateKOSBuffer()
 	local SV         = self.SV
+	if SV.unlocked then return end
+
 	local KOSList    = SV.KOSList
 	local coolList   = SV.coolList
 	local playersDB  = SV.playersDB
 
-	if SV.unlocked then return end
 	if SV.showTargetNameFrame then self:UpdateTargetName() end
 	local mode = SV.KOSmode
 	PVP_KOS_Text:Clear()
 
-	self.KOSNamesList = {}
+	local KOSNamesList = {}
 	for i = 1, #KOSList do
-		self.KOSNamesList[KOSList[i].unitAccName] = true
+		KOSNamesList[KOSList[i].unitAccName] = true
 	end
 
 	local currentTime = GetFrameTimeMilliseconds()
 
 	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
 		self.lastActiveCheckedTime = currentTime
-		PVP.kosActivityList = CheckActive(self.KOSNamesList, PVP.kosActivityList, SV, self.allianceOfPlayer)
+		PVP.kosActivityList = CheckActive(KOSNamesList, PVP.kosActivityList, SV, self.allianceOfPlayer)
 	end
 	
 	self:RefreshLocalPlayers()
@@ -1021,7 +1022,7 @@ function PVP:PopulateKOSBuffer()
 		for rawName, v in pairs(self.potentialAllies) do
 			local isAlly = (v.unitAlliance == self.allianceOfPlayer)
 			local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
-			if validAlliance and not self.KOSNamesList[v.unitAccName] then
+			if validAlliance and not KOSNamesList[v.unitAccName] then
 				local resurrectIcon = FormatResurrectIcon(v.isResurrect)
 				local importantIcon = BuildImportantIcon(v)
 				local playerNoteToken = FormatPlayerNote(v.playerNote)
@@ -1033,10 +1034,11 @@ function PVP:PopulateKOSBuffer()
 					importantIcon ..
 					playerNoteToken
 				)
-				self.KOSNamesList[v.unitAccName] = true
+				KOSNamesList[v.unitAccName] = true
 			end
 		end
 	end
+	self.KOSNamesList = KOSNamesList
 
 	local activeStringsArray = {}
 	for i = 1, #KOSList do
