@@ -878,57 +878,76 @@ local function CheckActive(KOSNamesList, kosActivityList, SV, allianceOfPlayer)
 end
 
 function PVP:RefreshLocalPlayers()
-	-- Gather all records into 'self.localPlayers' from both 'idToName' and 'playerNames'.
 	self.localPlayers = {}
+	self.potentialAllies = {}
+	local currentTime      = GetFrameTimeMilliseconds()
+	local showPlayerNotes  = self.SV.showPlayerNotes
+	local showFriends      = self.SV.showFriends
+	local showGuildMates   = self.SV.showGuildMates
+
 	for unitId, rawName in pairs(self.idToName) do
 		local dbRec = self.SV.playersDB[rawName]
 		if dbRec then
+			local isCool          = self:FindAccInCOOL(rawName, dbRec.unitAccName)
+			local isPlayerGrouped = IsPlayerInGroup(rawName)
+			local playerNote      = showPlayerNotes and self.SV.playerNotes[dbRec.unitAccName] or nil
+			local hasPlayerNote   = playerNote and (playerNote ~= "")
+			local isFriend        = showFriends and IsFriend(rawName) or false
+			local isGuildmate     = showGuildMates and IsGuildMate(rawName) or false
+
 			self.localPlayers[rawName] = {
-				unitId      = unitId,
-				unitAccName = dbRec.unitAccName,
-				unitAlliance = dbRec.unitAlliance,
+				unitId        = unitId,
+				unitAccName   = dbRec.unitAccName,
+				unitAlliance  = dbRec.unitAlliance,
 			}
-		end
-	end
-	for rawName, _ in pairs(self.playerNames) do
-		if not self.localPlayers[rawName] then
-			local dbRec = self.SV.playersDB[rawName]
-			if dbRec then
-				self.localPlayers[rawName] = {
-					unitId       = 1234567890,
-					unitAccName  = dbRec.unitAccName,
-					unitAlliance = dbRec.unitAlliance,
+
+			if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
+				self.potentialAllies[rawName] = {
+					currentTime     = currentTime,
+					unitAccName     = dbRec.unitAccName,
+					unitAlliance    = dbRec.unitAlliance,
+					isPlayerGrouped = isPlayerGrouped,
+					isFriend        = isFriend,
+					isGuildmate     = isGuildmate,
+					isCool          = isCool,
+					playerNote      = hasPlayerNote and playerNote or nil,
+					isResurrect     = false
 				}
 			end
 		end
 	end
-end
 
-function PVP:FindPotentialAllies()
-	local currentTime = GetFrameTimeMilliseconds()
-	local showPlayerNotes = self.SV.showPlayerNotes
-	local showFriends = self.SV.showFriends
-	local showGuildMates = self.SV.showGuildMates
+	for rawName, _ in pairs(self.playerNames) do
+		if not self.localPlayers[rawName] then
+			local dbRec = self.SV.playersDB[rawName]
+			if dbRec then
+				local isCool          = self:FindAccInCOOL(rawName, dbRec.unitAccName)
+				local isPlayerGrouped = IsPlayerInGroup(rawName)
+				local playerNote      = showPlayerNotes and self.SV.playerNotes[dbRec.unitAccName] or nil
+				local hasPlayerNote   = playerNote and (playerNote ~= "")
+				local isFriend        = showFriends and IsFriend(rawName) or false
+				local isGuildmate     = showGuildMates and IsGuildMate(rawName) or false
 
-	for rawName, rec in pairs(self.localPlayers) do
-		local isCool = self:FindAccInCOOL(rawName, rec.unitAccName)
-		local isPlayerGrouped = IsPlayerInGroup(rawName)
-		local playerNote = showPlayerNotes and self.SV.playerNotes[rec.unitAccName] or nil
-		local hasPlayerNote = playerNote and (playerNote ~= "")
-		local isFriend = showFriends and IsFriend(rawName) or false
-		local isGuildmate = showGuildMates and IsGuildMate(rawName) or false
-		if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
-			self.potentialAllies[rawName] = {
-				currentTime = currentTime,
-				unitAccName = rec.unitAccName,
-				unitAlliance = rec.unitAlliance,
-				isPlayerGrouped = isPlayerGrouped,
-				isFriend = isFriend,
-				isGuildmate = isGuildmate,
-				isCool = isCool,
-				playerNote = hasPlayerNote and playerNote or nil,
-				isResurrect = false
-			}
+				self.localPlayers[rawName] = {
+					unitId        = 1234567890,
+					unitAccName   = dbRec.unitAccName,
+					unitAlliance  = dbRec.unitAlliance,
+				}
+
+				if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
+					self.potentialAllies[rawName] = {
+						currentTime     = currentTime,
+						unitAccName     = dbRec.unitAccName,
+						unitAlliance    = dbRec.unitAlliance,
+						isPlayerGrouped = isPlayerGrouped,
+						isFriend        = isFriend,
+						isGuildmate     = isGuildmate,
+						isCool          = isCool,
+						playerNote      = hasPlayerNote and playerNote or nil,
+						isResurrect     = false
+					}
+				end
+			end
 		end
 	end
 
@@ -961,7 +980,6 @@ function PVP:PopulateKOSBuffer()
 	end
 	
 	self:RefreshLocalPlayers()
-	self:FindPotentialAllies()
 
 	if next(self.potentialAllies) ~= nil then
 		for rawName, v in pairs(self.potentialAllies) do

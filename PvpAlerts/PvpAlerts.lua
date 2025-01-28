@@ -2759,6 +2759,7 @@ function PVP:FullReset()
 	self.KOSNamesList = {}
 	self.namesToDisplay = {}
 
+	self.localPlayers = {}
 	self.potentialAllies = {}
 
 	self.attackSoundDelay = 0
