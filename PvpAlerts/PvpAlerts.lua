@@ -119,7 +119,8 @@ function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays
 end
 
 function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
-	if not PVP.SV.enabled or not PVP:IsInPVPZone() then return end
+	local SV = PVP.SV
+	if not SV.enabled or not PVP:IsInPVPZone() then return end
 	local function sma(period)
 		local t = {}
 		local function sum(a, ...)
@@ -154,7 +155,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 
 
 	local currentTime = GetFrameTimeMilliseconds()
-	if PVP.SV.reportSavedInfo and (not PVP.reportTimer or PVP.reportTimer == 0 or (currentTime - PVP.reportTimer) >= 300000) then -- // output of the number of stored accounts/players //
+	if SV.reportSavedInfo and (not PVP.reportTimer or PVP.reportTimer == 0 or (currentTime - PVP.reportTimer) >= 300000) then -- // output of the number of stored accounts/players //
 		PVP:RefreshStoredNumbers(currentTime)
 	end
 
@@ -165,7 +166,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 	end
 
 	if not PVP.killFeedRatioDelay or (PVP.killFeedRatioDelay > 0 and (currentTime - PVP.killFeedRatioDelay) >= PVP_BATTLE_INTERVAL) then -- // battle report maintenance //
-		if PVP.SV.showKillFeedFrame and not IsActiveWorldBattleground() then
+		if SV.showKillFeedFrame and not IsActiveWorldBattleground() then
 			PVP:BattleReport()
 		end
 		PVP.killFeedRatioDelay = 0
@@ -177,7 +178,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 	local start3d = GetGameTimeMilliseconds()
 	PVP:UpdateNearbyKeepsAndPOIs() -- // 3d icons main loop //
 	local end_all = GetGameTimeMilliseconds()
-	if PVP.SV.showPerformance then
+	if SV.showPerformance then
 		chat:Print('----------------------------')
 		chat:Printf('Main loop time = %dms', start3d - start_main)
 		chat:Printf('Main refresh = %dms', end_refresh - start_refresh)
@@ -270,19 +271,19 @@ function PVP:OnCombatState(eventCode, combatState)
 			}
 		else
 			if playerDbRecord.unitAlliance ~= v.unitAlliance then
-				PVP.SV.playersDB[k].unitAlliance = v.unitAlliance
+				playerDbRecord.unitAlliance = v.unitAlliance
 			end
 			if playerDbRecord.unitAvARank ~= v.unitAvARank then
-				PVP.SV.playersDB[k].unitAvARank = v.unitAvARank
+				playerDbRecord.unitAvARank = v.unitAvARank
 			end
 			if playerDbRecord.lastSeen ~= v.lastSeen then
-				PVP.SV.playersDB[k].lastSeen = v.lastSeen
+				playerDbRecord.lastSeen = v.lastSeen
 			end
 			if v.mundus and v.mundus ~= "" then
-				PVP.SV.playersDB[k].mundus = v.mundus
+				playerDbRecord.mundus = v.mundus
 			end
 			if v.unitSpec and v.unitSpec ~= "" then
-				PVP.SV.playersDB[k].unitSpec = v.unitSpec
+				playerDbRecord.unitSpec = v.unitSpec
 			end
 			if playerDbRecord.unitAccName ~= v.unitAccName then
 				PVP:UpdatePlayerDbAccountName(k, v.unitAccName, playerDbRecord.unitAccName)
@@ -308,7 +309,8 @@ function PVP:RefreshStoredNumbers(currentTime) -- // output of the number of sto
 	local count = 0
 	local countAcc = 0
 	local accountsDB = {}
-	for k, v in pairs(PVP.SV.playersDB) do
+	local playersDB = PVP.SV.playersDB
+	for k, v in pairs(playersDB) do
 		if not accountsDB[v.unitAccName] then
 			accountsDB[v.unitAccName] = true
 			countAcc = countAcc + 1
@@ -401,13 +403,15 @@ function PVP_test_SV()
 	local accountCountWithCP = 0
 	local playerCountWithCP = 0
 	local accountsDB = {}
+	local playersDB = PVP.SV.playersDB
+	local playersCP = PVP.SV.CP
 
-	for k, v in pairs(PVP.SV.playersDB) do
+	for k, v in pairs(playersDB) do
 		if not accountsDB[v.unitAccName] then
 			accountCountOriginal = accountCountOriginal + 1
-			if PVP.SV.CP[v.unitAccName] then
+			if playersCP[v.unitAccName] then
 				accountsDB[v.unitAccName] = {}
-				accountsDB[v.unitAccName].CP = PVP.SV.CP[v.unitAccName]
+				accountsDB[v.unitAccName].CP = playersCP[v.unitAccName]
 				accountsDB[v.unitAccName].players = {}
 				accountsDB[v.unitAccName].players.k = v
 
@@ -429,8 +433,8 @@ function PVP_test_SV()
 
 
 	local averageCP = 0
-	local medianCP = GetMedian(PVP.SV.CP)
-	local stdCP = GetStd(PVP.SV.CP)
+	local medianCP = GetMedian(playersCP)
+	local stdCP = GetStd(playersCP)
 	local aboveCPcap = 0
 	local totalWithSpec = 0
 	local totalMag = 0
@@ -532,26 +536,35 @@ function PVP_test_SV()
 end
 
 function PVP:CountTotal(currentTime)
-	for k, v in pairs(self.totalPlayers) do
+	local totalPlayers = self.totalPlayers
+	local playerSpec = self.playerSpec
+	local miscAbilities = self.miscAbilities
+	local playerAlliance = self.playerAlliance
+	local idToName = self.idToName
+	local playerNames = self.playerNames
+	local namesToDisplay = self.namesToDisplay
+	local currentlyDead = self.currentlyDead
+
+	for k, v in pairs(totalPlayers) do
 		if (currentTime - v) > PVP_ID_RETAIN_TIME_EFFECT then
-			self.totalPlayers[k] = nil
-			self.playerSpec[self.idToName[k]] = nil
-			self.miscAbilities[self.idToName[k]] = nil
-			self.playerAlliance[k] = nil
-			self.idToName[k] = nil
+			totalPlayers[k] = nil
+			playerSpec[idToName[k]] = nil
+			miscAbilities[idToName[k]] = nil
+			playerAlliance[k] = nil
+			idToName[k] = nil
 		end
 	end
 
-	for k, v in pairs(self.playerNames) do
+	for k, v in pairs(playerNames) do
 		if (currentTime - v) >= PVP_ID_RETAIN_TIME then
-			self.playerNames[k] = nil
+			playerNames[k] = nil
 		end
 	end
 
 	local wasRemoved
-	for i = #self.namesToDisplay, 1, -1 do
-		if (currentTime - self.namesToDisplay[i].currentTime) >= PVP_ID_RETAIN_TIME then
-			remove(self.namesToDisplay, i)
+	for i = #namesToDisplay, 1, -1 do
+		if (currentTime - namesToDisplay[i].currentTime) >= PVP_ID_RETAIN_TIME then
+			remove(namesToDisplay, i)
 			wasRemoved = true
 		end
 	end
@@ -561,21 +574,21 @@ function PVP:CountTotal(currentTime)
 	end
 
 	local count = 0
-	for _, v in ipairs(self.namesToDisplay) do
+	for _, v in ipairs(namesToDisplay) do
 		if not v.isDead and not v.isResurrect then
 			count = count + 1
 		end
 	end
 
-	for k, v in pairs(self.currentlyDead) do
-		self.currentlyDead[k] = nil
-		self.totalPlayers[k] = nil
-		if self.idToName[k] then
-			self.playerSpec[self.idToName[k]] = nil
-			self.miscAbilities[self.idToName[k]] = nil
+	for k, v in pairs(currentlyDead) do
+		currentlyDead[k] = nil
+		currentlyDead[k] = nil
+		if idToName[k] then
+			playerSpec[idToName[k]] = nil
+			miscAbilities[idToName[k]] = nil
 		end
-		self.playerAlliance[k] = nil
-		self.idToName[k] = nil
+		playerAlliance[k] = nil
+		idToName[k] = nil
 		-- if (currentTime-v.currentTime)>PVP_ID_RETAIN_TIME then self.currentlyDead[k]=nil end
 	end
 
@@ -583,40 +596,45 @@ function PVP:CountTotal(currentTime)
 end
 
 function PVP:Clean_PlayerDB()
+	local playersDB = PVP.SV.playersDB
+	local KOSList = PVP.SV.KOSList
+	local coolList = PVP.SV.coolList
+	local playersCP = PVP.SV.CP
 	local kosListNames = {}
-	for k, v in ipairs(PVP.SV.KOSList) do
+
+	for k, v in ipairs(KOSList) do
 		kosListNames[v.unitName] = true
-		if PVP.SV.playersDB[v.unitName] then
-			local dbUnitAccName = PVP.SV.playersDB[v.unitName].unitAccName
+		if playersDB[v.unitName] then
+			local dbUnitAccName = playersDB[v.unitName].unitAccName
 			if dbUnitAccName and dbUnitAccName ~= v.unitAccName then
-				PVP.SV.KOSList[k].unitAccName = dbUnitAccName
+				KOSList[k].unitAccName = dbUnitAccName
 			end
 		end
 	end
 
-	for k, v in pairs(PVP.SV.coolList) do
-		if PVP.SV.playersDB[k] then
-			local dbUnitAccName = PVP.SV.playersDB[k].unitAccName
+	for k, v in pairs(coolList) do
+		if playersDB[k] then
+			local dbUnitAccName = playersDB[k].unitAccName
 			if dbUnitAccName and dbUnitAccName ~= v then
-				PVP.SV.coolList[k] = dbUnitAccName
+				coolList[k] = dbUnitAccName
 			end
 		end
 	end
 
 	local unitAccNameCP = {}
-	for k, v in pairs(PVP.SV.playersDB) do
-		if v.unitAvARank == nil and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
-			PVP.SV.playersDB[k] = nil
+	for k, v in pairs(playersDB) do
+		if v.unitAvARank == nil and kosListNames[k] == nil and coolList[k] == nil then
+			playersDB[k] = nil
 		end
 
-		if PVP.SV.playersDB[k] ~= nil and v.lastSeen == nil then
-			PVP.SV.playersDB[k].lastSeen = sessionTimeEpoch
+		if playersDB[k] ~= nil and v.lastSeen == nil then
+			playersDB[k].lastSeen = sessionTimeEpoch
 		end
 
-		if PVP.SV.playersDB[k] ~= nil and (v.lastSeen <= (sessionTimeEpoch - 31550000)) and kosListNames[k] == nil and PVP.SV.coolList[k] == nil then
-			PVP.SV.playersDB[k] = nil
-		elseif (PVP.SV.playersDB[k] ~= nil) and PVP.SV.CP[v.unitAccName] then
-			unitAccNameCP[v.unitAccName] = PVP.SV.CP[v.unitAccName]
+		if playersDB[k] ~= nil and (v.lastSeen <= (sessionTimeEpoch - 31550000)) and kosListNames[k] == nil and coolList[k] == nil then
+			playersDB[k] = nil
+		elseif (playersDB[k] ~= nil) and playersCP[v.unitAccName] then
+			unitAccNameCP[v.unitAccName] = playersCP[v.unitAccName]
 		end
 	end
 
