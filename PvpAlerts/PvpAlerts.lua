@@ -630,6 +630,7 @@ function PVP:ProcessNpcs(currentTime)
 end
 
 function PVP:MainRefresh(currentTime)
+	local SV = self.SV
 	PVP.startR = GetGameTimeMilliseconds()
 	self:RemoveDuplicateNames()
 	PVP.endD = GetGameTimeMilliseconds()
@@ -639,12 +640,12 @@ function PVP:MainRefresh(currentTime)
 	PVP.endN = GetGameTimeMilliseconds()
 	if self:ShouldShowCampFrame() then self:ManageCampFrame() end
 	PVP.endCamp = GetGameTimeMilliseconds()
-	if self.SV.showCounterFrame or self.SV.showTug then
+	if SV.showCounterFrame or SV.showTug then
 		PVP.beforeC = GetGameTimeMilliseconds()
 		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
 		localActivePlayerCache = { numberAD, numberDC, numberEP, tableAD, tableDC, tableEP }
 		PVP.afterC = GetGameTimeMilliseconds()
-		if self.SV.showCounterFrame then
+		if SV.showCounterFrame then
 			local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
 			local labelControl = PVP_Counter:GetNamedChild('_Label')
 			local bgControl = PVP_Counter:GetNamedChild('_Backdrop')
@@ -676,7 +677,7 @@ function PVP:MainRefresh(currentTime)
 				self.ReleaseToolTip(epControl, self.detailedTooltipCalc == epControl)
 			end
 		end
-		if self.SV.showTug then
+		if SV.showTug then
 			local tug = PVP_TUG
 			local tugADcount = PVP_TUG_Frame_ADbar
 			local tugADbar = PVP_TUG_Frame_ADbar_BG
@@ -804,7 +805,7 @@ function PVP:MainRefresh(currentTime)
 	PVP.endCounter = GetGameTimeMilliseconds()
 	PVP.Timer = currentTime
 
-	if self.SV.showKOSFrame and (SCENE_MANAGER:GetCurrentScene() == HUD_SCENE or SCENE_MANAGER:GetCurrentScene() == LOOT_SCENE) then
+	if SV.showKOSFrame and (SCENE_MANAGER:GetCurrentScene() == HUD_SCENE or SCENE_MANAGER:GetCurrentScene() == LOOT_SCENE) then
 		PVP:PopulateKOSBuffer()
 	end
 	PVP.endKos = GetGameTimeMilliseconds()
