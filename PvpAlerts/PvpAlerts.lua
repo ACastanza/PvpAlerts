@@ -2829,7 +2829,7 @@ local function SummaryConversion(inputArray, summaryType)
     return outputArray
 end
 
-local function PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tableDC, tableEP)
+function PVP:PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tableDC, tableEP)
     -- {class = 3, name = "Test^Fx" , kills = 30, deaths = 20, assists = 100, damage = 10000000, healing = 3000000, points = 800, alliance = 3},
     PVP.scoreboardListData = {}
 
@@ -3246,7 +3246,7 @@ function PVP:GetAllianceCountPlayers()
 		end
 	else
 		numberAD, numberDC, numberEP, tableAD, tableDC, tableEP =
-			PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tableDC, tableEP)
+			self:PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tableDC, tableEP)
 	end
 
 
