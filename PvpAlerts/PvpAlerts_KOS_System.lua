@@ -961,6 +961,26 @@ function PVP:RefreshLocalPlayers()
 	end
 end
 
+local function BuildImportantIcon(v)
+	local importantIcon = ""
+	if v.isFriend then importantIcon = importantIcon .. PVP:GetFriendIcon() end
+	if v.isCool then importantIcon = importantIcon .. PVP:GetCoolIcon() end
+	if v.isGuildmate then
+		local guildNames, firstGuildAllianceColor = PVP:GetGuildmateSharedGuilds(v.unitAccName)
+		importantIcon = importantIcon .. PVP:GetGuildIcon(nil, firstGuildAllianceColor)
+		if not v.isPlayerGrouped then importantIcon = importantIcon .. guildNames end
+	end
+	return importantIcon
+end
+
+local function FormatPlayerNote(playerNote)
+	return playerNote and PVP:Colorize("- " .. playerNote, 'C5C29F') or ""
+end
+
+local function FormatResurrectIcon(isResurrect)
+	return isResurrect and PVP:GetResurrectIcon() or ""
+end
+
 function PVP:PopulateKOSBuffer()
 	if self.SV.unlocked then return end
 	if self.SV.showTargetNameFrame then self:UpdateTargetName() end
@@ -982,21 +1002,13 @@ function PVP:PopulateKOSBuffer()
 	self:RefreshLocalPlayers()
 
 	if next(self.potentialAllies) ~= nil then
-
 		for rawName, v in pairs(self.potentialAllies) do
 			local isAlly = (v.unitAlliance == self.allianceOfPlayer)
 			local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
 			if validAlliance and not self.KOSNamesList[v.unitAccName] then
-				local playerNoteToken = v.playerNote and PVP:Colorize("- " .. v.playerNote, 'C5C29F') or ""
-				local importantIcon, resurrectIcon = "", (v.isResurrect and self:GetResurrectIcon() or "")
-
-				if v.isFriend then importantIcon = importantIcon .. self:GetFriendIcon() end
-				if v.isCool   then importantIcon = importantIcon .. self:GetCoolIcon()   end
-				if v.isGuildmate then
-					local guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(v.unitAccName)
-					importantIcon = importantIcon .. self:GetGuildIcon(nil, firstGuildAllianceColor)
-					if not v.isPlayerGrouped then importantIcon = importantIcon .. guildNames end
-				end
+				local resurrectIcon = FormatResurrectIcon(v.isResurrect)
+				local importantIcon = BuildImportantIcon(v)
+				local playerNoteToken = FormatPlayerNote(v.playerNote)
 
 				PVP_KOS_Text:AddMessage(
 					self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
@@ -1041,41 +1053,24 @@ function PVP:PopulateKOSBuffer()
 
 		if (mode == 2 and ally) or (mode == 3 and not ally) or mode == 1 then
 			if unitId ~= 0 then
-				local resurrectIcon
-				if isResurrect then
-					resurrectIcon = self:GetResurrectIcon()
-				else
-					resurrectIcon = ""
-				end
-				if ally then
-					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-						self:GetFormattedAccountNameLink(accName, "FFFFFF") .. self:GetKOSIcon(nil, "FFFFFF") ..
-						resurrectIcon .. guildIcon .. playerNote)
-				else
-					PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-						self:GetFormattedAccountNameLink(accName, "BB4040") ..
-						self:GetKOSIcon() .. resurrectIcon .. guildIcon .. guildNames .. playerNote)
-				end
+				local resurrectIcon = FormatResurrectIcon(isResurrect)
+				local message = self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+					self:GetFormattedAccountNameLink(accName, ally and "FFFFFF" or "BB4040") ..
+					self:GetKOSIcon(nil, ally and "FFFFFF" or nil) ..
+					resurrectIcon .. guildIcon .. (ally and "" or guildNames) .. playerNote
+				PVP_KOS_Text:AddMessage(message)
 			end
 		end
 
 		if mode == 4 then
 			if isActive then
-				if ally then
-					-- PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName))..self:GetFormattedAccountNameLink(accName, "FFFFFF").." ACTIVE")
-					insert(activeStringsArray,
-						self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-						self:GetFormattedAccountNameLink(accName, "FFFFFF") .. " ACTIVE")
-				else
-					-- PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName))..self:GetFormattedAccountNameLink(accName, "BB4040").." ACTIVE")
-					insert(activeStringsArray,
-						self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-						self:GetFormattedAccountNameLink(accName, "BB4040") .. " ACTIVE")
-				end
+				local activeMessage = self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+					self:GetFormattedAccountNameLink(accName, ally and "FFFFFF" or "BB4040") .. " ACTIVE"
+				insert(activeStringsArray, activeMessage)
 			else
-				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName, true),
-						nil, true) ..
-					self:GetFormattedAccountNameLink(accName, "3F3F3F") .. guildIcon .. guildNames .. playerNote)
+				local inactiveMessage = self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName, true), nil, true) ..
+					self:GetFormattedAccountNameLink(accName, "3F3F3F") .. guildIcon .. guildNames .. playerNote
+				PVP_KOS_Text:AddMessage(inactiveMessage)
 			end
 		end
 	end
@@ -1083,20 +1078,14 @@ function PVP:PopulateKOSBuffer()
 	if mode == 4 then
 		for k, v in pairs(self.SV.coolList) do
 			local unitId, newName = self:FindCOOLPlayer(k, v)
-			local playerNote
-			playerNote = self.SV.playerNotes[v]
-			if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
-			if unitId ~= 0 then
-				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName)) ..
-					self:Colorize(v, "40BB40") .. self:GetCoolIcon() .. playerNote)
-			else
-				PVP_KOS_Text:AddMessage(self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName, true),
-						nil, true) ..
-					self:GetFormattedAccountNameLink(v, "3F3F3F") .. self:GetCoolIcon(nil, true) .. playerNote)
-			end
+			local playerNote = FormatPlayerNote(self.SV.playerNotes[v])
+			local message = self:GetFormattedClassNameLink(newName, self:NameToAllianceColor(newName)) ..
+				self:Colorize(v, unitId ~= 0 and "40BB40" or "3F3F3F") ..
+				self:GetCoolIcon(nil, unitId == 0) .. playerNote
+			PVP_KOS_Text:AddMessage(message)
 		end
 
-		for k, v in ipairs(activeStringsArray) do
+		for _, v in ipairs(activeStringsArray) do
 			PVP_KOS_Text:AddMessage(v)
 		end
 	end
