@@ -18,23 +18,24 @@ local insert = table.insert
 
 
 function PVP:GetObjectiveIcon(keepType, alliance, keepId)
-	if not PVP.objectiveIcons[keepType] then return PVP_ICON_MISSING end
+	local objectiveIcons = PVP.objectiveIcons
+	if not objectiveIcons[keepType] then return PVP_ICON_MISSING end
 
 	if keepType == KEEPTYPE_ARTIFACT_GATE then
 		if keepId then
-			return PVP.objectiveIcons[keepType][GetKeepPinInfo(keepId, 1)]
+			return objectiveIcons[keepType][GetKeepPinInfo(keepId, 1)]
 		else
 			local allianceToClosedPinType = {
 				[ALLIANCE_ALDMERI_DOMINION] = MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_ALDMERI_DOMINION,
 				[ALLIANCE_DAGGERFALL_COVENANT] = MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_DAGGERFALL_COVENANT,
 				[ALLIANCE_EBONHEART_PACT_COVENANT] = MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_EBONHEART_PACT,
 			}
-			return PVP.objectiveIcons[keepType][allianceToClosedPinType[alliance]]
+			return objectiveIcons[keepType][allianceToClosedPinType[alliance]]
 		end
 	end
-	if keepType == PVP_KEEPTYPE_ARTIFACT_KEEP then return PVP.objectiveIcons[keepType][alliance] end
-	if keepType == PVP_KEEPTYPE_BORDER_KEEP then return PVP.objectiveIcons[keepType][alliance] end
-	if keepType == PVP_ALLIANCE_BASE_IC then return PVP.objectiveIcons[keepType][alliance] end
+	if keepType == PVP_KEEPTYPE_ARTIFACT_KEEP then return objectiveIcons[keepType][alliance] end
+	if keepType == PVP_KEEPTYPE_BORDER_KEEP then return objectiveIcons[keepType][alliance] end
+	if keepType == PVP_ALLIANCE_BASE_IC then return objectiveIcons[keepType][alliance] end
 
 	local allianceIdToWord = {
 		[ALLIANCE_ALDMERI_DOMINION] = 'aldmeri',
@@ -43,7 +44,7 @@ function PVP:GetObjectiveIcon(keepType, alliance, keepId)
 		[ALLIANCE_NONE] = 'neutral',
 	}
 
-	local icon = PVP.objectiveIcons[keepType]
+	local icon = objectiveIcons[keepType]
 
 	icon = zo_strgsub(icon, 'neutral', allianceIdToWord[alliance])
 
