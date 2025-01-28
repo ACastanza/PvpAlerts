@@ -910,72 +910,71 @@ function PVP:FindPotentialAllies()
 	end
 end
 
-function PVP:PopulateKOSBuffer()
-	local function CheckActive()
-		if not self.KOSNamesList or self.KOSNamesList == {} then return end
-		local currentTime = GetFrameTimeSeconds()
-		if PVP.kosActivityList and PVP.kosActivityList.measureTime and (currentTime - PVP.kosActivityList.measureTime) < 60 then return end
-		QueryCampaignLeaderboardData()
-		local currentCampaignId = GetCurrentCampaignId()
+local function CheckActive(KOSNamesList, kosActivityList, SV, allianceOfPlayer)
+	if not KOSNamesList or KOSNamesList == {} then return end
+	local currentTime = GetFrameTimeSeconds()
+	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return end
+	QueryCampaignLeaderboardData()
+	local currentCampaignId = GetCurrentCampaignId()
 
-		if not PVP.kosActivityList then
-			PVP.kosActivityList = {}
-			PVP.kosActivityList.activeChars = {}
-			for k, v in pairs(self.KOSNamesList) do
-				PVP.kosActivityList[k] = {}
-				PVP.kosActivityList[k].chars = {}
-			end
+	if not kosActivityList then
+		kosActivityList = {}
+		kosActivityList.activeChars = {}
+		for k, v in pairs(KOSNamesList) do
+			kosActivityList[k] = {}
+			kosActivityList[k].chars = {}
 		end
+	end
 
-		for k, v in pairs(self.kosActivityList) do
-			if k ~= "activeChars" then
-				if not self.KOSNamesList[k] then self.kosActivityList[k] = nil end
-			end
+	for k, v in pairs(kosActivityList) do
+		if k ~= "activeChars" then
+			if not KOSNamesList[k] then kosActivityList[k] = nil end
 		end
+	end
 
-		PVP.kosActivityList.measureTime = currentTime
+	kosActivityList.measureTime = currentTime
 
-		for alliance = 1, 3 do
-			for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
-				local isPlayer, ranking, charName, alliancePoints, _, accName = GetCampaignAllianceLeaderboardEntryInfo(
-					currentCampaignId, alliance, i)
+	for alliance = 1, 3 do
+		for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
+			local isPlayer, ranking, charName, alliancePoints, _, accName = GetCampaignAllianceLeaderboardEntryInfo(
+				currentCampaignId, alliance, i)
 
-				if self.KOSNamesList[accName] then
-					if not PVP.kosActivityList[accName] then
-						PVP.kosActivityList[accName] = {}
-						PVP.kosActivityList[accName].chars = {}
-					end
-					if not PVP.kosActivityList[accName].chars[charName] then
-						PVP.kosActivityList[accName].chars[charName] = {
+			if KOSNamesList[accName] then
+				if not kosActivityList[accName] then
+					kosActivityList[accName] = {}
+					kosActivityList[accName].chars = {}
+				end
+				if not kosActivityList[accName].chars[charName] then
+					kosActivityList[accName].chars[charName] = {
+						currentTime = currentTime,
+						points = alliancePoints
+					}
+				else
+					if kosActivityList[accName].chars[charName].points < alliancePoints then
+						if not kosActivityList.activeChars[accName] then
+							if SV.outputNewKos then
+								d("ACTIVE KOS: " .. charName)
+							end
+							kosActivityList.activeChars[accName] = charName
+						end
+						kosActivityList[accName].chars[charName] = {
 							currentTime = currentTime,
 							points = alliancePoints
 						}
-					else
-						if PVP.kosActivityList[accName].chars[charName].points < alliancePoints then
-							if not PVP.kosActivityList.activeChars[accName] then
-								if self.SV.outputNewKos then
-									d("ACTIVE KOS: " .. charName)
-								end
-								PVP.kosActivityList.activeChars[accName] = charName
-							end
-							PVP.kosActivityList[accName].chars[charName] = {
-								currentTime = currentTime,
-								points = alliancePoints
-							}
-						end
 					end
 				end
 			end
 		end
-
-		for k, v in pairs(PVP.kosActivityList.activeChars) do
-			if (PVP.kosActivityList[k] and PVP.kosActivityList[k].chars[v] and PVP.kosActivityList[k].chars[v].currentTime and (currentTime - PVP.kosActivityList[k].chars[v].currentTime) > 600) or (not PVP.kosActivityList[k]) or (not PVP.kosActivityList[k].chars[v]) then
-				PVP.kosActivityList.activeChars[k] = nil
-			end
-		end
 	end
 
+	for k, v in pairs(kosActivityList.activeChars) do
+		if (kosActivityList[k] and kosActivityList[k].chars[v] and kosActivityList[k].chars[v].currentTime and (currentTime - kosActivityList[k].chars[v].currentTime) > 600) or (not kosActivityList[k]) or (not kosActivityList[k].chars[v]) then
+			kosActivityList.activeChars[k] = nil
+		end
+	end
+end
 
+function PVP:PopulateKOSBuffer()
 	if self.SV.unlocked then return end
 	if self.SV.showTargetNameFrame then self:UpdateTargetName() end
 	local mode = self.SV.KOSmode
@@ -988,9 +987,9 @@ function PVP:PopulateKOSBuffer()
 
 	local currentTime = GetFrameTimeMilliseconds()
 
-	if not PVP.lastActiveCheckedTime or ((currentTime - PVP.lastActiveCheckedTime) >= 300000) then
-		PVP.lastActiveCheckedTime = currentTime
-		CheckActive()
+	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
+		self.lastActiveCheckedTime = currentTime
+		CheckActive(self.KOSNamesList, PVP.kosActivityList, self.SV, self.allianceOfPlayer)
 	end
 
 	self:FindPotentialAllies()
