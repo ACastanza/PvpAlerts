@@ -815,12 +815,16 @@ end
 function PVP:FindCOOLPlayer(unitName, unitAccName)
 	local unitId = 0
 	local newName = unitName
-	for rawName, rec in pairs(self.localPlayers) do
+	local localPlayers = self.localPlayers
+	local playerNotes = self.SV.playerNotes
+	local coolList = self.SV.coolList
+
+	for rawName, rec in pairs(localPlayers) do
 		if rec.unitAccName == unitAccName then
-			local hasPlayerNote = (self.SV.playerNotes[unitAccName] ~= nil)
+			local hasPlayerNote = (playerNotes[unitAccName] ~= nil)
 			if rawName ~= unitName then
-				self.SV.coolList[rawName] = unitAccName
-				self.SV.coolList[unitName] = nil
+				coolList[rawName] = unitAccName
+				coolList[unitName] = nil
 				newName = rawName
 			end
 			if hasPlayerNote or not IsPlayerInGroup(rawName) then
@@ -889,8 +893,9 @@ function PVP:RefreshLocalPlayers()
 	local localPlayers  = {}
 	local potentialAllies = {}
 	local idToName      = self.idToName
+	local playerNames   = self.playerNames
 	local playersDB     = SV.playersDB
-	local playerNotes = SV.playerNotes
+	local playerNotes   = SV.playerNotes
 	local currentTime      = GetFrameTimeMilliseconds()
 	local showPlayerNotes  = SV.showPlayerNotes
 	local showFriends      = SV.showFriends
@@ -928,7 +933,7 @@ function PVP:RefreshLocalPlayers()
 		end
 	end
 
-	for rawName, _ in pairs(self.playerNames) do
+	for rawName, _ in pairs(playerNames) do
 		if not localPlayers[rawName] then
 			local dbRec = playersDB[rawName]
 			if dbRec then
