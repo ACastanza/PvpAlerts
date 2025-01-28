@@ -822,12 +822,13 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 
 	local isOnList
 
-	local oldCP = PVP.SV.CP[oldUnitAccName]
-	local newCP = PVP.SV.CP[unitAccName]
+	local playersCP = PVP.SV.CP
+	local oldCP = playersCP[oldUnitAccName]
+	local newCP = playersCP[unitAccName]
 	if oldCP then
 		if not newCP or (newCP == 0) then
-			PVP.SV.CP[unitAccName] = oldCP
-			PVP.SV.CP[oldUnitAccName] = nil
+			playersCP[unitAccName] = oldCP
+			playersCP[oldUnitAccName] = nil
 		elseif oldCP > newCP then
 			if databaseIntegrityCheck[unitCharName] then return end
 			PVP.CHAT:Printf(
@@ -838,37 +839,44 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 			databaseIntegrityCheck[unitCharName] = true
 			return
 		end
-		PVP.SV.CP[oldUnitAccName] = nil
+		playersCP[oldUnitAccName] = nil
 	end
 
-	for k, v in pairs(PVP.SV.playersDB) do
+	local playersDB = PVP.SV.playersDB
+	for k, v in pairs(playersDB) do
 		if v.unitAccName == oldUnitAccName then
-			PVP.SV.playersDB[k].unitAccName = unitAccName
+			playersDB[k].unitAccName = unitAccName
 		end
 	end
-	for k, v in ipairs(PVP.SV.KOSList) do
+
+	local KOSList = PVP.SV.KOSList
+	for k, v in ipairs(KOSList) do
 		if v.unitAccName == oldUnitAccName then
-			PVP.SV.KOSList[k].unitAccName = unitAccName
+			KOSList[k].unitAccName = unitAccName
 			isOnList = true
 		end
 	end
-	for k, v in pairs(PVP.SV.coolList) do
+
+	local coolList = PVP.SV.coolList
+	for k, v in pairs(coolList) do
 		if v == oldUnitAccName then
-			PVP.SV.coolList[k] = unitAccName
+			coolList[k] = unitAccName
 			isOnList = true
 		end
 	end
-	if PVP.SV.playerNotes[oldUnitAccName] then
-		local oldNote = PVP.SV.playerNotes[oldUnitAccName] or ""
-		local currentNote = PVP.SV.playerNotes[unitAccName] or ""
+
+	local playerNotes = PVP.SV.playerNotes
+	if playerNotes[oldUnitAccName] then
+		local oldNote = playerNotes[oldUnitAccName] or ""
+		local currentNote = playerNotes[unitAccName] or ""
 		local combinedNote = ((oldNote ~= "" and oldNote) or "")
 		combinedNote = combinedNote .. ((currentNote ~= "" and " " .. currentNote) or "")
 		combinedNote = combinedNote .. ((nameChangeNote ~= "" and " " .. nameChangeNote) or "")
-		PVP.SV.playerNotes[unitAccName] = combinedNote
-		PVP.SV.playerNotes[oldUnitAccName] = nil
+		playerNotes[unitAccName] = combinedNote
+		playerNotes[oldUnitAccName] = nil
 	else
 		if isOnList then
-			PVP.SV.playerNotes[unitAccName] = nameChangeNote
+			playerNotes[unitAccName] = nameChangeNote
 		end
 	end
 
