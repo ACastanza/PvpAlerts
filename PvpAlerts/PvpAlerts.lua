@@ -3728,7 +3728,8 @@ function PVP.Activated()
 			return false
 		end
 
-		for k, v in pairs(PVP.SV.playersDB) do
+		local playersDB = PVP.SV.playersDB
+		for k, v in pairs(playersDB) do
 			if v.unitClass and v.unitClass ~= "" then
 				local classId = ConvertClassNameToId(v.unitClass)
 				if classId then v.unitClass = classId end
@@ -3778,26 +3779,29 @@ function PVP.Activated()
 end
 
 local function IsAccInDB(accName)
-	for k, v in ipairs(PVP.SV.KOSList) do
+	local KOSList = PVP.SV.KOSList
+	for k, v in ipairs(KOSList) do
 		if v.unitAccName == accName then return v.unitName end
 	end
 
-	for k, v in pairs(PVP.SV.playersDB) do
+	local playersDB = PVP.SV.playersDB
+	for k, v in pairs(playersDB) do
 		if v.unitAccName == accName then return k end
 	end
 	return false
 end
 
 local function IsNameInDB(rawName)
+	local playersDB = PVP.SV.playersDB
 	if PVP:CheckName(rawName) then								 -- check this function
-		if PVP.SV.playersDB[rawName] then return rawName else return false end --add cache check here
+		if playersDB[rawName] then return rawName else return false end --add cache check here
 	end
 	local maleName = rawName .. "^Mx"
 	local femaleName = rawName .. "^Fx"
-	if PVP.SV.playersDB[maleName] or PVP.SV.playersDB[femaleName] then -- don't bother with adding support here
-		if PVP.SV.playersDB[maleName] and not PVP.SV.playersDB[femaleName] then return maleName end
-		if not PVP.SV.playersDB[maleName] and PVP.SV.playersDB[femaleName] then return femaleName end
-		if PVP.SV.playersDB[maleName].unitAccName == PVP.SV.playersDB[femaleName].unitAccName then
+	if playersDB[maleName] or playersDB[femaleName] then -- don't bother with adding support here
+		if playersDB[maleName] and not playersDB[femaleName] then return maleName end
+		if not playersDB[maleName] and playersDB[femaleName] then return femaleName end
+		if playersDB[maleName].unitAccName == playersDB[femaleName].unitAccName then
 			if zo_random() > 0.5 then
 				return
 					maleName
