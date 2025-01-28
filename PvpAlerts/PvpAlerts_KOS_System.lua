@@ -999,6 +999,7 @@ function PVP:PopulateKOSBuffer()
 	local KOSList    = SV.KOSList
 	local coolList   = SV.coolList
 	local playersDB  = SV.playersDB
+	local allianceOfPlayer = self.allianceOfPlayer
 
 	if SV.showTargetNameFrame then self:UpdateTargetName() end
 	local mode = SV.KOSmode
@@ -1013,7 +1014,7 @@ function PVP:PopulateKOSBuffer()
 
 	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
 		self.lastActiveCheckedTime = currentTime
-		PVP.kosActivityList = CheckActive(KOSNamesList, PVP.kosActivityList, SV, self.allianceOfPlayer)
+		PVP.kosActivityList = CheckActive(KOSNamesList, PVP.kosActivityList, SV, allianceOfPlayer)
 	end
 	
 	self:RefreshLocalPlayers()
@@ -1021,7 +1022,7 @@ function PVP:PopulateKOSBuffer()
 	local potentialAllies = self.potentialAllies
 	if next(potentialAllies) ~= nil then
 		for rawName, v in pairs(potentialAllies) do
-			local isAlly = (v.unitAlliance == self.allianceOfPlayer)
+			local isAlly = (v.unitAlliance == allianceOfPlayer)
 			local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
 			if validAlliance and not KOSNamesList[v.unitAccName] then
 				local resurrectIcon = FormatResurrectIcon(v.isResurrect)
@@ -1046,7 +1047,7 @@ function PVP:PopulateKOSBuffer()
 		local unitId = self:FindKOSPlayer(i)
 		local rawName = KOSList[i].unitName
 		local accName = KOSList[i].unitAccName
-		local ally = playersDB[rawName].unitAlliance == self.allianceOfPlayer
+		local ally = playersDB[rawName].unitAlliance == allianceOfPlayer
 		local isActive = PVP.kosActivityList.activeChars[accName]
 		local isResurrect, playerNote, guildNames, firstGuildAllianceColor, guildIcon
 		local isGuildmate = SV.showGuildMates and IsGuildMate(accName) or false
