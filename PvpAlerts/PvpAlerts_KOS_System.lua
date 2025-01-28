@@ -493,16 +493,17 @@ local function CheckNameWithoutSuffixes(rawName)
 	local maleName = rawName .. "^Mx"
 	local femaleName = rawName .. "^Fx"
 	local playersDB = PVP.SV.playersDB
+	local allianceOfPlayer = PVP.allianceOfPlayer
 
 	if playersDB[maleName] or playersDB[femaleName] then
 		if playersDB[maleName] and not playersDB[femaleName] then return maleName end
 		if not playersDB[maleName] and playersDB[femaleName] then return femaleName end
 		if playersDB[maleName].unitAccName == playersDB[femaleName].unitAccName then
-			if playersDB[maleName].unitAlliance ~= PVP.allianceOfPlayer and playersDB[femaleName].unitAlliance == PVP.allianceOfPlayer then
+			if playersDB[maleName].unitAlliance ~= allianceOfPlayer and playersDB[femaleName].unitAlliance == allianceOfPlayer then
 				return
 					maleName
 			end
-			if playersDB[maleName].unitAlliance == PVP.allianceOfPlayer and playersDB[femaleName].unitAlliance ~= PVP.allianceOfPlayer then
+			if playersDB[maleName].unitAlliance == allianceOfPlayer and playersDB[femaleName].unitAlliance ~= allianceOfPlayer then
 				return
 					femaleName
 			end
@@ -588,19 +589,20 @@ function PVP_Add_COOL_Mouseover()
 	end
 end
 
-function PVP:FindInCOOL(playerName)
-	local playersDB = self.SV.playersDB
+function PVP:FindInCOOL(playerName, unitAccName)
 	if not playersDB[playerName] then return false end
+
+	local coolList = self.SV.coolList
 	local found
-	for k, v in pairs(self.SV.coolList) do
-		if playersDB[playerName].unitAccName == v then
+	for k, v in pairs(coolList) do
+		if unitAccName == v then
 			found = k
 			break
 		end
 	end
 	if found and found ~= playerName then
-		self.SV.coolList[found] = nil
-		self.SV.coolList[playerName] = playersDB[playerName].unitAccName
+		coolList[found] = nil
+		coolList[playerName] = unitAccName
 		found = playerName
 	end
 	return found
@@ -608,16 +610,18 @@ end
 
 function PVP:FindAccInCOOL(unitPlayerName, unitAccName)
 	if not unitAccName then return false end
+
+	local coolList = self.SV.coolList
 	local found
-	for k, v in pairs(self.SV.coolList) do
+	for k, v in pairs(coolList) do
 		if unitAccName == v then
 			found = k
 			break
 		end
 	end
 	if found and found ~= unitPlayerName then
-		self.SV.coolList[found] = nil
-		self.SV.coolList[unitPlayerName] = unitAccName
+		coolList[found] = nil
+		coolList[unitPlayerName] = unitAccName
 		found = unitPlayerName
 	end
 	return found
@@ -653,7 +657,7 @@ function PVP:AddKOS(playerName, isSlashCommand)
 
 	-- if isInKOS then d('This account is already in KOS as: '..self:GetFormattedName(rawName).."!") return end
 
-	local cool = self:FindInCOOL(rawName)
+	local cool = self:FindInCOOL(rawName, playersDB[rawName].unitAccName)
 	if cool then
 		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(playersDB[cool].unitName),
 			playersDB[cool].unitAccName)
@@ -725,7 +729,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 		end
 	end
 
-	local cool = self:FindInCOOL(rawName)
+	local cool = self:FindInCOOL(rawName, playersDB[rawName].unitAccName)
 
 
 	if not cool then
