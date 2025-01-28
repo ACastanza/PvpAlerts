@@ -27,7 +27,8 @@ local function trim(s)
 end
 
 local function GetKOSIndex(accName)
-	for k, v in ipairs(PVP.SV.KOSList) do
+	local KOSList = PVP.SV.KOSList
+	for k, v in ipairs(KOSList) do
 		local dbAccName = contains and PVP:DeaccentString(v.unitAccName) or v.unitAccName
 		if lower(dbAccName) == accName then return k end
 	end
@@ -38,7 +39,8 @@ local function WhoIsAccInDB(accName, contains)
 	accName = lower(accName)
 	local accKOSIndex = GetKOSIndex(accName)
 	local playerNamesForAcc = {}
-	for k, v in pairs(PVP.SV.playersDB) do
+	local playersDB = PVP.SV.playersDB
+	for k, v in pairs(playersDB) do
 		local dbAccName = contains and PVP:DeaccentString(v.unitAccName) or v.unitAccName
 		if lower(dbAccName) == accName then insert(playerNamesForAcc, k) end
 	end
@@ -54,22 +56,22 @@ end
 local function GetListOfNames(name, contains)
 	local rawPlayerNames, lowercaseMatch, deaccentedMatch, looseMatch, stringPositionsArray = {}, {}, {}, {}, {}
 	local only
+	local playersDB = PVP.SV.playersDB
 
-	if PVP.SV.playersDB[name .. '^Mx'] then
+	if playersDB[name .. '^Mx'] then
 		insert(rawPlayerNames, name .. '^Mx')
-	elseif PVP.SV.playersDB[name .. '^Fx'] then
+	elseif playersDB[name .. '^Fx'] then
 		insert(rawPlayerNames, name .. '^Fx')
 	end
 
 	if contains and #rawPlayerNames == 1 then only = true end
-
 
 	if contains and #rawPlayerNames == 0 then
 		local deaccentName = lower(PVP:DeaccentString(name))
 
 		name = lower(name)
 
-		for k, v in pairs(PVP.SV.playersDB) do
+		for k, v in pairs(playersDB) do
 			local strippedName = zo_strformat(SI_UNIT_NAME, k)
 			local lowerName = lower(strippedName)
 			local currentDeaccentedName = lower(PVP:DeaccentString(strippedName))
@@ -85,7 +87,6 @@ local function GetListOfNames(name, contains)
 					local startChar, endChar = zo_strfind(currentDeaccentedName, deaccentName)
 
 					local indice = PVP:FindUTFIndice(lower(strippedName))
-
 
 					local newStartChar = startChar
 					local newEndChar = endChar
@@ -104,7 +105,6 @@ local function GetListOfNames(name, contains)
 					local startChar, endChar = zo_strfind(currentDeaccentedName, deaccentName)
 					stringPositionsArray[k] = { startChar = startChar, endChar = endChar }
 				end
-
 
 				insert(looseMatch, k)
 			end
@@ -142,12 +142,12 @@ local function IsNameInDB(name, contains)
 	end
 end
 
-local function GetCharAccLink(rawName)
+local function GetCharAccLink(rawName, unitAccName, unitRace)
 	return PVP:GetFormattedClassNameLink(rawName, PVP:NameToAllianceColor(rawName, nil, true)) ..
 		', ' ..
-		GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) ..
+		GetRaceName(0, unitRace) ..
 		', ' ..
-		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(PVP.SV.playersDB[rawName].unitAccName, "FFFFFF"))
+		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(unitAccName, "FFFFFF"))
 end
 
 local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
@@ -155,6 +155,7 @@ local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
 	local nameLength    = zo_strlen(strippedName)
 	local allianceColor = PVP:NameToAllianceColor(rawName, nil, true)
 	local icon          = PVP:GetFormattedClassIcon(rawName, nil, allianceColor)
+	local playersDB = PVP.SV.playersDB
 
 	local normalPartBefore, normalPartAfter, highlightPart
 
@@ -195,15 +196,16 @@ local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
 		highlightPart ..
 		normalPartAfter ..
 		', ' ..
-		GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) ..
+		GetRaceName(0, playersDB[rawName].unitRace) ..
 		', ' ..
-		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(PVP.SV.playersDB[rawName].unitAccName, "FFFFFF"))
+		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(playersDB[rawName].unitAccName, "FFFFFF"))
 end
 
 local function GetCharLink(rawName)
+	local playersDB = PVP.SV.playersDB
 	return PVP:GetFormattedClassNameLink(rawName, PVP:NameToAllianceColor(rawName)) ..
 		', ' ..
-		GetRaceName(0, PVP.SV.playersDB[rawName].unitRace) .. ', ' ..
+		GetRaceName(0, playersDB[rawName].unitRace) .. ', ' ..
 		(PVP:StringEnd(rawName, '^Mx') and 'male' or 'female')
 end
 
@@ -220,7 +222,6 @@ function PVP:Who(name, contains)
 		d('No name provided!')
 		return
 	end
-
 
 	if zo_strlen(name) <= 2 then
 		d('Name has to be longer than 2 characters!')
@@ -247,7 +248,8 @@ function PVP:Who(name, contains)
 
 	if KOSIndex ~= nil then --single player account information returned
 		local currentCP = ""
-		local accName = PVP.SV.playersDB[foundPlayerNames[1]].unitAccName
+		local playerDbRecord = PVP.SV.playersDB[foundPlayerNames[1]]
+		local accName = playerDbRecord.unitAccName
 		local sharedGuilds = PVP:GetGuildmateSharedGuilds(accName)
 		if self.SV.CP[accName] then currentCP = ' with ' .. PVP:Colorize(self.SV.CP[accName] .. 'cp', 'FFFFFF') .. ',' end
 		if isDecorated then
@@ -282,12 +284,13 @@ function PVP:Who(name, contains)
 		d('Found ' .. tostring(#foundPlayerNames + #looseMatch) .. ' players, similar to ' .. highlightedName .. ':')
 
 		for i = 1, #foundPlayerNames do
-			local currentAccName = PVP.SV.playersDB[foundPlayerNames[i]].unitAccName
+			local currentplayerDbRecord = PVP.SV.playersDB[foundPlayerNames[i]]
+			local currentAccName = currentplayerDbRecord.unitAccName
 			local currentAccCP = ""
 			if self.SV.CP[currentAccName] then currentAccCP = ' (' .. self.SV.CP[currentAccName] .. 'cp)' end
 			local currentName = foundPlayerNames[i]
 
-			local nameLink = GetCharAccLink(currentName)
+			local nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
 
 			d(tostring(i) .. '. ' .. nameLink .. currentAccCP)
 		end
@@ -333,7 +336,8 @@ function PVP:Who(name, contains)
 			local indexToHighlight = #startFullWord + #startPartWord + 1
 
 			for i = 1, #looseMatchOutput do
-				local currentAccName = PVP.SV.playersDB[looseMatchOutput[i]].unitAccName
+				local currentplayerDbRecord = PVP.SV.playersDB[foundPlayerNames[i]]
+				local currentAccName = currentplayerDbRecord.unitAccName
 				local currentAccCP = ""
 				if self.SV.CP[currentAccName] then currentAccCP = ' (' .. self.SV.CP[currentAccName] .. 'cp)' end
 				local currentName = looseMatchOutput[i]
@@ -345,7 +349,7 @@ function PVP:Who(name, contains)
 					nameLink = GetHighlightedCharAccLink(currentName, stringPositionsArray[currentName].startChar,
 						stringPositionsArray[currentName].endChar)
 				else
-					nameLink = GetCharAccLink(currentName)
+					nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
 				end
 
 				d(tostring(i) .. '. ' .. nameLink .. currentAccCP)
@@ -356,8 +360,9 @@ end
 
 local function IsAccFriendKOSorCOOL(charAccName)
 	if IsFriend(charAccName) then return true end
-	for i = 1, #PVP.SV.KOSList do
-		if PVP.SV.KOSList[i].unitAccName == charAccName then
+	local KOSList = PVP.SV.KOSList
+	for i = 1, #KOSList do
+		if KOSList[i].unitAccName == charAccName then
 			return true
 		end
 	end
@@ -368,8 +373,9 @@ local function IsAccFriendKOSorCOOL(charAccName)
 end
 
 local function IsAccMalformedName(charAccName)
-	for i = 1, #PVP.SV.KOSList do
-		local unitKOSName = PVP.SV.KOSList[i].unitName
+	local KOSList = PVP.SV.KOSList
+	for i = 1, #KOSList do
+		local unitKOSName = KOSList[i].unitName
 		if PVP:DeaccentString(unitKOSName) == charAccName then
 			return true, unitKOSName
 		end
@@ -455,8 +461,9 @@ function PVP:managePlayerNote(noteString)
 end
 
 local function IsAccInKOS(unitAccName)
-	for i = 1, #PVP.SV.KOSList do
-		if PVP.SV.KOSList[i].unitAccName == unitAccName then return PVP.SV.KOSList[i].unitName, i end
+	local KOSList = PVP.SV.KOSList
+	for i = 1, #KOSList do
+		if KOSList[i].unitAccName == unitAccName then return KOSList[i].unitName, i end
 	end
 	return false
 end
@@ -466,13 +473,14 @@ local function IsKOSAccInDB(unitAccName)
 	if nameFromKOS then return nameFromKOS, indexInKOS end
 
 	local foundPlayerNames = {}
-	for k, v in pairs(PVP.SV.playersDB) do
+	local playersDB = PVP.SV.playersDB
+	for k, v in pairs(playersDB) do
 		if v.unitAccName == unitAccName then insert(foundPlayerNames, k) end
 	end
 	if #foundPlayerNames > 0 then
 		if #foundPlayerNames == 1 then return foundPlayerNames[1] end
 		for i = 1, #foundPlayerNames do
-			if PVP.SV.playersDB[foundPlayerNames[i]].unitAlliance ~= PVP.allianceOfPlayer then
+			if playersDB[foundPlayerNames[i]].unitAlliance ~= PVP.allianceOfPlayer then
 				return foundPlayerNames[i]
 			end
 		end
@@ -745,8 +753,9 @@ function PVP:IsEmperor(playerName, currentCampaignActiveEmperor)
 end
 
 function PVP:IsAccNameInKOS(unitAccName)
-	for i = 1, #self.SV.KOSList do
-		if unitAccName == self.SV.KOSList[i].unitAccName then return true end
+	local KOSList = self.SV.KOSList
+	for i = 1, #KOSList do
+		if unitAccName == KOSList[i].unitAccName then return true end
 	end
 	return false
 end
