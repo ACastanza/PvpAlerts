@@ -1018,8 +1018,9 @@ function PVP:PopulateKOSBuffer()
 	
 	self:RefreshLocalPlayers()
 
-	if next(self.potentialAllies) ~= nil then
-		for rawName, v in pairs(self.potentialAllies) do
+	local potentialAllies = self.potentialAllies
+	if next(potentialAllies) ~= nil then
+		for rawName, v in pairs(potentialAllies) do
 			local isAlly = (v.unitAlliance == self.allianceOfPlayer)
 			local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
 			if validAlliance and not KOSNamesList[v.unitAccName] then
