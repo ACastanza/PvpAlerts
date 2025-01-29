@@ -1120,13 +1120,13 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 		totalPlayers[unitId] = currentTime
 		idToName[unitId] = unitName
 		local playerDbRecord = self.SV.playersDB[unitName]
-		if playerDbRecord[unitName] then
-			self.playerAlliance[unitId] = playerDbRecord[unitName].unitAlliance
+		if playerDbRecord then
+			self.playerAlliance[unitId] = playerDbRecord.unitAlliance
 			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
-				playerDbRecord[unitName].mundus = zo_strsub(effectName, 11)
+				playerDbRecord.mundus = zo_strsub(effectName, 11)
 			end
-			playerDbRecord[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
+			playerDbRecord.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		end
 	end
 end
