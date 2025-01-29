@@ -637,11 +637,11 @@ function PVP:AddKOS(playerName, isSlashCommand)
 	end
 	local KOSList  = SV.KOSList
 	local playersDB = SV.playersDB
-	local playerDbRecord = cachedPlayerDbUpdates[playerName] or playersDB[playerName] or {}
+	local playerDbRecord = playersDB[playerName] or {}
 	playerDbRecord.unitCharName = playerName
 	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName, playerDbRecord)
 	if rawName and (rawName ~= playerName) then
-		playerDbRecord = cachedPlayerDbUpdates[rawName] or playersDB[rawName] or {}
+		playerDbRecord = playersDB[rawName] or {}
 		playerDbRecord.unitCharName = rawName
 	end
 
@@ -700,10 +700,10 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 	local coolList = SV.coolList
 	local playersDB = SV.playersDB
 
-	local playerDbRecord = cachedPlayerDbUpdates[playerName] or playersDB[playerName] or {}
+	local playerDbRecord = playersDB[playerName] or {}
 	local rawName, isInKOS, isAmbiguous, isMultiple = self:CheckKOSValidity(playerName, playerDbRecord)
 	if rawName and (rawName ~= playerName) then
-		playerDbRecord = cachedPlayerDbUpdates[rawName] or playersDB[rawName] or {}
+		playerDbRecord = playersDB[rawName] or {}
 	end
 
 
