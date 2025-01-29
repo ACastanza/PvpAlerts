@@ -1125,12 +1125,12 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 			self.idToName[unitId] = unitName
 			self.totalPlayers[unitId] = currentTime
 			if cachedPlayerDbUpdates[unitName] then
-				self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
+				self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].unitAlliance
 				self.playerNames[unitName] = currentTime
 				if self:StringStart(effectName, "Boon:") then
-					cachedPlayerDbUpdates.mundus = zo_strsub(effectName, 11)
+					cachedPlayerDbUpdates[unitName].mundus = zo_strsub(effectName, 11)
 				end
-				cachedPlayerDbUpdates.unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
+				cachedPlayerDbUpdates[unitName].unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
 			elseif self.SV.playersDB[unitName] then
 				self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
 				self.playerNames[unitName] = currentTime
@@ -1151,12 +1151,12 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 		self.totalPlayers[unitId] = currentTime
 		self.idToName[unitId] = unitName
 		if cachedPlayerDbUpdates[unitName] then
-			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].playerAlliance
+			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].unitAlliance
 			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
 				cachedPlayerDbUpdates[unitName].mundus = zo_strsub(effectName, 11)
 			end
-			cachedPlayerDbUpdates.unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
+			cachedPlayerDbUpdates[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		elseif self.SV.playersDB[unitName] then
 			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
 			self.playerNames[unitName] = currentTime
@@ -1647,11 +1647,11 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	end
 end
 
-function PVP:CachePlayerDBUpdate(playerValidName, playerDisplayName, playerAlliance, unitAllianceRank)
+function PVP:CachePlayerDBUpdate(playerValidName, playerDisplayName, unitAlliance, unitAllianceRank)
 	if playerValidName == self.playerName or playerDisplayName == "" then return end
 	cachedPlayerDbUpdates[playerValidName] = {
 		unitAccName = playerDisplayName,
-		unitAlliance = playerAlliance,
+		unitAlliance = unitAlliance,
 		unitAvARank = unitAllianceRank,
 		lastSeen = sessionTimeEpoch
 	}
