@@ -991,9 +991,9 @@ function PVP:RefreshLocalPlayers()
 			localPlayers[rawName] = newLocalPlayer
 			if newString then
 				if isActive then
-					table.insert(activeStringsArray, newString)
+					insert(activeStringsArray, newString)
 				else
-					table.insert(inactiveStringsArray, newString)
+					insert(inactiveStringsArray, newString)
 				end
 			end
 			if newPotentialAlly then
@@ -1010,9 +1010,9 @@ function PVP:RefreshLocalPlayers()
 				localPlayers[rawName] = newLocalPlayer
 				if newString then
 					if isActive then
-						table.insert(activeStringsArray, newString)
+						insert(activeStringsArray, newString)
 					else
-						table.insert(inactiveStringsArray, newString)
+						insert(inactiveStringsArray, newString)
 					end
 				end
 				if newPotentialAlly then
@@ -1042,11 +1042,11 @@ function PVP:RefreshLocalPlayers()
 					if isActive then
 						local activeMessage = self:GetFormattedClassNameLink(v.unitName, self:NameToAllianceColor(v.unitName)) ..
 							self:GetFormattedAccountNameLink(dbRec.unitAccName, isAlly and "FFFFFF" or "BB4040") .. " ACTIVE"
-						table.insert(activeStringsArray, activeMessage)
+						insert(activeStringsArray, activeMessage)
 					else
 						local inactiveMessage = self:GetFormattedClassNameLink(v.unitName, self:NameToAllianceColor(v.unitName, true), nil, true) ..
 							self:GetFormattedAccountNameLink(dbRec.unitAccName, "3F3F3F") .. guildIcon .. guildNames .. FormatPlayerNote(playerNotes[dbRec.unitAccName])
-						table.insert(inactiveStringsArray, inactiveMessage)
+						insert(inactiveStringsArray, inactiveMessage)
 					end
 				end
 			end
@@ -1059,7 +1059,7 @@ function PVP:RefreshLocalPlayers()
 					local message = self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
 						self:Colorize(accName, "3F3F3F") ..
 						self:GetCoolIcon(nil, true) .. FormatPlayerNote(playerNotes[accName])
-					table.insert(inactiveStringsArray, message)
+					insert(inactiveStringsArray, message)
 				end
 			end
 		end
