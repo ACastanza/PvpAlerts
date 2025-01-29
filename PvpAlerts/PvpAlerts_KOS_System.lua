@@ -777,7 +777,8 @@ function PVP:FindKOSPlayer(index)
 	local currentTime = GetFrameTimeMilliseconds()
 	local unitId = 0
 	local kosPlayer = self.SV.KOSList[index]
-	for rawName, rec in pairs(self.localPlayers) do
+	local localPlayers = self.localPlayers
+	for rawName, rec in pairs(localPlayers) do
 		if rec.unitAccName == kosPlayer.unitAccName then
 			local hasPlayerNote = (self.SV.playerNotes[kosPlayer.unitAccName] ~= nil)
 			if rawName ~= kosPlayer.unitName then kosPlayer.unitName = rawName end
@@ -788,7 +789,7 @@ function PVP:FindKOSPlayer(index)
 		end
 	end
 
-	local isInNames = (self.localPlayers[kosPlayer.unitName] ~= nil)
+	local isInNames = (localPlayers[kosPlayer.unitName] ~= nil)
 
 	if kosPlayer.unitId == 0 and unitId ~= 0 and self.SV.playKOSSound and (isInNames or self.playerAlliance[unitId]) then
 		if (isInNames and self.SV.playersDB[kosPlayer.unitName].unitAlliance == self.allianceOfPlayer) or self.playerAlliance[unitId] == self.allianceOfPlayer or (IsActiveWorldBattleground() and PVP.bgNames and PVP.bgNames[kosPlayer.unitName] and PVP.bgNames[kosPlayer.unitName] == GetUnitBattlegroundTeam('player')) then
