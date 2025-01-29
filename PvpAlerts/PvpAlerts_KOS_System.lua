@@ -1073,9 +1073,10 @@ function PVP:PopulateKOSBuffer()
 		playerNote = SV.playerNotes[accName]
 		if playerNote then playerNote = PVP:Colorize("- " .. playerNote, 'C5C29F') else playerNote = "" end
 
-		if unitId ~= 0 and #self.namesToDisplay > 0 then
-			for j = 1, #self.namesToDisplay do
-				if self.namesToDisplay[j] == rawName and self.namesToDisplay[j].isResurrect then
+		local namesToDisplay = self.namesToDisplay
+		if unitId ~= 0 and #namesToDisplay > 0 then
+			for j = 1, #namesToDisplay do
+				if namesToDisplay[j] == rawName and namesToDisplay[j].isResurrect then
 					isResurrect = true
 				end
 			end
