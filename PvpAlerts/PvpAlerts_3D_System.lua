@@ -458,9 +458,13 @@ local function Hide3DControl(control, scaleAdjustment)
 		control:SetHidden(true)
 		return true
 	end
+	
+	local SV = PVP.SV
+	local controlParams = control.params
+	local type = controlParams.type
+	local distance = controlParams.distance
 
-	local controlTooClose = (type ~= "SHADOW_IMAGE") and
-		control.params.distance < scaleAdjustment * PVP.SV.min3DIconsDistance
+	local controlTooClose = (type ~= "SHADOW_IMAGE") and distance < scaleAdjustment * SV.min3DIconsDistance
 	if controlTooClose then
 		control:SetHidden(true)
 		return true
@@ -472,11 +476,14 @@ local function Hide3DControl(control, scaleAdjustment)
 		[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
 	}
 
-	local type = control.params.type
-	local onScreenCheck = (IsPlayerNearObjective(control.params.keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(control.params.keepId)])) or
-		(IsPlayerNearObjective(control.params.name) and (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE'))
+	local name = controlParams.name
+	local keepId = controlParams.keepId
+	local isCurrent = controlParams.isCurrent
 
-	local controlOnScreen = PVP.SV.showOnScreen and PVP.SV.onScreenReplace and onScreenCheck
+	local onScreenCheck = (IsPlayerNearObjective(keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
+		(IsPlayerNearObjective(name) and (type == 'MILEGATE' or type == 'BRIDGE'))
+
+	local controlOnScreen = SV.showOnScreen and SV.onScreenReplace and onScreenCheck
 	if controlOnScreen then
 		control:SetHidden(true)
 		return true
@@ -489,20 +496,19 @@ local function Hide3DControl(control, scaleAdjustment)
 		['GROUP'] = true,
 		['COMPASS'] = true,
 	}
-	local controlTooFar = (not utilityControls[type]) and
-		control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance
+	local controlTooFar = (not utilityControls[type]) and distance > scaleAdjustment * SV.max3DIconsDistance
 	if controlTooFar then
 		control:SetHidden(true)
 		return true
 	end
 
-	if icControls[type] and not control.params.isCurrent then
+	if icControls[type] and not isCurrent then
 		control:SetHidden(true)
 		return true
 	end
 
-	local keepCheck = control.params.keepId and GetKeepResourceType(control.params.keepId) ~= 0 and
-		(control.params.distance > scaleAdjustment * PVP.SV.maxResource3DIconsDistance or control.params.distance > scaleAdjustment * PVP.SV.max3DIconsDistance)
+	local keepCheck = keepId and GetKeepResourceType(keepId) ~= 0 and
+		(distance > scaleAdjustment * SV.maxResource3DIconsDistance or distance > scaleAdjustment * SV.max3DIconsDistance)
 	if keepCheck then
 		control:SetHidden(true)
 		return true
@@ -1463,22 +1469,23 @@ function PVP:Init3D()
 	CALLBACK_MANAGER:RegisterCallback("On3DWorldOriginChanged", function()
 		-- d('New Origin Callback received!')
 		-- d('New origin callback time: '..tostring(GetFrameTimeMilliseconds()))
-		if PVP.currentCameraInfo.lastDeltaX and PVP.currentCameraInfo.lastDeltaY then
+		local currentCameraInfo = PVP.currentCameraInfo
+		if currentCameraInfo.lastDeltaX and currentCameraInfo.lastDeltaY then
 			d('ORIGIN CHANGED')
 			local objects = PVP.controls3DPool:GetActiveObjects()
 			-- local objectsCount = 0
 			for k, v in pairs(objects) do
 				local control = v
 				if control and control:GetName() and control.params.type ~= 'COMPASS' then
-					local newX = PVP.currentCameraInfo.current3DX +
-						(control.params.X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-					local newY = PVP.currentCameraInfo.current3DY +
-						(control.params.Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+					local newX = currentCameraInfo.current3DX +
+						(control.params.X - currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
+					local newY = currentCameraInfo.current3DY +
+						(control.params.Y - currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 
 					local oldX, oldZ, oldY = control:Get3DRenderSpaceOrigin()
-					-- control:Set3DRenderSpaceOrigin(oldX+PVP.currentCameraInfo.lastDeltaX, oldZ, oldY+PVP.currentCameraInfo.lastDeltaY)
-					control:Set3DRenderSpaceOrigin(newX + PVP.currentCameraInfo.lastDeltaX, oldZ,
-						newY + PVP.currentCameraInfo.lastDeltaY)
+					-- control:Set3DRenderSpaceOrigin(oldX+currentCameraInfo.lastDeltaX, oldZ, oldY+currentCameraInfo.lastDeltaY)
+					control:Set3DRenderSpaceOrigin(newX + currentCameraInfo.lastDeltaX, oldZ,
+						newY + currentCameraInfo.lastDeltaY)
 
 					-- local _, oldZ = control:Get3DRenderSpaceOrigin()
 					control:Set3DRenderSpaceOrigin(newX, oldZ, newY)
@@ -2195,11 +2202,13 @@ local function GetCampaignPositionInfoString(alliance)
 end
 
 local function ControlOnUpdate(control)
-	local keepType = PVP:KeepIdToKeepType(control.params.keepId)
+	local controlParams = control.params
+	local keepId = controlParams.keepId
+	local keepType = PVP:KeepIdToKeepType(keepId)
 	local keepNotClaimable = nonClaimableKeepTypes[keepType]
 	local currentTime = GetFrameTimeMilliseconds()
-	if (currentTime - control.params.lastUpdate) >= 10 then
-		control.params.lastUpdate = currentTime
+	if (currentTime - controlParams.lastUpdate) >= 10 then
+		controlParams.lastUpdate = currentTime
 	else
 		return
 	end
@@ -2208,16 +2217,16 @@ local function ControlOnUpdate(control)
 	local showingTooltipStart
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	control.multiplier = multiplier
-	local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
-	local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
-		control.params.borderKeepAnimationHandler:IsPlaying()
+	local isControlFlipping = controlParams.flippingPlaying and controlParams.flippingPlaying:IsPlaying()
+	local isBorderKeepAnimationPlaying = controlParams.borderKeepAnimationHandler and
+		controlParams.borderKeepAnimationHandler:IsPlaying()
 	-- local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
 	-- 	control.borderKeepSelectedAnimationHandler:IsPlaying()
-	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[control.params.keepId]
+	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[keepId]
 
-	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[control.params.keepId] then
+	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[keepId] then
 		local _, subzoneId = GetCurrentSubZonePOIIndices()
-		if PVP.districtKeepIdToSubzoneNumber[control.params.keepId] == subzoneId or isControlFlipping or not control:GetNamedChild('CaptureBG'):IsHidden() then
+		if PVP.districtKeepIdToSubzoneNumber[keepId] == subzoneId or isControlFlipping or not control:GetNamedChild('CaptureBG'):IsHidden() then
 			control:SetAlpha(1)
 		else
 			control:SetAlpha(PVP.SV.neighboringDistrictsAlpha)
@@ -2227,7 +2236,7 @@ local function ControlOnUpdate(control)
 		control:SetAlpha(1)
 	end
 
-	if control.params.hasRally then
+	if controlParams.hasRally then
 		ProcessRallyAnimation(control)
 	end
 
@@ -2236,7 +2245,7 @@ local function ControlOnUpdate(control)
 	local heading = GetAdjustedPlayerCameraHeading()
 
 	if ControlHasMouseOver(control, multiplier, heading) then
-		local alliance = control.params.alliance
+		local alliance = controlParams.alliance
 		control:SetAlpha(1)
 
 		PVP_WorldTooltipLabel:SetColor(PVP:HtmlToColor(PVP:AllianceToColor(alliance)))
@@ -2249,7 +2258,7 @@ local function ControlOnUpdate(control)
 
 			PVP_WorldTooltipLabel:SetText(GetCampaignInfoString(alliance))
 			PVP_WorldTooltipLabel:SetFont('$(BOLD_FONT)|$(KB_28)|thick-outline')
-			PVP_WorldTooltipSubLabel:SetText(GetBorderKeepInfoString(control.params.keepId, alliance))
+			PVP_WorldTooltipSubLabel:SetText(GetBorderKeepInfoString(keepId, alliance))
 			PVP_WorldTooltipCampaignScoreLabel:SetText(GetScoringInfoString())
 			PVP_WorldTooltipCampaignHoldingsLabel:SetText(GetHoldingsInfoString(alliance))
 			PVP_WorldTooltipEmperorInfoLabel:SetText(GetEmperorInfoString())
@@ -2272,7 +2281,7 @@ local function ControlOnUpdate(control)
 			if keepNotClaimable then
 				guildClaimName = ''
 			else
-				guildClaimName = GetClaimedKeepGuildName(control.params.keepId, BGQUERY_LOCAL) or ''
+				guildClaimName = GetClaimedKeepGuildName(keepId, BGQUERY_LOCAL) or ''
 				if guildClaimName and guildClaimName ~= "" then
 					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
 						PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
@@ -2282,12 +2291,12 @@ local function ControlOnUpdate(control)
 			end
 
 			if control.totalSieges > 0 then
-				local siegeAD = control.params.siegesAD > 0 and
-					(' ' .. PVP:Colorize(tostring(control.params.siegesAD), PVP:AllianceToColor(1))) or ""
-				local siegeDC = control.params.siegesDC > 0 and
-					(' ' .. PVP:Colorize(tostring(control.params.siegesDC), PVP:AllianceToColor(3))) or ""
-				local siegeEP = control.params.siegesEP > 0 and
-					(' ' .. PVP:Colorize(tostring(control.params.siegesEP), PVP:AllianceToColor(2))) or ""
+				local siegeAD = controlParams.siegesAD > 0 and
+					(' ' .. PVP:Colorize(tostring(controlParams.siegesAD), PVP:AllianceToColor(1))) or ""
+				local siegeDC = controlParams.siegesDC > 0 and
+					(' ' .. PVP:Colorize(tostring(controlParams.siegesDC), PVP:AllianceToColor(3))) or ""
+				local siegeEP = controlParams.siegesEP > 0 and
+					(' ' .. PVP:Colorize(tostring(controlParams.siegesEP), PVP:AllianceToColor(2))) or ""
 				siegeCount = 'Siege:' .. siegeAD .. siegeDC .. siegeEP
 			else
 				siegeCount = ''
@@ -2302,15 +2311,14 @@ local function ControlOnUpdate(control)
 			end
 
 			local distanceText = GetUpgradeLevelString(control) .. GetFormattedDistanceText(control)
-			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)) ..
+			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)) ..
 				distanceText)
 
 			SetupNormalWorldTooltip(true)
 		end
 		showingTooltipStart = PVP.currentTooltip ~= control
 		if showingTooltipStart then
-			control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
-				1
+			controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or 1
 		end
 
 		PVP.currentTooltip = control
@@ -2324,7 +2332,7 @@ local function ControlOnUpdate(control)
 	if hidingTooltipStart then
 		ResetWorldTooltip()
 		SetCaptureBarVisibility(control)
-		control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
+		controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or
 			GetNumberOfAnimationPhases()
 	end
 
@@ -2332,18 +2340,19 @@ local function ControlOnUpdate(control)
 	local popMultiplier
 
 	if PVP.currentTooltip == control or isControlFlipping then
+		local dimensions = controlParams.dimensions
 		popMultiplier = GetPopInMultiplier(multiplier, control)
-		SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
-			control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
+		SetDimensions3DControl(control, dimensions[1] * popMultiplier,
+		dimensions[2] * popMultiplier, dimensions[3] * popMultiplier)
 	end
 
 
 	if showBorderKeepInfo and PVP.currentTooltip ~= control then
 		if not isBorderKeepAnimationPlaying then
-			control.params.borderKeepAnimationHandler = StartBorderKeep3DAnimation(control)
+			controlParams.borderKeepAnimationHandler = StartBorderKeep3DAnimation(control)
 		end
 	else
-		if isBorderKeepAnimationPlaying then control.params.borderKeepAnimationHandler:Stop() end
+		if isBorderKeepAnimationPlaying then controlParams.borderKeepAnimationHandler:Stop() end
 		if not isControlFlipping then
 			control:Set3DRenderSpaceOrientation(0, heading, 0)
 		end
@@ -2447,22 +2456,25 @@ local function GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianc
 end
 
 local function PoiOnUpdate(control)
+	local controlParams = control.params
 	local currentTime = GetFrameTimeMilliseconds()
-	-- if control.params.type == 'COMPASS' or (currentTime - control.params.lastUpdate) >=5 then
-	if (currentTime - control.params.lastUpdate) >= 10 then
-		control.params.lastUpdate = currentTime
+	-- if controlParams.type == 'COMPASS' or (currentTime - controlParams.lastUpdate) >=5 then
+	if (currentTime - controlParams.lastUpdate) >= 10 then
+		controlParams.lastUpdate = currentTime
 	else
 		return
 	end
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	local showTooltip
-	local type = control.params.type
-	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and
-		control.params.alliance == GetUnitBattlegroundTeam('player') and
+	local type = controlParams.type
+	local name = controlParams.name
+	local alliance = controlParams.alliance
+
+	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and alliance == GetUnitBattlegroundTeam('player') and
 		GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
 
-	if control.params.type == 'RALLY' or control.params.hasRally then
+	if type == 'RALLY' or controlParams.hasRally then
 		ProcessRallyAnimation(control)
 	end
 
@@ -2477,7 +2489,7 @@ local function PoiOnUpdate(control)
 		['GROUP'] = true,
 	}
 
-	if icControls[type] and not control.params.isCurrent then
+	if icControls[type] and not controlParams.isCurrent then
 		if PVP.currentTooltip == control then ResetWorldTooltip() end
 		return
 	end
@@ -2485,9 +2497,9 @@ local function PoiOnUpdate(control)
 	local heading = GetAdjustedPlayerCameraHeading()
 	if ControlHasMouseOver(control, multiplier, heading) then
 		local wasRestored
-		if PVP.savedTooltip and dynamicControls[type] and PVP.savedTooltip[control.params.name] then
-			control.params.currentPhase = PVP.savedTooltip[control.params.name].currentPhase
-			PVP.savedTooltip[control.params.name] = nil
+		if PVP.savedTooltip and dynamicControls[type] and PVP.savedTooltip[name] then
+			controlParams.currentPhase = PVP.savedTooltip[name].currentPhase
+			PVP.savedTooltip[controlParams.name] = nil
 			wasRestored = true
 		end
 
@@ -2501,34 +2513,34 @@ local function PoiOnUpdate(control)
 			--local battlegroundName = GetBattlegroundName(battlegroundId)
 			local battlegroundDescription = GetBattlegroundDescription(battlegroundId)
 			local battlegroundState = GetCurrentBattlegroundState()
-			local bgAllianceHexColor = PVP:BgAllianceToHexColor(control.params.alliance)
+			local bgAllianceHexColor = PVP:BgAllianceToHexColor(alliance)
 
 			PVP_WorldTooltipLabel:SetText(GetBattlegroundNameString(bgAllianceHexColor))
 			PVP_WorldTooltipSubLabel:SetText(GetBattlegroundTypeString(battlegroundGameType, bgAllianceHexColor))
-			PVP_WorldTooltipCampaignScoreLabel:SetText(GetBattlegroundAllianceString(control.params.alliance, bgAllianceHexColor))
+			PVP_WorldTooltipCampaignScoreLabel:SetText(GetBattlegroundAllianceString(alliance, bgAllianceHexColor))
 			PVP_WorldTooltipCampaignHoldingsLabel:SetText(GetBattlegroundTeamsInfo())
 			PVP_WorldTooltipEmperorInfoLabel:SetText(GetBattlegroundStateString(battlegroundState))
 			PVP_WorldTooltipCampaignPositionInfoLabel:SetText(GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianceHexColor))
 		else
+			local keepId = controlParams.keepId
 			if type == 'IC_BASE' then
-				mainText = GetAllianceName(control.params.alliance) .. ' base'
+				mainText = GetAllianceName(alliance) .. ' base'
 			elseif type == 'IC_DOOR' then
 				local prefix
-				if control.params.doorType == 1 then
+				if controlParams.doorType == 1 then
 					prefix = 'To '
 				else
 					prefix = 'From '
 				end
 				mainText = PVP:Colorize(prefix, '808080') ..
-					PVP:Colorize(control.params.name,
-						PVP:AllianceToColor(GetKeepAlliance(control.params.doorDistrictKeepId, 1)))
+					PVP:Colorize(name, PVP:AllianceToColor(GetKeepAlliance(controlParams.doorDistrictKeepId, 1)))
 			elseif type == 'BG_BASE' then
-				mainText = GetBattlegroundTeamName(control.params.alliance) .. ' base'
+				mainText = GetBattlegroundTeamName(alliance) .. ' base'
 			elseif type == 'GROUP' then
-				local formattedName = PVP:GetTargetChar(control.params.name)
-				mainText = formattedName and formattedName or zo_strformat(SI_PLAYER_NAME, control.params.name)
-			elseif control.params.name then
-				mainText = control.params.name
+				local formattedName = PVP:GetTargetChar(name)
+				mainText = formattedName and formattedName or zo_strformat(SI_PLAYER_NAME, name)
+			elseif name then
+				mainText = name
 			else
 				mainText = 'Tooltip'
 			end
@@ -2543,26 +2555,26 @@ local function PoiOnUpdate(control)
 				mainText = mainText .. distanceText
 			end
 
-			if control.params.alliance and not (type == 'MILEGATE' or type == 'BRIDGE') then
+			if alliance and not (type == 'MILEGATE' or type == 'BRIDGE') then
 				-- if (type == 'MILEGATE' or type == 'BRIDGE') then
-				-- if control.params.alliance ~= ALLIANCE_NONE then
-				-- mainText = PVP:Colorize(mainText, PVP:AllianceToColor(GetKeepAlliance(control.params.alliance, 1)))
+				-- if alliance ~= ALLIANCE_NONE then
+				-- mainText = PVP:Colorize(mainText, PVP:AllianceToColor(GetKeepAlliance(alliance, 1)))
 				-- else
 				-- mainText = PVP:Colorize(mainText, '808080')
 				-- end
 				if type == 'BG_BASE' then
-					mainText = PVP:Colorize(mainText, PVP:BgAllianceToHexColor(control.params.alliance))
+					mainText = PVP:Colorize(mainText, PVP:BgAllianceToHexColor(alliance))
 				else
-					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(control.params.alliance))
+					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(alliance))
 				end
 			elseif type == 'MILEGATE' then
-				if PVP:IsMiscPassable(control.params.keepId) then
+				if PVP:IsMiscPassable(keepId) then
 					mainText = PVP:Colorize(mainText, '00FF00')
 				else
 					mainText = PVP:Colorize(mainText, 'FF0000')
 				end
 			elseif type == 'BRIDGE' then
-				if PVP:IsMiscPassable(control.params.keepId) then
+				if PVP:IsMiscPassable(keepId) then
 					mainText = PVP:Colorize(mainText, '00FF00')
 				else
 					mainText = PVP:Colorize(mainText, 'FF0000')
@@ -2578,33 +2590,33 @@ local function PoiOnUpdate(control)
 			elseif type == 'CAMP' then
 				mainText = PVP:Colorize(mainText, PVP:AllianceToColor(PVP.allianceOfPlayer))
 			elseif type == 'SCROLL' then
-				if control.params.isBgFlag then
-					if control.params.scrollAlliance ~= ALLIANCE_NONE then
+				if controlParams.isBgFlag then
+					if controlParams.scrollAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(mainText,
 							PVP:BgAllianceToHexColor(GetCaptureFlagObjectiveOriginalOwningAlliance(0,
-								control.params.isBgFlag, BGQUERY_LOCAL)))
+								controlParams.isBgFlag, BGQUERY_LOCAL)))
 					else
 						mainText = PVP:Colorize(mainText, '808080')
 					end
-					local carrierName = GetCarryableObjectiveHoldingCharacterInfo(0, control.params.isBgFlag,
+					local carrierName = GetCarryableObjectiveHoldingCharacterInfo(0, controlParams.isBgFlag,
 						BGQUERY_LOCAL)
 					if carrierName and carrierName ~= "" then
 						mainText = mainText ..
 							PVP:Colorize(' carried by ', '808080') ..
 							PVP:Colorize(zo_strformat(SI_UNIT_NAME, carrierName),
-								PVP:BgAllianceToHexColor(control.params.scrollAlliance))
+								PVP:BgAllianceToHexColor(controlParams.scrollAlliance))
 					end
 				else
-					if control.params.scrollAlliance ~= ALLIANCE_NONE then
-						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(control.params.scrollAlliance))
+					if controlParams.scrollAlliance ~= ALLIANCE_NONE then
+						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.scrollAlliance))
 					else
 						mainText = PVP:Colorize(mainText, '808080')
 					end
-					if control.params.scrollOriginalAlliance ~= 0 then
+					if controlParams.scrollOriginalAlliance ~= 0 then
 						mainText = PVP:Colorize(
 							zo_iconFormatInheritColor(
-								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, control.params.scrollOriginalAlliance), 48, 48),
-							PVP:AllianceToColor(control.params.scrollOriginalAlliance)) .. mainText
+								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, controlParams.scrollOriginalAlliance), 48, 48),
+							PVP:AllianceToColor(controlParams.scrollOriginalAlliance)) .. mainText
 					end
 				end
 			elseif type == 'IC_VAULT' then
@@ -2620,12 +2632,11 @@ local function PoiOnUpdate(control)
 
 		if PVP.currentTooltip ~= control then
 			if wasRestored then
-				if control.params.currentPhase > GetNumberOfAnimationPhases() then
-					control.params.currentPhase = GetNumberOfAnimationPhases()
+				if controlParams.currentPhase > GetNumberOfAnimationPhases() then
+					controlParams.currentPhase = GetNumberOfAnimationPhases()
 				end
 			else
-				control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and
-					control.params.currentPhase or 1
+				controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or 1
 			end
 		end
 
@@ -2643,9 +2654,9 @@ local function PoiOnUpdate(control)
 			PVP_WorldTooltipBackdrop:SetHidden(false)
 			PVP_WorldTooltipDividerTop:SetHidden(false)
 			PVP_WorldTooltipDividerBottom:SetHidden(false)
-			PVP_WorldTooltipBackdrop:SetCenterColor(PVP:HtmlToColor(PVP:BgAllianceToHexColor(control.params.alliance),
+			PVP_WorldTooltipBackdrop:SetCenterColor(PVP:HtmlToColor(PVP:BgAllianceToHexColor(alliance),
 				true))
-			PVP_WorldTooltipBackdrop:SetEdgeColor(PVP:HtmlToColor(PVP:BgAllianceToHexColor(control.params.alliance)))
+			PVP_WorldTooltipBackdrop:SetEdgeColor(PVP:HtmlToColor(PVP:BgAllianceToHexColor(alliance)))
 
 			local x, y = PVP_WorldTooltip:GetDimensions()
 			PVP_WorldTooltipBackdrop:SetDimensions(x + 35, y + 50)
@@ -2667,8 +2678,7 @@ local function PoiOnUpdate(control)
 
 	if not showTooltip and PVP.currentTooltip == control then
 		ResetWorldTooltip()
-		control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and control.params.currentPhase or
-			GetNumberOfAnimationPhases()
+		controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or GetNumberOfAnimationPhases()
 	end
 
 	local adjustedMultiplier = GetPOIControlSelectedSizeMultiplier(control, scaleAdjustment, multiplier)
@@ -2692,23 +2702,23 @@ local function PoiOnUpdate(control)
 		if type ~= 'SEWERS_SIGN' then
 			control:Set3DRenderSpaceOrientation(0, heading, 0)
 		else
-			control:Set3DRenderSpaceOrientation(0, control.params.orientation3d and control.params.orientation3d or 0, 0)
+			control:Set3DRenderSpaceOrientation(0, controlParams.orientation3d and controlParams.orientation3d or 0, 0)
 		end
 	end
 
 	if type ~= 'COMPASS' then
-		SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
-			control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
+		SetDimensions3DControl(control, controlParams.dimensions[1] * popMultiplier,
+			controlParams.dimensions[2] * popMultiplier, controlParams.dimensions[3] * popMultiplier)
 	end
 
-	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and control.params.alliance ~= GetUnitBattlegroundTeam('player') then
+	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and alliance ~= GetUnitBattlegroundTeam('player') then
 		control:SetAlpha(0.5)
-	elseif type == 'GROUP' and not (PVP.SV.allgroup3d or (control.params.isGroupLeader and PVP.SV.groupleader3d)) then
+	elseif type == 'GROUP' and not (PVP.SV.allgroup3d or (controlParams.isGroupLeader and PVP.SV.groupleader3d)) then
 		local distanceThreshold = 0.1 * scaleAdjustment * PVP_MAX_DISTANCE
-		if control.params.distance < distanceThreshold then
+		if controlParams.distance < distanceThreshold then
 			control:SetAlpha(0)
-		elseif control.params.distance < 1.5 * distanceThreshold then
-			local targetAlpha = (control.params.distance - distanceThreshold) / 0.5 / distanceThreshold
+		elseif controlParams.distance < 1.5 * distanceThreshold then
+			local targetAlpha = (controlParams.distance - distanceThreshold) / 0.5 / distanceThreshold
 			control:SetAlpha(targetAlpha)
 		else
 			control:SetAlpha(1)
@@ -3449,6 +3459,10 @@ local function ObjectiveOnUpdate(control)
 	local controlGraceAngle
 	controlGraceAngle = atan(0.5 * controlSize / distance)
 
+	local controlParams = control.params
+	local type = controlParams.type
+	local objectiveId = controlParams.objectiveId
+	local alliance = controlParams.alliance
 
 	if heading > controlHeading - controlGraceAngle and heading < controlHeading + controlGraceAngle then
 		local lowerBoundZ, higherBoundZ
@@ -3457,18 +3471,15 @@ local function ObjectiveOnUpdate(control)
 		higherBoundZ = atan2((deltaZ + 0.5 * controlSize), distance)
 
 		local validTooltipStatus = not PVP.currentTooltip or PVP.currentTooltip == control or
-			control.params.distance < PVP.currentTooltip.params.distance
+			controlParams.distance < PVP.currentTooltip.params.distance
 
 		if (-angleZ > lowerBoundZ and -angleZ < higherBoundZ) and validTooltipStatus then
-			if control.params.type == 'CTF_BASE' then
-				control.params.alliance = GetCaptureFlagObjectiveOriginalOwningAlliance(0,
-					control.params.objectiveId, BGQUERY_LOCAL)
+			if type == 'CTF_BASE' then
+				alliance = GetCaptureFlagObjectiveOriginalOwningAlliance(0,
+				objectiveId, BGQUERY_LOCAL)
 			else
-				control.params.alliance = GetCaptureAreaObjectiveOwner(0, control.params.objectiveId,
-					BGQUERY_LOCAL)
+				alliance = GetCaptureAreaObjectiveOwner(0, objectiveId, BGQUERY_LOCAL)
 			end
-
-			local alliance = control.params.alliance
 
 			-- PVP_WorldTooltipLabel:SetColor(PVP:BgAllianceToHexColor(alliance))
 			PVP_WorldTooltipLabel:SetColor(GetBattlegroundAllianceColor(alliance):UnpackRGBA())
@@ -3476,7 +3487,7 @@ local function ObjectiveOnUpdate(control)
 
 			local distanceText = GetFormattedDistanceText(control)
 			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT,
-				GetObjectiveInfo(0, control.params.objectiveId, BGQUERY_LOCAL)) .. distanceText)
+				GetObjectiveInfo(0, objectiveId, BGQUERY_LOCAL)) .. distanceText)
 
 			SetupNormalWorldTooltip(false)
 
@@ -3484,8 +3495,7 @@ local function ObjectiveOnUpdate(control)
 			showingTooltipStart = PVP.currentTooltip ~= control
 
 			if showingTooltipStart then
-				control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and
-					control.params.currentPhase or 1
+				controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or 1
 			end
 
 			PVP.currentTooltip = control
@@ -3499,8 +3509,7 @@ local function ObjectiveOnUpdate(control)
 
 	if hidingTooltipStart then
 		ResetWorldTooltip()
-		control.params.currentPhase = IsPopPhaseValid(control.params.currentPhase) and
-			control.params.currentPhase or GetNumberOfAnimationPhases()
+		controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or GetNumberOfAnimationPhases()
 	end
 
 
@@ -3512,8 +3521,8 @@ local function ObjectiveOnUpdate(control)
 		popMultiplier = GetPopOutMultiplier(multiplier, control)
 	end
 
-	SetDimensions3DControl(control, control.params.dimensions[1] * popMultiplier,
-		control.params.dimensions[2] * popMultiplier, control.params.dimensions[3] * popMultiplier)
+	local dimensions = controlParams.dimensions
+	SetDimensions3DControl(control, dimensions[1] * popMultiplier, dimensions[2] * popMultiplier, dimensions[3] * popMultiplier)
 
 	if not isControlFlipping then
 		control:Set3DRenderSpaceOrientation(0, heading, 0)
