@@ -8,7 +8,7 @@ PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
 local killFeedDuplicateTracker = ZO_RecurrenceTracker:New(2000, 0)
-local cachedPlayerDbUpdates = {}
+local cachedPlayerNameChanges = {}
 local killFeedBuffer = {}
 local killingBlows = {}
 
@@ -115,6 +115,13 @@ function PVP:RemoveDuplicateNames() -- // a clean-up function for various arrays
 				end
 			end
 		end
+	end
+end
+
+function PVP:ProcessCachedPlayerNameChanges()
+	for k, v in pairs(cachedPlayerNameChanges) do
+		PVP:UpdatePlayerDbAccountName(k, v.newUnitAccName, v.oldUnitAccName)
+		cachedPlayerNameChanges[k] = nil
 	end
 end
 
@@ -254,43 +261,9 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		chat:Printf('Performance loss = %.3f%', (end_all - start_main) / 2.5)
 		chat:Print('----------------------------')
 	end
-	-- PVP:TestThisScale()
-end
 
-function PVP:OnCombatState(eventCode, combatState)
-	if combatState then return end
-	for k, v in pairs(cachedPlayerDbUpdates) do
-		local playerDbRecord = PVP.SV.playersDB[k]
-		if not playerDbRecord then
-			PVP.SV.playersDB[k] = {
-				unitAccName = v.unitAccName,
-				unitAlliance = v.unitAlliance,
-				unitAvARank = v.unitAvARank,
-				lastSeen = v.lastSeen,
-				mundus = v.mundus,
-			}
-		else
-			if playerDbRecord.unitAlliance ~= v.unitAlliance then
-				playerDbRecord.unitAlliance = v.unitAlliance
-			end
-			if playerDbRecord.unitAvARank ~= v.unitAvARank then
-				playerDbRecord.unitAvARank = v.unitAvARank
-			end
-			if playerDbRecord.lastSeen ~= v.lastSeen then
-				playerDbRecord.lastSeen = v.lastSeen
-			end
-			if v.mundus and v.mundus ~= "" then
-				playerDbRecord.mundus = v.mundus
-			end
-			if v.unitSpec and v.unitSpec ~= "" then
-				playerDbRecord.unitSpec = v.unitSpec
-			end
-			if playerDbRecord.unitAccName ~= v.unitAccName then
-				PVP:UpdatePlayerDbAccountName(k, v.unitAccName, playerDbRecord.unitAccName)
-			end
-		end
-		cachedPlayerDbUpdates[k] = nil
-	end
+	if not IsUnitInCombat('player') then PVP:ProcessCachedPlayerNameChanges() end
+	-- PVP:TestThisScale()
 end
 
 function PVP:updateCampaignEmperor(eventCode, campaignId)
@@ -1120,50 +1093,40 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 		return
 	end
 
-	if self.totalPlayers[unitId] and unitName ~= "" then
+	local totalPlayers = self.totalPlayers
+	local idToName = self.idToName
+	if totalPlayers[unitId] and unitName ~= "" then
 		if self:CheckName(unitName) then
-			self.idToName[unitId] = unitName
-			self.totalPlayers[unitId] = currentTime
-			if cachedPlayerDbUpdates[unitName] then
-				self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].unitAlliance
+			idToName[unitId] = unitName
+			totalPlayers[unitId] = currentTime
+			local playerDbRecord = self.SV.playersDB[unitName]
+			if playerDbRecord then
+				self.playerAlliance[unitId] = playerDbRecord.unitAlliance
 				self.playerNames[unitName] = currentTime
 				if self:StringStart(effectName, "Boon:") then
-					cachedPlayerDbUpdates[unitName].mundus = zo_strsub(effectName, 11)
+					playerDbRecord.mundus = zo_strsub(effectName, 11)
 				end
-				cachedPlayerDbUpdates[unitName].unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
-			elseif self.SV.playersDB[unitName] then
-				self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
-				self.playerNames[unitName] = currentTime
-				if self:StringStart(effectName, "Boon:") then
-					self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
-				end
-				self.SV.playersDB[unitName].unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
+				playerDbRecord.unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
 			end
 		else
-			self.totalPlayers[unitId] = nil
+			totalPlayers[unitId] = nil
 			self.playerAlliance[unitId] = nil
-			self.playerSpec[self.idToName[unitId]] = nil
-			self.miscAbilities[self.idToName[unitId]] = nil
-			self.idToName[unitId] = nil
+			self.playerSpec[idToName[unitId]] = nil
+			self.miscAbilities[idToName[unitId]] = nil
+			idToName[unitId] = nil
 			self.npcExclude[unitId] = currentTime
 		end
-	elseif (unitName ~= "") and (self.totalPlayers[unitId] == nil) and self:CheckName(unitName) then
-		self.totalPlayers[unitId] = currentTime
-		self.idToName[unitId] = unitName
-		if cachedPlayerDbUpdates[unitName] then
-			self.playerAlliance[unitId] = cachedPlayerDbUpdates[unitName].unitAlliance
+	elseif (unitName ~= "") and (totalPlayers[unitId] == nil) and self:CheckName(unitName) then
+		totalPlayers[unitId] = currentTime
+		idToName[unitId] = unitName
+		local playerDbRecord = self.SV.playersDB[unitName]
+		if playerDbRecord[unitName] then
+			self.playerAlliance[unitId] = playerDbRecord[unitName].unitAlliance
 			self.playerNames[unitName] = currentTime
 			if self:StringStart(effectName, "Boon:") then
-				cachedPlayerDbUpdates[unitName].mundus = zo_strsub(effectName, 11)
+				playerDbRecord[unitName].mundus = zo_strsub(effectName, 11)
 			end
-			cachedPlayerDbUpdates[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
-		elseif self.SV.playersDB[unitName] then
-			self.playerAlliance[unitId] = self.SV.playersDB[unitName].unitAlliance
-			self.playerNames[unitName] = currentTime
-			if self:StringStart(effectName, "Boon:") then
-				self.SV.playersDB[unitName].mundus = zo_strsub(effectName, 11)
-			end
-			self.SV.playersDB[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
+			playerDbRecord[unitName].unitSpec = self:DetectSpec(unitId, abilityId, nil, unitName, true)
 		end
 	end
 end
@@ -1294,56 +1257,55 @@ end
 
 function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType, abilityId, result)
 	-- if not (self.SV.showNamesFrame and self.SV.playersDB[unitName]) then return end
-	if not (cachedPlayerDbUpdates[unitName] or self.SV.playersDB[unitName]) then return end
+	local playerDbRecord = self.SV.playersDB[unitName]
+	if not playerDbRecord then return end
 
 	local isInBG = IsActiveWorldBattleground()
 	local isValidBGNameToDisplay = isInBG and PVP.bgNames and PVP.bgNames[unitName] and PVP.bgNames[unitName] ~= 0 and
 		PVP.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
-	local unitAlliance = cachedPlayerDbUpdates[unitName] and cachedPlayerDbUpdates[unitName].unitAlliance or
-	self.SV.playersDB[unitName]
-	 and self.SV.playersDB[unitName].unitAlliance
+	local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
 	local isValidCyroNameToDisplay = (not isInBG) and (unitAlliance ~= self.allianceOfPlayer)
 
-
+	local namesToDisplay = self.namesToDisplay
 	if isValidBGNameToDisplay or isValidCyroNameToDisplay then
 		local found
-		for i = 1, #self.namesToDisplay do
-			if self.namesToDisplay[i].unitName == unitName then
+		for i = 1, #namesToDisplay do
+			if namesToDisplay[i].unitName == unitName then
 				found = i
 				break
 			end
 		end
 		if found then
-			self.namesToDisplay[found].currentTime = currentTime
+			namesToDisplay[found].currentTime = currentTime
 
 			if updateOnly and PVP:GetValidName(GetRawUnitName('reticleover')) == unitName then
 				if IsUnitDead('reticleover') then
-					self.namesToDisplay[found].isDead = true
+					namesToDisplay[found].isDead = true
 				else
-					self.namesToDisplay[found].isResurrect = nil
+					namesToDisplay[found].isResurrect = nil
 				end
 			end
 
-			if not updateOnly and self.namesToDisplay[found].isDead then
-				self.namesToDisplay[found].isDead = nil
-				if not self.namesToDisplay[found].isResurrect then
-					self.namesToDisplay[found].isResurrect = currentTime
+			if not updateOnly and namesToDisplay[found].isDead then
+				namesToDisplay[found].isDead = nil
+				if not namesToDisplay[found].isResurrect then
+					namesToDisplay[found].isResurrect = currentTime
 				end
 			end
 
 
 			if attackType == 'source' then
-				self.namesToDisplay[found].isAttacker = true
+				namesToDisplay[found].isAttacker = true
 			elseif attackType == 'target' then
-				self.namesToDisplay[found].isTarget = true
+				namesToDisplay[found].isTarget = true
 			end
 
 			if attackType == 'source' then
-				local playerToUpdate = self.namesToDisplay[found]
+				local playerToUpdate = namesToDisplay[found]
 
-				remove(self.namesToDisplay, found)
+				remove(namesToDisplay, found)
 
-				insert(self.namesToDisplay, playerToUpdate)
+				insert(namesToDisplay, playerToUpdate)
 			end
 		else
 			if not updateOnly then
@@ -1366,7 +1328,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 				if abilityId == 0 and result == 2265 and isTarget then
 					isResurrect = currentTime
 				end
-				insert(self.namesToDisplay,
+				insert(namesToDisplay,
 					{
 						unitName = unitName,
 						currentTime = currentTime,
@@ -1393,14 +1355,16 @@ function PVP:ProcessKillingBlows(result, targetUnitId, targetName, abilityId)
 end
 
 function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
-	if KILLING_BLOW_ACTION_RESULTS[result] and PVP.totalPlayers[targetUnitId] then
-		if PVP.idToName[targetUnitId] then
-			PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = PVP.idToName[targetUnitId] }
+	local totalPlayers = self.totalPlayers
+	local idToName = self.idToName
+	if KILLING_BLOW_ACTION_RESULTS[result] and totalPlayers[targetUnitId] then
+		if idToName[targetUnitId] then
+			PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = idToName[targetUnitId] }
 		else
 			PVP.currentlyDead[targetUnitId] = { currentTime = currentTime, playerName = "" }
 		end
 
-		local deadName = PVP.idToName[targetUnitId] or targetName
+		local deadName = idToName[targetUnitId] or targetName
 
 		if deadName and #PVP.namesToDisplay > 0 then
 			for i = 1, #PVP.namesToDisplay do
@@ -1413,10 +1377,10 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 			end
 		end
 
-		PVP.totalPlayers[targetUnitId] = nil
-		PVP.playerSpec[PVP.idToName[targetUnitId]] = nil
-		PVP.miscAbilities[PVP.idToName[targetUnitId]] = nil
-		PVP.idToName[targetUnitId] = nil
+		totalPlayers[targetUnitId] = nil
+		PVP.playerSpec[idToName[targetUnitId]] = nil
+		PVP.miscAbilities[idToName[targetUnitId]] = nil
+		idToName[targetUnitId] = nil
 		PVP.playerAlliance[targetUnitId] = nil
 	end
 end
@@ -1425,16 +1389,18 @@ function PVP:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId
 	if sourceName == "" and targetName == "" and (not self.npcExclude[targetUnitId]) and (not self.currentlyDead[targetUnitId]) and not DEAD_ACTION_RESULTS[result] then
 		if self:IsNPCAbility(abilityId) then
 			self.npcExclude[targetUnitId] = currentTime
-			if self.totalPlayers[targetUnitId] then
-				self.totalPlayers[targetUnitId] = nil
-				self.playerSpec[self.idToName[targetUnitId]] = nil
-				self.miscAbilities[self.idToName[targetUnitId]] = nil
-				self.idToName[targetUnitId] = nil
+			local totalPlayers = self.totalPlayers
+			local idToName = self.idToName
+			if totalPlayers[targetUnitId] then
+				totalPlayers[targetUnitId] = nil
+				self.playerSpec[idToName[targetUnitId]] = nil
+				self.miscAbilities[idToName[targetUnitId]] = nil
+				idToName[targetUnitId] = nil
 				self.playerAlliance[targetUnitId] = nil
 			end
 		else
-			self.totalPlayers[targetUnitId] = currentTime
-			if self.idToName[targetUnitId] then
+			totalPlayers[targetUnitId] = currentTime
+			if idToName[targetUnitId] then
 				self:DetectSpec(targetUnitId, abilityId, result, nil, true)
 			end
 		end
@@ -1443,26 +1409,31 @@ end
 
 function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetName, currentTime)
 	if sourceName ~= "" and sourceName ~= self.playerName and not (self.currentlyDead[sourceUnitId]) or self.IsCurrentlyDead(sourceName) then
+		local totalPlayers = self.totalPlayers
+		local idToName = self.idToName
 		if not self:CheckName(sourceName) then
 			self.npcExclude[sourceUnitId] = currentTime
-			if self.totalPlayers[sourceUnitId] then
-				self.totalPlayers[sourceUnitId] = nil
-				self.playerSpec[self.idToName[sourceUnitId]] = nil
-				self.miscAbilities[self.idToName[sourceUnitId]] = nil
-				self.idToName[sourceUnitId] = nil
+			if totalPlayers[sourceUnitId] then
+				totalPlayers[sourceUnitId] = nil
+				self.playerSpec[idToName[sourceUnitId]] = nil
+				self.miscAbilities[idToName[sourceUnitId]] = nil
+				idToName[sourceUnitId] = nil
 				self.playerAlliance[sourceUnitId] = nil
 			end
-		elseif self.SV.playersDB[sourceName] then
-			self.playerAlliance[sourceUnitId] = self.SV.playersDB[sourceName].unitAlliance
-			self.idToName[sourceUnitId] = sourceName
-			self:DetectSpec(sourceUnitId, abilityId, result, sourceName, false)
-			self.totalPlayers[sourceUnitId] = currentTime
-			if targetName == self.playerName then
-				if self.SV.showImportant and self.chargeSnareId[abilityId] then
-					self.miscAbilities[sourceName] = self.miscAbilities[sourceName] or {}
-					self.miscAbilities[sourceName].chargeId = abilityId
+		else
+			local playersDB = self.SV.playersDB
+			if playersDB[sourceName] then
+				self.playerAlliance[sourceUnitId] = playersDB[sourceName].unitAlliance
+				idToName[sourceUnitId] = sourceName
+				self:DetectSpec(sourceUnitId, abilityId, result, sourceName, false)
+				totalPlayers[sourceUnitId] = currentTime
+				if targetName == self.playerName then
+					if self.SV.showImportant and self.chargeSnareId[abilityId] then
+						self.miscAbilities[sourceName] = self.miscAbilities[sourceName] or {}
+						self.miscAbilities[sourceName].chargeId = abilityId
+					end
+					self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result)
 				end
-				self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result)
 			end
 		end
 	end
@@ -1470,25 +1441,30 @@ end
 
 function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime, hitValue, abilityName)
 	if targetName ~= "" and targetName ~= self.playerName and sourceName == self.playerName and not (self.currentlyDead[targetUnitId]) or self.IsCurrentlyDead(targetName) then
+		local totalPlayers = self.totalPlayers
+		local idToName = self.idToName
 		if not self:CheckName(targetName) then
 			self.npcExclude[targetUnitId] = currentTime
-			if self.totalPlayers[targetUnitId] then
-				self.totalPlayers[targetUnitId] = nil
-				self.playerSpec[self.idToName[targetUnitId]] = nil
-				self.miscAbilities[self.idToName[targetUnitId]] = nil
-				self.idToName[targetUnitId] = nil
+			if totalPlayers[targetUnitId] then
+				totalPlayers[targetUnitId] = nil
+				self.playerSpec[idToName[targetUnitId]] = nil
+				self.miscAbilities[idToName[targetUnitId]] = nil
+				idToName[targetUnitId] = nil
 				self.playerAlliance[targetUnitId] = nil
 			end
-		elseif self.SV.playersDB[targetName] then
-			self.playerAlliance[targetUnitId] = self.SV.playersDB[targetName].unitAlliance
-			self.idToName[targetUnitId] = targetName
-			self.totalPlayers[targetUnitId] = currentTime
-			self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result)
+		else
+			local playersDB = self.SV.playersDB
+			if playersDB[targetName] then
+				self.playerAlliance[targetUnitId] = playersDB[targetName].unitAlliance
+				idToName[targetUnitId] = targetName
+				totalPlayers[targetUnitId] = currentTime
+				self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result)
 
-			if result == ACTION_RESULT_REFLECTED then
-				self.miscAbilities[targetName] = self.miscAbilities[targetName] or {}
-				if not self.miscAbilities[targetName].reflects then self.miscAbilities[targetName].reflects = {} end
-				self.miscAbilities[targetName].reflects[abilityName] = true
+				if result == ACTION_RESULT_REFLECTED then
+					self.miscAbilities[targetName] = self.miscAbilities[targetName] or {}
+					if not self.miscAbilities[targetName].reflects then self.miscAbilities[targetName].reflects = {} end
+					self.miscAbilities[targetName].reflects[abilityName] = true
+				end
 			end
 		end
 	end
@@ -1647,14 +1623,23 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	end
 end
 
-function PVP:CachePlayerDBUpdate(playerValidName, playerDisplayName, unitAlliance, unitAllianceRank)
+function PVP:UpdateKillfeedPlayer(playerValidName, playerDisplayName, unitAlliance, unitAllianceRank)
 	if playerValidName == self.playerName or playerDisplayName == "" then return end
-	cachedPlayerDbUpdates[playerValidName] = {
-		unitAccName = playerDisplayName,
-		unitAlliance = unitAlliance,
-		unitAvARank = unitAllianceRank,
-		lastSeen = sessionTimeEpoch
-	}
+
+	local playersDB = PVP.SV.playersDB
+	local playerDbRecord = playersDB[playerValidName] or {}
+	local unitDbAccName = playerDbRecord.unitAccName or playerDisplayName
+
+	playerDbRecord.unitAccName = playerDisplayName
+	playerDbRecord.unitAlliance = unitAlliance
+	playerDbRecord.unitAvARank = unitAllianceRank
+	playersDB[playerValidName] = playerDbRecord
+	if playerDisplayName ~= playerValidName then
+		cachedPlayerNameChanges[playerValidName] = {
+			oldUnitAccName = unitDbAccName,
+			newUnitAccName = playerDisplayName,
+		}
+	end
 end
 
 local function GetSpacedOutString(...)
@@ -1670,7 +1655,7 @@ local function GetSpacedOutString(...)
 end
 
 function PVP:GetImportantIcon(unitCharName, unitAccName, unitAlliance)
-	local KOSOrFriend = self:IsKOSOrFriend(unitCharName, unitAccName or cachedPlayerDbUpdates[unitCharName] and cachedPlayerDbUpdates[unitCharName].unitAccName or self.SV.playersDB[unitCharName] and self.SV.playersDB[unitCharName].unitAccName)
+	local KOSOrFriend = self:IsKOSOrFriend(unitCharName, unitAccName or unitCharName and self.SV.playersDB[unitCharName].unitAccName)
 	if KOSOrFriend then
 		if KOSOrFriend == "KOS" then
 			return self:GetKOSIcon(32,
@@ -1940,8 +1925,8 @@ function PVP:OnKillfeed(_, killLocation, sourceDisplayName, sourceCharacterName,
 	local sourceValidName = self:GetValidName(sourceCharacterName)
 	local sourceAllianceColor = self:GetTrueAllianceColorsHex(sourceAlliance)
 
-	self:CachePlayerDBUpdate(targetValidName, targetDisplayName, targetAlliance, targetRank)
-	self:CachePlayerDBUpdate(sourceValidName, sourceDisplayName, sourceAlliance, sourceRank)
+	self:UpdateKillfeedPlayer(targetValidName, targetDisplayName, targetAlliance, targetRank)
+	self:UpdateKillfeedPlayer(sourceValidName, sourceDisplayName, sourceAlliance, sourceRank)
 
 	insert(killFeedBuffer, {
 		targetValidName = targetValidName,
@@ -2116,7 +2101,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	-- local importantIcon = importantMode and " "..abilityIcon or ""
 	sourceName = sourceName and sourceName ~= "" and sourceName or sourceUnitId and self.idToName[sourceUnitId]
 	if sourceName then
-		playerDbRecord = cachedPlayerDbUpdates[sourceName] or self.SV.playersDB[sourceName]
+		playerDbRecord = self.SV.playersDB[sourceName]
 		accountNameFromDB = playerDbRecord and playerDbRecord.unitAccName
 	end
 	if sourceUnitId == "unlock" then
@@ -2314,7 +2299,7 @@ local function FindTargetCharInNames(playerName, isTargetFrame, unitAlliance)
 end
 
 function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
-	local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+	local playerDbRecord = self.SV.playersDB[playerName]
 	if not playerDbRecord then return nil end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local accountNameFromDB = playerDbRecord.unitAccName or "@name unknown"
@@ -2709,7 +2694,6 @@ function PVP:OnOff()
 			PVP_SCOREBOARD_FRAGMENT:RegisterCallback("StateChange", ScoreboardFragmentCallback)
 			CALLBACK_MANAGER:RegisterCallback("OnWorldMapChanged", OnWorldMapChangedCallback)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED, function(...) self:updateCampaignEmperor(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PLAYER_COMBAT_STATE, function(...) self:OnCombatState(...) end)
 			-- EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED, function(...) self:OnBattlegroundStateChanged(...) end)
 			-- EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED, function(...) self:OnBattlegroundMMRLossReduced(...) end)
 		end
@@ -2734,7 +2718,6 @@ function PVP:OnOff()
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_ACTION_SLOT_ABILITY_USED)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_LEADER_UPDATE)
 			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_CAMPAIGN_EMPEROR_CHANGED)
-			EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_PLAYER_COMBAT_STATE)
 			-- EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED)
 			-- EVENT_MANAGER:UnregisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED)
 			EVENT_MANAGER:UnregisterForUpdate(self.name)
@@ -2745,7 +2728,7 @@ function PVP:OnOff()
 		PVP.delayedInitControls = true
 		PVP:InitControls()
 		PVP:FullReset3DIcons()
-		PVP:OnCombatState(nil, false)
+		PVP:ProcessCachedPlayerNameChanges()
 
 		if not (self.SV.enabled and self.SV.unlocked) then
 			PVP_TargetName:SetAlpha(0)
@@ -3049,6 +3032,7 @@ end
 
 function PVP:GetAllianceCountPlayers()
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
+	local allianceOfPlayer = self.playerAlliance
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
@@ -3058,17 +3042,19 @@ function PVP:GetAllianceCountPlayers()
 	local currentTime = GetFrameTimeMilliseconds()
 
 	-- local countAllianceStart = GetGameTimeMilliseconds()
-
-
+	local playerAlliance = self.playerAlliance
+	local idToName = self.idToName
+	local playerNames = self.playerNames
+	local playersDb = self.SV.playersDB
 
 	if not IsActiveWorldBattleground() then
-		for k, v in pairs(self.playerAlliance) do
-			local playerName					= self.idToName[k]
-			local playerDbRecord				= cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName] or {}
-			local unitAccName					= playerDbRecord.unitAccName or self.SV.playersDB[playerName].unitAccName
-			local unitClass					   	= playerDbRecord.unitClass or self.SV.playersDB[playerName].unitClass
-			local unitAlliance				 	= playerDbRecord.unitAlliance or self.SV.playersDB[playerName].unitAlliance
-			local unitAvARank					= playerDbRecord.unitAvARank or self.SV.playersDB[playerName].unitAvARank
+		for k, v in pairs(playerAlliance) do
+			local playerName					= idToName[k]
+			local playerDbRecord				= playersDb[playerName] or {}
+			local unitAccName					= playerDbRecord.unitAccName
+			local unitClass					   	= playerDbRecord.unitClass
+			local unitAlliance				 	= playerDbRecord.unitAlliance
+			local unitAvARank					= playerDbRecord.unitAvARank
 			local formattedName, allianceColor, classIcons
 			local KOSOrFriend					 = self:IsKOSOrFriend(playerName, unitAccName)
 			local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName, unitAlliance)
@@ -3164,14 +3150,12 @@ function PVP:GetAllianceCountPlayers()
 			foundNames[playerName] = true
 		end
 
-		for k, _ in pairs(self.playerNames) do
+		for k, _ in pairs(playerNames) do
 			if not foundNames[k] then
 				local playerName = k
-				local playerDbRecord				= cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName] or {}
-				local unitAccName					= playerDbRecord.unitAccName or self.SV.playersDB[playerName].unitAccName
-				--local unitClass					   	= playerDbRecord.unitClass or self.SV.playersDB[playerName].unitClass
-				local unitAlliance				 	= playerDbRecord.unitAlliance or self.SV.playersDB[playerName].unitAlliance
-				--local unitAvARank					= playerDbRecord.unitAvARank or self.SV.playersDB[playerName].unitAvARank
+				local playerDbRecord				= playersDb[playerName] or {}
+				local unitAccName					= playerDbRecord.unitAccName
+				local unitAlliance				 	= playerDbRecord.unitAlliance
 				local formattedName
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, unitAccName)
 				local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName, unitAlliance)
@@ -3283,17 +3267,17 @@ function PVP:GetAllianceCountPlayers()
 
 	local onlyOthersAD, onlyOthersDC, onlyOthersEP = true, true, true
 
-	if self.allianceOfPlayer == 1 then
+	if allianceOfPlayer == 1 then
 		groupLeaderTable = ArrayConversion(groupLeaderTable, tableNameToIndexAD, tableAD)
 		groupMembersTable = ArrayConversion(groupMembersTable, tableNameToIndexAD, tableAD)
 
 		if #groupLeaderTable ~= 0 or #groupMembersTable ~= 0 then onlyOthersAD = false end
-	elseif self.allianceOfPlayer == 3 then
+	elseif allianceOfPlayer == 3 then
 		groupLeaderTable = ArrayConversion(groupLeaderTable, tableNameToIndexDC, tableDC)
 		groupMembersTable = ArrayConversion(groupMembersTable, tableNameToIndexDC, tableDC)
 
 		if #groupLeaderTable ~= 0 or #groupMembersTable ~= 0 then onlyOthersDC = false end
-	elseif self.allianceOfPlayer == 2 then
+	elseif allianceOfPlayer == 2 then
 		groupLeaderTable = ArrayConversion(groupLeaderTable, tableNameToIndexEP, tableEP)
 		groupMembersTable = ArrayConversion(groupMembersTable, tableNameToIndexEP, tableEP)
 
@@ -3348,11 +3332,11 @@ function PVP:GetAllianceCountPlayers()
 	tableEP = PVP:TableConcat(tableEP, kosTableEP)
 	tableEP = PVP:TableConcat(tableEP, othersTableEP)
 
-	if self.allianceOfPlayer == 1 then
+	if allianceOfPlayer == 1 then
 		tableAD = PVP:TableConcat(groupMembersTable, tableAD)
-	elseif self.allianceOfPlayer == 3 then
+	elseif allianceOfPlayer == 3 then
 		tableDC = PVP:TableConcat(groupMembersTable, tableDC)
-	elseif self.allianceOfPlayer == 2 then
+	elseif allianceOfPlayer == 2 then
 		tableEP = PVP:TableConcat(groupMembersTable, tableEP)
 	end
 	-- d('Damn table time: '..tostring(GetGameTimeMilliseconds() - countAllianceStart)..'ms')
@@ -3364,9 +3348,12 @@ function PVP:PopulateReticleOverNamesBuffer()
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	local currentTime = GetFrameTimeMilliseconds()
 	PVP_Names_Text:Clear()
-	if #self.namesToDisplay == 0 then return end
+	local namesToDisplay = self.namesToDisplay
+	if #namesToDisplay == 0 then return end
 
-	for k, v in ipairs(self.namesToDisplay) do
+	local playersDb = self.SV.playersDB
+
+	for k, v in ipairs(namesToDisplay) do
 		local playerName = v.unitName
 		if playerName then
 			local isDead = v.isDead
@@ -3377,7 +3364,7 @@ function PVP:PopulateReticleOverNamesBuffer()
 				v.isResurrect = nil
 				isResurrect = nil
 			end
-			local playerDbRecord = cachedPlayerDbUpdates[playerName] or self.SV.playersDB[playerName]
+			local playerDbRecord = playersDb[playerName]
 			local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
 			local formattedName = ""
 			local iconsCount = 0
@@ -3525,8 +3512,8 @@ function PVP.OnTargetChanged()
 
 		local unitMundus, unitSpec, unitDbAccName
 		if unitName then
-			local playerDbRecord = PVP.SV.playersDB[unitName]
-			local cachedplayerRecord = cachedPlayerDbUpdates[unitName]
+			local playersDB = PVP.SV.playersDB
+			local playerDbRecord = playersDB[unitName]
 
 			if playerDbRecord then
 				unitSpec = playerDbRecord.unitSpec
@@ -3542,21 +3529,16 @@ function PVP.OnTargetChanged()
 				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
 			end
 
-			PVP.SV.playersDB[unitName] = {
+			playersDB[unitName] = {
 				unitAccName = unitAccName,
 				unitAlliance = unitAlliance,
 				unitClass = unitClass,
 				unitRace = unitRace,
-				unitSpec = (cachedplayerDbRecord and cachedplayerRecord.unitSpec) or unitSpec,
-				mundus = (cachedplayerDbRecord and cachedplayerRecord.mundus) or unitMundus,
+				unitSpec = unitSpec,
+				mundus = unitMundus,
 				unitAvARank = unitAllianceRank,
 				lastSeen = sessionTimeEpoch
 			}
-
-			if cachedPlayerDbUpdates[unitName] then
-				cachedPlayerDbUpdates[unitName] = nil
-			end
-
 
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
@@ -3812,7 +3794,6 @@ local function IsNameInDB(rawName)
 end
 
 CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
-	-- TODO: Implement support for cachedPlayerDbUpdates in LookUp Functions
 	local ShowPlayerContextMenu = CHAT_SYSTEM.ShowPlayerContextMenu
 	function CHAT_SYSTEM:ShowPlayerContextMenu(playerName, rawName)
 		ShowPlayerContextMenu(self, playerName, rawName)
@@ -3827,10 +3808,10 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 			if rawName then
 				if PVP.SV.showKOSFrame then
 					local index, unitAccName, kosUnitAccName
-					unitAccName = cachedPlayerDbUpdates[rawName] and cachedPlayerDbUpdates[rawName].unitAccName or PVP.SV.playersDB[rawName]
-						and PVP.SV.playersDB[rawName].unitAccName or nil
-					for i = 1, #PVP.SV.KOSList do
-						kosUnitAccName = PVP.SV.KOSList[i].unitAccName
+					unitAccName = PVP.SV.playersDB[rawName] and PVP.SV.playersDB[rawName].unitAccName or nil
+					local kosList = PVP.SV.KOSList
+					for i = 1, #kosList do
+						kosUnitAccName = kosList[i].unitAccName
 						if kosUnitAccName == unitAccName then
 							index = i
 							break
