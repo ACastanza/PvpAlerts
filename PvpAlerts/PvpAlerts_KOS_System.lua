@@ -773,8 +773,6 @@ function PVP:IsAccNameInKOS(unitAccName)
 	return false
 end
 
-
-
 local function CheckActive(KOSNamesList, kosActivityList, reportActive)
 	if not KOSNamesList or KOSNamesList == {} then return end
 	local currentTime = GetFrameTimeSeconds()
@@ -875,6 +873,7 @@ function PVP:RefreshLocalPlayers()
 	local potentialAllies = {}
 	local idToName = self.idToName
 	local playerNames = self.playerNames
+    local namesToDisplay = self.namesToDisplay
 	local playerNotes = SV.playerNotes
 	local showPlayerNotes = SV.showPlayerNotes
 	local showFriends = SV.showFriends
@@ -901,10 +900,20 @@ function PVP:RefreshLocalPlayers()
 				isCOOL = coolList[rawName] ~= nil
 			}
 
+			local isResurrect = false
+			if namesToDisplay then
+				for j = 1, #namesToDisplay do
+					if namesToDisplay[j] == rawName and namesToDisplay[j].isResurrect then
+						isResurrect = true
+						break
+					end
+				end
+			end
+
 			if localPlayers[rawName].isKOS then
 				local isAlly = (dbRec.unitAlliance == allianceOfPlayer)
 				local isActive = PVP.kosActivityList.activeChars[dbRec.unitAccName]
-				local isResurrect, guildNames, firstGuildAllianceColor, guildIcon
+				local guildNames, firstGuildAllianceColor, guildIcon
 
 				if isGuildmate then
 					guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(dbRec.unitAccName)
@@ -912,14 +921,6 @@ function PVP:RefreshLocalPlayers()
 				else
 					guildIcon = ""
 					guildNames = ""
-				end
-
-				if unitId ~= 0 and #self.namesToDisplay > 0 then
-					for j = 1, #self.namesToDisplay do
-						if self.namesToDisplay[j] == rawName and self.namesToDisplay[j].isResurrect then
-							isResurrect = true
-						end
-					end
 				end
 
 				if (mode == 2 and isAlly) or (mode == 3 and not isAlly) or mode == 1 then
@@ -956,8 +957,23 @@ function PVP:RefreshLocalPlayers()
 					isGuildmate = isGuildmate,
 					isCool = isCool,
 					playerNote = hasPlayerNote and playerNote or nil,
-					isResurrect = false
+					isResurrect = isResurrect
 				}
+				local isAlly = (dbRec.unitAlliance == allianceOfPlayer)
+				local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
+				if validAlliance and not potentialAllies[rawName].isKOS then
+					local resurrectIcon = FormatResurrectIcon(potentialAllies[rawName].isResurrect)
+					local importantIcon = BuildImportantIcon(potentialAllies[rawName])
+					local playerNoteToken = FormatPlayerNote(potentialAllies[rawName].playerNote)
+
+					PVP_KOS_Text:AddMessage(
+						self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+						self:GetFormattedAccountNameLink(potentialAllies[rawName].unitAccName, "40BB40") ..
+						resurrectIcon ..
+						importantIcon ..
+						playerNoteToken
+					)
+				end
 			end
 		end
 	end
@@ -981,10 +997,20 @@ function PVP:RefreshLocalPlayers()
 					isCOOL = coolList[rawName] ~= nil
 				}
 
+				local isResurrect = false
+				if namesToDisplay then
+					for j = 1, #namesToDisplay do
+						if namesToDisplay[j] == rawName and namesToDisplay[j].isResurrect then
+							isResurrect = true
+							break
+						end
+					end
+				end
+
 				if localPlayers[rawName].isKOS then
 					local isAlly = (dbRec.unitAlliance == allianceOfPlayer)
 					local isActive = PVP.kosActivityList.activeChars[dbRec.unitAccName]
-					local isResurrect, guildNames, firstGuildAllianceColor, guildIcon
+					local guildNames, firstGuildAllianceColor, guildIcon
 
 					if isGuildmate then
 						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(dbRec.unitAccName)
@@ -992,14 +1018,6 @@ function PVP:RefreshLocalPlayers()
 					else
 						guildIcon = ""
 						guildNames = ""
-					end
-
-					if unitId ~= 0 and #self.namesToDisplay > 0 then
-						for j = 1, #self.namesToDisplay do
-							if self.namesToDisplay[j] == rawName and self.namesToDisplay[j].isResurrect then
-								isResurrect = true
-							end
-						end
 					end
 
 					if (mode == 2 and isAlly) or (mode == 3 and not isAlly) or mode == 1 then
@@ -1036,42 +1054,24 @@ function PVP:RefreshLocalPlayers()
 						isGuildmate = isGuildmate,
 						isCool = isCool,
 						playerNote = hasPlayerNote and playerNote or nil,
-						isResurrect = false
+						isResurrect = isResurrect
 					}
+					local isAlly = (dbRec.unitAlliance == allianceOfPlayer)
+					local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
+					if validAlliance and not potentialAllies[rawName].isKOS then
+						local resurrectIcon = FormatResurrectIcon(potentialAllies[rawName].isResurrect)
+						local importantIcon = BuildImportantIcon(potentialAllies[rawName])
+						local playerNoteToken = FormatPlayerNote(potentialAllies[rawName].playerNote)
+
+						PVP_KOS_Text:AddMessage(
+							self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
+							self:GetFormattedAccountNameLink(potentialAllies[rawName].unitAccName, "40BB40") ..
+							resurrectIcon ..
+							importantIcon ..
+							playerNoteToken
+						)
+					end
 				end
-			end
-		end
-	end
-
-	local namesToDisplay = self.namesToDisplay
-	if namesToDisplay then
-		for i = 1, #namesToDisplay do
-			local name = namesToDisplay[i]
-			if potentialAllies[name] and namesToDisplay[i].isResurrect then
-				potentialAllies[name].isResurrect = true
-			end
-		end
-	end
-
-	self.localPlayers = localPlayers
-	self.potentialAllies = potentialAllies
-
-	if next(potentialAllies) ~= nil then
-		for rawName, v in pairs(potentialAllies) do
-			local isAlly = (v.unitAlliance == allianceOfPlayer)
-			local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
-			if validAlliance and not v.isKOS then
-				local resurrectIcon = FormatResurrectIcon(v.isResurrect)
-				local importantIcon = BuildImportantIcon(v)
-				local playerNoteToken = FormatPlayerNote(v.playerNote)
-
-				PVP_KOS_Text:AddMessage(
-					self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName)) ..
-					self:GetFormattedAccountNameLink(v.unitAccName, "40BB40") ..
-					resurrectIcon ..
-					importantIcon ..
-					playerNoteToken
-				)
 			end
 		end
 	end
@@ -1125,6 +1125,9 @@ function PVP:RefreshLocalPlayers()
 			PVP_KOS_Text:AddMessage(v)
 		end
 	end
+
+    self.localPlayers = localPlayers
+	self.potentialAllies = potentialAllies
 end
 
 function PVP:SetKOSSliderPosition()
