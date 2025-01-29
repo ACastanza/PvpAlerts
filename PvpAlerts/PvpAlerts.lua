@@ -3485,11 +3485,8 @@ function PVP:InitializeChat()
 end
 
 function PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, unitRace, isDead)
-	if not self.SV.playersDB[unitName] then return end
 	local currentTime = GetFrameTimeMilliseconds()
 	local found, foundName
-
-	self:UpdateNamesToDisplay(unitName, currentTime, true)
 
 	if isDead and self.playerNames[unitName] then
 		self.playerNames[unitName] = nil
@@ -3509,6 +3506,7 @@ function PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, 
 
 	if found then self.totalPlayers[found] = currentTime end
 	self.playerNames[unitName] = currentTime
+	self:UpdateNamesToDisplay(unitName, currentTime, true)
 end
 
 function PVP.OnTargetChanged()
