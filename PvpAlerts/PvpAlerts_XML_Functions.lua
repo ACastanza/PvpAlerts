@@ -125,7 +125,7 @@ function PVP.KOS_Control_Movement()
 
 	local currentTime = GetFrameTimeMilliseconds()
 	if currentTime-PVP.moveInfo.timeStamp>=100 then
-		PVP:PopulateKOSBuffer()
+		PVP:RefreshLocalPlayers()
 		PVP.moveInfo.timeStamp = currentTime
 	end
 
@@ -176,7 +176,7 @@ function PVP_KOS_Control_MoveStop(self)
 		PVP.SV.KOSmode=4
 	end
 
-	PVP:PopulateKOSBuffer()
+	PVP:RefreshLocalPlayers()
 
 	self:ClearAnchors()
 	self:SetAnchor(PVP.moveInfo.point, PVP.moveInfo.relativeTo, PVP.moveInfo.relativePoint, PVP.moveInfo.offsetX, PVP.moveInfo.offsetY)

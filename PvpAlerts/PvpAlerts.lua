@@ -824,7 +824,7 @@ function PVP:MainRefresh(currentTime)
 	PVP.Timer = currentTime
 
 	if SV.showKOSFrame and (SCENE_MANAGER:GetCurrentScene() == HUD_SCENE or SCENE_MANAGER:GetCurrentScene() == LOOT_SCENE) then
-		PVP:PopulateKOSBuffer()
+		PVP:RefreshLocalPlayers()
 	end
 	PVP.endKos = GetGameTimeMilliseconds()
 end
@@ -2790,7 +2790,7 @@ function PVP:FullReset()
 
 	self:KillFeedRatio_Reset()
 	self:InitControls()
-	if self.SV.showKOSFrame then self:PopulateKOSBuffer() end
+	if self.SV.showKOSFrame then self:RefreshLocalPlayers() end
 end
 
 local function FindAlliancePlayerInNames(playerName, unitAlliance)
@@ -3843,12 +3843,12 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							chat:Printf("Removed from KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
 							remove(PVP.SV.KOSList, index)
-							PVP:PopulateKOSBuffer()
+							PVP:RefreshLocalPlayers()
 						end)
 						local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
 						if removeCool then
 							PVP.SV.coolList[removeCool] = nil
-							PVP:PopulateKOSBuffer()
+							PVP:RefreshLocalPlayers()
 							PVP:PopulateReticleOverNamesBuffer()
 						end
 
@@ -3860,7 +3860,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								unitAccName)
 							local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
 							if not addCool then PVP.SV.coolList[rawName] = unitAccName end
-							PVP:PopulateKOSBuffer()
+							PVP:RefreshLocalPlayers()
 							PVP:PopulateReticleOverNamesBuffer()
 						end)
 					else
@@ -3881,7 +3881,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									unitAccName = unitAccName,
 								})
 
-							PVP:PopulateKOSBuffer()
+							PVP:RefreshLocalPlayers()
 						end)
 						local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
 
@@ -3891,7 +3891,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP:GetFormattedName(rawName),
 									unitAccName)
 								PVP.SV.coolList[rawName] = unitAccName
-								PVP:PopulateKOSBuffer()
+								PVP:RefreshLocalPlayers()
 								PVP:PopulateReticleOverNamesBuffer()
 							end)
 						else
@@ -3902,7 +3902,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
 								if removeCool then
 									PVP.SV.coolList[removeCool] = nil
-									PVP:PopulateKOSBuffer()
+									PVP:RefreshLocalPlayers()
 									PVP:PopulateReticleOverNamesBuffer()
 								end
 							end)
