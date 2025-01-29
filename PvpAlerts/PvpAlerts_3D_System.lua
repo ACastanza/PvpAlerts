@@ -4441,9 +4441,10 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP:FullReset3DIcons()
 	end
 
-	self.currentNearbyKeepIds = self.currentNearbyKeepIds or {}
-	self.currentNearbyPOIIds = self.currentNearbyPOIIds or {}
-	self.currentObjectivesIds = self.currentObjectivesIds or {}
+	local currentNearbyKeepIds = self.currentNearbyKeepIds or {}
+	local currentNearbyPOIIds = self.currentNearbyPOIIds or {}
+	local currentObjectivesIds = self.currentObjectivesIds or {}
+	local controls3DPool = self.controls3DPool
 
 	local foundKeeps, foundPOI, foundBgObjectives
 	-- PVP.afterInit3d = GetGameTimeMilliseconds()
@@ -4461,84 +4462,89 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		return
 	end
 	if foundKeeps then
-		for k, v in pairs(self.currentNearbyKeepIds) do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
+		for k, v in pairs(currentNearbyKeepIds) do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
 			if not foundKeeps[k] then
-				self.controls3DPool:ReleaseObject(v.poolKey)
-				self.currentNearbyKeepIds[k] = nil
+				controls3DPool:ReleaseObject(v.poolKey)
+				currentNearbyKeepIds[k] = nil
 			end
 		end
 		PVP.beforeMarker = GetGameTimeMilliseconds()
 		local cc = 0
 		for k, v in pairs(foundKeeps) do
-			SetupNew3DMarker(k, v, isActivated, not self.currentNearbyKeepIds[k]) -- // sets up the 3d icons for each relevant keep //
+			SetupNew3DMarker(k, v, isActivated, not currentNearbyKeepIds[k]) -- // sets up the 3d icons for each relevant keep //
 			cc = cc + 1
 		end
 		PVP.cc = cc
 		PVP.afterMarker = GetGameTimeMilliseconds()
 	else
-		for k, v in pairs(self.currentNearbyKeepIds) do
-			self.controls3DPool:ReleaseObject(v.poolKey)
+		for k, v in pairs(currentNearbyKeepIds) do
+			controls3DPool:ReleaseObject(v.poolKey)
 		end
-		self.currentNearbyKeepIds = {}
+		currentNearbyKeepIds = {}
 	end
 	-- PVP.afterKeepsProc3d = GetGameTimeMilliseconds()
 	if foundBgObjectives then
-		for k, v in pairs(self.currentObjectivesIds) do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
+		for k, v in pairs(currentObjectivesIds) do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
 			if not foundBgObjectives[k] then
-				self.controls3DPool:ReleaseObject(v.poolKey)
-				self.currentObjectivesIds[k] = nil
+				controls3DPool:ReleaseObject(v.poolKey)
+				currentObjectivesIds[k] = nil
 			end
 		end
 
 		for k, v in pairs(foundBgObjectives) do
-			SetupNewBattlegroundObjective3DMarker(k, v.distance, isActivated, not self.currentObjectivesIds[k],
+			SetupNewBattlegroundObjective3DMarker(k, v.distance, isActivated, not currentObjectivesIds[k],
 				v.isCtfBase) -- // sets up the 3d icons for each relevant keep //
 		end
 	else
-		for k, v in pairs(self.currentObjectivesIds) do
-			self.controls3DPool:ReleaseObject(v.poolKey)
+		for k, v in pairs(currentObjectivesIds) do
+			controls3DPool:ReleaseObject(v.poolKey)
 		end
-		self.currentObjectivesIds = {}
+		currentObjectivesIds = {}
 	end
 
 	if foundPOI then
-		for i = #self.currentNearbyPOIIds, 1, -1 do
+		for i = #currentNearbyPOIIds, 1, -1 do
 			local found
 			for k = 1, #foundPOI do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
-				if foundPOI[k].pinType == self.currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or PVP.killLocationPintypeToName[foundPOI[k].pinType] or
-						(foundPOI[k].targetX == self.currentNearbyPOIIds[i].targetX and
-							foundPOI[k].targetY == self.currentNearbyPOIIds[i].targetY and
-							(not foundPOI[k].pingTag or foundPOI[k].pingTag == self.currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
+				if foundPOI[k].pinType == currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or PVP.killLocationPintypeToName[foundPOI[k].pinType] or
+						(foundPOI[k].targetX == currentNearbyPOIIds[i].targetX and
+							foundPOI[k].targetY == currentNearbyPOIIds[i].targetY and
+							(not foundPOI[k].pingTag or foundPOI[k].pingTag == currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
 					found = k
-					self.currentNearbyPOIIds[i].name = foundPOI[k].name
-					self.currentNearbyPOIIds[i].distance = foundPOI[k].distance
+					currentNearbyPOIIds[i].name = foundPOI[k].name
+					currentNearbyPOIIds[i].distance = foundPOI[k].distance
 					break
 				end
 			end
 			if not found then
-				self.controls3DPool:ReleaseObject(self.currentNearbyPOIIds[i].poolKey)
-				remove(self.currentNearbyPOIIds, i)
+				controls3DPool:ReleaseObject(currentNearbyPOIIds[i].poolKey)
+				remove(currentNearbyPOIIds, i)
 			else
 				remove(foundPOI, found) -- // removes duplicated object from the new found objects table //
 			end
 		end
-		local oldTableSize = #self.currentNearbyPOIIds
+		local oldTableSize = #currentNearbyPOIIds
 		for i = 1, #foundPOI do -- // adds non duplicated objects to the currently active poi objects table //
-			insert(self.currentNearbyPOIIds, foundPOI[i])
+			insert(currentNearbyPOIIds, foundPOI[i])
 		end
 		PVP.beforePoi = GetGameTimeMilliseconds()
-		for i = 1, #self.currentNearbyPOIIds do
+		for i = 1, #currentNearbyPOIIds do
 			local isNewObjective = i > oldTableSize
 			SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		end
 		PVP.afterPoi = GetGameTimeMilliseconds()
 	else
-		for i = 1, #self.currentNearbyPOIIds do
-			self.controls3DPool:ReleaseObject(self.currentNearbyPOIIds[i].poolKey)
+		for i = 1, #currentNearbyPOIIds do
+			controls3DPool:ReleaseObject(currentNearbyPOIIds[i].poolKey)
 		end
-		self.currentNearbyPOIIds = {}
+		currentNearbyPOIIds = {}
 	end
+
 	-- PVP.afterPoiProc3d = GetGameTimeMilliseconds()
+
+	self.currentNearbyKeepIds = currentNearbyKeepIds
+	self.currentNearbyPOIIds = currentNearbyPOIIds
+	self.currentObjectivesIds = currentObjectivesIds
 end
 
 local function ControlHasMouseOverAdjusted(control, heading, angleZ, cameraX, cameraY, cameraZ, scaleAdjustment)
