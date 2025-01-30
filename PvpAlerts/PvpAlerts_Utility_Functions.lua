@@ -352,54 +352,29 @@ end
 
 function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeadorResurrect, isTargetFrame,
 								   isTargetNameFrame, unitClass, id, currentTime, unitAvARank, playerDbRecord)
-	local classIcon, isPlayer
-
-	isPlayer = playerName == self.playerName
+	local isPlayer = playerName == self.playerName
 	playerDbRecord = playerDbRecord or self.SV.playersDB[playerName]
 
 	if not playerDbRecord and not isPlayer and not unitClass then
-		if unitAvARank and not isPlayer then
-			return self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName)
-		else
-			return ""
-		end
+		return unitAvARank and self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName) or ""
 	end
 
-	dimension = dimension or 29
-	if isTargetNameFrame then dimension = 45 end
-	local specFromDB, color
+	dimension = isTargetNameFrame and 45 or (dimension or 29)
+	local specFromDB = not isPlayer and playerDbRecord and playerDbRecord.unitSpec
+	local color =
+		(isDeadorResurrect and "808080") or (specFromDB == "stam" and PVP_STAMINA_COLOR) or
+		(specFromDB == "mag" and PVP_MAGICKA_COLOR) or
+		(specFromDB and PVP_HYBRID_COLOR) or
+		"808080"
 
-	if not isPlayer and playerDbRecord then
-		specFromDB = playerDbRecord.unitSpec
-	end
-
-	if specFromDB == "stam" then
-		color = PVP_STAMINA_COLOR
-	elseif specFromDB == "mag" then
-		color = PVP_MAGICKA_COLOR
-	elseif specFromDB then
-		color = PVP_HYBRID_COLOR
-	else
-		color = "808080"
-	end
-
-	if isDeadorResurrect then color = "808080" end
+	unitClass = unitClass or (isPlayer and GetUnitClassId("player")) or (playerDbRecord and playerDbRecord.unitClass)
 
 	local startSpacer, endSpacer = "", ""
-
-	if not unitClass then
-		if isPlayer then
-			unitClass = GetUnitClassId('player')
-		else
-			unitClass = playerDbRecord and playerDbRecord.unitClass
-		end
-	end
-
-	if not isTargetFrame then
+	if not isTargetFrame and unitClass then
 		if unitClass == 2 then
 			dimension = dimension - 3
 			startSpacer = zo_iconFormat(PVP_SPACER_ICON, 2, 2)
-			endSpacer = zo_iconFormat(PVP_SPACER_ICON, 2, 2)
+			endSpacer = startSpacer
 		elseif unitClass == 1 then
 			dimension = dimension - 2
 			startSpacer = zo_iconFormat(PVP_SPACER_ICON, 2, 2)
@@ -411,47 +386,35 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 
 	local mundus = ""
 	if playerDbRecord and playerDbRecord.mundus then
-		local mundusColor = ""
-		if self.mundusColors[playerDbRecord.mundus] then
-			mundusColor = self.mundusColors[playerDbRecord.mundus]
-		else
-			mundusColor = "FFFFFF"
-		end
-
+		local mundusColor = self.mundusColors[playerDbRecord.mundus] or "FFFFFF"
 		local mundusDimension = isTargetNameFrame and 32 or 21
-
-		mundus = zo_iconFormatInheritColor("PvpAlerts/textures/" .. playerDbRecord.mundus .. "m.dds",
-			mundusDimension, mundusDimension)
+		mundus =
+			zo_iconFormatInheritColor(
+			"PvpAlerts/textures/" .. playerDbRecord.mundus .. "m.dds",
+			mundusDimension,
+			mundusDimension
+		)
 		if id and currentTime then
 			mundusColor = self:GetTimeFadedColor(mundusColor, id, currentTime)
 		end
 		mundus = self:Colorize(mundus, mundusColor)
 	end
 
-	if unitClass then
-		classIcon = zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension)
-		-- classIcon = self:Colorize(zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension), color)
-	else
-		classIcon = ""
-	end
+	local classIcon = unitClass and zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension) or ""
+	classIcon = self:Colorize(classIcon, color)
 
-	local avaRankIcon = ""
-	if unitAvARank then
-		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
-			allianceColor)
-	elseif playerDbRecord and playerDbRecord.unitAvARank then
-		unitAvARank = playerDbRecord.unitAvARank
-		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
-			allianceColor)
-	else
-		avaRankIcon = ""
-	end
+	local unitAvARankFromDB = playerDbRecord and playerDbRecord.unitAvARank
+	local avaRankIcon =
+		(unitAvARank or unitAvARankFromDB) and
+		self:Colorize(
+			zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank or unitAvARankFromDB), dimension, dimension),
+			allianceColor
+		) or
+		""
 
 	if id and currentTime then
 		color = self:GetTimeFadedColor(color, id, currentTime)
 	end
-
-	classIcon = self:Colorize(classIcon, color)
 
 	return startSpacer .. mundus .. classIcon .. endSpacer .. avaRankIcon
 end
