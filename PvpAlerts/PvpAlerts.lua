@@ -1623,7 +1623,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	end
 end
 
-function PVP:UpdateKillfeedPlayer(playerValidName, playerDisplayName, unitAlliance, unitAllianceRank)
+function PVP:UpdateKillfeedPlayer(currentTime, playerValidName, playerDisplayName, unitAlliance, unitAllianceRank)
 	if playerValidName == self.playerName or playerDisplayName == "" then return end
 
 	local playersDB = PVP.SV.playersDB
@@ -1640,6 +1640,7 @@ function PVP:UpdateKillfeedPlayer(playerValidName, playerDisplayName, unitAllian
 			newUnitAccName = playerDisplayName,
 		}
 	end
+	self.playerNames[playerValidName] = currentTime
 end
 
 local function GetSpacedOutString(...)
@@ -1912,6 +1913,7 @@ function PVP:ProcessKillfeedEntry(targetValidName, targetDisplayName, targetAlli
 end
 
 function PVP:OnKillfeed(_, killLocation, sourceDisplayName, sourceCharacterName, sourceAlliance, sourceRank, targetDisplayName, targetCharacterName, targetAlliance, targetRank)
+	local currentTime = GetFrameTimeMilliseconds()
 	local killFeedNameType = self.SV.killFeedNameType or self.defaults.killFeedNameType
 	if killFeedNameType == "link" then
 		killFeedNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
@@ -1925,8 +1927,8 @@ function PVP:OnKillfeed(_, killLocation, sourceDisplayName, sourceCharacterName,
 	local sourceValidName = self:GetValidName(sourceCharacterName)
 	local sourceAllianceColor = self:GetTrueAllianceColorsHex(sourceAlliance)
 
-	self:UpdateKillfeedPlayer(targetValidName, targetDisplayName, targetAlliance, targetRank)
-	self:UpdateKillfeedPlayer(sourceValidName, sourceDisplayName, sourceAlliance, sourceRank)
+	self:UpdateKillfeedPlayer(currentTime, targetValidName, targetDisplayName, targetAlliance, targetRank)
+	self:UpdateKillfeedPlayer(currentTime, sourceValidName, sourceDisplayName, sourceAlliance, sourceRank)
 
 	insert(killFeedBuffer, {
 		targetValidName = targetValidName,
