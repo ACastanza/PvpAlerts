@@ -3056,7 +3056,7 @@ end
 
 function PVP:GetAllianceCountPlayers()
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
-	local allianceOfPlayer = self.playerAlliance
+	local allianceOfPlayer = self.allianceOfPlayer
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
