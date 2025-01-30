@@ -2865,21 +2865,29 @@ function PVP:PopulateFromBGScoreboard()
     local battlegroundId = GetCurrentBattlegroundId()
     local battlegrounRound = GetCurrentBattlegroundRoundIndex()
     local battlegroundGameType = GetBattlegroundGameType(battlegroundId, battlegrounRound)
-    local battlegroundLeaderboardType
-    local battlegroundSpecialsType
+	
+	local battlegroundLeaderboardTypes = {
+		[BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES,
+		[BATTLEGROUND_GAME_TYPE_DEATHMATCH] = BATTLEGROUND_LEADERBOARD_TYPE_DEATHMATCH,
+		[BATTLEGROUND_GAME_TYPE_KING_OF_THE_HILL] = BATTLEGROUND_LEADERBOARD_TYPE_LAND_GRAB,
+		[BATTLEGROUND_GAME_TYPE_DOMINATION] = BATTLEGROUND_LEADERBOARD_TYPE_LAND_GRAB,
+		[BATTLEGROUND_GAME_TYPE_CRAZY_KING] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES,
+		[BATTLEGROUND_GAME_TYPE_MURDERBALL] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES
+	}	
 
-    if battlegroundGameType == BATTLEGROUND_GAME_TYPE_DEATHMATCH then
-        battlegroundLeaderboardType = 1
-        battlegroundSpecialsType = SCORE_TRACKER_TYPE_KILL_STREAK
-    elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_DOMINATION then
-        battlegroundLeaderboardType = 2
-        battlegroundSpecialsType = SCORE_TRACKER_TYPE_FLAG_CAPTURED
-    elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG then
-        battlegroundLeaderboardType = 3
-        battlegroundSpecialsType = SCORE_TRACKER_TYPE_FLAG_CAPTURED
-    end
+	local battlegroundSpecialsTypes = {
+		[BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG] = SCORE_TRACKER_TYPE_FLAG_CAPTURED,
+		[BATTLEGROUND_GAME_TYPE_DEATHMATCH] = SCORE_TRACKER_TYPE_KILL_STREAK,
+		[BATTLEGROUND_GAME_TYPE_KING_OF_THE_HILL] = SCORE_TRACKER_TYPE_FLAG_CAPTURED,
+		[BATTLEGROUND_GAME_TYPE_DOMINATION] = SCORE_TRACKER_TYPE_FLAG_CAPTURED,
+		[BATTLEGROUND_GAME_TYPE_CRAZY_KING] = SCORE_TRACKER_TYPE_FLAG_CAPTURED,
+		[BATTLEGROUND_GAME_TYPE_MURDERBALL] = SCORE_TRACKER_TYPE_FLAG_CAPTURED
+	}
 
-    if GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) == 0 then
+	local battlegroundLeaderboardType = battlegroundLeaderboardTypes[battlegroundGameType]
+	local battlegroundSpecialsType = battlegroundSpecialsTypes[battlegroundGameType]
+
+	if GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) == 0 then
         QueryBattlegroundLeaderboardData()
     end
 

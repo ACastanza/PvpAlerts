@@ -2429,11 +2429,11 @@ local function GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianc
 	local battlegroundLeaderboardType
 
 	if battlegroundGameType == BATTLEGROUND_GAME_TYPE_DEATHMATCH then
-		battlegroundLeaderboardType = 1
+		battlegroundLeaderboardType = BATTLEGROUND_LEADERBOARD_TYPE_DEATHMATCH
 	elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_DOMINATION then
-		battlegroundLeaderboardType = 2
+		battlegroundLeaderboardType = BATTLEGROUND_LEADERBOARD_TYPE_LAND_GRAB
 	elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG then
-		battlegroundLeaderboardType = 3
+		battlegroundLeaderboardType = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES
 	end
 
 	local position, points
