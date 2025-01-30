@@ -1634,7 +1634,7 @@ function PVP:UpdateKillfeedPlayer(playerValidName, playerDisplayName, unitAllian
 	playerDbRecord.unitAlliance = unitAlliance
 	playerDbRecord.unitAvARank = unitAllianceRank
 	playersDB[playerValidName] = playerDbRecord
-	if playerDisplayName ~= playerValidName then
+	if playerDisplayName ~= unitDbAccName then
 		cachedPlayerNameChanges[playerValidName] = {
 			oldUnitAccName = unitDbAccName,
 			newUnitAccName = playerDisplayName,
