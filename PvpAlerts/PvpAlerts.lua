@@ -2804,6 +2804,22 @@ local function FindAlliancePlayerInNames(playerName, unitAlliance)
 	return statusIcon, isResurrect, isDead
 end
 
+local function ConvertAlliancePlayerNames()
+	local namesToDisplay = PVP.namesToDisplay
+	local outputArray = {}
+	if #namesToDisplay ~= 0 then
+		for i = 1, #namesToDisplay do
+			outputArray[name.unitName] = {
+				isResurrect = name.isResurrect,
+				isDead = name.isDead,
+				isTarget = name.isTarget,
+				isAttacker = name.isAttacker
+			}
+		end
+	end
+	return outputArray
+end
+
 local function ArrayConversion(inputArray, indexArray, mainArray)
     local outputArray = {}
     for i = 1, #inputArray do
@@ -3056,15 +3072,22 @@ function PVP:GetAllianceCountPlayers()
 	local playersDb = self.SV.playersDB
 
 	if not IsActiveWorldBattleground() then
+		local alliancePlayerNames = ConvertAlliancePlayerNames()
 		for k, v in pairs(playerAlliance) do
 			local playerName					= idToName[k]
-			local playerDbRecord				= playersDb[playerName] or {}
+			local alliancePlayerNameData 		= alliancePlayerNames[playerName] or {}
+			local playerDbRecord			= playersDb[playerName] or {}
 			local unitAccName					= playerDbRecord.unitAccName
 			local unitClass					   	= playerDbRecord.unitClass
 			local unitAlliance				 	= playerDbRecord.unitAlliance
 			local unitAvARank					= playerDbRecord.unitAvARank
-			local KOSOrFriend					 = self:IsKOSOrFriend(playerName, unitAccName)
-			local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName, unitAlliance)
+			local KOSOrFriend					= self:IsKOSOrFriend(playerName, unitAccName)
+			local isResurrect					= alliancePlayerNameData.isResurrect or false
+			local isDead						= alliancePlayerNameData.isDead or false
+			local isTarget						= alliancePlayerNameData.isTarget or false
+			local isAttacker					= alliancePlayerNameData.isAttacker or false
+			local statusIcon					= isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
+
 			local allianceColor, classIcons
 
 			if isDead or isResurrect then
@@ -3162,13 +3185,18 @@ function PVP:GetAllianceCountPlayers()
 		for k, _ in pairs(playerNames) do
 			if not foundNames[k] then
 				local playerName = k
+				local alliancePlayerNameData 		= alliancePlayerNames[playerName] or {}
 				local playerDbRecord				= playersDb[playerName] or {}
 				local unitAccName					= playerDbRecord.unitAccName
 				local unitAlliance				 	= playerDbRecord.unitAlliance
 				local formattedName
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, unitAccName)
-				local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName, unitAlliance)
-
+				local isResurrect					= alliancePlayerNameData.isResurrect or false
+				local isDead						= alliancePlayerNameData.isDead or false
+				local isTarget						= alliancePlayerNameData.isTarget or false
+				local isAttacker					= alliancePlayerNameData.isAttacker or false
+				local statusIcon					= isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
+	
 				if (not isDead) and (not isResurrect) then
 					if statusIcon == "" then
 						statusIcon = self:GetEyeIcon()
