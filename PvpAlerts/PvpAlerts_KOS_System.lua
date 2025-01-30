@@ -912,7 +912,7 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSNamesLis
 		end
 	end
 
-	if hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate)) then
+	if (not newLocalPlayer.isKOS) and (hasPlayerNote or ((not isPlayerGrouped) and (isCool or isFriend or isGuildmate))) then
 		newPotentialAlly = {
 			currentTime = currentTime,
 			unitAccName = dbRec.unitAccName,
