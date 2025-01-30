@@ -3193,7 +3193,7 @@ function PVP:GetAllianceCountPlayers()
 					end
 
 
-					if unitAllianceFromPlayersDb == 1 then
+					if unitAlliance == 1 then
 						numberAD = numberAD + 1
 						insert(tableAD, formattedName)
 						tableNameToIndexAD[playerName] = numberAD
@@ -3211,7 +3211,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							insert(othersTableAD, playerName)
 						end
-					elseif unitAllianceFromPlayersDb == 2 then
+					elseif unitAlliance == 2 then
 						numberEP = numberEP + 1
 						insert(tableEP, formattedName)
 						tableNameToIndexEP[playerName] = numberEP
@@ -3228,7 +3228,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							insert(othersTableEP, playerName)
 						end
-					elseif unitAllianceFromPlayersDb == 3 then
+					elseif unitAlliance == 3 then
 						numberDC = numberDC + 1
 						insert(tableDC, formattedName)
 						tableNameToIndexDC[playerName] = numberDC
