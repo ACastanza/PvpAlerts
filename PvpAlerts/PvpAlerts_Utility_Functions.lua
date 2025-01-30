@@ -373,14 +373,12 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 		specFromDB = playerDbRecord.unitSpec
 	end
 
-	if specFromDB then
-		if specFromDB == "stam" then
-			color = PVP_STAMINA_COLOR
-		elseif specFromDB == "mag" then
-			color = PVP_MAGICKA_COLOR
-		else
-			color = PVP_HYBRID_COLOR
-		end
+	if specFromDB == "stam" then
+		color = PVP_STAMINA_COLOR
+	elseif specFromDB == "mag" then
+		color = PVP_MAGICKA_COLOR
+	elseif specFromDB then
+		color = PVP_HYBRID_COLOR
 	else
 		color = "808080"
 	end
