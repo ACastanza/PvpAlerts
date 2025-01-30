@@ -2666,7 +2666,7 @@ function PVP:OnOff()
 			self.addonEnabled = true
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_COMBAT_EVENT, function(...) self:OnCombat(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PVP_KILL_FEED_DEATH, function(...) self:OnKillfeed(...) end)
-			EVENT_MANAGER:RegisterForUpdate(self.name .. "_KillFeedBufferUpdate", 1000, function() self:ProcessKillFeedBuffer() end)
+			EVENT_MANAGER:RegisterForUpdate(self.name .. "_KillFeedBufferUpdate", 250, function() self:ProcessKillFeedBuffer() end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_EFFECT_CHANGED, function(...) self:OnEffect(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_RETICLE_TARGET_PLAYER_CHANGED, self.OnTargetChanged)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_RETICLE_TARGET_CHANGED, self.OnTargetChanged)
