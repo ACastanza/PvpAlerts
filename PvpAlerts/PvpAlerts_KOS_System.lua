@@ -249,12 +249,15 @@ function PVP:Who(name, contains)
 		return
 	end
 
+	local playersDb = self.SV.playersDB
+	local playersCP = self.SV.CP
+	local playerNotes = self.SV.playerNotes
 	if KOSIndex ~= nil then --single player account information returned
 		local currentCP = ""
-		local playerDbRecord = PVP.SV.playersDB[foundPlayerNames[1]]
+		local playerDbRecord = playersDb[foundPlayerNames[1]]
 		local accName = playerDbRecord.unitAccName
 		local sharedGuilds = PVP:GetGuildmateSharedGuilds(accName)
-		if self.SV.CP[accName] then currentCP = ' with ' .. PVP:Colorize(self.SV.CP[accName] .. 'cp', 'FFFFFF') .. ',' end
+		if playersCP[accName] then currentCP = ' with ' .. PVP:Colorize(playersCP[accName] .. 'cp', 'FFFFFF') .. ',' end
 		if isDecorated then
 			d('The player ' ..
 				PVP:GetFormattedAccountNameLink(accName, "FFFFFF") ..
@@ -276,8 +279,8 @@ function PVP:Who(name, contains)
 		if sharedGuilds and sharedGuilds ~= "" then
 			d('Shared Guild(s): ' .. sharedGuilds)
 		end
-		if self.SV.playerNotes[accName] and self.SV.playerNotes[accName] ~= "" then
-			d('Note: ' .. self:Colorize(self.SV.playerNotes[accName], "76BCC3"))
+		if playerNotes[accName] and playerNotes[accName] ~= "" then
+			d('Note: ' .. self:Colorize(playerNotes[accName], "76BCC3"))
 		end
 	else -- multiple players information returned
 		local patternName = zo_strformat(SI_UNIT_NAME, trimmedName)
@@ -287,10 +290,10 @@ function PVP:Who(name, contains)
 		d('Found ' .. tostring(#foundPlayerNames + #looseMatch) .. ' players, similar to ' .. highlightedName .. ':')
 
 		for i = 1, #foundPlayerNames do
-			local currentplayerDbRecord = PVP.SV.playersDB[foundPlayerNames[i]]
+			local currentplayerDbRecord = playersDb[foundPlayerNames[i]]
 			local currentAccName = currentplayerDbRecord.unitAccName
 			local currentAccCP = ""
-			if self.SV.CP[currentAccName] then currentAccCP = ' (' .. self.SV.CP[currentAccName] .. 'cp)' end
+			if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
 			local currentName = foundPlayerNames[i]
 
 			local nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
@@ -339,10 +342,10 @@ function PVP:Who(name, contains)
 			local indexToHighlight = #startFullWord + #startPartWord + 1
 
 			for i = 1, #looseMatchOutput do
-				local currentplayerDbRecord = PVP.SV.playersDB[foundPlayerNames[i]]
+				local currentplayerDbRecord = playersDb[foundPlayerNames[i]]
 				local currentAccName = currentplayerDbRecord.unitAccName
 				local currentAccCP = ""
-				if self.SV.CP[currentAccName] then currentAccCP = ' (' .. self.SV.CP[currentAccName] .. 'cp)' end
+				if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
 				local currentName = looseMatchOutput[i]
 				local strippedCurrentName = zo_strformat(SI_UNIT_NAME, currentName)
 
@@ -369,8 +372,9 @@ local function IsAccFriendKOSorCOOL(charAccName)
 			return true
 		end
 	end
-	for i = 1, #PVP.SV.coolList do
-		if PVP.SV.coolList[i] == charAccName then return true end
+	local coolList = PVP.SV.coolList
+	for i = 1, #coolList do
+		if coolList[i] == charAccName then return true end
 	end
 	return false
 end
@@ -383,8 +387,9 @@ local function IsAccMalformedName(charAccName)
 			return true, unitKOSName
 		end
 	end
-	for i = 1, #PVP.SV.coolList do
-		local unitCOOLName = PVP.SV.coolList[i]
+	local coolList = PVP.SV.coolList
+	for i = 1, #coolList do
+		local unitCOOLName = coolList[i]
 		if PVP:DeaccentString(unitCOOLName) == charAccName then
 			return true, unitCOOLName
 		end
@@ -475,15 +480,16 @@ local function IsKOSAccInDB(unitAccName)
 	local nameFromKOS, indexInKOS = IsAccInKOS(unitAccName)
 	if nameFromKOS then return nameFromKOS, indexInKOS end
 
-	local foundPlayerNames = {}
 	local playersDB = PVP.SV.playersDB
+	local allianceOfPlayer = PVP.allianceOfPlayer
+	local foundPlayerNames = {}
 	for k, v in pairs(playersDB) do
 		if v.unitAccName == unitAccName then insert(foundPlayerNames, k) end
 	end
 	if #foundPlayerNames > 0 then
 		if #foundPlayerNames == 1 then return foundPlayerNames[1] end
 		for i = 1, #foundPlayerNames do
-			if playersDB[foundPlayerNames[i]].unitAlliance ~= PVP.allianceOfPlayer then
+			if playersDB[foundPlayerNames[i]].unitAlliance ~= allianceOfPlayer then
 				return foundPlayerNames[i]
 			end
 		end
