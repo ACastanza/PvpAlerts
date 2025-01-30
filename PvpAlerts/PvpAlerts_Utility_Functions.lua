@@ -420,13 +420,8 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 			mundusColor = "FFFFFF"
 		end
 
-		local mundusDimension = 0
+		local mundusDimension = isTargetNameFrame and 32 or 21
 
-		if isTargetNameFrame then
-			mundusDimension = 32
-		else
-			mundusDimension = 21
-		end
 		mundus = zo_iconFormatInheritColor("PvpAlerts/textures/" .. playerDbRecord.mundus .. "m.dds",
 			mundusDimension, mundusDimension)
 		if id and currentTime then
