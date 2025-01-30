@@ -154,8 +154,11 @@ local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
 	local strippedName  = zo_strformat(SI_UNIT_NAME, rawName)
 	local nameLength    = zo_strlen(strippedName)
 	local allianceColor = PVP:NameToAllianceColor(rawName, nil, true)
-	local icon          = PVP:GetFormattedClassIcon(rawName, nil, allianceColor)
 	local playersDB = PVP.SV.playersDB
+	local playerDbRecord = playersDB[rawName]
+	local unitRace 	= playerDbRecord.unitRace
+	local unitAccName = playerDbRecord.unitAccName
+	local icon          = PVP:GetFormattedClassIcon(rawName, nil, allianceColor, nil, nil, nil, nil, nil, nil, nil, playerDbRecord)
 
 	local normalPartBefore, normalPartAfter, highlightPart
 
@@ -196,9 +199,9 @@ local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
 		highlightPart ..
 		normalPartAfter ..
 		', ' ..
-		GetRaceName(0, playersDB[rawName].unitRace) ..
+		GetRaceName(0, unitRace) ..
 		', ' ..
-		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(playersDB[rawName].unitAccName, "FFFFFF"))
+		((PVP:StringEnd(rawName, '^Mx') and 'male' or 'female') .. ', ' .. PVP:GetFormattedAccountNameLink(unitAccName, "FFFFFF"))
 end
 
 local function GetCharLink(rawName)
