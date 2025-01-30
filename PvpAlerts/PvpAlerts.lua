@@ -2833,8 +2833,14 @@ local function SummaryConversion(inputArray, summaryType)
     return outputArray
 end
 
-function PVP:PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tableDC, tableEP)
-    -- {class = 3, name = "Test^Fx" , kills = 30, deaths = 20, assists = 100, damage = 10000000, healing = 3000000, points = 800, alliance = 3},
+function PVP:PopulateFromBGScoreboard()
+	local numberAD, numberDC, numberEP = 0, 0, 0
+	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
+	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
+	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP =
+		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+
+		-- {class = 3, name = "Test^Fx" , kills = 30, deaths = 20, assists = 100, damage = 10000000, healing = 3000000, points = 800, alliance = 3},
     PVP.scoreboardListData = {}
 
     PVP.bgNames = PVP.bgNames or {}
@@ -3029,7 +3035,7 @@ function PVP:PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tab
 
     if PVP.bgScoreboard and PVP.bgScoreboard.list then PVP.bgScoreboard.list:RefreshData() end
 
-    return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP
+    return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP
 end
 
 function PVP:GetAllianceCountPlayers()
@@ -3057,9 +3063,10 @@ function PVP:GetAllianceCountPlayers()
 			local unitClass					   	= playerDbRecord.unitClass
 			local unitAlliance				 	= playerDbRecord.unitAlliance
 			local unitAvARank					= playerDbRecord.unitAvARank
-			local formattedName, allianceColor, classIcons
 			local KOSOrFriend					 = self:IsKOSOrFriend(playerName, unitAccName)
 			local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName, unitAlliance)
+			local allianceColor, classIcons
+
 			if isDead or isResurrect then
 				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(unitAlliance, true), k,
 					currentTime)
@@ -3072,7 +3079,7 @@ function PVP:GetAllianceCountPlayers()
 					unitClass, k, currentTime, unitAvARank, playerDbRecord)
 			end
 
-			formattedName = classIcons .. (userDisplayNameType == "character" and
+			local formattedName = classIcons .. (userDisplayNameType == "character" and
 				(self:Colorize(self:GetFormattedName(playerName) or "unknown player", allianceColor)) or
 				(userDisplayNameType == "user" and self:Colorize(playerDbRecord and unitAccName or self:GetFormattedName(playerName) or "unknown player", allianceColor) or
 					(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. (unitAccName or "")) or "unknown player")))
@@ -3211,7 +3218,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							insert(othersTableAD, playerName)
 						end
-					elseif unitAlliance == 2 then
+					elseif unitAllianceFromPlayersDb == 2 then
 						numberEP = numberEP + 1
 						insert(tableEP, formattedName)
 						tableNameToIndexEP[playerName] = numberEP
@@ -3228,7 +3235,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							insert(othersTableEP, playerName)
 						end
-					elseif unitAlliance == 3 then
+					elseif unitAllianceFromPlayersDb == 3 then
 						numberDC = numberDC + 1
 						insert(tableDC, formattedName)
 						tableNameToIndexDC[playerName] = numberDC
@@ -3250,8 +3257,9 @@ function PVP:GetAllianceCountPlayers()
 			end
 		end
 	else
-		numberAD, numberDC, numberEP, tableAD, tableDC, tableEP =
-			self:PopulateFromBGScoreboard(numberAD, numberDC, numberEP, tableAD, tableDC, tableEP)
+		numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, 
+		tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, 
+		friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP = self:PopulateFromBGScoreboard()
 	end
 
 
