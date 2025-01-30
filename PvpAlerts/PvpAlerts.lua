@@ -3421,8 +3421,8 @@ function PVP:PopulateReticleOverNamesBuffer()
 			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord)
 			--local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
 			--local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
-			local charName = self:Colorize(playerName, allianceColor)
-			local accountName = self:Colorize(playerDbRecord.unitAccName, allianceColor)
+			local charName = self:Colorize(self:GetFormattedName(playerName), allianceColor)
+			local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
 			if userDisplayNameType == "both" then
 				formattedName = classIcons .. charName .. accountName .. formattedName .. endIcon
 			elseif userDisplayNameType == "character" then
