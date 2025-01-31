@@ -982,9 +982,10 @@ function PVP:RefreshLocalPlayers()
 
 	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
 		self.lastActiveCheckedTime = currentTime
-		PVP.kosActivityList = CheckActive(KOSNamesList, KOSActivityList, SV.outputNewKos)
+		PVP.kosActivityList = CheckActive(KOSNamesList, self.kosActivityList, SV.outputNewKos)
 	end
-	local KOSActivityList = self.kosActivityList
+	local kosActivityList = self.kosActivityList
+
 
 	local localPlayers = {}
 	local potentialAllies = {}
