@@ -49,8 +49,6 @@ local concat = table.concat
 --local lower = string.lower
 --local format = string.format
 
-local newColorDef = ZO_ColorDef.New
-
 local databaseIntegrityCheck = {}
 
 function PVP:RGBtoHEX(rgb)
@@ -348,7 +346,7 @@ function PVP:GetUnitSpecColor(playerName)
 		color = "FFFFFF"
 	end
 
-	return newColorDef(color)
+	return ZO_ColorDef:New(color)
 end
 
 function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeadorResurrect, isTargetFrame,
@@ -843,7 +841,7 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 end
 
 function PVP:BgAllianceToHexColor(bgAlliance)
-	return newColorDef(GetBattlegroundAllianceColor(bgAlliance)):ToHex()
+	return ZO_ColorDef:New(GetBattlegroundAllianceColor(bgAlliance)):ToHex()
 end
 
 -- 255, 45, 30 alliance 1 color
@@ -851,7 +849,7 @@ end
 -- 255, 73, 147 alliance 3 color
 
 function PVP:GetPlayerMarkerBgAllianceHexColor(bgAlliance)
-	-- local allianceColor = newColorDef(GetBattlegroundAllianceColor(bgAlliance)):ToHex()
+	-- local allianceColor = ZO_ColorDef:New(GetBattlegroundAllianceColor(bgAlliance)):ToHex()
 	local r, g, b
 	if bgAlliance == 1 then
 		r = 255 / 255
@@ -862,10 +860,10 @@ function PVP:GetPlayerMarkerBgAllianceHexColor(bgAlliance)
 		g = 73 / 255
 		b = 147 / 255
 	elseif bgAlliance == 2 then
-		r, g, b = newColorDef(GetBattlegroundAllianceColor(bgAlliance)):UnpackRGB()
+		r, g, b = ZO_ColorDef:New(GetBattlegroundAllianceColor(bgAlliance)):UnpackRGB()
 	end
 
-	return newColorDef(r, g, b, 1):ToHex()
+	return ZO_ColorDef:New(r, g, b, 1):ToHex()
 end
 
 function PVP:GetBattlegroundTeamBadgeIcon(alliance)
@@ -886,12 +884,12 @@ function PVP:GetBattlegroundTeamBadgeTextFormattedIcon(alliance, dimensionX, dim
 
 	local icon = PVP:GetBattlegroundTeamBadgeIcon(alliance)
 
-	-- return newColorDef(GetBattlegroundAllianceColor(alliance)):Colorize(zo_iconFormatInheritColor(icon, dimensionX, dimensionY))
+	-- return ZO_ColorDef:New(GetBattlegroundAllianceColor(alliance)):Colorize(zo_iconFormatInheritColor(icon, dimensionX, dimensionY))
 	return zo_iconFormatInheritColor(icon, dimensionX, dimensionY)
 end
 
 function PVP:ColorizeToBgTeamColor(alliance, text)
-	return newColorDef(GetBattlegroundAllianceColor(alliance)):Colorize(text)
+	return ZO_ColorDef:New(GetBattlegroundAllianceColor(alliance)):Colorize(text)
 end
 
 function PVP:GetBattlegroundTypeText(battlegroundGameType)
