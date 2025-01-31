@@ -158,7 +158,7 @@ local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
 	local playerDbRecord = playersDB[rawName]
 	local unitRace 	= playerDbRecord.unitRace
 	local unitAccName = playerDbRecord.unitAccName
-	local icon          = PVP:GetFormattedClassIcon(rawName, nil, allianceColor, nil, nil, nil, nil, nil, nil, nil, playerDbRecord)
+	local icon          = PVP:GetFormattedClassIcon(rawName, nil, allianceColor, nil, nil, nil, nil, nil, nil, nil, playerDbRecord or "none")
 
 	local normalPartBefore, normalPartAfter, highlightPart
 

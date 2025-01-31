@@ -355,9 +355,11 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 
 	playerDbRecord = playerDbRecord or self.SV.playersDB[playerName]
 
-	if not playerDbRecord and not isPlayer and not unitClass then
+	if ((not playerDbRecord) or (playerDbRecord == "none")) and (not isPlayer) and (not unitClass) then
 		return unitAvARank and self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName) or ""
 	end
+
+	if playerDbRecord == "none" then playerDbRecord = nil end
 
 	dimension = isTargetNameFrame and 45 or (dimension or 29)
 	local specFromDB = not isPlayer and playerDbRecord and playerDbRecord.unitSpec
@@ -403,9 +405,8 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	local classIcon = unitClass and zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension) or ""
 	classIcon = self:Colorize(classIcon, color)
 
-	local unitAvARankFromDB = playerDbRecord and playerDbRecord.unitAvARank
 	local avaRankIcon =
-		(unitAvARank or unitAvARankFromDB) and
+		(unitAvARank or playerDbRecord and playerDbRecord.unitAvARank) and
 		self:Colorize(
 			zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank or unitAvARankFromDB), dimension, dimension),
 			allianceColor
@@ -425,12 +426,15 @@ function PVP:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, play
 	if unitAvARank then
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
 			allianceColor)
-	elseif self.SV.playersDB[playerName] and self.SV.playersDB[playerName].unitAvARank then
-		unitAvARank = self.SV.playersDB[playerName].unitAvARank
+	else
+		local playerDbRecord = self.SV.playersDB[playerName]
+		if playerDbRecord and playerDbRecord.unitAvARank then
+		unitAvARank = playerDbRecord.unitAvARank
 		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
 			allianceColor)
-	else
-		avaRankIcon = ""
+		else
+			avaRankIcon = ""
+		end
 	end
 	return avaRankIcon
 end
