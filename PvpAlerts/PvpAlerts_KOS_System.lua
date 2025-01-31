@@ -964,7 +964,7 @@ function PVP:RefreshLocalPlayers()
 	local SV = self.SV
 	if SV.unlocked then return end
 
-	local KOSList = SV.KOSList 
+	local KOSList = SV.KOSList
 	local coolList = SV.coolList
 	local playersDB = SV.playersDB
 	local allianceOfPlayer = self.allianceOfPlayer

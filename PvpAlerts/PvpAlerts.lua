@@ -3820,12 +3820,12 @@ end
 
 local function IsNameInDB(rawName)
 	local playersDB = PVP.SV.playersDB
-	if PVP:CheckName(rawName) then								 -- check this function
-		if playersDB[rawName] then return rawName else return false end --add cache check here
+	if PVP:CheckName(rawName) then
+		if playersDB[rawName] then return rawName else return false end
 	end
 	local maleName = rawName .. "^Mx"
 	local femaleName = rawName .. "^Fx"
-	if playersDB[maleName] or playersDB[femaleName] then -- don't bother with adding support here
+	if playersDB[maleName] or playersDB[femaleName] then
 		if playersDB[maleName] and not playersDB[femaleName] then return maleName end
 		if not playersDB[maleName] and playersDB[femaleName] then return femaleName end
 		if playersDB[maleName].unitAccName == playersDB[femaleName].unitAccName then
