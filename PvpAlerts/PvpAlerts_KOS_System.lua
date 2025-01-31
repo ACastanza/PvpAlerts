@@ -783,7 +783,7 @@ function PVP:IsAccNameInKOS(unitAccName)
 end
 
 local function CheckActive(KOSNamesList, kosActivityList, reportActive)
-	if not KOSNamesList or KOSNamesList == {} then return end
+	if not KOSNamesList or KOSNamesList == {} then return kosActivityList end
 	local currentTime = GetFrameTimeSeconds()
 	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return kosActivityList end
 	QueryCampaignLeaderboardData()
