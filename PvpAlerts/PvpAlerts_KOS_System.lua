@@ -783,13 +783,20 @@ function PVP:IsAccNameInKOS(unitAccName)
 end
 
 local function CheckActive(KOSNamesList, kosActivityList, reportActive)
-	if not KOSNamesList or KOSNamesList == {} then return kosActivityList end
+	if not KOSNamesList or KOSNamesList == {} then
+		if kosActivityList then
+			return kosActivityList
+		else
+			return { activeChars = {} }
+		end
+	end
+
 	local currentTime = GetFrameTimeSeconds()
 	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return kosActivityList end
 	QueryCampaignLeaderboardData()
 	local currentCampaignId = GetCurrentCampaignId()
 
-	if not kosActivityList  or not kosActivityList.activeChars then
+	if not kosActivityList or not kosActivityList.activeChars then
 		kosActivityList = { activeChars = {} }
 		for k, v in pairs(KOSNamesList) do
 			kosActivityList[k] = { chars = {} }
@@ -973,11 +980,11 @@ function PVP:RefreshLocalPlayers()
 
 	local currentTime = GetFrameTimeMilliseconds()
 
-	local KOSActivityList = self.kosActivityList
 	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
 		self.lastActiveCheckedTime = currentTime
 		PVP.kosActivityList = CheckActive(KOSNamesList, KOSActivityList, SV.outputNewKos)
 	end
+	local KOSActivityList = self.kosActivityList
 
 	local localPlayers = {}
 	local potentialAllies = {}
