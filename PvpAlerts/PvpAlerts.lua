@@ -3854,12 +3854,11 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 
 			if rawName then
 				if PVP.SV.showKOSFrame then
-					local index, unitAccName, kosUnitAccName
-					unitAccName = PVP.SV.playersDB[rawName] and PVP.SV.playersDB[rawName].unitAccName or nil
+					local index
+					local unitAccName = PVP.SV.playersDB[rawName] and PVP.SV.playersDB[rawName].unitAccName
 					local kosList = PVP.SV.KOSList
 					for i = 1, #kosList do
-						kosUnitAccName = kosList[i].unitAccName
-						if kosUnitAccName == unitAccName then
+						if unitAccName and (unitAccName == kosList[i].unitAccName) then
 							index = i
 							break
 						end
