@@ -789,7 +789,7 @@ local function CheckActive(KOSNamesList, kosActivityList, reportActive)
 	QueryCampaignLeaderboardData()
 	local currentCampaignId = GetCurrentCampaignId()
 
-	if not kosActivityList then
+	if not kosActivityList  or not kosActivityList.activeChars then
 		kosActivityList = { activeChars = {} }
 		for k, v in pairs(KOSNamesList) do
 			kosActivityList[k] = { chars = {} }
