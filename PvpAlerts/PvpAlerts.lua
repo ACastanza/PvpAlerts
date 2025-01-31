@@ -3645,9 +3645,10 @@ end
 
 function PVP:UpdateNewAttacker(attackerName, test)
 	local function CountNonDead()
+		local namesToDisplay = self.namesToDisplay
 		local count = 0
-		if self.namesToDisplay and #self.namesToDisplay > 0 then
-			for k, v in ipairs(self.namesToDisplay) do
+		if namesToDisplay and #namesToDisplay > 0 then
+			for k, v in ipairs(namesToDisplay) do
 				if not v.isDead then
 					count = count + 1
 				end
