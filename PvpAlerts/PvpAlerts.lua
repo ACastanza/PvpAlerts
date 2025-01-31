@@ -3940,7 +3940,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								ZO_Dialogs_ShowDialog("PVP_EDIT_NOTE", {
 									playerName = unitAccName,
 									noteString = nil,
-									changedCallback = function()
+									changedCallback = function(playerName, noteString)
 										if noteString and noteString ~= "" then
 											PVP.SV.playerNotes[playerName] = noteString
 											chat:Printf("Added note \"%s\" for player %s",
@@ -3955,7 +3955,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								ZO_Dialogs_ShowDialog("PVP_EDIT_NOTE", {
 									playerName = unitAccName,
 									noteString = accNote,
-									changedCallback = function()
+									changedCallback = function(playerName, noteString)
 										if (not noteString) or noteString == "" then
 											PVP.SV.playerNotes[playerName] = nil
 											chat:Printf("Deleted note \"%s\" for player %s",
