@@ -3575,7 +3575,7 @@ function PVP.OnTargetChanged()
 				PVP:UpdatePlayerDbAccountName(unitName, unitAccName, unitDbAccName)
 			end
 
-			playersDB[unitName] = {
+			local updatedPlayerDbRecord = {
 				unitAccName = unitAccName,
 				unitAlliance = unitAlliance,
 				unitClass = unitClass,
@@ -3585,6 +3585,7 @@ function PVP.OnTargetChanged()
 				unitAvARank = unitAllianceRank,
 				lastSeen = sessionTimeEpoch
 			}
+			playersDB[unitName] = updatedPlayerDbRecord
 
 			if IsActiveWorldBattleground() then
 				PVP.bgNames = PVP.bgNames or {}
@@ -3595,7 +3596,6 @@ function PVP.OnTargetChanged()
 			end
 
 			if PVP.SV.showTargetIcon then
-				local updatedPlayerDbRecord = PVP.SV.playersDB[unitName]
 				local KOSOrFriend = PVP:IsKOSOrFriend(unitName, updatedPlayerDbRecord)
 				local iconSize = 48
 
@@ -3940,7 +3940,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								ZO_Dialogs_ShowDialog("PVP_EDIT_NOTE", {
 									playerName = unitAccName,
 									noteString = nil,
-									changedCallback = function(playerName, noteString)
+									changedCallback = function()
 										if noteString and noteString ~= "" then
 											PVP.SV.playerNotes[playerName] = noteString
 											chat:Printf("Added note \"%s\" for player %s",
@@ -3955,7 +3955,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								ZO_Dialogs_ShowDialog("PVP_EDIT_NOTE", {
 									playerName = unitAccName,
 									noteString = accNote,
-									changedCallback = function(playerName, noteString)
+									changedCallback = function()
 										if (not noteString) or noteString == "" then
 											PVP.SV.playerNotes[playerName] = nil
 											chat:Printf("Deleted note \"%s\" for player %s",
