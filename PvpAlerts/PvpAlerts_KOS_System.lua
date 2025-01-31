@@ -785,7 +785,7 @@ end
 local function CheckActive(KOSNamesList, kosActivityList, reportActive)
 	if not KOSNamesList or KOSNamesList == {} then return end
 	local currentTime = GetFrameTimeSeconds()
-	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return end
+	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return kosActivityList end
 	QueryCampaignLeaderboardData()
 	local currentCampaignId = GetCurrentCampaignId()
 
@@ -957,7 +957,7 @@ function PVP:RefreshLocalPlayers()
 	local SV = self.SV
 	if SV.unlocked then return end
 
-	local KOSList = SV.KOSList
+	local KOSList = SV.KOSList 
 	local coolList = SV.coolList
 	local playersDB = SV.playersDB
 	local allianceOfPlayer = self.allianceOfPlayer
@@ -973,9 +973,10 @@ function PVP:RefreshLocalPlayers()
 
 	local currentTime = GetFrameTimeMilliseconds()
 
+	local KOSActivityList = self.kosActivityList
 	if not self.lastActiveCheckedTime or ((currentTime - self.lastActiveCheckedTime) >= 300000) then
 		self.lastActiveCheckedTime = currentTime
-		PVP.kosActivityList = CheckActive(KOSNamesList, PVP.kosActivityList, SV.outputNewKos)
+		PVP.kosActivityList = CheckActive(KOSNamesList, KOSActivityList, SV.outputNewKos)
 	end
 
 	local localPlayers = {}

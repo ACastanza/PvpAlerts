@@ -2760,7 +2760,7 @@ function PVP:FullReset()
 	self.idToName = {}
 	self.playerAlliance = {}
 	self.currentlyDead = {}
-	self.KOSNamesList = {}
+	self.kosActivityList = {}
 	self.namesToDisplay = {}
 
 	self.localPlayers = {}
@@ -2809,6 +2809,7 @@ local function ConvertAlliancePlayerNames()
 	local outputArray = {}
 	if #namesToDisplay ~= 0 then
 		for i = 1, #namesToDisplay do
+			local name = namesToDisplay[i]
 			outputArray[name.unitName] = {
 				isResurrect = name.isResurrect,
 				isDead = name.isDead,
