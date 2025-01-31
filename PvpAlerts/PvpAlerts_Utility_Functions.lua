@@ -816,6 +816,7 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 			isOnList = true
 		end
 	end
+	PVP.KOSAccList[unitAccName] = true
 
 	local coolList = PVP.SV.coolList
 	for k, v in pairs(coolList) do
@@ -824,6 +825,8 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 			isOnList = true
 		end
 	end
+	PVP.coolAccList[unitAccName] = true
+
 
 	local playerNotes = PVP.SV.playerNotes
 	if playerNotes[oldUnitAccName] then
