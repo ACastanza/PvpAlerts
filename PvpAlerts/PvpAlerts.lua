@@ -2760,7 +2760,6 @@ function PVP:FullReset()
 	self.idToName = {}
 	self.playerAlliance = {}
 	self.currentlyDead = {}
-	self.kosActivityList = {}
 	self.namesToDisplay = {}
 
 	self.localPlayers = {}
