@@ -2426,15 +2426,17 @@ local function GetBattlegroundTeamsInfo()
 end
 
 local function GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianceHexColor)
-	local battlegroundLeaderboardType
 
-	if battlegroundGameType == BATTLEGROUND_GAME_TYPE_DEATHMATCH then
-		battlegroundLeaderboardType = BATTLEGROUND_LEADERBOARD_TYPE_DEATHMATCH
-	elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_DOMINATION then
-		battlegroundLeaderboardType = BATTLEGROUND_LEADERBOARD_TYPE_LAND_GRAB
-	elseif battlegroundGameType == BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG then
-		battlegroundLeaderboardType = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES
-	end
+	local battlegroundLeaderboardTypes = {
+		[BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES,
+		[BATTLEGROUND_GAME_TYPE_DEATHMATCH] = BATTLEGROUND_LEADERBOARD_TYPE_DEATHMATCH,
+		[BATTLEGROUND_GAME_TYPE_KING_OF_THE_HILL] = BATTLEGROUND_LEADERBOARD_TYPE_LAND_GRAB,
+		[BATTLEGROUND_GAME_TYPE_DOMINATION] = BATTLEGROUND_LEADERBOARD_TYPE_LAND_GRAB,
+		[BATTLEGROUND_GAME_TYPE_CRAZY_KING] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES,
+		[BATTLEGROUND_GAME_TYPE_MURDERBALL] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES
+	}	
+
+	local battlegroundLeaderboardType = battlegroundLeaderboardTypes[battlegroundGameType]
 
 	local position, points
 
