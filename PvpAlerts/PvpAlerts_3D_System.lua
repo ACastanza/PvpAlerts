@@ -271,10 +271,12 @@ local function SetDimensions3DControl(control, iconSize3D, iconUASize3D, BGSize3
 	ping:Set3DLocalDimensions(iconUASize3D * 2.2, iconUASize3D * 2.2)
 
 	local flagOffset = 1
-	if control.params.keepId then
-		if PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_OUTPOST then
+	local keepId = control.params.keepId
+	if keepId then
+		local keepType = PVP:KeepIdToKeepType(keepId)
+		if keepType == KEEPTYPE_OUTPOST then
 			flagOffset = 4
-		elseif PVP:KeepIdToKeepType(control.params.keepId) == KEEPTYPE_TOWN then
+		elseif keepType == KEEPTYPE_TOWN then
 			flagOffset = 6
 		end
 	end
