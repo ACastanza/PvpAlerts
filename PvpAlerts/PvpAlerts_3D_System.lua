@@ -2035,13 +2035,14 @@ local function GetUpgradeLevelString(control)
 	}
 
 	local upgradeNumber
-	if control.params.keepId then
-		if GetKeepResourceType(control.params.keepId) ~= 0 then
-			upgradeNumber = GetKeepDefensiveLevel(control.params.keepId, 1)
-		elseif GetKeepType(control.params.keepId) == KEEPTYPE_KEEP then
+	local keepId = control.params.keepId
+	if keepId then
+		if GetKeepResourceType(keepId) ~= 0 then
+			upgradeNumber = GetKeepDefensiveLevel(keepId, 1)
+		elseif GetKeepType(keepId) == KEEPTYPE_KEEP then
 			local combinedUpgradeLevel = 0
 			for i = 1, 3 do
-				combinedUpgradeLevel = combinedUpgradeLevel + GetKeepResourceLevel(control.params.keepId, 1, i)
+				combinedUpgradeLevel = combinedUpgradeLevel + GetKeepResourceLevel(keepId, 1, i)
 			end
 			upgradeNumber = tonumber(string.format("%.0f", combinedUpgradeLevel / 3))
 		end
@@ -4143,10 +4144,12 @@ local function FindNearbyPOIs()
 				end
 			end
 
-			for i = 1, #PVP.miscCoords do
-				local pinType, targetX, targetY, targetZ, name, alliance, keepId = PVP.miscCoords[i].pinType,
-					PVP.miscCoords[i].x, PVP.miscCoords[i].y, PVP.miscCoords[i].z, PVP.miscCoords[i].name,
-					PVP.miscCoords[i].alliance, PVP.miscCoords[i].keepId
+			local miscCoords = PVP.miscCoords
+			local numMisc = #miscCoords
+			for i = 1, numMisc do
+				local misc = miscCoords[i]
+				local pinType, targetX, targetY, targetZ, name, alliance, keepId = misc.pinType,
+					misc.x, misc.y, misc.z, misc.name, misc.alliance, misc.keepId
 
 				if targetX ~= 0 and targetY ~= 0 and (pinType == PVP_PINTYPE_MILEGATE or pinType == PVP_PINTYPE_BRIDGE) then
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
@@ -4166,9 +4169,12 @@ local function FindNearbyPOIs()
 				end
 			end
 
-			for i = 1, #PVP.delvesCoords do
-				local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_DELVE, PVP.delvesCoords[i].x,
-					PVP.delvesCoords[i].y, PVP.delvesCoords[i].z, 'Delve: ' .. PVP.delvesCoords[i].name
+			local delvesCoords = PVP.delvesCoords
+			local numDelves = #delvesCoords
+			for i = 1, numDelves do
+				local delve = delvesCoords[i]
+				local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_DELVE, delve.x,
+				delve.y, delve.z, 'Delve: ' .. delve.name
 
 				if targetX ~= 0 and targetY ~= 0 then
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
@@ -4189,84 +4195,90 @@ local function FindNearbyPOIs()
 
 		if currentMapIndex == PVP_MAPINDEX_IC and not PVP:IsInSewers() then
 			local zoneId, subzoneId = GetCurrentSubZonePOIIndices()
-			if zoneId == IC_ZONEID and PVP.icAllianceBases[subzoneId] then
-				for k, v in pairs(PVP.icAllianceBases) do
-					if k == subzoneId then
-						for i = 1, 3 do
-							local pinType, targetX, targetY, targetZ, name, alliance = PVP_PINTYPE_IC_ALLIANCE_BASE,
-								PVP.icAllianceBases[k][i].x, PVP.icAllianceBases[k][i].y, PVP.icAllianceBases[k][i].z,
-								GetPOIInfo(zoneId, k), PVP.icAllianceBases[k][i].alliance
-							local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-							local isCurrent = k == subzoneId
-							if distance <= adjusted_MAX_DISTANCE then
-								insert(foundPOI,
-									{
-										pinType = pinType,
-										targetX = targetX,
-										targetY = targetY,
-										targetZ = targetZ,
-										distance = distance,
-										name = name,
-										alliance = alliance,
-										isCurrent = isCurrent
-									})
+			local icAllianceBases = PVP.icAllianceBases
+			if zoneId == IC_ZONEID then	
+				if icAllianceBases[subzoneId] then
+					for k, v in pairs(icAllianceBases) do
+						if k == subzoneId then
+							local subZoneBases = icAllianceBases[k]
+							for i = 1, 3 do
+								local subZoneBase = subZoneBases[i]
+								local pinType, targetX, targetY, targetZ, name, alliance = PVP_PINTYPE_IC_ALLIANCE_BASE,
+								subZoneBase.x, subZoneBase.y, subZoneBase.z,
+									GetPOIInfo(zoneId, k), subZoneBase.alliance
+								local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+								local isCurrent = k == subzoneId
+								if distance <= adjusted_MAX_DISTANCE then
+									insert(foundPOI,
+										{
+											pinType = pinType,
+											targetX = targetX,
+											targetY = targetY,
+											targetZ = targetZ,
+											distance = distance,
+											name = name,
+											alliance = alliance,
+											isCurrent = isCurrent
+										})
+								end
 							end
 						end
 					end
 				end
-			end
-			if zoneId == IC_ZONEID then
+
 				local isCurrent = true
-				if PVP.icDoors[subzoneId] then
-					for k, v in pairs(PVP.icDoors[subzoneId]) do
-						-- local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR, PVP.icDoors[subzoneId][k].x, PVP.icDoors[subzoneId][k].y, PVP.icDoors[subzoneId][k].z, PVP:Colorize(GetKeepName(PVP.icDoors[subzoneId][k].location), PVP:AllianceToColor(GetKeepAlliance(PVP.icDoors[subzoneId][k].location, 1))), PVP.icDoors[subzoneId][k].type, PVP.icDoors[subzoneId][k].angle
-						local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR,
-							PVP.icDoors[subzoneId][k].x, PVP.icDoors[subzoneId][k].y, PVP.icDoors[subzoneId][k].z,
-							GetKeepName(PVP.icDoors[subzoneId][k].location), PVP.icDoors[subzoneId][k].type,
-							PVP.icDoors[subzoneId][k].angle
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-						if distance <= adjusted_MAX_DISTANCE then
-							insert(foundPOI,
-								{
-									pinType = pinType,
-									targetX = targetX,
-									targetY = targetY,
-									targetZ = targetZ,
-									distance = distance,
-									name = name,
-									isCurrent = isCurrent,
-									doorType = doorType,
-									orientation3d = angle,
-									doorDistrictKeepId = PVP.icDoors[subzoneId][k].location
-								})
-						end
-					end
-				end
-				if PVP.icVaults[subzoneId] then
-					for k, v in pairs(PVP.icVaults[subzoneId]) do
-						local pinType, targetX, targetY, targetZ, name, poiId = PVP_PINTYPE_IC_VAULT,
-							PVP.icVaults[subzoneId][k].x, PVP.icVaults[subzoneId][k].y, PVP.icVaults[subzoneId][k].z,
-							GetPOIInfo(341, PVP.icVaults[subzoneId][k].poiId), PVP.icVaults[subzoneId][k].poiId
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-						if distance <= adjusted_MAX_DISTANCE then
-							insert(foundPOI,
-								{
-									pinType = pinType,
-									targetX = targetX,
-									targetY = targetY,
-									targetZ = targetZ,
-									distance = distance,
-									name = name,
-									isCurrent = isCurrent,
-									poiId = poiId
-								})
-						end
+				local subzoneDoors = PVP.icDoors[subzoneId] or {}
+				for k, v in pairs(subzoneDoors) do
+					local subzoneDoor = subzoneDoors[k]
+					-- local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR, subzoneDoor.x, subzoneDoor.y, subzoneDoor.z, PVP:Colorize(GetKeepName(subzoneDoor.location), PVP:AllianceToColor(GetKeepAlliance(subzoneDoor.location, 1))), subzoneDoor.type, subzoneDoor.angle
+					local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR,
+					subzoneDoor.x, subzoneDoor.y, subzoneDoor.z,
+					GetKeepName(subzoneDoor.location), subzoneDoor.type, subzoneDoor.angle
+					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					if distance <= adjusted_MAX_DISTANCE then
+						insert(foundPOI,
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								targetZ = targetZ,
+								distance = distance,
+								name = name,
+								isCurrent = isCurrent,
+								doorType = doorType,
+								orientation3d = angle,
+								doorDistrictKeepId = subzoneDoor.location
+							})
 					end
 				end
 
-				for k, v in pairs(PVP.icGrates[subzoneId]) do
-					local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_IC_GRATE, PVP.icGrates[subzoneId][k].x,
-						PVP.icGrates[subzoneId][k].y, PVP.icGrates[subzoneId][k].z, PVP.icGrates[subzoneId][k].name
+				local zoneValuts = PVP.icVaults[zoneId] or {}
+				for k, v in pairs(zoneValuts) do
+					local zoneVault = zoneValuts[k]
+					local pinType, targetX, targetY, targetZ, name, poiId = PVP_PINTYPE_IC_VAULT,
+					zoneVault.x, zoneVault.y, zoneVault.z,
+						GetPOIInfo(341, zoneVault.poiId), zoneVault.poiId
+					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					if distance <= adjusted_MAX_DISTANCE then
+						insert(foundPOI,
+							{
+								pinType = pinType,
+								targetX = targetX,
+								targetY = targetY,
+								targetZ = targetZ,
+								distance = distance,
+								name = name,
+								isCurrent = isCurrent,
+								poiId = poiId
+							})
+					end
+				end
+
+				local zoneGrates = PVP.icGrates[subzoneId] or {}
+				for k, v in pairs(zoneGrates) do
+					local zoneGrate = zoneGrates[k]
+					local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_IC_GRATE, zoneGrate.x,
+					zoneGrate.y, zoneGrate.z, zoneGrate.name
 					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_MAX_DISTANCE then
 						insert(foundPOI,
@@ -4297,36 +4309,38 @@ local function FindNearbyPOIs()
 	end
 
 	local currentMapPings = PVP.currentMapPings
-	if currentMapPings and #currentMapPings > 0 then
-		for i = 1, #currentMapPings do
-			if not currentMapPings[i].pingObject then
-				if currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
-					currentMapPings[i].targetX, currentMapPings[i].targetY = PVP.LMP:GetMapPing(
+	local numPings = currentMapPings and #currentMapPings or 0
+	if numPings > 0 then
+		for i = 1, numPings do
+			local currentPing = currentMapPings[i]
+			if not currentPing.pingObject then
+				if currentPing.pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
+					currentPing.targetX, currentPing.targetY = PVP.LMP:GetMapPing(
 						MAP_PIN_TYPE_PLAYER_WAYPOINT)
-				elseif currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
-					currentMapPings[i].targetX, currentMapPings[i].targetY = PVP.LMP:GetMapPing(
+				elseif currentPing.pinType == MAP_PIN_TYPE_RALLY_POINT then
+					currentPing.targetX, currentPing.targetY = PVP.LMP:GetMapPing(
 						MAP_PIN_TYPE_RALLY_POINT)
-				elseif currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
-					currentMapPings[i].targetX, currentMapPings[i].targetY = PVP.LMP:GetMapPing(
-						MAP_PIN_TYPE_PING, currentMapPings[i].pingTag)
+				elseif currentPing.pinType == MAP_PIN_TYPE_PING then
+					currentPing.targetX, currentPing.targetY = PVP.LMP:GetMapPing(
+						MAP_PIN_TYPE_PING, currentPing.pingTag)
 				end
 
-				if currentMapPings[i].targetX ~= 0 and currentMapPings[i].targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, currentMapPings[i].targetX,
-						currentMapPings[i].targetY)
+				if currentPing.targetX ~= 0 and currentPing.targetY ~= 0 then
+					local distance = PVP:GetCoordsDistance2D(selfX, selfY, currentPing.targetX,
+						currentPing.targetY)
 
 					if distance <= adjusted_MAX_DISTANCE * 2 then
 						local name
-						if currentMapPings[i].pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
+						if currentPing.pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
 							name = 'My waypoint'
-						elseif currentMapPings[i].pinType == MAP_PIN_TYPE_RALLY_POINT then
+						elseif currentPing.pinType == MAP_PIN_TYPE_RALLY_POINT then
 							name = 'Group Rally point'
-						elseif currentMapPings[i].pinType == MAP_PIN_TYPE_PING then
-							if currentMapPings[i].pingTag then
-								if currentMapPings[i].isLocalPlayerOwner then
+						elseif currentPing.pinType == MAP_PIN_TYPE_PING then
+							if currentPing.pingTag then
+								if currentPing.isLocalPlayerOwner then
 									name = 'My Ping'
 								else
-									local unitName = PVP:GetValidName(GetRawUnitName(currentMapPings[i].pingTag))
+									local unitName = PVP:GetValidName(GetRawUnitName(currentPing.pingTag))
 									local formattedName = PVP:GetTargetChar(unitName)
 									if not formattedName then
 										formattedName = PVP:Colorize(zo_strformat(SI_UNIT_NAME, unitName),
@@ -4340,10 +4354,10 @@ local function FindNearbyPOIs()
 						end
 						insert(foundPOI,
 							{
-								pinType = currentMapPings[i].pinType,
-								pingTag = currentMapPings[i].pingTag,
-								targetX = currentMapPings[i].targetX,
-								targetY = currentMapPings[i].targetY,
+								pinType = currentPing.pinType,
+								pingTag = currentPing.pingTag,
+								targetX = currentPing.targetX,
+								targetY = currentPing.targetY,
 								distance = distance,
 								name = name
 							})
