@@ -4229,70 +4229,76 @@ local function FindNearbyPOIs()
 				end
 
 				local isCurrent = true
-				local subzoneDoors = PVP.icDoors[subzoneId] or {}
-				for k, v in pairs(subzoneDoors) do
-					local subzoneDoor = subzoneDoors[k]
-					-- local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR, subzoneDoor.x, subzoneDoor.y, subzoneDoor.z, PVP:Colorize(GetKeepName(subzoneDoor.location), PVP:AllianceToColor(GetKeepAlliance(subzoneDoor.location, 1))), subzoneDoor.type, subzoneDoor.angle
-					local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR,
-					subzoneDoor.x, subzoneDoor.y, subzoneDoor.z,
-					GetKeepName(subzoneDoor.location), subzoneDoor.type, subzoneDoor.angle
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-					if distance <= adjusted_MAX_DISTANCE then
-						insert(foundPOI,
-							{
-								pinType = pinType,
-								targetX = targetX,
-								targetY = targetY,
-								targetZ = targetZ,
-								distance = distance,
-								name = name,
-								isCurrent = isCurrent,
-								doorType = doorType,
-								orientation3d = angle,
-								doorDistrictKeepId = subzoneDoor.location
-							})
+				local subzoneDoors = PVP.icDoors[subzoneId]
+				if subzoneDoors then
+					for k, v in pairs(subzoneDoors) do
+						local subzoneDoor = subzoneDoors[k]
+						-- local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR, subzoneDoor.x, subzoneDoor.y, subzoneDoor.z, PVP:Colorize(GetKeepName(subzoneDoor.location), PVP:AllianceToColor(GetKeepAlliance(subzoneDoor.location, 1))), subzoneDoor.type, subzoneDoor.angle
+						local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR,
+						subzoneDoor.x, subzoneDoor.y, subzoneDoor.z,
+						GetKeepName(subzoneDoor.location), subzoneDoor.type, subzoneDoor.angle
+						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						if distance <= adjusted_MAX_DISTANCE then
+							insert(foundPOI,
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = name,
+									isCurrent = isCurrent,
+									doorType = doorType,
+									orientation3d = angle,
+									doorDistrictKeepId = subzoneDoor.location
+								})
+						end
 					end
 				end
 
-				local zoneValuts = PVP.icVaults[zoneId] or {}
-				for k, v in pairs(zoneValuts) do
-					local zoneVault = zoneValuts[k]
-					local pinType, targetX, targetY, targetZ, name, poiId = PVP_PINTYPE_IC_VAULT,
-					zoneVault.x, zoneVault.y, zoneVault.z,
-						GetPOIInfo(341, zoneVault.poiId), zoneVault.poiId
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-					if distance <= adjusted_MAX_DISTANCE then
-						insert(foundPOI,
-							{
-								pinType = pinType,
-								targetX = targetX,
-								targetY = targetY,
-								targetZ = targetZ,
-								distance = distance,
-								name = name,
-								isCurrent = isCurrent,
-								poiId = poiId
-							})
+				local zoneValuts = PVP.icVaults[zoneId]
+				if zoneVaults then
+					for k, v in pairs(zoneValuts) do
+						local zoneVault = zoneValuts[k]
+						local pinType, targetX, targetY, targetZ, name, poiId = PVP_PINTYPE_IC_VAULT,
+						zoneVault.x, zoneVault.y, zoneVault.z,
+							GetPOIInfo(341, zoneVault.poiId), zoneVault.poiId
+						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						if distance <= adjusted_MAX_DISTANCE then
+							insert(foundPOI,
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = name,
+									isCurrent = isCurrent,
+									poiId = poiId
+								})
+						end
 					end
 				end
 
-				local zoneGrates = PVP.icGrates[subzoneId] or {}
-				for k, v in pairs(zoneGrates) do
-					local zoneGrate = zoneGrates[k]
-					local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_IC_GRATE, zoneGrate.x,
-					zoneGrate.y, zoneGrate.z, zoneGrate.name
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-					if distance <= adjusted_MAX_DISTANCE then
-						insert(foundPOI,
-							{
-								pinType = pinType,
-								targetX = targetX,
-								targetY = targetY,
-								targetZ = targetZ,
-								distance = distance,
-								name = name,
-								isCurrent = isCurrent
-							})
+				local zoneGrates = PVP.icGrates[subzoneId]
+				if zoneGrates then
+					for k, v in pairs(zoneGrates) do
+						local zoneGrate = zoneGrates[k]
+						local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_IC_GRATE, zoneGrate.x,
+						zoneGrate.y, zoneGrate.z, zoneGrate.name
+						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						if distance <= adjusted_MAX_DISTANCE then
+							insert(foundPOI,
+								{
+									pinType = pinType,
+									targetX = targetX,
+									targetY = targetY,
+									targetZ = targetZ,
+									distance = distance,
+									name = name,
+									isCurrent = isCurrent
+								})
+						end
 					end
 				end
 			end
