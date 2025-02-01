@@ -1267,9 +1267,10 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 	local isValidCyroNameToDisplay = (not isInBG) and (unitAlliance ~= self.allianceOfPlayer)
 
 	local namesToDisplay = self.namesToDisplay
+	local numNames = #namesToDisplay
 	if isValidBGNameToDisplay or isValidCyroNameToDisplay then
 		local found
-		for i = 1, #namesToDisplay do
+		for i = 1, numNames do
 			if namesToDisplay[i].unitName == unitName then
 				found = i
 				break
@@ -1366,8 +1367,9 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 
 		local deadName = idToName[targetUnitId] or targetName
 
-		if deadName and #PVP.namesToDisplay > 0 then
-			for i = 1, #PVP.namesToDisplay do
+		local numNames = #PVP.namesToDisplay
+		if deadName and numNames > 0 then
+			for i = 1, numNames do
 				if PVP.namesToDisplay[i].unitName == deadName and not PVP.namesToDisplay[i].isDead then
 					PVP.namesToDisplay[i].isDead = true
 					PVP.namesToDisplay[i].currentTime = currentTime
@@ -2779,10 +2781,11 @@ end
 
 local function FindAlliancePlayerInNames(playerName, unitAlliance)
 	local namesToDisplay = PVP.namesToDisplay
+	local numNames = #namesToDisplay
 	local isResurrect, isDead
 	local statusIcon = ""
-	if #namesToDisplay ~= 0 then
-		for i = 1, #namesToDisplay do
+	if numNames ~= 0 then
+		for i = 1, numNames do
 			local name = namesToDisplay[i]
 			if name.unitName == playerName then
 				if name.isResurrect then
@@ -2805,9 +2808,10 @@ end
 
 local function ConvertAlliancePlayerNames()
 	local namesToDisplay = PVP.namesToDisplay
+	local numNames = #namesToDisplay
 	local outputArray = {}
-	if #namesToDisplay ~= 0 then
-		for i = 1, #namesToDisplay do
+	if numNames ~= 0 then
+		for i = 1, numNames do
 			local name = namesToDisplay[i]
 			outputArray[name.unitName] = {
 				isResurrect = name.isResurrect,
@@ -2822,7 +2826,8 @@ end
 
 local function ArrayConversion(inputArray, indexArray, mainArray)
     local outputArray = {}
-    for i = 1, #inputArray do
+	local num = #inputArray
+    for i = 1, num do
         local newValue = mainArray[indexArray[inputArray[i]]]
         outputArray[i] = newValue
     end
@@ -2832,7 +2837,8 @@ end
 local function SummaryConversion(inputArray, summaryType)
     local summary
     local outputArray = {}
-    local numberInCategory = PVP:Colorize(tostring(#inputArray), 'FFFF00')
+	local num = #inputArray
+    local numberInCategory = PVP:Colorize(tostring(num), 'FFFF00')
     if summaryType == 'group' then
         summary = ' --- Group (' .. numberInCategory .. ') ---'
     elseif summaryType == 'friends' then
@@ -2843,7 +2849,7 @@ local function SummaryConversion(inputArray, summaryType)
         summary = ' --- Others (' .. numberInCategory .. ') ---'
     end
     insert(outputArray, summary)
-    for i = 1, #inputArray do
+    for i = 1, num do
         insert(outputArray, inputArray[i])
     end
     return outputArray
@@ -3702,6 +3708,23 @@ local function DeathScreenOnLoadFix()
 	end
 end
 
+function PVP:RefreshKOSandCoolAccList()
+	local KOSList = self.SV.KOSList
+	local KOSAccList = {}
+	local numKOS = #KOSList
+	for i = 1, numKOS do
+		KOSAccList[KOSList[i].unitAccName] = true
+	end
+	PVP.KOSAccList = KOSAccList
+
+	local coolList = self.SV.coolList
+	local coolAccList = {}
+	for k, v in pairs(coolList) do
+		coolAccList[v] = true
+	end
+	PVP.coolAccList = coolAccList
+end
+
 function PVP:InitEnabledAddon()
 	if PVP.addonEnabled then
 		EVENT_MANAGER:UnregisterForUpdate(self.name)
@@ -3858,7 +3881,8 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 					local index
 					local unitAccName = PVP.SV.playersDB[rawName] and PVP.SV.playersDB[rawName].unitAccName
 					local kosList = PVP.SV.KOSList
-					for i = 1, #kosList do
+					local numKOS = #kosList
+					for i = 1, numKOS do
 						if unitAccName and (unitAccName == kosList[i].unitAccName) then
 							index = i
 							break

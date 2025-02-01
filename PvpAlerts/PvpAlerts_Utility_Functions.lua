@@ -356,7 +356,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	playerDbRecord = playerDbRecord or self.SV.playersDB[playerName]
 
 	if ((not playerDbRecord) or (playerDbRecord == "none")) and (not isPlayer) and (not unitClass) then
-		return unitAvARank and self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName) or ""
+		return unitAvARank and self:GetFormattedAvaRankIcon(unitAvARank or playerDbRecord.unitAvARank, allianceColor, dimension, playerName) or ""
 	end
 
 	if playerDbRecord == "none" then playerDbRecord = nil end
@@ -405,10 +405,9 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	local classIcon = unitClass and zo_iconFormatInheritColor(self.classIcons[unitClass], dimension, dimension) or ""
 	classIcon = self:Colorize(classIcon, color)
 
-	local avaRankIcon =
-		(unitAvARank or playerDbRecord and playerDbRecord.unitAvARank) and
-		self:Colorize(
-			zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank or unitAvARankFromDB), dimension, dimension),
+	unitAvARank = unitAvARank or playerDbRecord and playerDbRecord.unitAvARank
+	local avaRankIcon = unitAvARank and self:Colorize(
+			zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
 			allianceColor
 		) or
 		""
@@ -461,7 +460,8 @@ function PVP:GetFormattedName(playerName, truncate)
 			substringCutOff = cutOff - 1
 		else
 			local numberSpecial = 0
-			for i = 1, #accentedSymbolsIndice do
+			local numAccented = #accentedSymbolsIndice
+			for i = 1, numAccented do
 				if accentedSymbolsIndice[i] <= (cutOff - 1) then
 					numberSpecial = numberSpecial + 1
 				end
@@ -484,9 +484,9 @@ function PVP:GetFormattedCharNameLink(playerName, truncate)
 end
 
 function PVP:GetFormattedClassNameLink(playerName, allianceColor, truncate, isDeadorResurrect, isTargetFrame,
-									   isTargetNameFrame, unitClass, id, currentTime, unitAvARank)
+									   isTargetNameFrame, unitClass, id, currentTime, unitAvARank, playerDbRecord)		   
 	return self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, isTargetFrame, isTargetNameFrame,
-			unitClass, id, currentTime, unitAvARank) ..
+			unitClass, id, currentTime, unitAvARank, playerDbRecord) ..
 		self:Colorize(self:GetFormattedCharNameLink(playerName, truncate), allianceColor)
 end
 
@@ -641,8 +641,8 @@ end
 
 function PVP:TableConcat(t1, t2)
 	if next(t2) == nil then return t1 end
-
-	for i = 1, #t2 do
+	local numT2 = #t2
+	for i = 1, numT2 do
 		t1[#t1 + 1] = t2[i]
 	end
 	return t1
@@ -706,7 +706,8 @@ function PVP:ProcessLengths(namesTable, maxLength, addedLength)
 
 	-- local maxLength=0
 	addedLength = addedLength or 0
-	for i = 1, #namesTable do
+	local numNames = #namesTable
+	for i = 1, numNames do
 		if self:StringEnd(namesTable[i], "+") then
 			if addedLength < 35 then addedLength = 35 end
 			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 1))
@@ -814,19 +815,18 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 		if v.unitAccName == oldUnitAccName then
 			KOSList[k].unitAccName = unitAccName
 			isOnList = true
+			PVP.KOSAccList[unitAccName] = true
 		end
 	end
-	PVP.KOSAccList[unitAccName] = true
 
 	local coolList = PVP.SV.coolList
 	for k, v in pairs(coolList) do
 		if v == oldUnitAccName then
 			coolList[k] = unitAccName
 			isOnList = true
+			PVP.coolAccList[unitAccName] = true
 		end
 	end
-	PVP.coolAccList[unitAccName] = true
-
 
 	local playerNotes = PVP.SV.playerNotes
 	if playerNotes[oldUnitAccName] then
