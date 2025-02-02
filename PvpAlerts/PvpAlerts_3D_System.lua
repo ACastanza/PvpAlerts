@@ -1961,12 +1961,12 @@ local function SetupNormalWorldTooltip(altAlign)
 	PVP_WorldTooltipCampaignPositionInfoLabel:SetText('')
 end
 
-local function SetControlInitialSize(control, keepId, keepIdType)
+local function SetControlInitialSize(control)
 	local controlIconSize, controlIconUASize, controlBGSize
 	if IsActiveWorldBattleground() then
 		controlIconSize, controlIconUASize = ICONSIZE - 8, ICONUASIZE - 13
 	else
-		controlIconSize, controlIconUASize = KeepIdToIconSize(keepId or control.params.keepId, keepIdType)
+		controlIconSize, controlIconUASize = KeepIdToIconSize(control.params.keepId)
 	end
 	controlBGSize = controlIconUASize + 2
 	SetDimensions3DControl(control, controlIconSize, controlIconUASize, controlBGSize)
@@ -3034,7 +3034,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	-- local isBorderKeepAnimationPlaying = control.params.borderKeepAnimationHandler and
 	-- 	control.params.borderKeepAnimationHandler:IsPlaying()
 
-	SetControlInitialSize(control, control.params.keepId, GetKeepType(control.params.keepId))
+	SetControlInitialSize(control)
 
 	Hide3DControl(control, scaleAdjustment)
 	local keepName = zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(control.params.keepId)) ..
