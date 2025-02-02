@@ -1143,16 +1143,16 @@ function PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 	return distance
 end
 
-function PVP:GetGuildmateSharedGuilds(displayName)
+function PVP:GetGuildmateSharedGuilds(displayName, isGuildmate)
 	if (not displayName) or (displayName == "") then return "" end
-	if not IsGuildMate(displayName) then return "" end
+	if (not isGuildmate) and (isGuildmate ~= nil) or not self.guildmates[displayName] then return "" end
 
 	local guildNamesToken = ""
 	local firstGuildAllianceColor
 	local foundGuilds = 0
-
-	for i = 1, GetNumGuilds() do
-		local guildId = GetGuildId(i)
+	local playerSharedGuilds = self.guildmates[displayName]
+	for k, v in pairs(playerSharedGuilds) do
+		local guildId = GetGuildId(k)
 		local memberIndex = GetGuildMemberIndexFromDisplayName(guildId, displayName)
 		if memberIndex then
 			foundGuilds = foundGuilds + 1
@@ -1173,6 +1173,22 @@ function PVP:GetGuildmateSharedGuilds(displayName)
 	end
 
 	return guildNamesToken, firstGuildAllianceColor
+end
+
+function PVP:PopulateGuildmateDatabase()
+	local guildmateDatabase = {}
+	for i = 1, GetNumGuilds() do
+		local guildId = GetGuildId(i)
+		local numMembers = GetNumGuildMembers(guildId)
+		for j = 1, numMembers do
+			local displayName, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, j)
+			if not guildmateDatabase[displayName] then
+				guildmateDatabase[displayName] = {}
+			end
+			guildmateDatabase[displayName][i] = true
+		end
+	end
+	PVP.guildmates = guildmateDatabase
 end
 
 function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)

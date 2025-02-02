@@ -1,6 +1,5 @@
 local PVP = PVP_Alerts_Main_Table
 
-local IsGuildMate = IsGuildMate
 local sort = table.sort
 local insert = table.insert
 local remove = table.remove
@@ -765,7 +764,7 @@ function PVP:IsKOSOrFriend(playerName, unitAccName)
 	if unitAccName and self.KOSAccList[unitAccName] then return "KOS" end
 	if self.SV.showFriends and IsFriend(playerName) then return "friend" end
 	if unitAccName and self.coolAccList[unitAccName] then return "cool" end
-	if self.SV.showGuildMates and IsGuildMate(playerName) then return "guild" end
+	if self.SV.showGuildMates and self.guildmates[unitAccName] then return "guild" end
 
 	return false
 end
@@ -855,7 +854,7 @@ local function BuildImportantIcon(unitAccName, isFriend, isCool, isGuildmate, is
 			local guildIcon = PVP:GetGuildIcon(nil, "40BB40")
 			importantIcon = importantIcon .. guildIcon
 		else
-			local guildNames, firstGuildAllianceColor = PVP:GetGuildmateSharedGuilds(unitAccName)
+			local guildNames, firstGuildAllianceColor = PVP:GetGuildmateSharedGuilds(unitAccName, isGuildmate)
 			local guildIcon = PVP:GetGuildIcon(nil, firstGuildAllianceColor)
 			importantIcon = importantIcon .. guildIcon .. guildNames
 		end
@@ -884,7 +883,7 @@ local function createIsResurrectList(namesToDisplay)
 	return isResurrectList
 end
 
-function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
+function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
 	local unitAccName = dbRec.unitAccName
 	local unitAlliance = dbRec.unitAlliance
 	local isKOS = KOSAccList[unitAccName] ~= nil
@@ -893,7 +892,7 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList,
 	local playerNote = showPlayerNotes and playerNotes[unitAccName] or nil
 	local hasPlayerNote = playerNote and (playerNote ~= "")
 	local isFriend = showFriends and IsFriend(rawName) or false
-	local isGuildmate = showGuildMates and IsGuildMate(rawName) or false
+	local isGuildmate = showGuildMates and guildmates[unitAccName] or false
 
 	local newLocalPlayer = {
 		unitId = unitId,
@@ -930,7 +929,7 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList,
 		if mode == 4 then
 			local guildNames, firstGuildAllianceColor, guildIcon
 			if isGuildmate then
-				guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(unitAccName)
+				guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(unitAccName, isGuildmate)
 				guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
 			else
 				guildIcon = ""
@@ -995,6 +994,7 @@ function PVP:RefreshLocalPlayers()
 
 	local KOSAccList = self.KOSAccList
 	local coolAccList = self.coolAccList
+	local guildmates = self.guildmates
 
 	local currentTime = GetFrameTimeMilliseconds()
 
@@ -1023,7 +1023,7 @@ function PVP:RefreshLocalPlayers()
 	for unitId, rawName in pairs(idToName) do
 		local dbRec = playersDB[rawName]
 		if dbRec then
-			local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
+			local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
 			localPlayers[rawName] = newLocalPlayer
 			if newString then
 				if isActive then
@@ -1042,7 +1042,7 @@ function PVP:RefreshLocalPlayers()
 		if not localPlayers[rawName] then
 			local dbRec = playersDB[rawName]
 			if dbRec then
-				local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(1234567890, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
+				local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(1234567890, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
 				localPlayers[rawName] = newLocalPlayer
 				if newString then
 					if isActive then
@@ -1068,7 +1068,7 @@ function PVP:RefreshLocalPlayers()
 					local isResurrect, guildNames, firstGuildAllianceColor, guildIcon
 
 					if isGuildmate then
-						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(dbRec.unitAccName)
+						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(dbRec.unitAccName, isGuildmate)
 						guildIcon = self:GetGuildIcon(nil, firstGuildAllianceColor)
 					else
 						guildIcon = ""
