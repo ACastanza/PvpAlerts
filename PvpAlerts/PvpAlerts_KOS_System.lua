@@ -290,19 +290,21 @@ function PVP:Who(name, contains)
 
 		d('Found ' .. tostring(#foundPlayerNames + #looseMatch) .. ' players, similar to ' .. highlightedName .. ':')
 
-		for i = 1, #foundPlayerNames do
-			local currentplayerDbRecord = playersDb[foundPlayerNames[i]]
-			local currentAccName = currentplayerDbRecord.unitAccName
-			local currentAccCP = ""
-			if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
-			local currentName = foundPlayerNames[i]
+		if foundPlayerNames and #foundPlayerNames ~= 0 then
+			for i = 1, #foundPlayerNames do
+				local currentplayerDbRecord = playersDb[foundPlayerNames[i]]
+				local currentAccName = currentplayerDbRecord.unitAccName
+				local currentAccCP = ""
+				if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
+				local currentName = foundPlayerNames[i]
 
-			local nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
+				local nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
 
-			d(tostring(i) .. '. ' .. nameLink .. currentAccCP)
+				d(tostring(i) .. '. ' .. nameLink .. currentAccCP)
+			end
 		end
 
-		if #looseMatch ~= 0 then
+		if looseMatch and #looseMatch ~= 0 then
 			local startFullWord, midFullWord, startPartWord, remainder = {}, {}, {}, {}
 			for i = 1, #looseMatch do
 				local currentName = looseMatch[i]
@@ -343,7 +345,7 @@ function PVP:Who(name, contains)
 			local indexToHighlight = #startFullWord + #startPartWord + 1
 
 			for i = 1, #looseMatchOutput do
-				local currentplayerDbRecord = playersDb[foundPlayerNames[i]]
+				local currentplayerDbRecord = playersDb[looseMatchOutput[i]]
 				local currentAccName = currentplayerDbRecord.unitAccName
 				local currentAccCP = ""
 				if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
