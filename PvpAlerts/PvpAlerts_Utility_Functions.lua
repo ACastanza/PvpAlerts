@@ -1159,22 +1159,19 @@ function PVP:GetGuildmateSharedGuilds(displayName, isGuildmate)
 	local playerSharedGuilds = self.guildmates[displayName]
 	for k, v in pairs(playerSharedGuilds) do
 		local guildId = GetGuildId(k)
-		local memberIndex = GetGuildMemberIndexFromDisplayName(guildId, displayName)
-		if memberIndex then
-			foundGuilds = foundGuilds + 1
-			local guildName = GetGuildName(guildId)
-			local guildAlliance = GetGuildAlliance(guildId)
-			local guildAllianceColor = self:GetTrueAllianceColorsHex(guildAlliance)
+		foundGuilds = foundGuilds + 1
+		local guildName = GetGuildName(guildId)
+		local guildAlliance = GetGuildAlliance(guildId)
+		local guildAllianceColor = self:GetTrueAllianceColorsHex(guildAlliance)
 
-			if foundGuilds > 1 then
-				guildNamesToken = guildNamesToken .. ", "
-			end
+		if foundGuilds > 1 then
+			guildNamesToken = guildNamesToken .. ", "
+		end
 
-			guildNamesToken = guildNamesToken .. self:Colorize(guildName, guildAllianceColor)
+		guildNamesToken = guildNamesToken .. self:Colorize(guildName, guildAllianceColor)
 
-			if not firstGuildAllianceColor then
-				firstGuildAllianceColor = guildAllianceColor
-			end
+		if not firstGuildAllianceColor then
+			firstGuildAllianceColor = guildAllianceColor
 		end
 	end
 
