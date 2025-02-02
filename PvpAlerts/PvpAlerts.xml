@@ -35,28 +35,28 @@
 		<!-- </TopLevelControl> -->
 
 
-		<Control name="Main_Frame_Icon_Template" mouseEnabled="true" movable="false" clampedToScreen="false" hidden="false" tier="1" layer="0" alpha="1" virtual="true">
+		<Control name="Main_Frame_Icon_Template" mouseEnabled="true" movable="false" clampedToScreen="false" hidden="false" tier="1" layer="1" alpha="1" virtual="true">
 			<OnInitialized>
 				self:GetNamedChild('Cooldown'):SetDesaturation(1)
 			</OnInitialized>
 			<Controls>
-				<Texture name="$(parent)Icon" textureFile="PapaCrown/textures/bow_3.dds" color="FFFFFF" layer="0" level="1" hidden="false">
+				<Texture name="$(parent)Icon" textureFile="PapaCrown/textures/bow_3.dds" color="FFFFFF" layer="1" level="1" hidden="false">
 					<Dimensions x="60" y="60" />
 					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="0" />
 				</Texture>
-				<Texture name="$(parent)HeavyAttackHighlightIcon" textureFile="PapaCrown/textures/bow_3.dds" color="ddd36a" layer="0" level="0" hidden="false" alpha="0" scale="1.4">
+				<Texture name="$(parent)HeavyAttackHighlightIcon" textureFile="PapaCrown/textures/bow_3.dds" color="ddd36a" layer="1" level="0" hidden="false" alpha="0" scale="1.4">
 					<Dimensions x="60" y="60" />
 					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="0" />
 				</Texture>
-				<Cooldown name="$(parent)Cooldown" inherits="ZO_DefaultCooldown" textureFile="PapaCrown/textures/bow_3.dds" fillColor="787878" layer="0" level="2" hidden="false">
+				<Cooldown name="$(parent)Cooldown" inherits="ZO_DefaultCooldown" textureFile="PapaCrown/textures/bow_3.dds" fillColor="787878" layer="1" level="2" hidden="false">
 					<Dimensions x="60" y="60" />
 					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" />
 				</Cooldown>
-				<!-- <Cooldown name="$(parent)CooldownMark" inherits="ZO_DefaultCooldown" textureFile="/esoui/art/worldmap/worldmap_map_background.dds" fillColor="FFFFFF" layer="0" level="3" hidden="false"> -->
+				<!-- <Cooldown name="$(parent)CooldownMark" inherits="ZO_DefaultCooldown" textureFile="/esoui/art/worldmap/worldmap_map_background.dds" fillColor="FFFFFF" layer="1" level="3" hidden="false"> -->
 				<!-- <Dimensions x="60" y="78" /> -->
 				<!-- <Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetY="11"/> -->
 				<!-- </Cooldown> -->
-				<Texture name="$(parent)LeadingEdge" textureFile="EsoUI/Art/ActionBar/coolDown_leadingEdge.dds" color="ffffff" layer="0" level="3" alpha="0.65" hidden="true">
+				<Texture name="$(parent)LeadingEdge" textureFile="EsoUI/Art/ActionBar/coolDown_leadingEdge.dds" color="ffffff" layer="1" level="3" alpha="0.65" hidden="true">
 					<Dimensions x="60" y="5" />
 					<Anchor point="CENTER" relativeTo="$(parent)Icon" relativePoint="BOTTOM" offsetY="0" />
 					<TextureCoords left="0" right ="1" top="0.3" bottom="0.4" />
@@ -65,7 +65,7 @@
 					<Anchor point="CENTER" />
 					<Dimensions x="25" y="12" />
 				</Label>
-				<Texture name="$(parent)Glow" textureFile="EsoUI/Art/HUD/Gamepad/gp_skillGlow.dds" layer="0" level="3" tier="HIGH" hidden="false" alpha="0">
+				<Texture name="$(parent)Glow" textureFile="EsoUI/Art/HUD/Gamepad/gp_skillGlow.dds" layer="1" level="3" tier="HIGH" hidden="false" alpha="0">
 					<TextureCoords left="0.1875" right ="0.8125" top="0.1875" bottom="0.8125" />
 					<Dimensions x="84" y="84" />
 					<Anchor point="CENTER" />
@@ -85,7 +85,7 @@
 			</OnInitialized>
 			<Controls>
 
-				<Label name="$(parent)Label" text="My Label Rocks" font="$(BOLD_FONT)|28|thick-outline" horizontalAlignment="CENTER" verticalAlignment="CENTER" color="FFFFFF" wrapMode="ELLIPSIS" inheritScale="true">
+				<Label name="$(parent)Label" text="My Label Rocks" font="$(BOLD_FONT)|28|thick-outline" horizontalAlignment="CENTER" verticalAlignment="CENTER" color="FFFFFF" inheritScale="true">
 					<Anchor point="CENTER" relativeTo="$(parent)" relativePoint="CENTER" offsetX="0"/>
 					<Dimensions x="240" y="38"/>
 				</Label>
@@ -110,7 +110,7 @@
 			</Controls>
 		</TopLevelControl>
 
-		<TopLevelControl name="PVP_Counter" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0">
+		<TopLevelControl name="PVP_Counter" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1">
 			<Dimensions x="220" y="150" />
 			<Anchor point="CENTER" />
 			<OnMoveStop>
@@ -159,7 +159,7 @@
 				</Label>
 			</Controls>
 		</TopLevelControl>
-		<TopLevelControl name="PVP_ForwardCamp" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_ForwardCamp" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1">
 			<!-- <Dimensions x="50" y="50"/> -->
 			<Dimensions x="80" y="80"/>
 
@@ -186,7 +186,7 @@
 					<Dimensions x="20" y="20"/>
 					<Anchor point="CENTER" offsetX="32" offsetY="23"/>
 				</Texture>
-				<Texture name="$(parent)_Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" layer="0">
+				<Texture name="$(parent)_Backdrop" textureFile="EsoUI/Art/Performance/StatusMeterMunge.dds" layer="1">
 					<!-- <Dimensions x="120" y="300"/> -->
 					<Dimensions x="176" y="500"/>
 					<Anchor point="CENTER" offsetX="2" offsetY="1"/>
@@ -194,7 +194,7 @@
 			</Controls>
 		</TopLevelControl>
 
-		<TopLevelControl name="PVP_KillFeed" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_KillFeed" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1">
 			<Dimensions x="850" y="120" />
 			<Anchor point="CENTER" />
 			<OnMoveStop>
@@ -250,7 +250,7 @@
 			</Controls>
 		</TopLevelControl>
 
-		<TopLevelControl name="PVP_Names" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_Names" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1">
 			<Dimensions x="240" y="500" />
 			<Anchor point="CENTER" />
 			<OnMoveStop>
@@ -269,7 +269,7 @@
 			</Controls>
 		</TopLevelControl>
 
-		<TopLevelControl name="PVP_TUG" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_TUG" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1">
 			<Dimensions x="240" y="50" />
 			<Anchor point="CENTER" offsetY="540"/>
 			<OnMoveStop>
@@ -320,7 +320,7 @@
 		</TopLevelControl>
 
 
-		<TopLevelControl name="PVP_KOS" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_KOS" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1">
 			<!-- <Dimensions x="300" y="370" /> -->
 			<Dimensions x="350" y="360" />
 			<Anchor point="CENTER" />
@@ -367,7 +367,7 @@
 			</Controls>
 		</TopLevelControl>
 
-		<TopLevelControl name="PVP_Death_Buttons" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1" resizeToFitDescendents="true">
+		<TopLevelControl name="PVP_Death_Buttons" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1" resizeToFitDescendents="true">
 			<Anchor point="BOTTOM" relativeTo="ZO_DeathAvAButtons" relativePoint="TOP" offsetY="-40"/>
 			<Controls>
 				<Control name="$(parent)Button1" inherits="ZO_KeybindButton">
@@ -544,7 +544,7 @@
 			</Controls>
 		</Control>
 
-		<TopLevelControl name="PVP_Capture" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_Capture" mouseEnabled="true" movable="true" clampedToScreen="false" hidden="true" tier="0" layer="1" alpha="1">
 			<Anchor point="CENTER"/>
 			<Dimensions x="400" y="80" />
 			<OnMoveStop>
@@ -571,7 +571,7 @@
 		</TopLevelControl>
 
 
-		<TopLevelControl name="PVP_TargetName" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="0">
+		<TopLevelControl name="PVP_TargetName" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="1" alpha="0">
 			<Anchor point="CENTER" offsetX="-10" offsetY="-40" />
 			<Dimensions x="600" y="50" />
 			<OnMoveStop>
@@ -586,7 +586,7 @@
 			</Controls>
 		</TopLevelControl>
 
-		<TopLevelControl name="PVP_TargetIcon" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="1">
+		<TopLevelControl name="PVP_TargetIcon" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="1" alpha="1">
 			<Anchor point="CENTER" offsetX="0" offsetY="0" />
 			<Dimensions x="96" y="96" />
 			<Controls>
@@ -598,7 +598,7 @@
 		</TopLevelControl>
 
 
-		<TopLevelControl name="PVP_NewAttacker" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="0" alpha="0">
+		<TopLevelControl name="PVP_NewAttacker" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" tier="0" layer="1" alpha="0">
 			<Anchor point="TOP"/>
 			<Dimensions x="600" y="200" />
 			<OnMoveStop>
