@@ -828,6 +828,12 @@ function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName
 		end
 	end
 
+	local guildmates = PVP.guildmates
+	if guildmates[oldUnitAccName] then
+		guildmates[unitAccName] = guildmates[oldUnitAccName]
+		guildmates[oldUnitAccName] = nil
+	end
+
 	local playerNotes = PVP.SV.playerNotes
 	if playerNotes[oldUnitAccName] then
 		local oldNote = playerNotes[oldUnitAccName] or ""
