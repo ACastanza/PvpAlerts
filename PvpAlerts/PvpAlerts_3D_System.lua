@@ -3717,28 +3717,30 @@ local function FindNearbyKeeps()
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
 	local foundKeeps = {}
 	local selfX, selfY = GetMapPlayerPosition('player')
+	local inImperialCity = IsInImperialCity()
+	local inSewers = inImperialCity and PVP:IsInSewers() -- Only check if in IC
+
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
 		local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
 
-		local shouldExcludeNewKeeps = (keepId > 153) and (keepId < 163)
-
-		if not shouldExcludeNewKeeps and targetX ~= 0 and targetY ~= 0 then
+		if not (keepId > 153 and keepId < 163) and targetX ~= 0 and targetY ~= 0 then
 			local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
 			local isKeep = GetKeepResourceType(keepId) == 0
-
-			-- if distance<=scaleAdjustment*PVP_MAX_DISTANCE then
 			local isDistrict = GetKeepType(keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT
-			local showDistrict = isDistrict and not PVP:IsInSewers() and IsInImperialCity()
 
-
-			if showDistrict or (not IsInImperialCity() and not isDistrict and (isKeep and distance <= scaleAdjustment * PVP.SV.max3DIconsDistance) or (not isKeep and distance <= scaleAdjustment * PVP.SV.maxResource3DIconsDistance)) then
+			if inImperialCity and not inSewers and isDistrict then
 				foundKeeps[keepId] = distance
+			elseif not isDistrict then
+				local maxDisplayDistance = isKeep and PVP.SV.max3DIconsDistance or PVP.SV.maxResource3DIconsDistance
+				if distance <= scaleAdjustment * maxDisplayDistance then
+					foundKeeps[keepId] = distance
+				end
 			end
 		end
 	end
 
-	if next(foundKeeps) ~= nil then return foundKeeps else return false end
+	return next(foundKeeps) and foundKeeps or false
 end
 
 -- local guildid
