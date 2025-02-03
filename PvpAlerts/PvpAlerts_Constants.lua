@@ -921,7 +921,7 @@ PVP.magickaSkillLines = {
 }
 
 PVP.majorImportantAbilities = {
-	[160184] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Rush Of Agony
+	[160184] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rush Of Agony
 	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
 	-- [189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
 	-- [191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
@@ -934,13 +934,13 @@ PVP.minorImportantAbilities = {
 	--["Screaming Cliff Racer"] = true,
 	--["Dive"] = true,
 	-- ["Unrelenting Grip"] = true,
-	[163227] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Meteor (Called)
-	[163238] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Ice Comet (Called)
-	[163236] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Shooting Star (Called)
-	[118928] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Dragon Leap
-	[118936] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Take Flight
-	[118938] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Ferocious Leap
-	[217228] = {ACTION_RESULT_BEGIN = true}, -- Repelling Explosion
+	[163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
+	[163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
+	[163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
+	[118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
+	[118936] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Take Flight
+	[118938] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap
+	[217228] = {[ACTION_RESULT_BEGIN] = true}, -- Repelling Explosion
 }
 
 PVP.abilityIdIgnoreList = {

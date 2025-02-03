@@ -1507,7 +1507,6 @@ function PVP:ProcessPvpBuffs(result, targetName, abilityId)
 end
 
 function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-	if sourceName == self.playerName then return end
 	if not (hitValue > 1) then return end
 	if self.SV.showImportant and (((self.majorImportantAbilities[abilityId] and self.majorImportantAbilities[abilityId][result]) or (self.minorImportantAbilities[abilityId] and self.minorImportantAbilities[abilityId][result])) or
 		(result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
