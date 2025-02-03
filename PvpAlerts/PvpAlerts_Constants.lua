@@ -920,7 +920,7 @@ PVP.magickaSkillLines = {
 }
 
 PVP.majorImportantAbilities = {
-	[160184] = {ACTION_RESULT_EFFECT_GAINED, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Rush Of Agony
+	[160184] = {ACTION_RESULT_EFFECT_GAINED = true, ACTION_RESULT_EFFECT_GAINED_DURATION = true}, -- Rush Of Agony
 	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
 	-- [189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
 	-- [191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
