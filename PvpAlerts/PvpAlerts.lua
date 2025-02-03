@@ -1595,14 +1595,14 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		if sourceName and sourceName ~= '' and not PVP.bgNames[sourceName] then PVP.bgNames[sourceName] = 0 end
 		if targetName and targetName ~= '' and not PVP.bgNames[targetName] then PVP.bgNames[targetName] = 0 end
 	end
-	if ccImmunityBuffs[abilityName] then
-		if targetName == self.playerName and result == ACTION_RESULT_EFFECT_GAINED_DURATION then
+	if ccImmunityBuffs[abilityName] and targetName == self.playerName then
+		if (result == ACTION_RESULT_EFFECT_GAINED_DURATION) or (result == ACTION_RESULT_EFFECT_GAINED) then
 			local lastEndTime = self.ccImmunity[abilityName]
 			if (not lastEndTime) or lastEndTime < currentTime then
 				self.ccImmunity[abilityName] = currentTime + hitValue
 			end
 		elseif targetName == self.playerName and result == ACTION_RESULT_EFFECT_FADED then
-			self.ccImmunity[abilityId] = nil
+			self.ccImmunity[abilityName] = nil
 		end
 	end
 
