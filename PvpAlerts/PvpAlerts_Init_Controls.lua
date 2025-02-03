@@ -563,3 +563,11 @@ function PVP:RegisterCustomDialog()
 			}
 		})
 end
+
+function PVP:InitNetworking()
+	if self.SV.enableNetworking and self.SV.addonEnabled then
+	elseif self.SV.enableNetworking and not self.SV.addonEnabled then
+	elseif not self.SV.enableNetworking and self.SV.addonEnabled then
+	else
+	end	
+end

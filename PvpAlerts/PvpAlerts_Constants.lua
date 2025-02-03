@@ -61,6 +61,7 @@ PVP.defaults = {
 	showImportant = true,
 	showHeavyAttacks = true,
 	showSnipes = true,
+	enableNetworking = false,
 	-- showNumberStealthed=true,
 
 	showKOSFrame = true,
