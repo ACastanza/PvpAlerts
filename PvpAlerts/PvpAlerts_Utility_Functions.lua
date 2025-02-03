@@ -49,6 +49,13 @@ local concat = table.concat
 --local lower = string.lower
 --local format = string.format
 
+local ccImmunityBuffs = {
+	["CC Immunity"] = true,
+	["Crowd Control Immunity"] = true,
+	["Unstoppable"] = true,
+	["Immovable"] = true,
+}
+
 local databaseIntegrityCheck = {}
 
 function PVP:RGBtoHEX(rgb)
@@ -648,14 +655,12 @@ function PVP:TableConcat(t1, t2)
 	return t1
 end
 
-function PVP:IsPlayerCCImmune(graceTimeInSec)
-	if not graceTimeInSec then graceTimeInSec = 0 end
-
-	for i = 1, GetNumBuffs('player') do
-		local buffName, timeStarted, timeEnding, _, _, _, _, _, _, _, abilityId, _, castByPlayer = GetUnitBuffInfo(
-			'player', i)
-		if buffName == "CC Immunity" or buffName == "Crowd Control Immunity" or buffName == "Unstoppable" or buffName == "Immovable" then
-			if timeEnding - GetFrameTimeSeconds() >= graceTimeInSec then
+function PVP:IsPlayerCCImmune(currentTime, abilityDuration)
+	if not abilityDuration then abilityDuration = 1 end
+	local ccImmunity = self.ccImmunity
+	for abilityName, endTime in pairs(ccImmunity) do
+		if ccImmunityBuffs[abilityName] then
+			if (currentTime + abilityDuration) < endTime then
 				return true
 			end
 		end
