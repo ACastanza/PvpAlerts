@@ -1546,8 +1546,8 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 			end
 		end
 
-		if self.networkedAbilities[abilityId] and self.SV.enableNetworking and GetGroupSize() ~= 0 then
-			PVP.SendWarning()
+		if self.networkedAbilities[abilityId] and self.SV.enableNetworking and GetGroupSize() ~= 0 and not (sourceName == "AgonyWarning") then
+			PVP:SendWarning()
 		end
 
 	end
@@ -2416,8 +2416,7 @@ function PVP:OnMapPing(eventCode, pingEventType, pingType, pingTag, offsetX, off
 		if self.SV.pingWaypoint and IsUnitGrouped('player') and isLocalPlayerOwner and pingType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
 			self.suppressTest = { playerGroupTag = playerGroupTag, currentTime = GetFrameTimeMilliseconds() }
 			if not self.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag) then
-				self.LMP
-					:SuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
+				self.LMP:SuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
 			end
 			self.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, offsetX, offsetY)
 			self.pingSuppressionStarted = zo_callLater(function() self.pingSuppressionStarted = nil end, 25)
@@ -2446,8 +2445,7 @@ function PVP:OnMapPing(eventCode, pingEventType, pingType, pingTag, offsetX, off
 	elseif pingEventType == PING_EVENT_REMOVED then
 		if self.suppressTest and not self.pingSuppressionStarted and pingType == MAP_PIN_TYPE_PING and isLocalPlayerOwner then
 			if self.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag) then
-				self.LMP
-					:UnsuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
+				self.LMP:UnsuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
 			end
 			self.suppressTest = nil
 		end
