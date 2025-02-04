@@ -74,7 +74,7 @@
 			</Controls>
 		</Control>
 
-		<TopLevelControl name="PVP_Main" mouseEnabled="true" movable="true" clampedToScreen="true" hidden="true" resizeToFitDescendents="true">
+		<TopLevelControl name="PVP_Main" mouseEnabled="true" movable="true" clampedToScreen="true" hidden="true" resizeToFitDescendents="true"  tier="2" >
 			<!-- <Dimensions x="444" y="116"/> -->
 			<Anchor point="CENTER" />
 			<OnMoveStop>
