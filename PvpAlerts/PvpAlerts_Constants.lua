@@ -980,6 +980,17 @@ PVP.networkedAbilities = {
 	[160184] = true, -- Rush Of Agony
 }
 
+PVP.networkingPingData = {
+	["10_10_10_10"] = {
+		["result"] = ACTION_RESULT_EFFECT_GAINED,
+		["abilityName"]= "When you deal direct damage with a Blink, Charge, Leap, Teleport, or Pull",
+		["abilityId"] = 160184,
+		["sourceUnitId"] = 123456,
+		["sourceName"] = "AgonyWarning",
+		["hitValue"] = 800,
+	}
+}
+
 PVP.heavyAttackNames = {
 	["Heavy Attack (2H)"] = PVP_2H_HA_ICON,
 	["Heavy Attack (Bow)"] = PVP_BOW_HA_ICON,

@@ -1203,30 +1203,34 @@ end
 
 function PVP.SendWarning()
 	if AgonyWarning then return end
-	self.GPS:PushCurrentMap()
+	PVP.GPS:PushCurrentMap()
 	SetMapToMapListIndex(23)
-	self.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP.EncodeMessage(10, 10, 10, 10))
-	self.GPS:PopCurrentMap()
+	PVP.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP.EncodeMessage(10, 10, 10, 10))
+	PVP.GPS:PopCurrentMap()
 end
 
 function PVP.OnBeforePingAdded(pingType, pingTag, x, y, isPingOwner)
 	if (pingType == MAP_PIN_TYPE_PING) then
-		self.GPS:PushCurrentMap()
+		PVP.GPS:PushCurrentMap()
 		SetMapToMapListIndex(23)
-		x, y = self.LMP:GetMapPing(pingType, pingTag)
+		x, y = PVP.LMP:GetMapPing(pingType, pingTag)
 		local b0, b1, b2, b3 = PVP.DecodeMessage(x,y)
-		self.GPS:PopCurrentMap()
-		self.LMP:SuppressPing(pingType, pingTag)
+		PVP.GPS:PopCurrentMap()
+		PVP.LMP:SuppressPing(pingType, pingTag)
 
-		if b0 == 10 and b1 == 10 and b2 == 10 and b3 == 10 and not PVP.WarningIsActive then
-			PVP.ShowWarning()
+		if not PVP.SV.showAttacks then return end
+
+		if b0 == 10 and b1 == 10 and b2 == 10 and b3 == 10 then
+			local pingData = PVP.networkingPingData[b0 .. "_" .. b1 .. "_" .. b2 .. "_" .. b3]
+			if not pingData then return end
+			self:ProcessImportantAttacks(pingData.result, pingData.abilityName, pingData.abilityId, 1234567, pingData.sourceName, pingData.hitValue, GetFrameTimeMilliseconds())
 		end
 	end
 end
 
 function PVP.OnAfterPingRemoved(pingType, pingTag, x, y, isPingOwner)
 	if (pingType == MAP_PIN_TYPE_PING) then
-		self.self.LMP:UnsuppressPing(pingType, pingTag)
+		self.PVP.LMP:UnsuppressPing(pingType, pingTag)
 	end
 end
 
