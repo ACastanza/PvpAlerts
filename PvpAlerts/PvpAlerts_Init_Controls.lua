@@ -565,20 +565,22 @@ function PVP:RegisterCustomDialog()
 end
 
 function PVP:InitNetworking()
-	if self.SV.enableNetworking and self.SV.addonEnabled then
-		PVP.networkingEnabled = true
-		LMP:RegisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
-		LMP:RegisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
-	elseif self.SV.enableNetworking and not self.SV.addonEnabled then
+	if self.SV.enableNetworking and self.addonEnabled then
+		if not PVP.networkingEnabled then
+			PVP.LMP:RegisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			PVP.LMP:RegisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.networkingEnabled = true
+		end
+	elseif self.SV.enableNetworking and not self.addonEnabled then
 		if PVP.networkingEnabled then
-			LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
-			LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			PVP.LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
 			PVP.networkingEnabled = false
 		end
-	elseif not self.SV.enableNetworking and self.SV.addonEnabled then
+	elseif not self.SV.enableNetworking and self.addonEnabled then
 		if PVP.networkingEnabled then
-			LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
-			LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			PVP.LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
 			PVP.networkingEnabled = false
 		end
 	end
