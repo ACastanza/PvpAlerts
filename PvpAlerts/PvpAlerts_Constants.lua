@@ -934,28 +934,42 @@ PVP.minorImportantAbilities = {
 	--["Screaming Cliff Racer"] = true,
 	--["Dive"] = true,
 	-- ["Unrelenting Grip"] = true,
-	[163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
-	[163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
-	[163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
+	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Fiery Grip
+	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Unrelenting Grip
+	[40336] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Silver Leash
 	[118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
 	[118936] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Take Flight
 	[118938] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap
+	[163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
+	[163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
+	[163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
+	[185841] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement
+	[185921] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Uncanny Adoration
 	[217228] = {[ACTION_RESULT_BEGIN] = true}, -- Repelling Explosion
+	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Leashing Soul
+	[217979] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst
 }
 
 PVP.abilityIdIgnoreList = {
 }
 
 PVP.abilityMessages = {
-	-- Intended to be used with Scribing Abilities, ignore specific IDs in PVP.abilityIdIgnoreList
-	[160184] = "INCOMING RUSH - BLOCK",
-	[163227] = "METEOR - BLOCK",
-	[163238] = "METEOR - BLOCK",
-	[163236] = "METEOR - BLOCK",
-	[118928] = "LEAP - BLOCK",
-	[118936] = "LEAP - BLOCK",
-	[118938] = "LEAP - BLOCK",
-	[217228] = "KNOCKBACK - BLOCK"
+	[160184] = "BLOCK - RUSH PULL - BLOCK",
+
+	[20492] = "BLOCK - DK CHAIN",
+	[20496] = "BLOCK - DK CHAIN",
+	[40336] = "BLOCK - LEASH",
+	[118928] = "BLOCK - LEAP",
+	[118936] = "BLOCK - LEAP",
+	[118938] = "BLOCK - LEAP",
+	[163227] = "BLOCK - METEOR",
+	[163236] = "BLOCK - METEOR",
+	[163238] = "BLOCK - METEOR",
+	[185841] = "BLOCK - DISPLACEMENT",
+	[185921] = "BLOCK - CHARM",
+	[217228] = "BLOCK - KNOCKBACK",
+	[217784] = "BLOCK - SOUL CHAIN",
+	[217979] = "BLOCK - SOUL PULL",
 }
 
 PVP.abilityIconSwaps = {
@@ -963,6 +977,7 @@ PVP.abilityIconSwaps = {
 	[163227] = GetAbilityIcon(16536), -- Meteor (Called)
 	[163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
 	[163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
+	[185841] = GetAbilityIcon(201293), -- Rune of Displacement
 }
 
 PVP.heavyAttackNames = {
