@@ -1223,14 +1223,14 @@ function PVP.OnBeforePingAdded(pingType, pingTag, x, y, isPingOwner)
 		if b0 == 10 and b1 == 10 and b2 == 10 and b3 == 10 then
 			local pingData = PVP.networkingPingData[b0 .. "_" .. b1 .. "_" .. b2 .. "_" .. b3]
 			if not pingData then return end
-			self:ProcessImportantAttacks(pingData.result, pingData.abilityName, pingData.abilityId, 1234567, pingData.sourceName, pingData.hitValue, GetFrameTimeMilliseconds())
+			PVP:ProcessImportantAttacks(pingData.result, pingData.abilityName, pingData.abilityId, 1234567, pingData.sourceName, pingData.hitValue, GetFrameTimeMilliseconds())
 		end
 	end
 end
 
 function PVP.OnAfterPingRemoved(pingType, pingTag, x, y, isPingOwner)
 	if (pingType == MAP_PIN_TYPE_PING) then
-		self.PVP.LMP:UnsuppressPing(pingType, pingTag)
+		PVP.LMP:UnsuppressPing(pingType, pingTag)
 	end
 end
 
