@@ -61,7 +61,7 @@ PVP.defaults = {
 	showImportant = true,
 	showHeavyAttacks = true,
 	showSnipes = true,
-	enableNetworking = false,
+	enableNetworking = true,
 	-- showNumberStealthed=true,
 
 	showKOSFrame = true,
@@ -461,7 +461,6 @@ PVP.ambushId = {
 }
 
 
-
 PVP.excludedAbilityIds = {
 	[46858] = true,
 	[36304] = true,
@@ -672,8 +671,6 @@ PVP.staminaAbilitiesID = {
 
 }
 
-
-
 PVP.selfStamAbilities = {
 	["Shuffle"] = true,
 	["Elude"] = true,
@@ -733,7 +730,6 @@ PVP.selfBigMagAbilities = {
 	["Boon: The Mage"] = true,
 	["Boon: The Apprentice"] = true,
 }
-
 
 PVP.magickaAbilities = {
 	----nightblade----
@@ -980,6 +976,10 @@ PVP.abilityIconSwaps = {
 	[185841] = GetAbilityIcon(201293), -- Rune of Displacement
 }
 
+PVP.networkedAbilities = {
+	[160184] = true, -- Rush Of Agony
+}
+
 PVP.heavyAttackNames = {
 	["Heavy Attack (2H)"] = PVP_2H_HA_ICON,
 	["Heavy Attack (Bow)"] = PVP_BOW_HA_ICON,
@@ -1043,14 +1043,12 @@ PVP.hitTypes = {
 -- [16212] = PVP_RESTO_HA_COLOR,
 -- }
 
-
 PVP.chargeSnare = {
 	["Toppling Charge"] = true,
 	["Invasion"] = true,
 	["Shielded Assault"] = true,
 	["Shield Charge"] = true,
 }
-
 
 PVP.chargeSnareId = {
 	[15540] = true, --Toppling Charge Active
@@ -2627,7 +2625,6 @@ PVP.elderScrollsPintypes = {
 	[127] = true,
 }
 
-
 PVP.districtKeepIdToSubzoneNumber = {
 	[148] = 27, -- Elven Gardens
 	[147] = 30, -- Temple
@@ -2636,7 +2633,6 @@ PVP.districtKeepIdToSubzoneNumber = {
 	[142] = 28, -- Memorial
 	[141] = 29, -- Nobles
 }
-
 
 PVP.icAllianceBases = {
 	[29] = {
@@ -2810,6 +2806,7 @@ PVP.icVaults = {
 		{ x = 0.27381008, y = 0.23014461, z = 309.55, poiId = 33 },
 	},
 }
+
 PVP.icGrates = {
 	[29] = { --Nobles
 		{ x = 0.15615200, y = 0.63319605, z = 310.28, name = "To Lambent Passage" },
@@ -2835,6 +2832,7 @@ PVP.icGrates = {
 		{ x = 0.13612112, y = 0.47999250, z = 309.19, name = "To Lambent Passage" },
 	},
 }
+
 PVP.delvesCoords = {
 
 	{ x = 0.67226, y = 0.59793, z = 208.98, name = 'Cracked Wood Cave' }, --upd
@@ -3107,3 +3105,5 @@ PVP.objectiveIcons = {
 		[ALLIANCE_EBONHEART_PACT]      = "/esoui/art/campaign/overview_allianceicon_ebonheart.dds",
 	},
 }
+
+PVP.MapStepSize = 1.4285034012573e-005

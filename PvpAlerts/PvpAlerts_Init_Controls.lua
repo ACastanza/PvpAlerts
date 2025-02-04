@@ -566,8 +566,20 @@ end
 
 function PVP:InitNetworking()
 	if self.SV.enableNetworking and self.SV.addonEnabled then
+		PVP.networkingEnabled = true
+		LMP:RegisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+		LMP:RegisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
 	elseif self.SV.enableNetworking and not self.SV.addonEnabled then
+		if PVP.networkingEnabled then
+			LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.networkingEnabled = false
+		end
 	elseif not self.SV.enableNetworking and self.SV.addonEnabled then
-	else
-	end	
+		if PVP.networkingEnabled then
+			LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.networkingEnabled = false
+		end
+	end
 end

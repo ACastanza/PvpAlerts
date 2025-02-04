@@ -1545,6 +1545,11 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 					false, false, hitValue)
 			end
 		end
+
+		if self.networkedAbilities[abilityId] and self.SV.enableNetworking and GetGroupSize() ~= 0 then
+			PVP.SendWarning()
+		end
+
 	end
 end
 

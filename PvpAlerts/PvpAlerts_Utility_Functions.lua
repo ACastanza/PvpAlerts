@@ -1,5 +1,7 @@
 local PVP = PVP_Alerts_Main_Table
 
+PVP.LMP = LibMapPing2
+PVP.GPS = LibGPS3
 
 local PVP_DIMMED_AD_COLOR = PVP:GetGlobal('PVP_DIMMED_AD_COLOR')
 local PVP_BRIGHT_AD_COLOR = PVP:GetGlobal('PVP_BRIGHT_AD_COLOR')
@@ -1197,6 +1199,56 @@ function PVP:PopulateGuildmateDatabase()
 		end
 	end
 	PVP.guildmates = guildmateDatabase
+end
+
+function PVP.SendWarning()
+	if AgonyWarning then return end
+	self.GPS:PushCurrentMap()
+	SetMapToMapListIndex(23)
+	self.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP.EncodeMessage(10, 10, 10, 10))
+	self.GPS:PopCurrentMap()
+end
+
+function PVP.OnBeforePingAdded(pingType, pingTag, x, y, isPingOwner)
+	if (pingType == MAP_PIN_TYPE_PING) then
+		self.GPS:PushCurrentMap()
+		SetMapToMapListIndex(23)
+		x, y = self.LMP:GetMapPing(pingType, pingTag)
+		local b0, b1, b2, b3 = PVP.DecodeMessage(x,y)
+		self.GPS:PopCurrentMap()
+		self.LMP:SuppressPing(pingType, pingTag)
+
+		if b0 == 10 and b1 == 10 and b2 == 10 and b3 == 10 and not PVP.WarningIsActive then
+			PVP.ShowWarning()
+		end
+	end
+end
+
+function PVP.OnAfterPingRemoved(pingType, pingTag, x, y, isPingOwner)
+	if (pingType == MAP_PIN_TYPE_PING) then
+		self.self.LMP:UnsuppressPing(pingType, pingTag)
+	end
+end
+
+--Original code comes from libgroupsocket
+function PVP.DecodeMessage(x, y)
+	x = math.floor(x / PVP.MapStepSize + 0.5)
+	y = math.floor(y / PVP.MapStepSize + 0.5)
+
+	local b0 = math.floor(x / 0x100)
+	local b1 = x % 0x100
+	local b2 = math.floor(y / 0x100)
+	local b3 = y % 0x100
+
+	return b0, b1, b2, b3
+end
+
+function PVP.EncodeMessage(b0, b1, b2, b3)
+	b0 = b0 or 0
+	b1 = b1 or 0
+	b2 = b2 or 0
+	b3 = b3 or 0
+	return (b0 * 0x100 + b1) * PVP.MapStepSize, (b2 * 0x100 + b3) * PVP.MapStepSize
 end
 
 function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
