@@ -3427,11 +3427,9 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 		isResurrect = nil
 	end
 	local formattedName = ""
-	local iconsCount = 0
 
 	local KOSOrFriend = self:IsKOSOrFriend(unitName, playerDbRecord)
 	if KOSOrFriend then
-		iconsCount = iconsCount + 1
 		if KOSOrFriend == "KOS" then
 			formattedName = formattedName .. self:GetKOSIcon()
 		elseif KOSOrFriend == "friend" then
@@ -3448,7 +3446,6 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 	end
 
 	local endIcon
-	iconsCount = iconsCount + 1
 	if isDead then
 		endIcon = self:GetDeathIcon(nil, 'AAAAAA')
 	elseif isResurrect then
@@ -3458,7 +3455,6 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 			if isAttacker or isTarget then
 				endIcon = self:GetAttackerIcon()
 			else
-				iconsCount = iconsCount - 1
 				endIcon = ""
 			end
 		else
@@ -3469,18 +3465,13 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 			elseif isTarget then
 				endIcon = self:GetFightIcon(nil, nil, unitAlliance)
 			else
-				iconsCount = iconsCount - 1
 				endIcon = ""
 			end
 		end
 	end
 
-	if iconsCount == 0 then iconsCount = nil end
-
 	local allianceColor = self:NameToAllianceColor(unitName, isDead or isResurrect, nil, unitAlliance)
 	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
-	--local charName = self:Colorize(self:GetFormattedCharNameLink(unitName, iconsCount), allianceColor)
-	--local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
 	local charName = self:Colorize(self:GetFormattedName(unitName), allianceColor)
 	local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
 	if userDisplayNameType == "both" then
@@ -3530,11 +3521,9 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainL
 			local playerDbRecord = playersDb[playerName]
 			local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
 			local formattedName = ""
-			local iconsCount = 0
 
 			local KOSOrFriend = self:IsKOSOrFriend(playerName, playerDbRecord)
 			if KOSOrFriend then
-				iconsCount = iconsCount + 1
 				if KOSOrFriend == "KOS" then
 					formattedName = formattedName .. self:GetKOSIcon()
 				elseif KOSOrFriend == "friend" then
@@ -3551,7 +3540,6 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainL
 			end
 
 			local endIcon
-			iconsCount = iconsCount + 1
 			if isDead then
 				endIcon = self:GetDeathIcon(nil, 'AAAAAA')
 			elseif isResurrect then
@@ -3561,7 +3549,6 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainL
 					if isAttacker or isTarget then
 						endIcon = self:GetAttackerIcon()
 					else
-						iconsCount = iconsCount - 1
 						endIcon = ""
 					end
 				else
@@ -3572,18 +3559,13 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainL
 					elseif isTarget then
 						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
 					else
-						iconsCount = iconsCount - 1
 						endIcon = ""
 					end
 				end
 			end
 
-			if iconsCount == 0 then iconsCount = nil end
-
 			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect, nil, unitAlliance)
 			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
-			--local charName = self:Colorize(self:GetFormattedCharNameLink(playerName, iconsCount), allianceColor)
-			--local accountName = self:GetFormattedAccountNameLink(playerDbRecord.unitAccName, allianceColor)
 			local charName = self:Colorize(self:GetFormattedName(playerName), allianceColor)
 			local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
 			if userDisplayNameType == "both" then
