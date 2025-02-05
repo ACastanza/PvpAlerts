@@ -176,10 +176,6 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		PVP:RefreshStoredNumbers(currentTime)
 	end
 
-	if not reticleBufferIsCurrent then
-		PVP:PopulateReticleOverNamesBuffer(not reticleBufferIsCurrent)
-	end
-
 	if not PVP.killFeedDelay or (PVP.killFeedDelay > 0 and (currentTime - PVP.killFeedDelay) >= 10000) then -- // kill feed maintenance //
 		PVP.killFeedDelay = 0
 		PVP_KillFeed_Text:Clear()
@@ -548,7 +544,7 @@ function PVP:CountTotal(currentTime)
 		end
 	end
 
-	local wasRemoved
+	local wasRemoved = false
 	for i = #namesToDisplay, 1, -1 do
 		if (currentTime - namesToDisplay[i].currentTime) >= PVP_ID_RETAIN_TIME then
 			remove(namesToDisplay, i)
@@ -556,8 +552,8 @@ function PVP:CountTotal(currentTime)
 		end
 	end
 
-	if wasRemoved then
-		self:PopulateReticleOverNamesBuffer()
+	if wasRemoved or not reticleBufferIsCurrent then
+		self:PopulateReticleOverNamesBuffer(wasRemoved, currentTime, true)
 	end
 
 	local count = 0
@@ -3500,16 +3496,22 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 	PVP_Names_Text:AddMessage(formattedName)
 end
 
-function PVP:PopulateReticleOverNamesBuffer(forceRefresh)
+function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainLoop)
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
-	local currentTime = GetFrameTimeMilliseconds()
+	currentTime = currentTime or GetFrameTimeMilliseconds()
 
-	if (currentTime - lastReticleBufferRefresh) < 250 and not forceRefresh then
-		reticleBufferIsCurrent = false
-		return
-	end
-
+    if not fromMainLoop then
+        if (currentTime - lastReticleBufferRefresh) < 250 then
+            reticleBufferIsCurrent = false
+            return
+        end
+    else
+        if reticleBufferIsCurrent and not forceRefresh then
+            return
+        end
+    end
 	lastReticleBufferRefresh = currentTime
+
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	PVP_Names_Text:Clear()
 	local namesToDisplay = self.namesToDisplay
