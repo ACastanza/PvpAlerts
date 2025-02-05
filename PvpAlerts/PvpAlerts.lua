@@ -1318,7 +1318,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 
 				insert(namesToDisplay, playerToUpdate)
 			end
-			self:PopulateReticleOverNamesBuffer()
+			self:PopulateReticleOverNamesBuffer(nil, currentTime, nil)
 		elseif not updateOnly then
 			local isAttacker, isTarget, isResurrect
 			if attackType == 'source' then
@@ -1382,7 +1382,7 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 				if PVP.namesToDisplay[i].unitName == deadName and not PVP.namesToDisplay[i].isDead then
 					PVP.namesToDisplay[i].isDead = true
 					PVP.namesToDisplay[i].currentTime = currentTime
-					PVP:PopulateReticleOverNamesBuffer()
+					PVP:PopulateReticleOverNamesBuffer(nil, currentTime, nil)
 					break
 				end
 			end
