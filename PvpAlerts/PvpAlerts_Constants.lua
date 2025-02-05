@@ -971,8 +971,8 @@ PVP.abilityMessages = {
 PVP.abilityIconSwaps = {
 	[160184] = "/esoui/art/icons/ability_mage_023.dds",
 	[163227] = GetAbilityIcon(16536), -- Meteor (Called)
-	[163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
 	[163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
+	[163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
 	[185841] = GetAbilityIcon(201293), -- Rune of Displacement
 }
 
