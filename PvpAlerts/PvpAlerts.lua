@@ -1510,6 +1510,8 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 		if (not ccImmune) then
 			local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
 			if self.minorImportantAbilities[abilityId] then
+				if currentTime < self.majorAttackNotficiationLockout then return end
+				self.minorAttackNotficiationLockout = currentTime + hitValue
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, false,
 					false, false, hitValue)
@@ -1520,17 +1522,8 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 					coolDownStartTime = currentTime
 				}
 			else
-				if currentTime - self.attackSoundDelay > 0 then
-					self.PlayLoudSound(CONSOLE_GAME_ENTER)
-				end
-				-- PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-				-- zo_callLater(function()
-				-- 	if currentTime - self.attackSoundDelay > 2000 then
-				-- 		PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-				-- 	end
-				-- 	PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-				-- end, 250)
-				self.attackSoundDelay = currentTime + hitValue
+				self.majorAttackNotficiationLockout = currentTime + hitValue
+				self.PlayLoudSound(CONSOLE_GAME_ENTER)
 				if abilityName == "Charge Snare" then
 					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
 				end
@@ -1550,6 +1543,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 end
 
 function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if currentTime < PVP.majorAttackNotficiationLockout or currentTime < PVP.minorAttackNotficiationLockout then return end
 	if result == ACTION_RESULT_BEGIN and (isHeavyAttack or isSnipe or self.ambushId[abilityId]) then
 		local abilityIcon = isHeavyAttack and self.heavyAttackId[abilityId] or GetAbilityIcon(abilityId)
 		self:OnDraw(isHeavyAttack, sourceUnitId, nil,
@@ -1564,7 +1558,8 @@ function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, 
 	end
 end
 
-function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue)
+function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if currentTime < PVP.majorAttackNotficiationLockout or currentTime < PVP.minorAttackNotficiationLockout then return end
 	if result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Piercing Mark" and not self.piercingDelay then
 		self.piercingDelay = true
 		local iconAbility = GetAbilityIcon(abilityId)
@@ -1576,10 +1571,11 @@ function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, 
 	end
 end
 
-function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue)
+function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if currentTime < PVP.majorAttackNotficiationLockout or currentTime < PVP.minorAttackNotficiationLockout then return end
 	if not PVP_Main:IsHidden() and PVP_Main:GetAlpha() > 0 and PVP_Main.currentChannel and PVP_Main.currentChannel.abilityId == abilityId and PVP_Main.currentChannel.sourceUnitId == sourceUnitId and PVP.hitTypes[result] then
 		if not PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:IsPlaying() and not PVP_MainAbilityIconFrameLeftGlow.animData:IsPlaying() then
-			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA)
+			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA, hitValue)
 		end
 	end
 end
@@ -1645,8 +1641,8 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]))) then
 		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue)
-		self:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue)
+		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+		self:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 	end
 end
 
@@ -2794,7 +2790,8 @@ function PVP:FullReset()
 	self.localPlayers = {}
 	self.potentialAllies = {}
 
-	self.attackSoundDelay = 0
+	self.majorAttackNotficiationLockout = 0
+	self.minorAttackNotficiationLockout = 0
 	self.friendSoundDelay = 0
 	self.kosSoundDelay = 0
 	self.reportTimer = 0
