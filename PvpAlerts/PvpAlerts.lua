@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.15.2"
+PVP.textVersion = "3.15.3"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -3503,7 +3503,12 @@ end
 function PVP:PopulateReticleOverNamesBuffer(forceRefresh)
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
 	local currentTime = GetFrameTimeMilliseconds()
-	if ((currentTime - lastReticleBufferRefresh) >= 100) and not forceRefresh then reticleBufferIsCurrent = false return end
+
+	if (currentTime - lastReticleBufferRefresh) < 250 and not forceRefresh then
+		reticleBufferIsCurrent = false
+		return
+	end
+
 	lastReticleBufferRefresh = currentTime
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	PVP_Names_Text:Clear()
