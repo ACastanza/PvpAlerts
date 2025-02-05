@@ -61,6 +61,7 @@ PVP.defaults = {
 	showImportant = true,
 	showHeavyAttacks = true,
 	showSnipes = true,
+	enableNetworking = true,
 	-- showNumberStealthed=true,
 
 	showKOSFrame = true,
@@ -460,7 +461,6 @@ PVP.ambushId = {
 }
 
 
-
 PVP.excludedAbilityIds = {
 	[46858] = true,
 	[36304] = true,
@@ -671,8 +671,6 @@ PVP.staminaAbilitiesID = {
 
 }
 
-
-
 PVP.selfStamAbilities = {
 	["Shuffle"] = true,
 	["Elude"] = true,
@@ -732,7 +730,6 @@ PVP.selfBigMagAbilities = {
 	["Boon: The Mage"] = true,
 	["Boon: The Apprentice"] = true,
 }
-
 
 PVP.magickaAbilities = {
 	----nightblade----
@@ -919,279 +916,79 @@ PVP.magickaSkillLines = {
 	["Restoration Staff"] = true,
 }
 
-PVP.importantAbilities = {
-	["Meteor"] = true,
-	["Ice Comet"] = true,
-	["Shooting Star"] = true,
-	["Assassin's Will"] = true,
-	["Assassin's Scourge"] = true,
-	["Crystal Fragments"] = true,
-	["Crystal Blast"] = true,
-	["Crystal Shard"] = true,
-	["Shock Touch"] = true,
-	["Shock Reach"] = true,
-	["Flame Reach"] = true,
-	["Flame Touch"] = true,
-	["Aurora Javelin"] = true,
-	["Piercing Javelin"] = true,
-	["Binding Javelin"] = true,
-	["Stonefist"] = true,
-	["Obsidian Shard"] = true,
-	["Stone Giant"] = true,
-	-- ["Unrelenting Grip"] = true,
-	["The Tide King's Gaze"] = true,
-	["Rush of Agony"] = true,
-	["Warden's Knife"] = true,
-	["Warden's Vault"] = true,
-	["Warden's Soul"] = true,
-	["Warden's Burst"] = true,
-	["Warden's Throw"] = true,
-	["Warden's Contingency"] = true,
-	["Warden's Explosion"] = true,
-	["Warden's Trample"] = true,
-	["Warden's Torch"] = true,
-	["Warden's Smash"] = true,
-}
-
-PVP.majorImportantAbilitiesNames = {
-	-- Intended to be used with Scribing Abilities, ignore specific IDs in PVP.abilityIdIgnoreList
-	["Warden's Knife"] = true,
-	["Warden's Vault"] = true,
-	["Warden's Soul"] = true,
-	["Warden's Burst"] = true,
-	["Warden's Throw"] = true,
-	["Warden's Contingency"] = true,
-	["Warden's Explosion"] = true,
-	["Warden's Trample"] = true,
-	["Warden's Torch"] = true,
-	["Warden's Smash"] = true,
-}
-
-PVP.smallImportantAbilitiesNames = {
-	["Cutting Dive"] = true,
-	["Screaming Cliff Racer"] = true,
-	["Dive"] = true,
-	-- ["Unrelenting Grip"] = true,
-}
-
-PVP.importantAbilitiesId = {
-	[61930] = 1, --Assassin's Will Active
-	[62132] = 2, --Assassin's Will Active
-	[62135] = 3, --Assassin's Will Active
-	[62138] = 4, --Assassin's Will Active
-
-	[61932] = 1, --Assassin's Scourge Active
-	[62126] = 2, --Assassin's Scourge Active
-	[62128] = 3, --Assassin's Scourge Active
-	[62130] = 4, --Assassin's Scourge Active
-
-	[46324] = 1, --Crystal Fragments Active
-	[47565] = 2, --Crystal Fragments Active
-	[47567] = 3, --Crystal Fragments Active
-	[47569] = 4, --Crystal Fragments Active
-
-	[46331] = 1, --Crystal Blast Active
-	[47554] = 2, --Crystal Blast Active
-	[47557] = 3, --Crystal Blast Active
-	[47560] = 4, --Crystal Blast Active
-
-	[43714] = 1, --Crystal Shard Active
-	[47548] = 2, --Crystal Shard Active
-	[47550] = 3, --Crystal Shard Active
-	[47552] = 4, --Crystal Shard Active
-
-	[29089] = 1, --Shock Touch Active
-	[40953] = 2, --Shock Touch Active
-	[40962] = 3, --Shock Touch Active
-	[40970] = 4, --Shock Touch Active
-
-	[38978] = 1, --Shock Reach Active
-	[41036] = 2, --Shock Reach Active
-	[41045] = 3, --Shock Reach Active
-	[41054] = 4, --Shock Reach Active
-
-	[38993] = 1, --Shock Clench Active
-	[40991] = 2, --Shock Clench Active
-	[41003] = 3, --Shock Clench Active
-	[41016] = 4, --Shock Clench Active
-
-	[38944] = 1, --Flame Reach Active
-	[41030] = 2, --Flame Reach Active
-	[41039] = 3, --Flame Reach Active
-	[41048] = 4, --Flame Reach Active
-
-	[29073] = 1, --Flame Touch Active
-	[40948] = 2, --Flame Touch Active
-	[40957] = 3, --Flame Touch Active
-	[40965] = 4, --Flame Touch Active
-
-	[38985] = 1, --Flame Clench Active
-	[40984] = 2, --Flame Clench Active
-	[40996] = 3, --Flame Clench Active
-	[41009] = 4, --Flame Clench Active
-
-	[26800] = 1, --Aurora Javelin Active
-	[26977] = 2, --Aurora Javelin Active
-	[26980] = 3, --Aurora Javelin Active
-	[26983] = 4, --Aurora Javelin Active
-
-	[26158] = 1, --Piercing Javelin Active
-	[26971] = 2, --Piercing Javelin Active
-	[26973] = 3, --Piercing Javelin Active
-	[26975] = 4, --Piercing Javelin Active
-
-	[26804] = 1, --Binding Javelin Active
-	[26986] = 2, --Binding Javelin Active
-	[26989] = 3, --Binding Javelin Active
-	[26992] = 4, --Binding Javelin Active
-
-	[29032] = 1, --Stonefist Active
-	[32190] = 2, --Stonefist Active
-	[32192] = 3, --Stonefist Active
-	[32194] = 4, --Stonefist Active
-
-	[31820] = 1, --Obsidian Shard Active
-	[32197] = 2, --Obsidian Shard Active
-	[32198] = 3, --Obsidian Shard Active
-	[32199] = 4, --Obsidian Shard Active
-
-	[31816] = 1, --Stone Giant Active
-	[32203] = 2, --Stone Giant Active
-	[32204] = 3, --Stone Giant Active
-	[32205] = 4, --Stone Giant Active
-
-	[20496] = 1, --Unrelenting Grip Active
-	[23770] = 2, --Unrelenting Grip Active
-	[23774] = 3, --Unrelenting Grip Active
-	[23778] = 4, --Unrelenting Grip Active
-
-	[28879] = 1, --Scatter Shot Active
-	[40852] = 2, --Scatter Shot Active
-	[40855] = 3, --Scatter Shot Active
-	[40858] = 4, --Scatter Shot Active
-
-	[38672] = 1, --Magnum Shot Active
-	[40861] = 2, --Magnum Shot Active
-	[40865] = 3, --Magnum Shot Active
-	[40869] = 4, --Magnum Shot Active
-
-	[38669] = 1, --Draining Shot Active
-	[40873] = 2, --Draining Shot Active
-	[40878] = 3, --Draining Shot Active
-	[40883] = 4, --Draining Shot Active
-
-
-	[38685] = 1, --Lethal Arrow Active
-	[40893] = 2, --Lethal Arrow Active
-	[40895] = 3, --Lethal Arrow Active
-	[40897] = 4, --Lethal Arrow Active
-
-	[38687] = 1, --Focused Aim Active
-	[40899] = 2, --Focused Aim Active
-	[40903] = 3, --Focused Aim Active
-	[40907] = 4, --Focused Aim Active
-
-
-	[28882] = 1, --Snipe Active
-	[40890] = 2, --Snipe Active
-	[40891] = 3, --Snipe Active
-	[40892] = 4, --Snipe Active
-
-
-	[22110] = 1, --Dark Flare Active
-	[24129] = 2, --Dark Flare Active
-	[24139] = 3, --Dark Flare Active
-	[24147] = 4, --Dark Flare Active
-
-
-	[22057] = 1, --Solar Flare Active
-	[24080] = 2, --Solar Flare Active
-	[24101] = 3, --Solar Flare Active
-	[24110] = 4, --Solar Flare Active
-
+PVP.majorImportantAbilities = {
+	[160184] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rush Of Agony
 	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
-	[189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
-	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
-	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
-	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
-
-	[159276] = 1, -- Rush of Agony
-	[159277] = 2, -- Rush of Agony
-
-	[16536] = 1, -- Meteor (Called)
-	[40489] = 1, -- Ice Comet (Called)
-	[40493] = 1, -- Shooting Star (Called)
+	-- [189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
+	-- [191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
+	-- [199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
+	-- [199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
 }
 
-PVP.majorImportantAbilitiesId = {
-	[61930] = 1, --Assassin's Will Active
-	[62132] = 2, --Assassin's Will Active
-	[62135] = 3, --Assassin's Will Active
-	[62138] = 4, --Assassin's Will Active
-
-	[61932] = 1, --Assassin's Scourge Active
-	[62126] = 2, --Assassin's Scourge Active
-	[62128] = 3, --Assassin's Scourge Active
-	[62130] = 4, --Assassin's Scourge Active
-
-	[46324] = 1, --Crystal Fragments Active
-	[47565] = 2, --Crystal Fragments Active
-	[47567] = 3, --Crystal Fragments Active
-	[47569] = 4, --Crystal Fragments Active
-
-	[46331] = 1, --Crystal Blast Active
-	[47554] = 2, --Crystal Blast Active
-	[47557] = 3, --Crystal Blast Active
-	[47560] = 4, --Crystal Blast Active
-
-	[43714] = 1, --Crystal Shard Active
-	[47548] = 2, --Crystal Shard Active
-	[47550] = 3, --Crystal Shard Active
-	[47552] = 4, --Crystal Shard Active
-
-	[38685] = 1, --Lethal Arrow Active
-	[40893] = 2, --Lethal Arrow Active
-	[40895] = 3, --Lethal Arrow Active
-	[40897] = 4, --Lethal Arrow Active
-
-	[38687] = 1, --Focused Aim Active
-	[40899] = 2, --Focused Aim Active
-	[40903] = 3, --Focused Aim Active
-	[40907] = 4, --Focused Aim Active
-
-
-	[28882] = 1, --Snipe Active
-	[40890] = 2, --Snipe Active
-	[40891] = 3, --Snipe Active
-	[40892] = 4, --Snipe Active
-
-
-	[22110] = 1, --Dark Flare Active
-	[24129] = 2, --Dark Flare Active
-	[24139] = 3, --Dark Flare Active
-	[24147] = 4, --Dark Flare Active
-
-
-	[22057] = 1, --Solar Flare Active
-	[24080] = 2, --Solar Flare Active
-	[24101] = 3, --Solar Flare Active
-	[24110] = 4, --Solar Flare Active
-
-	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
-	[189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
-	[191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
-	[199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
-	[199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
-
-	[159276] = 1, -- Rush of Agony
-	[159277] = 2, -- Rush of Agony
-
-	[16536] = 1, -- Meteor (Called)
-	[40489] = 1, -- Ice Comet (Called)
-	[40493] = 1, -- Shooting Star (Called)
+PVP.minorImportantAbilities = {
+	--["Cutting Dive"] = true,
+	--["Screaming Cliff Racer"] = true,
+	--["Dive"] = true,
+	-- ["Unrelenting Grip"] = true,
+	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Fiery Grip
+	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Unrelenting Grip
+	[40336] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Silver Leash
+	[118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
+	[118936] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Take Flight
+	[118938] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap
+	[163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
+	[163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
+	[163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
+	[185841] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement
+	[185921] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Uncanny Adoration
+	[217228] = {[ACTION_RESULT_BEGIN] = true}, -- Repelling Explosion
+	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Leashing Soul
+	[217979] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst
 }
 
 PVP.abilityIdIgnoreList = {
+}
+
+PVP.abilityMessages = {
+	[160184] = "BLOCK - RUSH PULL - BLOCK",
+
+	[20492] = "BLOCK - DK CHAIN",
+	[20496] = "BLOCK - DK CHAIN",
+	[40336] = "BLOCK - LEASH",
+	[118928] = "BLOCK - LEAP",
+	[118936] = "BLOCK - LEAP",
+	[118938] = "BLOCK - LEAP",
+	[163227] = "BLOCK - METEOR",
+	[163236] = "BLOCK - METEOR",
+	[163238] = "BLOCK - METEOR",
+	[185841] = "BLOCK - DISPLACEMENT",
+	[185921] = "BLOCK - CHARM",
+	[217228] = "BLOCK - KNOCKBACK",
+	[217784] = "BLOCK - SOUL CHAIN",
+	[217979] = "BLOCK - SOUL PULL",
+}
+
+PVP.abilityIconSwaps = {
+	[160184] = "/esoui/art/icons/ability_mage_023.dds",
+	[163227] = GetAbilityIcon(16536), -- Meteor (Called)
+	[163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
+	[163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
+	[185841] = GetAbilityIcon(201293), -- Rune of Displacement
+}
+
+PVP.networkedAbilities = {
+	[160184] = true, -- Rush Of Agony
+}
+
+PVP.networkingPingData = {
+	["10_10_10_10"] = {
+		["result"] = ACTION_RESULT_EFFECT_GAINED,
+		["abilityName"]= "When you deal direct damage with a Blink, Charge, Leap, Teleport, or Pull",
+		["abilityId"] = 160184,
+		["sourceUnitId"] = 123456,
+		["sourceName"] = "AgonyWarning",
+		["hitValue"] = 800,
+	}
 }
 
 PVP.heavyAttackNames = {
@@ -1257,14 +1054,12 @@ PVP.hitTypes = {
 -- [16212] = PVP_RESTO_HA_COLOR,
 -- }
 
-
 PVP.chargeSnare = {
 	["Toppling Charge"] = true,
 	["Invasion"] = true,
 	["Shielded Assault"] = true,
 	["Shield Charge"] = true,
 }
-
 
 PVP.chargeSnareId = {
 	[15540] = true, --Toppling Charge Active
@@ -2841,7 +2636,6 @@ PVP.elderScrollsPintypes = {
 	[127] = true,
 }
 
-
 PVP.districtKeepIdToSubzoneNumber = {
 	[148] = 27, -- Elven Gardens
 	[147] = 30, -- Temple
@@ -2850,7 +2644,6 @@ PVP.districtKeepIdToSubzoneNumber = {
 	[142] = 28, -- Memorial
 	[141] = 29, -- Nobles
 }
-
 
 PVP.icAllianceBases = {
 	[29] = {
@@ -3024,6 +2817,7 @@ PVP.icVaults = {
 		{ x = 0.27381008, y = 0.23014461, z = 309.55, poiId = 33 },
 	},
 }
+
 PVP.icGrates = {
 	[29] = { --Nobles
 		{ x = 0.15615200, y = 0.63319605, z = 310.28, name = "To Lambent Passage" },
@@ -3049,6 +2843,7 @@ PVP.icGrates = {
 		{ x = 0.13612112, y = 0.47999250, z = 309.19, name = "To Lambent Passage" },
 	},
 }
+
 PVP.delvesCoords = {
 
 	{ x = 0.67226, y = 0.59793, z = 208.98, name = 'Cracked Wood Cave' }, --upd
@@ -3321,3 +3116,5 @@ PVP.objectiveIcons = {
 		[ALLIANCE_EBONHEART_PACT]      = "/esoui/art/campaign/overview_allianceicon_ebonheart.dds",
 	},
 }
+
+PVP.MapStepSize = 1.4285034012573e-005

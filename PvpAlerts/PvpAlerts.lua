@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.15.0"
+PVP.textVersion = "3.15.4"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -58,6 +58,13 @@ local PVP_BRIGHT_DC_COLOR = PVP:GetGlobal('PVP_BRIGHT_DC_COLOR')
 local currentCampaignActiveEmperor, currentCampaignActiveEmperorAcc, currentCampaignActiveEmperorAlliance
 
 local localActivePlayerCache = {}
+
+local ccImmunityBuffs = {
+	["CC Immunity"] = true,
+	["Crowd Control Immunity"] = true,
+	["Unstoppable"] = true,
+	["Immovable"] = true,
+}
 
 local KILLING_BLOW_ACTION_RESULTS = {
 	[ACTION_RESULT_KILLING_BLOW] = true,
@@ -170,7 +177,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 	end
 
 	if not reticleBufferIsCurrent then
-		PVP:PopulateReticleOverNamesBuffer(true)
+		PVP:PopulateReticleOverNamesBuffer(not reticleBufferIsCurrent)
 	end
 
 	if not PVP.killFeedDelay or (PVP.killFeedDelay > 0 and (currentTime - PVP.killFeedDelay) >= 10000) then -- // kill feed maintenance //
@@ -1500,17 +1507,16 @@ function PVP:ProcessPvpBuffs(result, targetName, abilityId)
 end
 
 function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-	if sourceName == self.playerName then return end
-	if self.SV.showImportant and ((result == ACTION_RESULT_EFFECT_GAINED and (self.importantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName])) or (result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
-		if self.abilityIdIgnoreList[abilityId] then return end
-
-		local CC_IMMUNITY_GRACE_TIME = 1
-		local ccImmune = self:IsPlayerCCImmune(CC_IMMUNITY_GRACE_TIME)
-		if (not ccImmune) or self.majorImportantAbilitiesId[abilityId] or self.majorImportantAbilitiesNames[abilityName] or self.smallImportantAbilitiesNames[abilityName] then
-			if self.smallImportantAbilitiesNames[abilityName] then
-				local abilityIcon = GetAbilityIcon(abilityId)
-				local displayHitValue = zo_max(1450, hitValue or 0)
-				self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, false, false, false, displayHitValue)
+	if (not hitValue) or (hitValue <= 1) or (hitValue > 5000) then return end
+	if self.SV.showImportant and (((self.majorImportantAbilities[abilityId] and self.majorImportantAbilities[abilityId][result]) or (self.minorImportantAbilities[abilityId] and self.minorImportantAbilities[abilityId][result])) or
+		(result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
+		local ccImmune = self:IsPlayerCCImmune(currentTime, hitValue)
+		if (not ccImmune) then
+			local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
+			if self.minorImportantAbilities[abilityId] then
+				self:OnDraw(false, sourceUnitId, abilityName,
+					abilityId, abilityIcon, sourceName, false,
+					false, false, hitValue)
 				PVP_Main.currentChannel = {
 					abilityId = abilityId,
 					sourceUnitId = sourceUnitId,
@@ -1518,36 +1524,41 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 					coolDownStartTime = currentTime
 				}
 			else
-				if currentTime - self.attackSoundDelay > 2000 then
+				if currentTime - self.attackSoundDelay > 0 then
 					PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
 				end
-				PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-				zo_callLater(function()
-					if currentTime - self.attackSoundDelay > 2000 then
-						PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-					end
-					PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
-				end, 250)
-				self.attackSoundDelay = currentTime
-				local abilityIcon
-
+				-- PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+				-- zo_callLater(function()
+				-- 	if currentTime - self.attackSoundDelay > 2000 then
+				-- 		PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+				-- 	end
+				-- 	PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+				-- end, 250)
+				self.attackSoundDelay = currentTime + hitValue
 				if abilityName == "Charge Snare" then
 					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
-				else
-					abilityIcon = GetAbilityIcon(abilityId)
 				end
 				FlashHealthWarningStage(1, 150)
 				PVP_Main.currentChannel = nil
-				self:OnDraw(false, sourceUnitId, abilityIcon, sourceName, true, false)
+				self:OnDraw(false, sourceUnitId, abilityName,
+					abilityId, abilityIcon, sourceName, true,
+					false, false, hitValue)
 			end
 		end
+
+		if self.networkedAbilities[abilityId] and self.SV.enableNetworking and GetGroupSize() ~= 0 and not (sourceName == "AgonyWarning") then
+			PVP:SendWarning()
+		end
+
 	end
 end
 
 function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 	if result == ACTION_RESULT_BEGIN and (isHeavyAttack or isSnipe or self.ambushId[abilityId]) then
 		local abilityIcon = isHeavyAttack and self.heavyAttackId[abilityId] or GetAbilityIcon(abilityId)
-		self:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, false, false, false, hitValue)
+		self:OnDraw(isHeavyAttack, sourceUnitId, nil,
+			abilityId, abilityIcon, sourceName, false,
+			false, false, hitValue)
 		PVP_Main.currentChannel = {
 			abilityId = abilityId,
 			sourceUnitId = sourceUnitId,
@@ -1557,17 +1568,19 @@ function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, 
 	end
 end
 
-function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName)
+function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue)
 	if result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Piercing Mark" and not self.piercingDelay then
 		self.piercingDelay = true
 		local iconAbility = GetAbilityIcon(abilityId)
 		PVP_Main.currentChannel = nil
-		self:OnDraw(false, sourceUnitId, iconAbility, sourceName, false, true)
+		self:OnDraw(false, sourceUnitId, abilityName, abilityId,
+				iconAbility, sourceName, false,
+		true, false, hitValue)
 		zo_callLater(function() self.piercingDelay = false end, 50)
 	end
 end
 
-function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId)
+function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue)
 	if not PVP_Main:IsHidden() and PVP_Main:GetAlpha() > 0 and PVP_Main.currentChannel and PVP_Main.currentChannel.abilityId == abilityId and PVP_Main.currentChannel.sourceUnitId == sourceUnitId and PVP.hitTypes[result] then
 		if not PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:IsPlaying() and not PVP_MainAbilityIconFrameLeftGlow.animData:IsPlaying() then
 			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA)
@@ -1579,11 +1592,22 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	sourceType, targetName, targetType, hitValue, powerType, damageType, combat_log, sourceUnitId,
 	targetUnitId, abilityId)
 	if not PVP:IsInPVPZone() then return end
+	local currentTime = GetFrameTimeMilliseconds()
 
 	if IsActiveWorldBattleground() then
 		PVP.bgNames = PVP.bgNames or {}
 		if sourceName and sourceName ~= '' and not PVP.bgNames[sourceName] then PVP.bgNames[sourceName] = 0 end
 		if targetName and targetName ~= '' and not PVP.bgNames[targetName] then PVP.bgNames[targetName] = 0 end
+	end
+	if ccImmunityBuffs[abilityName] and targetName == self.playerName then
+		if (result == ACTION_RESULT_EFFECT_GAINED_DURATION) or (result == ACTION_RESULT_EFFECT_GAINED) then
+			local lastEndTime = self.ccImmunity[abilityName]
+			if (not lastEndTime) or lastEndTime < currentTime then
+				self.ccImmunity[abilityName] = currentTime + hitValue
+			end
+		elseif targetName == self.playerName and result == ACTION_RESULT_EFFECT_FADED then
+			self.ccImmunity[abilityName] = nil
+		end
 	end
 
 	-- if GetUnitClassId('player') == 3 and self.SV.show3DIcons and self.SV.shadowImage3d and targetType == 1 and shadowReturnIds[abilityId] then
@@ -1606,7 +1630,6 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		end
 	end
 
-	local currentTime = GetFrameTimeMilliseconds()
 	local isHeavyAttack = self.SV.showHeavyAttacks and self.heavyAttackId[abilityId]
 	local isSnipe = self.SV.showSnipes and (self.snipeId[abilityId] or self.snipeNames[abilityName])
 
@@ -1623,11 +1646,11 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		self:ProcessPvpBuffs(result, targetName, abilityId)
 	end
 
-	if self.SV.showAttacks and targetName == self.playerName and sourceName ~= self.playerName then
+	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]))) then
 		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName)
-		self:ProcessChanneledHits(result, abilityId, sourceUnitId)
+		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue)
+		self:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue)
 	end
 end
 
@@ -2098,7 +2121,7 @@ function PVP_SetupHighlightAnimation(control)
 	SetAnimData(iconHighlightRight)
 end
 
-function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImportant, isPiercingMark, isDebuff, hitValue)
+function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityName, abilityId, abilityIcon, sourceName, isImportant, isPiercingMark, isDebuff, hitValue)
 	local playerAlliance, nameFromDB, accountNameFromDB, classIcon, nameColor, nameFont, enemyName, formattedName, pureNameWidth, playerDbRecord
 	local importantMode = isImportant and not isPiercingMark
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
@@ -2151,16 +2174,23 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 
 	if self.isPlaying then self.isPlaying:Stop() end
 
-	nameWidth = PVP_MainLabel:GetStringWidth(enemyName) + 60
 	local scale = PVP_MainLabel:GetScale()
 	local weirdScale = scale
 
 
-	PVP_MainLabel:SetWidth(nameWidth / weirdScale)
-
-	formattedName = self:Colorize(enemyName, playerAlliance and playerAlliance or nameColor)
-
-	PVP:SetupMainFrame(classIcon .. formattedName, importantMode, abilityIcon, isHeavyAttack)
+	local abilityMessages = self.abilityMessages
+	if abilityMessages[abilityId] then
+		local setName = abilityMessages[abilityId]
+		nameWidth = PVP_MainLabel:GetStringWidth(setName)
+		PVP_MainLabel:SetWidth(nameWidth / weirdScale)
+		formattedName = self:Colorize(setName, "FF0000")
+		PVP:SetupMainFrame(formattedName, importantMode, abilityIcon, isHeavyAttack)
+	else
+		nameWidth = PVP_MainLabel:GetStringWidth(enemyName) + 60
+		PVP_MainLabel:SetWidth(nameWidth / weirdScale)
+		formattedName = self:Colorize(enemyName, playerAlliance and playerAlliance or nameColor)
+		PVP:SetupMainFrame(classIcon .. formattedName, importantMode, abilityIcon, isHeavyAttack)
+	end
 
 	if hitValue then
 		PVP_MainAbilityIconFrameLeftCooldown:StartCooldown(hitValue, hitValue, CD_TYPE_VERTICAL_REVEAL,
@@ -2179,15 +2209,16 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityIcon, sourceName, isImpo
 	PVP_Main:SetHidden(false)
 
 	if isPiercingMark then
-		self.isPlaying = self:StartAnimation(PVP_Main, 'main piercing')
+		self.isPlaying = self:StartAnimation(PVP_Main, 'main piercing', hitValue)
 	elseif isImportant then
-		self.isPlaying = self:StartAnimation(PVP_Main, 'main important')
+		self.isPlaying = self:StartAnimation(PVP_Main, 'main important', hitValue)
 	else
-		self.isPlaying = self:StartAnimation(PVP_Main, 'main stealthed')
+		self.isPlaying = self:StartAnimation(PVP_Main, 'main stealthed', hitValue)
 	end
 end
 
-function PVP:StartAnimation(control, animationType, targetParameter)
+function PVP:StartAnimation(control, animationType, hitValue)
+	hitValue = hitValue or 1000
 	if animationType ~= 'camp' and animationType ~= 'fadeOut' and self.isPlaying then self.isPlaying:Stop() end
 
 	local _, point, relativeTo, relativePoint, offsetX, offsetY = control:GetAnchor()
@@ -2210,58 +2241,41 @@ function PVP:StartAnimation(control, animationType, targetParameter)
 
 	if animationType == 'main stealthed' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0, 1)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 0, ZO_EaseOutQuadratic, 1, 1.5,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 100, ZO_EaseInQuadratic, 1.5, 1,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 250, PVP_FRAME_DISPLAY_TIME, ZO_EaseInQuintic, 1, 0,
-			PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 0, ZO_EaseOutQuadratic, 1, 1.5, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 100, ZO_EaseInQuadratic, 1.5, 1, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 250, hitValue > PVP_FRAME_DISPLAY_TIME and hitValue or PVP_FRAME_DISPLAY_TIME, ZO_EaseInQuintic, 1, 0, PVP_SET_SCALE_FROM_SV)
 	elseif animationType == 'main piercing' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 50, 0, ZO_EaseOutQuadratic, 0, 1)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 0, ZO_EaseOutQuadratic, 1, 1.2,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 250, 350, ZO_EaseInQuadratic, 1.2, 1,
-			PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 0, ZO_EaseOutQuadratic, 1, 1.2, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 250, 350, ZO_EaseInQuadratic, 1.2, 1, PVP_SET_SCALE_FROM_SV)
 		local currentAlpha = control:GetAlpha()
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 150, 1600, ZO_EaseOutQuadratic, currentAlpha, 0)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 150, hitValue > 1600 and hitValue or 1600, ZO_EaseOutQuadratic, currentAlpha, 0)
 	elseif animationType == 'medal' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 250, 0, ZO_EaseInQuadratic, 0, 1)
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1000, 2000, ZO_EaseOutQuadratic, 1, 0)
 	elseif animationType == 'main important' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0, 1)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 0, ZO_EaseOutQuadratic, 1, 1.75,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 200, ZO_EaseInQuadratic, 1.75, 1,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 250, 500, ZO_EaseInQuadratic, 1, 0,
-			PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 0, ZO_EaseOutQuadratic, 1, 1.75, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 100, 200, ZO_EaseInQuadratic, 1.75, 1, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 250, hitValue > 500 and hitValue or 500, ZO_EaseInQuadratic, 1, 0, PVP_SET_SCALE_FROM_SV)
 	elseif animationType == 'camp' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0, 1)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 0, ZO_EaseOutQuadratic, 1, 1.6,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 400, ZO_EaseInQuadratic, 1.6, 1,
-			PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 0, ZO_EaseOutQuadratic, 1, 1.6, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 400, ZO_EaseInQuadratic, 1.6, 1, PVP_SET_SCALE_FROM_SV)
 	elseif animationType == 'attackerFrame' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0, targetParameter)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 0, ZO_EaseOutQuadratic,
-			self.SV.newAttackerFrameScale, self.SV.newAttackerFrameScale * 1.6, PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 250, ZO_EaseInQuadratic,
-			self.SV.newAttackerFrameScale * 1.6, self.SV.newAttackerFrameScale, PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1500, self.SV.newAttackerFrameDelayBeforeFadeout,
-			ZO_EaseOutQuadratic, targetParameter, 0)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 0, ZO_EaseOutQuadratic, self.SV.newAttackerFrameScale, self.SV.newAttackerFrameScale * 1.6, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 250, ZO_EaseInQuadratic, self.SV.newAttackerFrameScale * 1.6, self.SV.newAttackerFrameScale, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1500, self.SV.newAttackerFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, targetParameter, 0)
 	elseif animationType == 'fadeOut' then
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, self.SV.targetNameFrameFadeoutTime,
-			self.SV.targetNameFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, control:GetAlpha(), 0)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, self.SV.targetNameFrameFadeoutTime, self.SV.targetNameFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, control:GetAlpha(), 0)
 	else
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 50, 0, ZO_EaseOutQuadratic, 0, 1)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 150, 0, ZO_EaseOutQuadratic, 1, 1.4,
-			PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 250, 250, ZO_EaseInQuadratic, 1.4, 1,
-			PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 150, 0, ZO_EaseOutQuadratic, 1, 1.4, PVP_SET_SCALE_FROM_SV)
+		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 250, 250, ZO_EaseInQuadratic, 1.4, 1, PVP_SET_SCALE_FROM_SV)
 		local currentAlpha = control:GetAlpha()
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 150, 1200, ZO_EaseOutQuadratic, currentAlpha, 0)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 150, hitValue > 1200 and hitValue or 1200, ZO_EaseOutQuadratic, currentAlpha, 0)
 	end
-
 
 	timeline:SetHandler('OnStop', function()
 		control:ClearAnchors()
@@ -2403,8 +2417,7 @@ function PVP:OnMapPing(eventCode, pingEventType, pingType, pingTag, offsetX, off
 		if self.SV.pingWaypoint and IsUnitGrouped('player') and isLocalPlayerOwner and pingType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
 			self.suppressTest = { playerGroupTag = playerGroupTag, currentTime = GetFrameTimeMilliseconds() }
 			if not self.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag) then
-				self.LMP
-					:SuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
+				self.LMP:SuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
 			end
 			self.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, offsetX, offsetY)
 			self.pingSuppressionStarted = zo_callLater(function() self.pingSuppressionStarted = nil end, 25)
@@ -2433,8 +2446,7 @@ function PVP:OnMapPing(eventCode, pingEventType, pingType, pingTag, offsetX, off
 	elseif pingEventType == PING_EVENT_REMOVED then
 		if self.suppressTest and not self.pingSuppressionStarted and pingType == MAP_PIN_TYPE_PING and isLocalPlayerOwner then
 			if self.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag) then
-				self.LMP
-					:UnsuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
+				self.LMP:UnsuppressPing(MAP_PIN_TYPE_PING, self.suppressTest.playerGroupTag)
 			end
 			self.suppressTest = nil
 		end
@@ -2751,6 +2763,7 @@ function PVP:OnOff()
 		PVP:InitControls()
 		PVP:FullReset3DIcons()
 		PVP:ProcessCachedPlayerNameChanges()
+		PVP:InitNetworking()
 
 		if not (self.SV.enabled and self.SV.unlocked) then
 			PVP_TargetName:SetAlpha(0)
@@ -3490,7 +3503,13 @@ end
 function PVP:PopulateReticleOverNamesBuffer(forceRefresh)
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
 	local currentTime = GetFrameTimeMilliseconds()
-	if ((currentTime - lastReticleBufferRefresh) >= 100) and not forceRefresh then return end
+
+	if (currentTime - lastReticleBufferRefresh) < 250 and not forceRefresh then
+		reticleBufferIsCurrent = false
+		return
+	end
+
+	lastReticleBufferRefresh = currentTime
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	PVP_Names_Text:Clear()
 	local namesToDisplay = self.namesToDisplay
@@ -3642,7 +3661,7 @@ function PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, 
 	self:UpdateNamesToDisplay(unitName, currentTime, true)
 end
 
-function PVP.OnTargetChanged()
+PVP.OnTargetChanged = function()
 	if PVP.SV.unlocked or not PVP:IsInPVPZone() then return end
 	local targetIcon
 	if IsUnitPlayer('reticleover') then
@@ -3825,9 +3844,11 @@ function PVP:InitEnabledAddon()
 		EVENT_MANAGER:RegisterForUpdate(self.name, 250, PVP.OnUpdate)
 		PVP:Init3D()
 		PVP:InitControls()
+		PVP:InitNetworking()
 		PVP:RegisterCustomDialog()
 		PVP.playerName = GetRawUnitName('player')
 		PVP.allianceOfPlayer = GetUnitAlliance('player')
+		PVP.ccImmunity = {}
 		PVP:RefreshKOSandCoolAccList()
 		PVP:PopulateGuildmateDatabase()
 		PVP_KOS_Text:SetHandler("OnLinkMouseUp",
@@ -3990,14 +4011,14 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							remove(PVP.SV.KOSList, index)
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer()
+							PVP:PopulateReticleOverNamesBuffer(true)
 						end)
 						local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
 						if removeCool then
 							PVP.SV.coolList[removeCool] = nil
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer()
+							PVP:PopulateReticleOverNamesBuffer(true)
 						end
 
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
@@ -4010,7 +4031,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							if not addCool then PVP.SV.coolList[rawName] = unitAccName end
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer()
+							PVP:PopulateReticleOverNamesBuffer(true)
 						end)
 					else
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
@@ -4020,7 +4041,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP:GetFormattedName(rawName),
 									unitAccName)
 								PVP.SV.coolList[cool] = nil
-								PVP:PopulateReticleOverNamesBuffer()
+								PVP:PopulateReticleOverNamesBuffer(true)
 							end
 							chat:Printf("Added to KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
@@ -4031,7 +4052,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								})
 								PVP:RefreshKOSandCoolAccList()
 								PVP:RefreshLocalPlayers()
-								PVP:PopulateReticleOverNamesBuffer()
+								PVP:PopulateReticleOverNamesBuffer(true)
 							end)
 						local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
 
@@ -4043,7 +4064,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								PVP.SV.coolList[rawName] = unitAccName
 								PVP:RefreshKOSandCoolAccList()
 								PVP:RefreshLocalPlayers()
-								PVP:PopulateReticleOverNamesBuffer()
+								PVP:PopulateReticleOverNamesBuffer(true)
 							end)
 						else
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_COOL), function()
@@ -4055,7 +4076,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP.SV.coolList[removeCool] = nil
 									PVP:RefreshKOSandCoolAccList()
 									PVP:RefreshLocalPlayers()
-									PVP:PopulateReticleOverNamesBuffer()
+									PVP:PopulateReticleOverNamesBuffer(true)
 								end
 							end)
 						end

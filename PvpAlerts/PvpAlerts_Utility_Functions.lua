@@ -1,5 +1,7 @@
 local PVP = PVP_Alerts_Main_Table
 
+PVP.LMP = LibMapPing2
+PVP.GPS = LibGPS3
 
 local PVP_DIMMED_AD_COLOR = PVP:GetGlobal('PVP_DIMMED_AD_COLOR')
 local PVP_BRIGHT_AD_COLOR = PVP:GetGlobal('PVP_BRIGHT_AD_COLOR')
@@ -48,6 +50,13 @@ local concat = table.concat
 --local upper = string.upper
 --local lower = string.lower
 --local format = string.format
+
+local ccImmunityBuffs = {
+	["CC Immunity"] = true,
+	["Crowd Control Immunity"] = true,
+	["Unstoppable"] = true,
+	["Immovable"] = true,
+}
 
 local databaseIntegrityCheck = {}
 
@@ -648,14 +657,12 @@ function PVP:TableConcat(t1, t2)
 	return t1
 end
 
-function PVP:IsPlayerCCImmune(graceTimeInSec)
-	if not graceTimeInSec then graceTimeInSec = 0 end
-
-	for i = 1, GetNumBuffs('player') do
-		local buffName, timeStarted, timeEnding, _, _, _, _, _, _, _, abilityId, _, castByPlayer = GetUnitBuffInfo(
-			'player', i)
-		if buffName == "CC Immunity" or buffName == "Crowd Control Immunity" or buffName == "Unstoppable" or buffName == "Immovable" then
-			if timeEnding - GetFrameTimeSeconds() >= graceTimeInSec then
+function PVP:IsPlayerCCImmune(currentTime, abilityDuration)
+	if not abilityDuration then abilityDuration = 1 end
+	local ccImmunity = self.ccImmunity
+	for abilityName, endTime in pairs(ccImmunity) do
+		if ccImmunityBuffs[abilityName] then
+			if (currentTime + abilityDuration) < endTime then
 				return true
 			end
 		end
@@ -1192,6 +1199,57 @@ function PVP:PopulateGuildmateDatabase()
 		end
 	end
 	PVP.guildmates = guildmateDatabase
+end
+
+--Original code comes from rdkgrouptool via AgonyWarning
+function PVP:SendWarning()
+	if AgonyWarning then return end
+	self.GPS:PushCurrentMap()
+	SetMapToMapListIndex(23)
+	self.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP:EncodeMessage(10, 10, 10, 10))
+	self.GPS:PopCurrentMap()
+end
+
+function PVP.OnBeforePingAdded(pingType, pingTag, x, y, isPingOwner)
+	if (pingType == MAP_PIN_TYPE_PING) then
+		PVP.GPS:PushCurrentMap()
+		SetMapToMapListIndex(23)
+		x, y = PVP.LMP:GetMapPing(pingType, pingTag)
+		local b0, b1, b2, b3 = PVP:DecodeMessage(x,y)
+		PVP.GPS:PopCurrentMap()
+		PVP.LMP:SuppressPing(pingType, pingTag)
+
+		if not PVP.SV.showAttacks then return end
+		local pingData = PVP.networkingPingData[b0 .. "_" .. b1 .. "_" .. b2 .. "_" .. b3]
+		if pingData then
+			PVP:ProcessImportantAttacks(pingData.result, pingData.abilityName, pingData.abilityId, 1234567, pingData.sourceName, pingData.hitValue, GetFrameTimeMilliseconds())
+		end
+	end
+end
+
+function PVP.OnAfterPingRemoved(pingType, pingTag, x, y, isPingOwner)
+	if (pingType == MAP_PIN_TYPE_PING) then
+		PVP.LMP:UnsuppressPing(pingType, pingTag)
+	end
+end
+
+--Original code comes from libgroupsocket via AgonyWarning
+function PVP:DecodeMessage(x, y)
+	x = zo_floor(x / PVP.MapStepSize + 0.5)
+	y = zo_floor(y / PVP.MapStepSize + 0.5)
+	local b0 = zo_floor(x / 0x100)
+	local b1 = x % 0x100
+	local b2 = zo_floor(y / 0x100)
+	local b3 = y % 0x100
+	return b0, b1, b2, b3
+end
+
+function PVP:EncodeMessage(b0, b1, b2, b3)
+	b0 = b0 or 0
+	b1 = b1 or 0
+	b2 = b2 or 0
+	b3 = b3 or 0
+	return (b0 * 0x100 + b1) * PVP.MapStepSize, (b2 * 0x100 + b3) * PVP.MapStepSize
 end
 
 function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)

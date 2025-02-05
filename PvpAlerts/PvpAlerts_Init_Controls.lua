@@ -114,7 +114,7 @@ function PVP:InitControls()
 		-- self.testNamesProc={}
 		-- PVP:TestFunction()
 		if SV.showAttacks then
-			PVP:OnDraw(false, "unlock", PVP_DEFAULT_ICON, "Attacker's Name", false, false, false, 2500)
+			PVP:OnDraw(false, "unlock", "unlocked frame", 0, "", "WARNING MESSAGE", false, false, false, 2500)
 		end
 		if SV.showCounterFrame then
 			PVP_Counter_Label:SetText("Unlocked")
@@ -562,4 +562,26 @@ function PVP:RegisterCustomDialog()
 				},
 			}
 		})
+end
+
+function PVP:InitNetworking()
+	if self.SV.enableNetworking and self.addonEnabled then
+		if not PVP.networkingEnabled then
+			PVP.LMP:RegisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			PVP.LMP:RegisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.networkingEnabled = true
+		end
+	elseif self.SV.enableNetworking and not self.addonEnabled then
+		if PVP.networkingEnabled then
+			PVP.LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			PVP.LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.networkingEnabled = false
+		end
+	elseif not self.SV.enableNetworking and self.addonEnabled then
+		if PVP.networkingEnabled then
+			PVP.LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
+			PVP.LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
+			PVP.networkingEnabled = false
+		end
+	end
 end

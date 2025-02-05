@@ -1,8 +1,5 @@
 local PVP = PVP_Alerts_Main_Table
 
-PVP.LMP = LibMapPing2
-PVP.GPS = LibGPS3
-
 local chat = PVP.CHAT
 
 local Set3DRenderSpaceToCurrentCamera = Set3DRenderSpaceToCurrentCamera
