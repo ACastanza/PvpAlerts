@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.15.0"
+PVP.textVersion = "3.15.2"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -1568,19 +1568,19 @@ function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, 
 	end
 end
 
-function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName)
+function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue)
 	if result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Piercing Mark" and not self.piercingDelay then
 		self.piercingDelay = true
 		local iconAbility = GetAbilityIcon(abilityId)
 		PVP_Main.currentChannel = nil
 		self:OnDraw(false, sourceUnitId, abilityName, abilityId,
 				iconAbility, sourceName, false,
-		true)
+		true, false, hitValue)
 		zo_callLater(function() self.piercingDelay = false end, 50)
 	end
 end
 
-function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId)
+function PVP:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue)
 	if not PVP_Main:IsHidden() and PVP_Main:GetAlpha() > 0 and PVP_Main.currentChannel and PVP_Main.currentChannel.abilityId == abilityId and PVP_Main.currentChannel.sourceUnitId == sourceUnitId and PVP.hitTypes[result] then
 		if not PVP_MainAbilityIconFrameLeftHeavyAttackHighlightIcon.animData:IsPlaying() and not PVP_MainAbilityIconFrameLeftGlow.animData:IsPlaying() then
 			PVP:PlayHighlightAnimation(PVP_Main.currentChannel.isHA)
@@ -1649,8 +1649,8 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]))) then
 		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName)
-		self:ProcessChanneledHits(result, abilityId, sourceUnitId)
+		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue)
+		self:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue)
 	end
 end
 
@@ -2218,6 +2218,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityName, abilityId, ability
 end
 
 function PVP:StartAnimation(control, animationType, hitValue)
+	hitValue = hitValue or 1000
 	if animationType ~= 'camp' and animationType ~= 'fadeOut' and self.isPlaying then self.isPlaying:Stop() end
 
 	local _, point, relativeTo, relativePoint, offsetX, offsetY = control:GetAnchor()
