@@ -673,7 +673,7 @@ function PVP:AddKOS(playerName, isSlashCommand)
 		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(playersDB[cool].unitName),
 			playersDB[cool].unitAccName)
 		SV.coolList[cool] = nil
-		self:PopulateReticleOverNamesBuffer()
+		self:PopulateReticleOverNamesBuffer(true)
 	end
 
 	if not isInKOS then
@@ -754,7 +754,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 	end
 
 	self:RefreshLocalPlayers()
-	self:PopulateReticleOverNamesBuffer()
+	self:PopulateReticleOverNamesBuffer(true)
 end
 
 function PVP:IsKOSOrFriend(playerName, unitAccName)

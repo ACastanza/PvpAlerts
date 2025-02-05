@@ -177,7 +177,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 	end
 
 	if not reticleBufferIsCurrent then
-		PVP:PopulateReticleOverNamesBuffer(true)
+		PVP:PopulateReticleOverNamesBuffer(not reticleBufferIsCurrent)
 	end
 
 	if not PVP.killFeedDelay or (PVP.killFeedDelay > 0 and (currentTime - PVP.killFeedDelay) >= 10000) then -- // kill feed maintenance //
@@ -3503,7 +3503,8 @@ end
 function PVP:PopulateReticleOverNamesBuffer(forceRefresh)
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
 	local currentTime = GetFrameTimeMilliseconds()
-	if ((currentTime - lastReticleBufferRefresh) >= 100) and not forceRefresh then return end
+	if ((currentTime - lastReticleBufferRefresh) >= 100) and not forceRefresh then reticleBufferIsCurrent = false return end
+	lastReticleBufferRefresh = currentTime
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	PVP_Names_Text:Clear()
 	local namesToDisplay = self.namesToDisplay
@@ -4005,14 +4006,14 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							remove(PVP.SV.KOSList, index)
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer()
+							PVP:PopulateReticleOverNamesBuffer(true)
 						end)
 						local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
 						if removeCool then
 							PVP.SV.coolList[removeCool] = nil
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer()
+							PVP:PopulateReticleOverNamesBuffer(true)
 						end
 
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
@@ -4025,7 +4026,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							if not addCool then PVP.SV.coolList[rawName] = unitAccName end
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer()
+							PVP:PopulateReticleOverNamesBuffer(true)
 						end)
 					else
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
@@ -4035,7 +4036,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP:GetFormattedName(rawName),
 									unitAccName)
 								PVP.SV.coolList[cool] = nil
-								PVP:PopulateReticleOverNamesBuffer()
+								PVP:PopulateReticleOverNamesBuffer(true)
 							end
 							chat:Printf("Added to KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
@@ -4046,7 +4047,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								})
 								PVP:RefreshKOSandCoolAccList()
 								PVP:RefreshLocalPlayers()
-								PVP:PopulateReticleOverNamesBuffer()
+								PVP:PopulateReticleOverNamesBuffer(true)
 							end)
 						local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
 
@@ -4058,7 +4059,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								PVP.SV.coolList[rawName] = unitAccName
 								PVP:RefreshKOSandCoolAccList()
 								PVP:RefreshLocalPlayers()
-								PVP:PopulateReticleOverNamesBuffer()
+								PVP:PopulateReticleOverNamesBuffer(true)
 							end)
 						else
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_COOL), function()
@@ -4070,7 +4071,7 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP.SV.coolList[removeCool] = nil
 									PVP:RefreshKOSandCoolAccList()
 									PVP:RefreshLocalPlayers()
-									PVP:PopulateReticleOverNamesBuffer()
+									PVP:PopulateReticleOverNamesBuffer(true)
 								end
 							end)
 						end

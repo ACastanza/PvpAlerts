@@ -114,7 +114,7 @@ function PVP:InitControls()
 		-- self.testNamesProc={}
 		-- PVP:TestFunction()
 		if SV.showAttacks then
-			PVP:OnDraw(false, "unlock", PVP_DEFAULT_ICON, "Attacker's Name", false, false, false, 2500)
+			PVP:OnDraw(false, "unlock", "unlocked frame", 0, "", "WARNING MESSAGE", false, false, false, 2500)
 		end
 		if SV.showCounterFrame then
 			PVP_Counter_Label:SetText("Unlocked")
