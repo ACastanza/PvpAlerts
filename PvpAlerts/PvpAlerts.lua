@@ -1521,7 +1521,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 				}
 			else
 				if currentTime - self.attackSoundDelay > 0 then
-					PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
+					self.PlayLoudSound(CONSOLE_GAME_ENTER)
 				end
 				-- PlaySound(SOUNDS.CONSOLE_GAME_ENTER)
 				-- zo_callLater(function()
