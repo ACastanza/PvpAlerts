@@ -581,28 +581,23 @@ end
 function PVP:GetFightIcon(dimension, color, targetAlliance)
 	dimension = dimension or 24
 	color = color or "FFFFFF"
-	local icon = ""
 
-	if self.allianceOfPlayer == 1 then
-		if targetAlliance == 2 then
-			icon = PVP_FIGHT_ADEP
-		elseif targetAlliance == 3 then
-			icon = PVP_FIGHT_ADDC
-		end
-	elseif self.allianceOfPlayer == 2 then
-		if targetAlliance == 1 then
-			icon = PVP_FIGHT_EPAD
-		elseif targetAlliance == 3 then
-			icon = PVP_FIGHT_EPDC
-		end
-	elseif self.allianceOfPlayer == 3 then
-		if targetAlliance == 1 then
-			icon = PVP_FIGHT_DCAD
-		elseif targetAlliance == 2 then
-			icon = PVP_FIGHT_DCEP
-		end
-	end
+	local fightIcons = {
+		[ALLIANCE_ALDMERI_DOMINION] = {
+			[ALLIANCE_EBONHEART_PACT] = PVP_FIGHT_ADEP,
+			[ALLIANCE_DAGGERFALL_COVENANT] = PVP_FIGHT_ADDC
+		},
+		[ALLIANCE_EBONHEART_PACT] = {
+			[ALLIANCE_ALDMERI_DOMINION] = PVP_FIGHT_EPAD,
+			[ALLIANCE_DAGGERFALL_COVENANT] = PVP_FIGHT_EPDC
+		},
+		[ALLIANCE_DAGGERFALL_COVENANT] = {
+			[ALLIANCE_ALDMERI_DOMINION] = PVP_FIGHT_DCAD,
+			[ALLIANCE_EBONHEART_PACT] = PVP_FIGHT_DCEP
+		}
+	}
 
+	local icon = fightIcons[self.allianceOfPlayer] and fightIcons[self.allianceOfPlayer][targetAlliance] or ""
 
 	return self:Colorize(zo_iconFormatInheritColor(icon, dimension, dimension), color)
 end
