@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.15.5"
+PVP.textVersion = "3.15.4"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -1338,9 +1338,8 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 				isResurrect = currentTime
 			end
 
-			local nameToken, endToken = self:BuildReticleName(unitName, unitAlliance, false, isAttacker,
+			local nameToken = self:BuildReticleName(unitName, unitAlliance, false, isAttacker,
 			isTarget, isResurrect, currentTime, playerDbRecord)
-			PVP_Names_Text:AddMessage(nameToken .. endToken)
 
 			insert(namesToDisplay,
 				{
@@ -3424,13 +3423,13 @@ function PVP:GetAllianceCountPlayers()
 end
 
 function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord)
-	if not self.SV.showNamesFrame or self.SV.unlocked then return end
-	if not unitName then return end
+	local formattedName, endIcon = "", ""
+	if not self.SV.showNamesFrame or self.SV.unlocked then return formattedName, endIcon end
+	if not unitName then return formattedName, endIcon end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	if isResurrect and (currentTime - isResurrect) > 15000 then
 		isResurrect = nil
 	end
-	local formattedName = ""
 
 	local KOSOrFriend = self:IsKOSOrFriend(unitName, playerDbRecord)
 	if KOSOrFriend then
@@ -3461,7 +3460,6 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 		formattedName = classIcons .. accountName .. formattedName
 	end
 
-	local endIcon
 	if isDead then
 		endIcon = self:GetDeathIcon(nil, 'AAAAAA')
 	elseif isResurrect then
@@ -3485,6 +3483,7 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 			end
 		end
 	end
+	PVP_Names_Text:AddMessage(nameToken .. endToken)
 	return formattedName, endIcon
 end
 
