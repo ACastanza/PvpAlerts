@@ -1194,6 +1194,7 @@ function PVP:PopulateGuildmateDatabase()
 		end
 	end
 	PVP.guildmates = guildmateDatabase
+	--PVP:PopulateReticleOverNamesBuffer(true)
 end
 
 --Original code comes from rdkgrouptool via AgonyWarning

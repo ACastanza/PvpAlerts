@@ -12,9 +12,6 @@ local cachedPlayerNameChanges = {}
 local killFeedBuffer = {}
 local killingBlows = {}
 
-local reticleBufferIsCurrent = true
-local lastReticleBufferRefresh = 0
-
 local LCM = LibChatMessage
 local chat = LCM.Create('PvpAlerts', 'PVP')
 PVP.CHAT = chat
@@ -552,8 +549,8 @@ function PVP:CountTotal(currentTime)
 		end
 	end
 
-	if wasRemoved or not reticleBufferIsCurrent then
-		self:PopulateReticleOverNamesBuffer(wasRemoved, currentTime, true)
+	if wasRemoved then
+		self:PopulateReticleOverNamesBuffer(nil, currentTime)
 	end
 
 	local count = 0
@@ -1311,14 +1308,15 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 				namesToDisplay[found].isTarget = true
 			end
 
+			local playerToUpdate = namesToDisplay[found]
+			local nameToken = self:BuildReticleName(unitName, unitAlliance, false, playerToUpdate.isAttacker,
+			playerToUpdate.isTarget, playerToUpdate.isResurrect, currentTime, playerDbRecord)
+			playerToUpdate.nameToken = nameToken
 			if attackType == 'source' then
-				local playerToUpdate = namesToDisplay[found]
-
 				remove(namesToDisplay, found)
-
 				insert(namesToDisplay, playerToUpdate)
 			end
-			self:PopulateReticleOverNamesBuffer(nil, currentTime, nil)
+			self:PopulateReticleOverNamesBuffer(nil, currentTime)
 		elseif not updateOnly then
 			local isAttacker, isTarget, isResurrect
 			if attackType == 'source' then
@@ -1339,15 +1337,20 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 			if abilityId == 0 and result == 2265 and isTarget then
 				isResurrect = currentTime
 			end
+
+			local nameToken, endToken = self:BuildReticleName(unitName, unitAlliance, false, isAttacker,
+			isTarget, isResurrect, currentTime, playerDbRecord)
+			PVP_Names_Text:AddMessage(nameToken .. endToken)
+
 			insert(namesToDisplay,
 				{
 					unitName = unitName,
 					currentTime = currentTime,
 					isAttacker = isAttacker,
 					isTarget = isTarget,
-					isResurrect = isResurrect
+					isResurrect = isResurrect,
+					nameToken = nameToken
 				})
-			self:InsertReticleName(unitName, unitAlliance, false, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord)
 		end
 	end
 end
@@ -1382,7 +1385,7 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 				if PVP.namesToDisplay[i].unitName == deadName and not PVP.namesToDisplay[i].isDead then
 					PVP.namesToDisplay[i].isDead = true
 					PVP.namesToDisplay[i].currentTime = currentTime
-					PVP:PopulateReticleOverNamesBuffer(nil, currentTime, nil)
+					PVP:UpdateNamesToDisplay(deadName, currentTime, true, 'target')
 					break
 				end
 			end
@@ -3419,7 +3422,7 @@ function PVP:GetAllianceCountPlayers()
 	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP
 end
 
-function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord)
+function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord)
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
 	if not unitName then return end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
@@ -3443,6 +3446,18 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 		elseif KOSOrFriend == "guild" then
 			formattedName = formattedName .. self:GetGuildIcon(nil, unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
 		end
+	end
+
+	local allianceColor = self:NameToAllianceColor(unitName, isDead or isResurrect, nil, unitAlliance)
+	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
+	local charName = self:Colorize(self:GetFormattedName(unitName), allianceColor)
+	local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
+	if userDisplayNameType == "both" then
+		formattedName = classIcons .. charName .. accountName .. formattedName
+	elseif userDisplayNameType == "character" then
+		formattedName = classIcons .. charName .. formattedName
+	elseif userDisplayNameType == "user" then
+		formattedName = classIcons .. accountName .. formattedName
 	end
 
 	local endIcon
@@ -3469,37 +3484,12 @@ function PVP:InsertReticleName(unitName, unitAlliance, isDead, isAttacker, isTar
 			end
 		end
 	end
-
-	local allianceColor = self:NameToAllianceColor(unitName, isDead or isResurrect, nil, unitAlliance)
-	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
-	local charName = self:Colorize(self:GetFormattedName(unitName), allianceColor)
-	local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
-	if userDisplayNameType == "both" then
-			formattedName = classIcons .. charName .. accountName .. formattedName .. endIcon
-		elseif userDisplayNameType == "character" then
-			formattedName = classIcons .. charName .. formattedName .. endIcon
-		elseif userDisplayNameType == "user" then
-			formattedName = classIcons .. accountName .. formattedName .. endIcon
-	end
-	PVP_Names_Text:AddMessage(formattedName)
+	return formattedName, endIcon
 end
 
-function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainLoop)
+function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 	if not self.SV.showNamesFrame or self.SV.unlocked then return end
 	currentTime = currentTime or GetFrameTimeMilliseconds()
-
-    if not fromMainLoop then
-        if (currentTime - lastReticleBufferRefresh) < 250 then
-            reticleBufferIsCurrent = false
-            return
-        end
-    else
-        if reticleBufferIsCurrent and not forceRefresh then
-            return
-        end
-    end
-	lastReticleBufferRefresh = currentTime
-
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	PVP_Names_Text:Clear()
 	local namesToDisplay = self.namesToDisplay
@@ -3510,36 +3500,55 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainL
 	for k, v in ipairs(namesToDisplay) do
 		local playerName = v.unitName
 		if playerName then
+			local nameToken = v.nameToken
 			local isDead = v.isDead
 			local isAttacker = v.isAttacker
 			local isTarget = v.isTarget
 			local isResurrect = v.isResurrect
+			local endIcon
+
 			if isResurrect and (currentTime - isResurrect) > 15000 then
 				v.isResurrect = nil
 				isResurrect = nil
+				--Could insert a call to BuildReticleName here to update the colors if this isn't good enough
 			end
-			local playerDbRecord = playersDb[playerName]
-			local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
-			local formattedName = ""
+			if nameToken and nameToken ~= "" and not forceRefresh then
+				local playerDbRecord = playersDb[playerName]
+				local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
+				local formattedName = ""
 
-			local KOSOrFriend = self:IsKOSOrFriend(playerName, playerDbRecord)
-			if KOSOrFriend then
-				if KOSOrFriend == "KOS" then
-					formattedName = formattedName .. self:GetKOSIcon()
-				elseif KOSOrFriend == "friend" then
-					formattedName = formattedName .. self:GetFriendIcon()
-				elseif KOSOrFriend == "cool" then
-					formattedName = formattedName .. self:GetCoolIcon()
-				elseif KOSOrFriend == "groupleader" then
-					formattedName = formattedName .. self:GetGroupLeaderIcon()
-				elseif KOSOrFriend == "group" then
-					formattedName = formattedName .. self:GetGroupIcon()
-				elseif KOSOrFriend == "guild" then
-					formattedName = formattedName .. self:GetGuildIcon(nil, unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
+				local KOSOrFriend = self:IsKOSOrFriend(playerName, playerDbRecord)
+				if KOSOrFriend then
+					if KOSOrFriend == "KOS" then
+						formattedName = formattedName .. self:GetKOSIcon()
+					elseif KOSOrFriend == "friend" then
+						formattedName = formattedName .. self:GetFriendIcon()
+					elseif KOSOrFriend == "cool" then
+						formattedName = formattedName .. self:GetCoolIcon()
+					elseif KOSOrFriend == "groupleader" then
+						formattedName = formattedName .. self:GetGroupLeaderIcon()
+					elseif KOSOrFriend == "group" then
+						formattedName = formattedName .. self:GetGroupIcon()
+					elseif KOSOrFriend == "guild" then
+						formattedName = formattedName .. self:GetGuildIcon(nil, unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
+					end
 				end
+
+				local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect, nil, unitAlliance)
+				local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
+				local charName = self:Colorize(self:GetFormattedName(playerName), allianceColor)
+				local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
+				if userDisplayNameType == "both" then
+					formattedName = classIcons .. charName .. accountName .. formattedName
+				elseif userDisplayNameType == "character" then
+					formattedName = classIcons .. charName .. formattedName
+				elseif userDisplayNameType == "user" then
+					formattedName = classIcons .. accountName .. formattedName
+				end
+
+				nameToken = formattedName
 			end
 
-			local endIcon
 			if isDead then
 				endIcon = self:GetDeathIcon(nil, 'AAAAAA')
 			elseif isResurrect then
@@ -3564,21 +3573,9 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime, fromMainL
 				end
 			end
 
-			local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect, nil, unitAlliance)
-			local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
-			local charName = self:Colorize(self:GetFormattedName(playerName), allianceColor)
-			local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
-			if userDisplayNameType == "both" then
-				formattedName = classIcons .. charName .. accountName .. formattedName .. endIcon
-			elseif userDisplayNameType == "character" then
-				formattedName = classIcons .. charName .. formattedName .. endIcon
-			elseif userDisplayNameType == "user" then
-				formattedName = classIcons .. accountName .. formattedName .. endIcon
-			end
-			PVP_Names_Text:AddMessage(formattedName)
+			PVP_Names_Text:AddMessage(nameToken .. endIcon)
 		end
 	end
-	reticleBufferIsCurrent = true
 end
 
 function PVP:GetKillFeed()
