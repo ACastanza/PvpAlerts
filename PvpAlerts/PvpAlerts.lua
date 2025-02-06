@@ -3505,14 +3505,14 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 			local isAttacker = v.isAttacker
 			local isTarget = v.isTarget
 			local isResurrect = v.isResurrect
-			local endIcon
+			local endToken
 
 			if isResurrect and (currentTime - isResurrect) > 15000 then
 				v.isResurrect = nil
 				isResurrect = nil
 				--Could insert a call to BuildReticleName here to update the colors if this isn't good enough
 			end
-			if nameToken and nameToken ~= "" and not forceRefresh then
+			if (not nameToken) or (nameToken == "") or forceRefresh then
 				local playerDbRecord = playersDb[playerName]
 				local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
 				local formattedName = ""
@@ -3545,35 +3545,35 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 				elseif userDisplayNameType == "user" then
 					formattedName = classIcons .. accountName .. formattedName
 				end
-
+				v.nameToken = formattedName
 				nameToken = formattedName
 			end
 
 			if isDead then
-				endIcon = self:GetDeathIcon(nil, 'AAAAAA')
+				endToken = self:GetDeathIcon(nil, 'AAAAAA')
 			elseif isResurrect then
-				endIcon = self:GetResurrectIcon()
+				endToken = self:GetResurrectIcon()
 			else
 				if IsActiveWorldBattleground() then
 					if isAttacker or isTarget then
-						endIcon = self:GetAttackerIcon()
+						endToken = self:GetAttackerIcon()
 					else
-						endIcon = ""
+						endToken = ""
 					end
 				else
 					if isAttacker and isTarget then
-						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
+						endToken = self:GetFightIcon(nil, nil, unitAlliance)
 					elseif isAttacker then
-						endIcon = self:GetAttackerIcon()
+						endToken = self:GetAttackerIcon()
 					elseif isTarget then
-						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
+						endToken = self:GetFightIcon(nil, nil, unitAlliance)
 					else
-						endIcon = ""
+						endToken = ""
 					end
 				end
 			end
 
-			PVP_Names_Text:AddMessage(nameToken .. endIcon)
+			PVP_Names_Text:AddMessage(nameToken .. endToken)
 		end
 	end
 end
