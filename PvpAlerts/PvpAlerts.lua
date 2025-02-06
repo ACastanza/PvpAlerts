@@ -1284,6 +1284,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 			end
 		end
 		if found then
+			namesToDisplay[found].unitAlliance = unitAlliance
 			namesToDisplay[found].currentTime = currentTime
 
 			if updateOnly and PVP:GetValidName(GetRawUnitName('reticleover')) == unitName then
@@ -1300,7 +1301,6 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 					namesToDisplay[found].isResurrect = currentTime
 				end
 			end
-
 
 			if attackType == 'source' then
 				namesToDisplay[found].isAttacker = true
@@ -1345,6 +1345,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 			insert(namesToDisplay,
 				{
 					unitName = unitName,
+					unitAlliance = unitAlliance,
 					currentTime = currentTime,
 					isAttacker = isAttacker,
 					isTarget = isTarget,
@@ -3500,6 +3501,7 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 	for k, v in ipairs(namesToDisplay) do
 		local playerName = v.unitName
 		if playerName then
+			local unitAlliance = v.unitAlliance
 			local nameToken = v.nameToken
 			local isDead = v.isDead
 			local isAttacker = v.isAttacker
@@ -3513,9 +3515,9 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 				--Could insert a call to BuildReticleName here to update the colors if this isn't good enough
 			end
 			if (not nameToken) or (nameToken == "") or forceRefresh then
-				local playerDbRecord = playersDb[playerName]
-				local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
 				local formattedName = ""
+				local playerDbRecord = playersDb[playerName]
+				unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
 
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, playerDbRecord)
 				if KOSOrFriend then
