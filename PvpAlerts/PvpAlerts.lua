@@ -3641,7 +3641,7 @@ function PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, 
 	self:UpdateNamesToDisplay(unitName, currentTime, true)
 end
 
-PVP.OnTargetChanged = function()
+function PVP.OnTargetChanged()
 	if PVP.SV.unlocked or not PVP:IsInPVPZone() then return end
 	local targetIcon
 	if IsUnitPlayer('reticleover') then
@@ -3713,14 +3713,15 @@ PVP.OnTargetChanged = function()
 						unitAlliance == PVP.allianceOfPlayer and "40BB40" or "BB4040")
 				end
 			end
-		end
 
-		if (unitCP > 0) and PVP.SV.showMaxTargetCP then
-			ZO_TargetUnitFramereticleoverChampionIcon:SetDimensions(20, 20)
-			ZO_TargetUnitFramereticleoverLevel:SetText(unitCP)
-		end
+			if (unitCP > 0) and PVP.SV.showMaxTargetCP then
+				ZO_TargetUnitFramereticleoverChampionIcon:SetDimensions(20, 20)
+				ZO_TargetUnitFramereticleoverLevel:SetText(unitCP)
+			end
 
-		PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, unitRace, IsUnitDead('reticleover'))
+			PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, unitRace, IsUnitDead('reticleover'))
+
+		end
 	end
 
 	PVP_TargetIconLabel:SetText(targetIcon)
