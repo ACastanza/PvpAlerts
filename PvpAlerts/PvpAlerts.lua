@@ -1310,7 +1310,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 
 			local playerToUpdate = namesToDisplay[found]
 			local nameToken = self:BuildReticleName(unitName, unitAlliance, false, playerToUpdate.isAttacker,
-			playerToUpdate.isTarget, playerToUpdate.isResurrect, currentTime, playerDbRecord)
+			playerToUpdate.isTarget, playerToUpdate.isResurrect, currentTime, playerDbRecord, found)
 			playerToUpdate.nameToken = nameToken
 			if attackType == 'source' then
 				remove(namesToDisplay, found)
@@ -1339,7 +1339,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 			end
 
 			local nameToken = self:BuildReticleName(unitName, unitAlliance, false, isAttacker,
-			isTarget, isResurrect, currentTime, playerDbRecord)
+			isTarget, isResurrect, currentTime, playerDbRecord, found)
 
 			insert(namesToDisplay,
 				{
@@ -3422,15 +3422,15 @@ function PVP:GetAllianceCountPlayers()
 	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP
 end
 
-function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord)
-	local formattedName, endIcon = "", ""
-	if not self.SV.showNamesFrame or self.SV.unlocked then return formattedName, endIcon end
-	if not unitName then return formattedName, endIcon end
+function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord, found)
+	if not self.SV.showNamesFrame or self.SV.unlocked then return "" end
+	if not unitName then return "" end
 	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 	if isResurrect and (currentTime - isResurrect) > 15000 then
 		isResurrect = nil
 	end
 
+	local formattedName = ""
 	local KOSOrFriend = self:IsKOSOrFriend(unitName, playerDbRecord)
 	if KOSOrFriend then
 		if KOSOrFriend == "KOS" then
@@ -3460,6 +3460,7 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 		formattedName = classIcons .. accountName .. formattedName
 	end
 
+	local endIcon = ""
 	if isDead then
 		endIcon = self:GetDeathIcon(nil, 'AAAAAA')
 	elseif isResurrect then
@@ -3468,8 +3469,6 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 		if IsActiveWorldBattleground() then
 			if isAttacker or isTarget then
 				endIcon = self:GetAttackerIcon()
-			else
-				endIcon = ""
 			end
 		else
 			if isAttacker and isTarget then
@@ -3478,13 +3477,15 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 				endIcon = self:GetAttackerIcon()
 			elseif isTarget then
 				endIcon = self:GetFightIcon(nil, nil, unitAlliance)
-			else
-				endIcon = ""
 			end
 		end
 	end
-	PVP_Names_Text:AddMessage(nameToken .. endToken)
-	return formattedName, endIcon
+
+	if not found then
+		PVP_Names_Text:AddMessage(nameToken .. endIcon)
+	end
+
+	return formattedName
 end
 
 function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
@@ -3506,7 +3507,6 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 			local isAttacker = v.isAttacker
 			local isTarget = v.isTarget
 			local isResurrect = v.isResurrect
-			local endToken
 
 			if isResurrect and (currentTime - isResurrect) > 15000 then
 				v.isResurrect = nil
@@ -3550,31 +3550,28 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 				nameToken = formattedName
 			end
 
+			local endIcon = ""
 			if isDead then
-				endToken = self:GetDeathIcon(nil, 'AAAAAA')
+				endIcon = self:GetDeathIcon(nil, 'AAAAAA')
 			elseif isResurrect then
-				endToken = self:GetResurrectIcon()
+				endIcon = self:GetResurrectIcon()
 			else
 				if IsActiveWorldBattleground() then
 					if isAttacker or isTarget then
-						endToken = self:GetAttackerIcon()
-					else
-						endToken = ""
+						endIcon = self:GetAttackerIcon()
 					end
 				else
 					if isAttacker and isTarget then
-						endToken = self:GetFightIcon(nil, nil, unitAlliance)
+						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
 					elseif isAttacker then
-						endToken = self:GetAttackerIcon()
+						endIcon = self:GetAttackerIcon()
 					elseif isTarget then
-						endToken = self:GetFightIcon(nil, nil, unitAlliance)
-					else
-						endToken = ""
+						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
 					end
 				end
 			end
 
-			PVP_Names_Text:AddMessage(nameToken .. endToken)
+			PVP_Names_Text:AddMessage(nameToken .. endIcon)
 		end
 	end
 end
