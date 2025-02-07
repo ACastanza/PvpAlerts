@@ -1401,10 +1401,10 @@ end
 
 function PVP:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId, abilityId, currentTime)
 	if sourceName == "" and targetName == "" and (not self.npcExclude[targetUnitId]) and (not self.currentlyDead[targetUnitId]) and not DEAD_ACTION_RESULTS[result] then
-		if self:IsNPCAbility(abilityId) then
+	local totalPlayers = self.totalPlayers
+	local idToName = self.idToName
+	if self:IsNPCAbility(abilityId) then
 			self.npcExclude[targetUnitId] = currentTime
-			local totalPlayers = self.totalPlayers
-			local idToName = self.idToName
 			if totalPlayers[targetUnitId] then
 				totalPlayers[targetUnitId] = nil
 				self.playerSpec[idToName[targetUnitId]] = nil
@@ -1515,6 +1515,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 			if self.minorImportantAbilities[abilityId] then
 				if currentTime < self.majorAttackNotficiationLockout then return end
 				self.minorAttackNotficiationLockout = currentTime + hitValue
+				self.PlayLoudSound(COLLECTIBLE_ON_COOLDOWN)
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, false,
 					false, false, hitValue)
@@ -1588,6 +1589,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	targetUnitId, abilityId)
 	if not PVP:IsInPVPZone() then return end
 	local currentTime = GetFrameTimeMilliseconds()
+	abilityName = abilityName and abilityName ~= "" and abilityName or GetAbilityName(abilityId)
 
 	if IsActiveWorldBattleground() then
 		PVP.bgNames = PVP.bgNames or {}
@@ -1641,7 +1643,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		self:ProcessPvpBuffs(result, targetName, abilityId)
 	end
 
-	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]))) then
+	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId] or self.importantNamesDebug[abilityName]))) then
 		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
@@ -2351,7 +2353,7 @@ function PVP:GetTargetChar(playerName, isTargetFrame, forceScale)
 	end
 
 	if isDeadOrResurrect then
-		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, isDeadorResurrect, isTargetFrame,
+		classIcons = self:GetFormattedClassIcon(playerName, nil, nameColor, isDeadOrResurrect, isTargetFrame,
 			not isTargetFrame, nil, nil, nil, nil, playerDbRecord or "none")
 		charName = self:Colorize(self:GetFormattedCharNameLink(playerName, false), nameColor)
 	else
@@ -3000,8 +3002,8 @@ function PVP:PopulateFromBGScoreboard()
             end
         end
 
+		local KOSOrFriend = self:IsKOSOrFriend(playerName, bgAccName)
         if playerName ~= self.playerName then
-            local KOSOrFriend = self:IsKOSOrFriend(playerName, bgAccName)
             local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName)
 
             if KOSOrFriend then
@@ -3024,7 +3026,8 @@ function PVP:PopulateFromBGScoreboard()
         else
             formattedName = formattedName .. self:Colorize(' - YOU', 'FFFFFF')
         end
-        if bgAlliance == 1 then
+
+		if bgAlliance == 1 then
             numberAD = numberAD + 1
             insert(tableAD, formattedName)
             tableNameToIndexAD[playerName] = numberAD
@@ -3134,12 +3137,12 @@ function PVP:GetAllianceCountPlayers()
 			if isDead or isResurrect then
 				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(unitAlliance, true), k,
 					currentTime)
-				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, nil, k,
+				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, true, nil, k,
 					unitClass, k, currentTime, unitAvARank, playerDbRecord or "none")
 			else
 				allianceColor = self:GetTimeFadedColor(self:AllianceToColor(unitAlliance, false), k,
 					currentTime)
-				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDeadorResurrect, nil, nil,
+				classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, false, nil, nil,
 					unitClass, k, currentTime, unitAvARank, playerDbRecord or "none")
 			end
 
@@ -3287,7 +3290,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							insert(othersTableAD, playerName)
 						end
-					elseif unitAllianceFromPlayersDb == 2 then
+					elseif unitAlliance == 2 then
 						numberEP = numberEP + 1
 						insert(tableEP, formattedName)
 						tableNameToIndexEP[playerName] = numberEP
@@ -3304,7 +3307,7 @@ function PVP:GetAllianceCountPlayers()
 						else
 							insert(othersTableEP, playerName)
 						end
-					elseif unitAllianceFromPlayersDb == 3 then
+					elseif unitAlliance == 3 then
 						numberDC = numberDC + 1
 						insert(tableDC, formattedName)
 						tableNameToIndexDC[playerName] = numberDC
@@ -3482,7 +3485,7 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 	end
 
 	if not found then
-		PVP_Names_Text:AddMessage(nameToken .. endIcon)
+		PVP_Names_Text:AddMessage(formattedName .. endIcon)
 	end
 
 	return formattedName

@@ -3147,7 +3147,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	local currentCampaignId = GetCurrentCampaignId()
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
 	if emperorAlliance ~= ALLIANCE_NONE then
-		PVP_World3DCrownIcon:SetColor(PVP:GetTrueAllianceColors(isTest and 2 or emperorAlliance))
+		PVP_World3DCrownIcon:SetColor(PVP:GetTrueAllianceColors(emperorAlliance))
 		if IsInBorderKeepArea() then
 			PVP_World3DCrownIcon:Set3DRenderSpaceUsesDepthBuffer(false)
 			PVP_World3DCrownIcon:Set3DLocalDimensions(5, 5)
@@ -4250,10 +4250,10 @@ local function FindNearbyPOIs()
 					end
 				end
 
-				local zoneValuts = PVP.icVaults[zoneId]
+				local zoneVaults = PVP.icVaults[zoneId]
 				if zoneVaults then
-					for k, v in pairs(zoneValuts) do
-						local zoneVault = zoneValuts[k]
+					for k, v in pairs(zoneVaults) do
+						local zoneVault = zoneVaults[k]
 						local pinType, targetX, targetY, targetZ, name, poiId = PVP_PINTYPE_IC_VAULT,
 						zoneVault.x, zoneVault.y, zoneVault.z,
 							GetPOIInfo(341, zoneVault.poiId), zoneVault.poiId
