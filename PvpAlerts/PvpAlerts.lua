@@ -1643,7 +1643,7 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		self:ProcessPvpBuffs(result, targetName, abilityId)
 	end
 
-	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId] or self.importantNamesDebug[abilityName]))) then
+	if self.SV.showAttacks and sourceName ~= self.playerName and (targetName == self.playerName or (self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer and (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]))) then
 		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
