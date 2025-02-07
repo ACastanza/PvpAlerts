@@ -3420,7 +3420,7 @@ local function ObjectiveOnUpdate(control)
 	local showingTooltipStart
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	control.multiplier = multiplier
-	-- local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
+	local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
 
 	control:SetAlpha(1)
 
