@@ -25,7 +25,7 @@ local function trim(s)
 	return (s:gsub("^%s*(.-)%s*$", "%1"))
 end
 
-local function GetKOSIndex(accName)
+local function GetKOSIndex(accName, contains)
 	local KOSList = PVP.SV.KOSList
 	for k, v in ipairs(KOSList) do
 		local dbAccName = contains and PVP:DeaccentString(v.unitAccName) or v.unitAccName
@@ -36,7 +36,7 @@ end
 
 local function WhoIsAccInDB(accName, contains)
 	accName = lower(accName)
-	local accKOSIndex = GetKOSIndex(accName)
+	local accKOSIndex = GetKOSIndex(accName, contains)
 	local playerNamesForAcc = {}
 	local playersDB = PVP.SV.playersDB
 	for k, v in pairs(playersDB) do
@@ -600,25 +600,6 @@ function PVP_Add_COOL_Mouseover()
 	end
 end
 
-function PVP:FindInCOOL(playerName, unitAccName)
-	if not playersDB[playerName] then return false end
-
-	local coolList = self.SV.coolList
-	local found
-	for k, v in pairs(coolList) do
-		if unitAccName == v then
-			found = k
-			break
-		end
-	end
-	if found and found ~= playerName then
-		coolList[found] = nil
-		coolList[playerName] = unitAccName
-		found = playerName
-	end
-	return found
-end
-
 function PVP:FindAccInCOOL(unitPlayerName, unitAccName)
 	if not unitAccName then return false end
 
@@ -668,7 +649,7 @@ function PVP:AddKOS(playerName, isSlashCommand)
 
 	-- if isInKOS then d('This account is already in KOS as: '..self:GetFormattedName(rawName).."!") return end
 
-	local cool = self:FindInCOOL(rawName, playersDB[rawName].unitAccName)
+	local cool = self:FindAccInCOOL(rawName, playersDB[rawName].unitAccName)
 	if cool then
 		PVP.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(playersDB[cool].unitName),
 			playersDB[cool].unitAccName)
@@ -741,7 +722,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 		end
 	end
 
-	local cool = self:FindInCOOL(rawName, playersDB[rawName].unitAccName)
+	local cool = self:FindAccInCOOL(rawName, playersDB[rawName].unitAccName)
 
 
 	if not cool then

@@ -87,7 +87,7 @@ function PVP:OnBattlegroundMMRLossReduced(eventCode, reductionReason)
 end
 
 -- Helper function to display MMR stats for a character
-local function DisplayMMR(character, isCurrentPlayer)
+local function DisplayMMR(character, isCurrentPlayer, update)
     PVP.CHAT:Printf("Character: %s", PVP:GetFormattedName(character))
     for activityType, activityName in pairs(activities) do
         local currentMMR = isCurrentPlayer and (GetPlayerMMRByType(activityType) or 0) or
@@ -118,13 +118,13 @@ function PVP:ListMMR(flag)
     local showAll = flag == "all" or flag == "updateall"
 
     -- Display MMR for the current character
-    DisplayMMR(player, true)
+    DisplayMMR(player, true, update)
 
     -- Display MMR for all characters if "all" or "updateall" flag is set
     if showAll then
         for character, _ in pairs(PVP.SV.mmr) do
             if character ~= player then
-                DisplayMMR(character, false)
+                DisplayMMR(character, false, update)
             end
         end
     end

@@ -1711,7 +1711,6 @@ function Take3DMeasurements()
 		cameraX = cameraX,
 		cameraY = cameraY,
 		cameraZ = cameraZ,
-		cameraAngleX = heading,
 		cameraAngleZ = cameraAngleZ,
 		cameraDistance = cameraDistance,
 		timeStamp = GetFrameTimeMilliseconds(),
@@ -1749,7 +1748,7 @@ end
 local function GetCurrent3DCameraInfo()
 	if PVP.currentCameraInfo then
 		return PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ,
-			PVP.currentCameraInfo.cameraAngleX, PVP.currentCameraInfo.cameraAngleZ, PVP.currentCameraInfo.cameraDistance,
+			PVP.currentCameraInfo.adjustedHeading, PVP.currentCameraInfo.cameraAngleZ, PVP.currentCameraInfo.cameraDistance,
 			PVP.currentCameraInfo.timeStamp
 	else
 		return false
@@ -3336,7 +3335,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	control.params.y3d = PVP.currentNearbyPOIIds[i].y3d
 
 	SetupTextureCoords(control)
-	local POISize, POIUASize = GetControlSize(control, currentPOI, ICONTYPE)
+	local POISize, POIUASize = GetControlSize(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
 
 	SetDimensions3DControl(control, POISize, POIUASize, POISize,
 		icon, iconUA, iconBG, captureBG, captureBar, divider, 
@@ -3843,7 +3842,7 @@ local function FindNearbyPOIs()
 		local isBgDm = battlegroundType == BATTLEGROUND_GAME_TYPE_DEATHMATCH
 
 
-		if isBgCtf or isBgMurderball then
+		if isBgCtf --[[or isBgMurderball]] then
 			for i = 1, GetNumObjectives() do
 				local keepId, objectiveId, bgContext = GetObjectiveIdsForIndex(i)
 				if keepId == 0 and bgContext == BGQUERY_LOCAL and DoesObjectiveExist(keepId, objectiveId, bgContext) then
@@ -3951,24 +3950,24 @@ local function FindNearbyPOIs()
 		end
 
 		if PVP.SV.group3d and IsUnitGrouped('player') then
-			local groupZize = GetGroupSize()
+			local groupSize = GetGroupSize()
 			local playerZone = GetUnitZone('player')
 			if playerZone ~= "" then
-				for i = 1, groupZize do
+				for i = 1, groupSize do
 					local groupTag = GetGroupUnitTagByIndex(i)
+					local isGroupLeader = IsUnitGroupLeader(groupTag)
 					if GetUnitZone(groupTag) == playerZone then
 						local x, y = GetMapPlayerPosition(groupTag)
 						POIGroupInsert(foundPOI, groupTag, selfX, selfY, x, y, GetRawUnitName(groupTag),
 							IsUnitGroupLeader(groupTag), IsUnitDead(groupTag),
-							GetUnitClassId(groupTag), IsUnitInCombat(groupTag), PVP.SV.groupleader3d and isGroupLeader,
-							not (PVP.SV.onlyGroupLeader3d and not isGroupLeader))
+							GetUnitClassId(groupTag), IsUnitInCombat(groupTag), PVP.SV.groupleader3d and IsUnitGroupLeader(groupTag),
+							not (PVP.SV.onlyGroupLeader3d and not IsUnitGroupLeader(groupTag)))
 					end
 				end
 			end
 		end
 		-- if PVP.SV.guild3d then
-		-- 	UpdateGuildPos()
-		-- 	for i, n in ipairs(guildtrack) do
+		-- 	UpdateGuildPos()`
 		-- 		if n ~= mydname then
 		-- 			local x, y = GetGuildPlayerPosition(n)
 		-- 			local unitTag = string.format("group%d", 20 + i)

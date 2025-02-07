@@ -80,7 +80,7 @@ local function GetFlagIcon(objectiveType, meter, alliance)
 	return PVP:GetObjectiveIcon(flagType, alliance), currentKeepFlag
 end
 
-local function UpdateValues(normalControl, meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
+local function UpdateValues(normalControl, objectiveType, meter, percentage, barColorR, barColorG, barColorB, alliance, underAttack)
 	local flagControl
 
 	if objectiveType == KEEPTYPE_KEEP then
@@ -197,7 +197,7 @@ function PVP:UpdateNormalCaptureMeter(keepId)
 				wasCurrent = true
 			end
 
-			UpdateValues(normalControl, currentObjectiveStatus[i].meter, currentObjectiveStatus[i].percentage, barColorR,
+			UpdateValues(normalControl, objectiveType, currentObjectiveStatus[i].meter, currentObjectiveStatus[i].percentage, barColorR,
 				barColorG, barColorB, GetKeepAlliance(keepId, 1), GetKeepUnderAttack(keepId, 1))
 		end
 	end
