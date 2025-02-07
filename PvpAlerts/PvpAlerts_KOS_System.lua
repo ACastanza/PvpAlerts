@@ -1066,6 +1066,7 @@ function PVP:RefreshLocalPlayers()
 					local isAlly = (dbRec.unitAlliance == allianceOfPlayer)
 					local isActive = KOSAccList[dbRec.unitAccName] and kosActivityList.activeChars[dbRec.unitAccName]
 					local isResurrect, guildNames, firstGuildAllianceColor, guildIcon
+					local isGuildmate = guildmates[dbRec.unitAccName]
 
 					if isGuildmate then
 						guildNames, firstGuildAllianceColor = self:GetGuildmateSharedGuilds(dbRec.unitAccName, isGuildmate)
