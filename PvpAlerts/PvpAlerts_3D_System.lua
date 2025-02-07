@@ -3413,14 +3413,13 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	PVP.currentNearbyPOIIds[i].control = control
 end
 
-local function ObjectiveOnUpdate(control)
+local function BGObjectiveOnUpdate(control)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
 
 	if Hide3DControl(control, scaleAdjustment) then return end
 	local showingTooltipStart
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	control.multiplier = multiplier
-	local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
 
 	control:SetAlpha(1)
 
@@ -3512,6 +3511,7 @@ local function ObjectiveOnUpdate(control)
 
 	local popMultiplier
 
+	local isControlFlipping --[[ = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() ]]
 	if PVP.currentTooltip == control or isControlFlipping then
 		popMultiplier = GetPopInMultiplier(multiplier, control)
 	else
@@ -3668,7 +3668,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 		end
 		control:Set3DRenderSpaceOrigin(X, Z, Y)
 		if control:GetHandler() == nil then
-			control:SetHandler("OnUpdate", function() ObjectiveOnUpdate(control) end)
+			control:SetHandler("OnUpdate", function() BGObjectiveOnUpdate(control) end)
 		end
 	else
 		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
