@@ -2,6 +2,8 @@ local PVP = PVP_Alerts_Main_Table
 
 local chat = PVP.CHAT
 
+local GetFrameTimeSeconds = GetFrameTimeSeconds
+local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
 local Set3DRenderSpaceToCurrentCamera = Set3DRenderSpaceToCurrentCamera
 local GetPlayerCameraHeading = GetPlayerCameraHeading
 local GetCurrentMapIndex = GetCurrentMapIndex

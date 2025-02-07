@@ -1,5 +1,8 @@
 local PVP = PVP_Alerts_Main_Table
 
+local GetFrameTimeSeconds = GetFrameTimeSeconds
+local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
+
 local sort = table.sort
 local insert = table.insert
 local remove = table.remove

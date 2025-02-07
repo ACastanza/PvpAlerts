@@ -39,6 +39,8 @@ local PVP_FIGHT_DCEP = PVP:GetGlobal('PVP_FIGHT_DCEP')
 local PVP_ID_RETAIN_TIME = PVP:GetGlobal('PVP_ID_RETAIN_TIME')
 local PVP_ID_RETAIN_TIME_EFFECT = PVP:GetGlobal('PVP_ID_RETAIN_TIME_EFFECT')
 
+local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
+
 local strgsub= zo_strgsub
 local strlen = zo_strlen
 
