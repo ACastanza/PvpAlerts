@@ -2260,10 +2260,10 @@ function PVP:StartAnimation(control, animationType, hitValue)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 0, ZO_EaseOutQuadratic, 1, 1.6, PVP_SET_SCALE_FROM_SV)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 400, ZO_EaseInQuadratic, 1.6, 1, PVP_SET_SCALE_FROM_SV)
 	elseif animationType == 'attackerFrame' then
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0, targetParameter)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 0, ZO_EaseOutQuadratic, self.SV.newAttackerFrameScale, self.SV.newAttackerFrameScale * 1.6, PVP_SET_SCALE_FROM_SV)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 250, ZO_EaseInQuadratic, self.SV.newAttackerFrameScale * 1.6, self.SV.newAttackerFrameScale, PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1500, self.SV.newAttackerFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, targetParameter, 0)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1500, self.SV.newAttackerFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, nil, 0)
 	elseif animationType == 'fadeOut' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, self.SV.targetNameFrameFadeoutTime, self.SV.targetNameFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, control:GetAlpha(), 0)
 	else
