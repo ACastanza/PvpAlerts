@@ -844,7 +844,7 @@ function ScoreboardList:SortScrollList()
 end
 
 function ScoreboardList:SetupPlayerRow(control, data)
-	local _, curentColor
+	local _
 	local isPlayer = data.name == (PVP.playerName or GetRawUnitName('player'))
 	local bg1 = ZO_ColorDef:New(GetBattlegroundAllianceColor(1))
 	local bg2 = ZO_ColorDef:New(GetBattlegroundAllianceColor(2))

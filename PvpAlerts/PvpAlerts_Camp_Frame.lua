@@ -8,6 +8,7 @@ local PVP_AYLEID_WELL_ID = PVP:GetGlobal('PVP_AYLEID_WELL_ID')
 local PVP_BLESSING_OF_WAR_ID = PVP:GetGlobal('PVP_BLESSING_OF_WAR_ID')
 local floor = zo_floor
 local GetGameTimeMilliseconds = GetGameTimeMilliseconds
+local zo_distance3D = zo_distance3D
 
 function PVP:FindNearbyKeepToRespawn(anyKeep)
 	local foundKeepId, minDistance = 0, 0

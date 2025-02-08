@@ -23,11 +23,11 @@ local strgsub= zo_strgsub
 
 local ceil = zo_ceil
 local asin = math.asin
-local acos = zo_cos
+--local acos = zo_cos
 local tan = zo_tan
 local atan = math.atan
 local atan2 = zo_atan2
-local sqrt = zo_sqrt
+--local sqrt = zo_sqrt
 local cos = zo_cos
 local sin = zo_sin
 local floor = zo_floor
@@ -2072,7 +2072,7 @@ local function GetEmperorInfoString(isWorldCrown)
 		if isWorldCrown then
 			local reignTime = GetCampaignEmperorReignDuration(currentCampaignId)
 			text = PVP:Colorize('Emperor ', 'CCCCCC') ..
-				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(zo_floor(reignTime)),
+				formattedEmperorName .. PVP:Colorize(' reigning for ' .. PVP:SecondsToClock(floor(reignTime)),
 					'CCCCCC')
 		else
 			text = PVP:Colorize('Current Emperor is: ', 'CCCCCC') .. formattedEmperorName
@@ -2141,14 +2141,14 @@ local function GetScoringInfoString()
 	local function ReturnCampaignScoresInAscendingOrder()
 		local scores = {}
 		for i = 1, 3 do
-			table.insert(scores, { GetCampaignAllianceScore(currentCampaignId, i), i })
+			insert(scores, { GetCampaignAllianceScore(currentCampaignId, i), i })
 		end
 
 		local function sortingFn(score1, score2)
 			return score1[1] > score2[1]
 		end
 
-		table.sort(scores, sortingFn)
+		sort(scores, sortingFn)
 
 		return GetAllianceColoredString(scores[1][1], scores[1][2]),
 			GetAllianceColoredString(scores[2][1], scores[2][2]),
