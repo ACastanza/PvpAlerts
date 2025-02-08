@@ -1515,7 +1515,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 			if self.minorImportantAbilities[abilityId] then
 				if currentTime < self.majorAttackNotficiationLockout then return end
 				self.minorAttackNotficiationLockout = currentTime + hitValue
-				self.PlayLoudSound(COLLECTIBLE_ON_COOLDOWN)
+				self.PlayLoudSound(SOUNDS.COLLECTIBLE_ON_COOLDOWN)
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, false,
 					false, false, hitValue)
@@ -1527,7 +1527,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 				}
 			else
 				self.majorAttackNotficiationLockout = currentTime + hitValue
-				self.PlayLoudSound(CONSOLE_GAME_ENTER)
+				self.PlayLoudSound(SOUNDS.CONSOLE_GAME_ENTER)
 				if abilityName == "Charge Snare" then
 					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
 				end

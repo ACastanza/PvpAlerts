@@ -539,8 +539,8 @@ function ScoreboardList:FilterScrollList()
 	ZO_ClearNumericallyIndexedTable(scrollData)
 
 	local bgState = GetCurrentBattlegroundState()
-	local isPregame = bgState == BATTLEGROUND_STATE_PREGAME
-	local isPostGame = bgState == BATTLEGROUND_STATE_POSTGAME
+	local isPregame = bgState == BATTLEGROUND_STATE_PREROUND
+	local isPostGame = bgState == BATTLEGROUND_STATE_POSTROUND
 	local postGameMVP
 
 	local function GetTeamScoreInfo(alliance, score, position, isPlayer)
@@ -749,7 +749,7 @@ function ScoreboardList:FilterScrollList()
 		if bgState == BATTLEGROUND_STATE_RUNNING then
 			-- self.frame:GetNamedChild("Title"):SetText("MATCH IS RUNNING! TIME LEFT: "..timeLeft)
 			self.frame:GetNamedChild("State"):SetText("MATCH IS RUNNING!")
-		elseif bgState == BATTLEGROUND_STATE_PREGAME then
+		elseif bgState == BATTLEGROUND_STATE_PREROUND then
 			self.frame:GetNamedChild("State"):SetText("WAITING FOR PLAYERS...")
 		elseif bgState == BATTLEGROUND_STATE_STARTING then
 			self.frame:GetNamedChild("State"):SetText("MATCH IS STARTING!")
@@ -797,8 +797,8 @@ function ScoreboardList:FilterScrollList()
 			end
 		end
 
-		self.frame:GetNamedChild("Title"):SetHidden(bgState ~= BATTLEGROUND_STATE_POSTGAME)
-		self.frame:GetNamedChild("MVP"):SetHidden(bgState ~= BATTLEGROUND_STATE_POSTGAME)
+		self.frame:GetNamedChild("Title"):SetHidden(bgState ~= BATTLEGROUND_STATE_POSTROUND)
+		self.frame:GetNamedChild("MVP"):SetHidden(bgState ~= BATTLEGROUND_STATE_POSTROUND)
 
 		self.frame:GetNamedChild("TimerContainer"):GetNamedChild("Label"):SetText(timeLeft)
 
@@ -887,7 +887,7 @@ function ScoreboardList:SetupPlayerRow(control, data)
 
 	local kills, deaths, assists, damage, healing, points = "", "", "", "", "", ""
 
-	if isPlayer and PVP.bgScoreboard.playerCurrentRank and (not IsActiveWorldBattleground() or GetCurrentBattlegroundState() == BATTLEGROUND_STATE_POSTGAME) then
+	if isPlayer and PVP.bgScoreboard.playerCurrentRank and (not IsActiveWorldBattleground() or GetCurrentBattlegroundState() == BATTLEGROUND_STATE_POSTROUND) then
 		kills = GetPlayerRankIcon(PVP.bgScoreboard.playerCurrentRank.kills)
 		-- deaths = GetPlayerRankIcon(PVP.bgScoreboard.playerCurrentRank.deaths)
 		assists = GetPlayerRankIcon(PVP.bgScoreboard.playerCurrentRank.assists)
