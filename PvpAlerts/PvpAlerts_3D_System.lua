@@ -5,6 +5,7 @@ local chat = PVP.CHAT
 
 local GetFrameTimeSeconds = GetFrameTimeSeconds
 local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
+local zo_distance = zo_distance
 local Set3DRenderSpaceToCurrentCamera = Set3DRenderSpaceToCurrentCamera
 local GetPlayerCameraHeading = GetPlayerCameraHeading
 local GetCurrentMapIndex = GetCurrentMapIndex
@@ -330,7 +331,7 @@ local function IsSkirmishCloseToObjective(condition, objectiveX, objectiveY, sca
 		for i = 1, GetNumKillLocations() do
 			local pinType, targetX, targetY = GetKillLocationPinInfo(i)
 			if targetX ~= 0 and targetY ~= 0 then
-				local distance = PVP:GetCoordsDistance2D(objectiveX, objectiveY, targetX, targetY)
+				local distance = zo_distance(objectiveX, objectiveY, targetX, targetY)
 				if pinType ~= MAP_PIN_TYPE_INVALID and distance <= scaleAdjustment * PVP_SKIRMISH_MAX_DISTANCE then
 					isSkirmish = true
 					break
@@ -699,7 +700,7 @@ local function ReturnClosestBorderKeepId()
 	local minDistance, foundKeepId
 	for keepId in pairs(PVP.borderKeepsIds) do
 		local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
-		local distance = PVP:GetCoordsDistance2D(playerX, playerY, targetX, targetY)
+		local distance = zo_distance(playerX, playerY, targetX, targetY)
 		if not minDistance or distance < minDistance then
 			minDistance = distance
 			foundKeepId = keepId
@@ -918,7 +919,7 @@ local function IsCloseToPlayer(control, selfX, selfY, playerX, playerY)
 	if not playerX then
 		playerX, playerY = GetMapPlayerPosition('player')
 	end
-	local distance = PVP:GetCoordsDistance2D(selfX, selfY, playerX, playerY)
+	local distance = zo_distance(selfX, selfY, playerX, playerY)
 
 	if distance <= scaleAdjustment * PVP_POI_HEIGHT_GRACE_DISTANCE / 3 then return select(6, GetCameraInfo()) end
 end
@@ -927,7 +928,7 @@ local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, player
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
 
 	if control.params.type == 'SCROLL' or control.params.type == 'GROUP' then
-		if PVP:GetCoordsDistance2D(selfX, selfY, playerX, playerY) <= scaleAdjustment * PVP_MAX_DISTANCE * 0.1 then
+		if zo_distance(selfX, selfY, playerX, playerY) <= scaleAdjustment * PVP_MAX_DISTANCE * 0.1 then
 			return select(6, GetCameraInfo())
 		end
 	end
@@ -936,7 +937,7 @@ local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, player
 	local minDistance, foundHeight
 
 	local function FindMin(targetX, targetY, possibleHeight)
-		local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+		local distance = zo_distance(selfX, selfY, targetX, targetY)
 		if (not minDistance or distance < minDistance) and distance <= adjustedMaxDistance then
 			minDistance = distance
 			foundHeight = possibleHeight
@@ -992,7 +993,7 @@ local function SetShadowImageColor(control)
 
 
 		-- local x, y = PVP.GPS:LocalToGlobal(GetMapPlayerPosition("player"))
-		-- local distance = PVP:GetCoordsDistance2D(x, y, PVP.shadowInfo.globalX, PVP.shadowInfo.globalY)
+		-- local distance = zo_distance(x, y, PVP.shadowInfo.globalX, PVP.shadowInfo.globalY)
 
 		-- if distance>effectiveMaxDistance and distance<effectiveMaxDistanceFar then
 		-- return nil
@@ -1972,7 +1973,7 @@ local function ControlHasMouseOver(control, multiplier, heading)
 
 	if not oldOrigin then return end
 
-	local distance = PVP:GetCoordsDistance2D(cameraX, cameraY, controlX, controlY)
+	local distance = zo_distance(cameraX, cameraY, controlX, controlY)
 
 	local deltaX = controlX - cameraX
 	local deltaY = controlY - cameraY
@@ -2723,7 +2724,7 @@ end
 local function CrownOnUpdate()
 	local heading = GetAdjustedPlayerCameraHeading()
 	local playerX, playerY = GetMapPlayerPosition('player')
-	local distance = PVP:GetCoordsDistance2D(playerX, playerY, PVP.icCoords.x, PVP.icCoords.y)
+	local distance = zo_distance(playerX, playerY, PVP.icCoords.x, PVP.icCoords.y)
 	local alpha
 	local crownMaxDistance = 0.2
 	local maxAlpha = 0.6
@@ -3422,7 +3423,7 @@ local function BGObjectiveOnUpdate(control)
 
 	if not oldOrigin then return end
 
-	local distance = PVP:GetCoordsDistance2D(cameraX, cameraY, controlX, controlY)
+	local distance = zo_distance(cameraX, cameraY, controlX, controlY)
 
 	local deltaX = controlX - cameraX
 	local deltaY = controlY - cameraY
@@ -3711,7 +3712,7 @@ local function FindNearbyKeeps()
 		local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
 
 		if not (keepId > 153 and keepId < 163) and targetX ~= 0 and targetY ~= 0 then
-			local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+			local distance = zo_distance(selfX, selfY, targetX, targetY)
 			local isKeep = GetKeepResourceType(keepId) == 0
 			local isDistrict = GetKeepType(keepId) == KEEPTYPE_IMPERIAL_CITY_DISTRICT
 
@@ -3767,7 +3768,7 @@ local function POIGroupInsert(foundPOI, groupTag, selfX, selfY, targetX, targetY
 	-- if groupTag == "group21" or groupTag == "group22" then df("****** HERE %s %s %s %s*******", groupTag, tostring(targetX), tostring(targetY), tostring(showit)) end
 	if targetX ~= 0 and targetY ~= 0 and showit then
 		local unitSpecColor = PVP:GetUnitSpecColor(name)
-		local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+		local distance = zo_distance(selfX, selfY, targetX, targetY)
 		if distance <= adjusted_MAX_DISTANCE and (PVP.SV.allgroup3d or shouldShowGroupLeaderAtAnyDistance or (distance >= 0.05 * adjusted_MAX_DISTANCE)) then
 			-- if distance<=adjusted_MAX_DISTANCE*2 and (distance>=0.1*adjusted_MAX_DISTANCE) then
 			insert(foundPOI,
@@ -3809,7 +3810,7 @@ local function FindNearbyPOIs()
 					-- local alliance, targetX, targetY, targetZ = PVP.bgTeamBases[bgId][i].alliance, PVP.bgTeamBases[bgId][i].x, PVP.bgTeamBases[bgId][i].y, PVP.bgTeamBases[bgId][i].z
 					local alliance, targetX, targetY, targetZ = bgBases[i].alliance, bgBases[i].x, bgBases[i].y,
 						bgBases[i].z
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					insert(foundPOI,
 						{
 							pinType = alliance,
@@ -3840,7 +3841,7 @@ local function FindNearbyPOIs()
 					if flagState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE then
 						local pinType, targetX, targetY = GetObjectivePinInfo(keepId, objectiveId, bgContext)
 						if targetX ~= 0 and targetY ~= 0 then
-							local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+							local distance = zo_distance(selfX, selfY, targetX, targetY)
 							local name = GetObjectiveInfo(0, objectiveId, BGQUERY_LOCAL)
 							local holdingAlliance = GetCarryableObjectiveHoldingAllianceInfo(0, objectiveId,
 								BGQUERY_LOCAL)
@@ -3868,7 +3869,7 @@ local function FindNearbyPOIs()
 					local pinType, targetX, targetY, targetZ = PVP_PINTYPE_POWERUP, powerUps[i].x, powerUps[i].y,
 						powerUps[i].z
 					if targetX ~= 0 and targetY ~= 0 then
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						local distance = zo_distance(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_POI_MAX_DISTANCE then
 							insert(foundPOI,
 								{
@@ -3888,7 +3889,7 @@ local function FindNearbyPOIs()
 		for i = 1, GetNumKillLocations() do
 			local pinType, targetX, targetY = GetKillLocationPinInfo(i)
 			if targetX ~= 0 and targetY ~= 0 then
-				local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+				local distance = zo_distance(selfX, selfY, targetX, targetY)
 				if distance <= adjusted_POI_MAX_DISTANCE * 1.5 and pinType ~= MAP_PIN_TYPE_INVALID and distance > scaleAdjustment * PVP_SKIRMISH_MIN_DISTANCE then
 					local allianceKills = {}
 					for a = 1, ALLIANCE_MAX_VALUE do
@@ -3919,7 +3920,7 @@ local function FindNearbyPOIs()
 			if scrollState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and scrollState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then --// scrolls in being carried //
 				local pinType, targetX, targetY = GetObjectivePinInfo(k, v, 1)
 				if targetX ~= 0 and targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
 					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
 						insert(foundPOI,
@@ -3970,7 +3971,7 @@ local function FindNearbyPOIs()
 			local targetX, targetY, targetZ, globalX, globalY = PVP.shadowInfo.X, PVP.shadowInfo.Y, PVP.shadowInfo.Z,
 				PVP.shadowInfo.globalX, PVP.shadowInfo.globalY
 			if targetX and targetY and targetX ~= 0 and targetY ~= 0 then
-				local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+				local distance = zo_distance(selfX, selfY, targetX, targetY)
 				local name = 'Shadow Image'
 				if distance <= adjusted_MAX_DISTANCE then
 					insert(foundPOI,
@@ -3992,7 +3993,7 @@ local function FindNearbyPOIs()
 			local pinType, targetX, targetY, radius = GetForwardCampPinInfo(1, i)
 
 			if targetX ~= 0 and targetY ~= 0 then
-				local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+				local distance = zo_distance(selfX, selfY, targetX, targetY)
 				-- if distance<=PVP_MAX_DISTANCE and distance<=radius and distance>PVP_POI_MIN_DISTANCE/1.8 then
 				if distance <= adjusted_MAX_DISTANCE and distance <= radius then
 					insert(foundPOI,
@@ -4013,7 +4014,7 @@ local function FindNearbyPOIs()
 					PVP.ayleidWellsCoords[i].y, PVP.ayleidWellsCoords[i].z
 
 				if targetX ~= 0 and targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_POI_MAX_DISTANCE then
 						insert(foundPOI,
 							{
@@ -4037,7 +4038,7 @@ local function FindNearbyPOIs()
 			targetZ = PVP.SV.compass3dHeight
 
 			targetX, targetY = selfX - 0.05, selfY
-			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+			distance = zo_distance(selfX, selfY, targetX, targetY)
 
 			insert(foundPOI,
 				{
@@ -4050,7 +4051,7 @@ local function FindNearbyPOIs()
 				})
 
 			targetX, targetY = selfX + 0.05, selfY
-			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+			distance = zo_distance(selfX, selfY, targetX, targetY)
 			insert(foundPOI,
 				{
 					pinType = PVP_PINTYPE_COMPASS,
@@ -4062,7 +4063,7 @@ local function FindNearbyPOIs()
 				})
 
 			targetX, targetY = selfX, selfY - 0.05
-			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+			distance = zo_distance(selfX, selfY, targetX, targetY)
 			insert(foundPOI,
 				{
 					pinType = PVP_PINTYPE_COMPASS,
@@ -4074,7 +4075,7 @@ local function FindNearbyPOIs()
 				})
 
 			targetX, targetY = selfX, selfY + 0.05
-			distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+			distance = zo_distance(selfX, selfY, targetX, targetY)
 			insert(foundPOI,
 				{
 					pinType = PVP_PINTYPE_COMPASS,
@@ -4110,7 +4111,7 @@ local function FindNearbyPOIs()
 					local name = foundObjectives[i].objectiveName
 					local alliance = GetCaptureAreaObjectiveOwner(keepId, objectiveId, 1)
 					if targetX ~= 0 and targetY ~= 0 then
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						local distance = zo_distance(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_POI_MAX_DISTANCE then
 							insert(foundPOI,
 								{
@@ -4137,7 +4138,7 @@ local function FindNearbyPOIs()
 					misc.x, misc.y, misc.z, misc.name, misc.alliance, misc.keepId
 
 				if targetX ~= 0 and targetY ~= 0 and (pinType == PVP_PINTYPE_MILEGATE or pinType == PVP_PINTYPE_BRIDGE) then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_MAX_DISTANCE then
 						insert(foundPOI,
 							{
@@ -4162,7 +4163,7 @@ local function FindNearbyPOIs()
 				delve.y, delve.z, 'Delve: ' .. delve.name
 
 				if targetX ~= 0 and targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					if distance <= adjusted_POI_MAX_DISTANCE then
 						insert(foundPOI,
 							{
@@ -4191,7 +4192,7 @@ local function FindNearbyPOIs()
 								local pinType, targetX, targetY, targetZ, name, alliance = PVP_PINTYPE_IC_ALLIANCE_BASE,
 								subZoneBase.x, subZoneBase.y, subZoneBase.z,
 									GetPOIInfo(zoneId, k), subZoneBase.alliance
-								local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+								local distance = zo_distance(selfX, selfY, targetX, targetY)
 								local isCurrent = k == subzoneId
 								if distance <= adjusted_MAX_DISTANCE then
 									insert(foundPOI,
@@ -4220,7 +4221,7 @@ local function FindNearbyPOIs()
 						local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR,
 						subzoneDoor.x, subzoneDoor.y, subzoneDoor.z,
 						GetKeepName(subzoneDoor.location), subzoneDoor.type, subzoneDoor.angle
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						local distance = zo_distance(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_MAX_DISTANCE then
 							insert(foundPOI,
 								{
@@ -4246,7 +4247,7 @@ local function FindNearbyPOIs()
 						local pinType, targetX, targetY, targetZ, name, poiId = PVP_PINTYPE_IC_VAULT,
 						zoneVault.x, zoneVault.y, zoneVault.z,
 							GetPOIInfo(341, zoneVault.poiId), zoneVault.poiId
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						local distance = zo_distance(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_MAX_DISTANCE then
 							insert(foundPOI,
 								{
@@ -4269,7 +4270,7 @@ local function FindNearbyPOIs()
 						local zoneGrate = zoneGrates[k]
 						local pinType, targetX, targetY, targetZ, name = PVP_PINTYPE_IC_GRATE, zoneGrate.x,
 						zoneGrate.y, zoneGrate.z, zoneGrate.name
-						local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+						local distance = zo_distance(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_MAX_DISTANCE then
 							insert(foundPOI,
 								{
@@ -4290,7 +4291,7 @@ local function FindNearbyPOIs()
 		-- if PVP:IsInSewers() then
 		-- for k,v in pairs (PVP.sewers) do
 		-- local pinType, targetX, targetY, targetZ, name, angle, x3d, y3d = PVP_PINTYPE_SEWERS_SIGN, v.x, v.y, v.z, v.name, v.angle, v.x3d, v.y3d
-		-- local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+		-- local distance = zo_distance(selfX, selfY, targetX, targetY)
 
 		-- if distance<=adjusted_MAX_DISTANCE then
 		-- insert(foundPOI, {pinType = pinType, targetX = targetX, targetY = targetY, targetZ = targetZ, distance = distance, name = name, orientation3d = angle, x3d = x3d, y3d = y3d})
@@ -4317,7 +4318,7 @@ local function FindNearbyPOIs()
 				end
 
 				if currentPing.targetX ~= 0 and currentPing.targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, currentPing.targetX,
+					local distance = zo_distance(selfX, selfY, currentPing.targetX,
 						currentPing.targetY)
 
 					if distance <= adjusted_MAX_DISTANCE * 2 then
@@ -4380,13 +4381,13 @@ local function FindBgObjectives()
 			if isBgCtf then
 				local pinType, targetX, targetY = GetObjectiveSpawnPinInfo(keepId, objectiveId, bgContext)
 				if targetX ~= 0 and targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					foundObjectives[objectiveId] = { distance = distance, isCtfBase = true }
 				end
 			else
 				local pinType, targetX, targetY = GetObjectivePinInfo(keepId, objectiveId, bgContext)
 				if targetX ~= 0 and targetY ~= 0 then
-					local distance = PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					foundObjectives[objectiveId] = { distance = distance }
 				end
 			end
@@ -4569,7 +4570,7 @@ local function ControlHasMouseOverAdjusted(control, heading, angleZ, cameraX, ca
 	local controlX, controlZ, controlY = ProcessDynamicControlPosition(control)
 
 
-	local distance = PVP:GetCoordsDistance2D(cameraX, cameraY, controlX, controlY)
+	local distance = zo_distance(cameraX, cameraY, controlX, controlY)
 
 	local deltaX = controlX - cameraX
 	local deltaY = controlY - cameraY

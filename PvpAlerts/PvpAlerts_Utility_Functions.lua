@@ -41,6 +41,7 @@ local PVP_ID_RETAIN_TIME = PVP:GetGlobal('PVP_ID_RETAIN_TIME')
 local PVP_ID_RETAIN_TIME_EFFECT = PVP:GetGlobal('PVP_ID_RETAIN_TIME_EFFECT')
 
 local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
+local zo_distance = zo_distance
 
 local strgsub= zo_strgsub
 local strlen = zo_strlen
@@ -50,6 +51,7 @@ local sqrt = zo_sqrt
 local insert = table.insert
 --local remove = table.remove
 local concat = table.concat
+
 --local upper = string.upper
 --local lower = string.lower
 --local format = string.format
@@ -264,10 +266,10 @@ function PVP:PointIsInsideOfTrapezoid(districtId, pointX, pointY)
 		PVP.ICtrapeziods[districtId].trap2, PVP.ICtrapeziods[districtId].trap3, PVP.ICtrapeziods[districtId].trap4,
 		PVP.ICtrapeziods[districtId].trap12, PVP.ICtrapeziods[districtId].trap23, PVP.ICtrapeziods[districtId].trap34,
 		PVP.ICtrapeziods[districtId].trap41, PVP.ICtrapeziods[districtId].trapArea
-	local pointToTrap1 = PVP:GetCoordsDistance2D(pointX, pointY, trap1.x, trap1.y)
-	local pointToTrap2 = PVP:GetCoordsDistance2D(pointX, pointY, trap2.x, trap2.y)
-	local pointToTrap3 = PVP:GetCoordsDistance2D(pointX, pointY, trap3.x, trap3.y)
-	local pointToTrap4 = PVP:GetCoordsDistance2D(pointX, pointY, trap4.x, trap4.y)
+	local pointToTrap1 = zo_distance(pointX, pointY, trap1.x, trap1.y)
+	local pointToTrap2 = zo_distance(pointX, pointY, trap2.x, trap2.y)
+	local pointToTrap3 = zo_distance(pointX, pointY, trap3.x, trap3.y)
+	local pointToTrap4 = zo_distance(pointX, pointY, trap4.x, trap4.y)
 
 	local function triangleArea(side1, side2, side3)
 		local p = 0.5 * (side1 + side2 + side3)
@@ -1147,11 +1149,6 @@ function CountNestedElements(t)
 	return count
 
 	-- /script d(CountNestedElements(PVP_Alerts_Main_Table.SV))
-end
-
-function PVP:GetCoordsDistance2D(selfX, selfY, targetX, targetY)
-	local distance = sqrt(((targetX - selfX) * (targetX - selfX)) + ((targetY - selfY) * (targetY - selfY)))
-	return distance
 end
 
 function PVP:GetGuildmateSharedGuilds(displayName, isGuildmate)
