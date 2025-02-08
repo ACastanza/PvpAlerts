@@ -631,11 +631,11 @@ local function GetCameraInfoOld()
 	local angle = 0
 
 	while cameraTexture:Is3DQuadFacingCamera() == facing do
-		angle = angle + pi / 200
+		angle = angle + ZO_HALF_PI
 		cameraTexture:Set3DRenderSpaceOrientation(angle, 0, 0)
 	end
 
-	angle = pi / 2 - angle
+	angle = ZO_HALF_PI - angle
 
 	local cameraDistance2d
 
@@ -1632,7 +1632,7 @@ local function CalculateCameraOffset()
 		end
 	end
 
-	local cameraAngleZ = pi / 2 - TestHalfInterval(0, pi)
+	local cameraAngleZ = ZO_HALF_PI - TestHalfInterval(0, pi)
 
 	return cameraX, cameraY, cameraZ, cameraAngleZ
 end
