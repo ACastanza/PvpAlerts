@@ -2,12 +2,12 @@
 
 <GuiXml>
 	<Controls>
-		<Label name="PVP_ScoreboardRowLabel" font="ZoFontGame" wrapMode="ELLIPSIS" horizontalAlignment="CENTER" verticalAlignment="CENTER" virtual="true">
+		<Label name="PVP_ScoreboardRowLabel" linkEnabled="true" font="ZoFontGame" wrapMode="ELLIPSIS" horizontalAlignment="CENTER" verticalAlignment="CENTER" virtual="true">
 			<OnInitialized>
 				self.nonRecolorable = true
 			</OnInitialized>
 		</Label>
-		<Control name="PVP_ScoreboardRow" mouseEnabled="true" linkEnabled="true" virtual="true">
+		<Control name="PVP_ScoreboardRow" mouseEnabled="true" virtual="true">
 			<Dimensions x="898" y="28" />
 			<OnMouseEnter>
 				PVP_ScoreboardRow_OnMouseEnter(self)
