@@ -201,7 +201,7 @@
 				PVP_Feed_SavePosition()
 			</OnMoveStop>
 			<Controls>
-				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_19)|soft-shadow-thick" verticalAlignment="CENTER" text="" horizontalAlignment="CENTER" maxHistoryLines="200" inheritAlpha="true" wrapMode="ELLIPSIS" inheritScale="false">
+				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_19)|soft-shadow-thick" horizontalAlignment="CENTER" maxHistoryLines="200" inheritAlpha="true"  inheritScale="false">
 					<Dimensions x="850" y="120" />
 					<Anchor point="CENTER" offsetY="0" />
 					<LineFade fadeBegin="8" fadeDuration="2"/>
@@ -257,7 +257,7 @@
 				PVP_Names_SavePosition()
 			</OnMoveStop>
 			<Controls>
-				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="ZoFontWinH3" verticalAlignment="CENTER" text="" horizontalAlignment="RIGHT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true" wrapMode="ELLIPSIS" inheritScale="false">
+				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="ZoFontWinH3" horizontalAlignment="RIGHT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true"  inheritScale="false">
 					<Dimensions x="220" y="500" />
 					<Anchor point="CENTER" offsetY="0" />
 					<LineFade fadeBegin="13" fadeDuration="2"/>
@@ -328,7 +328,7 @@
 				PVP_KOS_SavePosition()
 			</OnMoveStop>
 			<Controls>
-				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_17)|soft-shadow-thick" verticalAlignment="CENTER" text="" horizontalAlignment="LEFT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true" wrapMode="ELLIPSIS" inheritScale="false">
+				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="$(BOLD_FONT)|$(KB_17)|soft-shadow-thick" horizontalAlignment="LEFT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true"  inheritScale="false">
 					<!-- <Dimensions x="325" y="360" /> -->
 					<Dimensions x="400" y="360" />
 					<Anchor point="TOP" relativeTo="$(parent)" relativePoint="TOP" offsetY="0" />

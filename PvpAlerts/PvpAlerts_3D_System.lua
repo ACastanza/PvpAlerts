@@ -1389,118 +1389,105 @@ local function ResetWorldTooltip()
 end
 
 function PVP:Init3D()
-	if self.controls3DPool then return end
+    if self.controls3DPool then return end
 
-	self.controls3DPool = ZO_ControlPool:New("PVP_World3D")
+    -- specify a parent control if needed (replace GuiRoot with your intended parent)
+    local parentControl = GuiRoot
+    self.controls3DPool = ZO_ControlPool:New("PVP_World3D", parentControl)
 
-	local function CustomPoolResetBehaviorControl(control)
-		if PVP.currentTooltip == control then
-			if control.params.type == 'GROUP' or control.params.type == 'SCROLL' then
-				PVP.savedTooltip = PVP.savedTooltip or {}
-				PVP.savedTooltip[control.params.name] = {}
-				PVP.savedTooltip[control.params.name].isGroup = control.params.groupTag
-				PVP.savedTooltip[control.params.name].isScroll = control.params.scrollAlliance
-				PVP.savedTooltip[control.params.name].currentPhase = control.params.currentPhase
-			end
-			ResetWorldTooltip()
-		end
-		control:SetHidden(true)
-		control:GetNamedChild('IconUA'):SetHidden(true)
-		control:GetNamedChild('BG'):SetHidden(true)
-		control:GetNamedChild('CaptureBG'):SetHidden(true)
-		control:GetNamedChild('CaptureBar'):SetHidden(true)
-		control:GetNamedChild('Divider'):SetHidden(true)
-		control:GetNamedChild('Scroll'):SetHidden(true)
-		control:GetNamedChild('Locked'):SetHidden(true)
-		control:GetNamedChild('Flags'):SetHidden(true)
-		control:GetNamedChild('Apse'):SetHidden(true)
-		control:GetNamedChild('Nave'):SetHidden(true)
-		control:GetNamedChild('Other'):SetHidden(true)
-		control:GetNamedChild('Middle'):SetHidden(true)
+    local function CustomPoolResetBehaviorControl(control)
+        if PVP.currentTooltip == control then
+            if control.params.type == "GROUP" or control.params.type == "SCROLL" then
+                PVP.savedTooltip = PVP.savedTooltip or {}
+                PVP.savedTooltip[control.params.name] =
+                {
+                    isGroup = control.params.groupTag,
+                    isScroll = control.params.scrollAlliance,
+                    currentPhase = control.params.currentPhase,
+                }
+            end
+            ResetWorldTooltip()
+        end
 
-		control:SetHandler("OnUpdate", nil)
-		control:GetNamedChild('Icon'):SetTextureCoords(0, 1, 0, 1)
-		control:GetNamedChild('Ping'):SetTextureCoords(0, 1, 0, 1)
-		control:GetNamedChild('Icon'):Set3DRenderSpaceUsesDepthBuffer(false)
-		if control.params.borderKeepAnimationHandler and control.params.borderKeepAnimationHandler:IsPlaying() then
-			control.params.borderKeepAnimationHandler:Stop()
-		end
-		if control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() then
-			control.params
-				.flippingPlaying:Stop()
-		end
-		ResetControlPings(control)
-		control.params = {}
-	end
+        control:SetHidden(true)
+        control:GetNamedChild("IconUA"):SetHidden(true)
+        control:GetNamedChild("BG"):SetHidden(true)
+        control:GetNamedChild("CaptureBG"):SetHidden(true)
+        control:GetNamedChild("CaptureBar"):SetHidden(true)
+        control:GetNamedChild("Divider"):SetHidden(true)
+        control:GetNamedChild("Scroll"):SetHidden(true)
+        control:GetNamedChild("Locked"):SetHidden(true)
+        control:GetNamedChild("Flags"):SetHidden(true)
+        control:GetNamedChild("Apse"):SetHidden(true)
+        control:GetNamedChild("Nave"):SetHidden(true)
+        control:GetNamedChild("Other"):SetHidden(true)
+        control:GetNamedChild("Middle"):SetHidden(true)
 
+        control:SetHandler("OnUpdate", nil)
+        control:GetNamedChild("Icon"):SetTextureCoords(0, 1, 0, 1)
+        control:GetNamedChild("Ping"):SetTextureCoords(0, 1, 0, 1)
+        control:GetNamedChild("Icon"):Set3DRenderSpaceUsesDepthBuffer(false)
 
-	local function CustomFactoryBehavior(control)
-		control:Create3DRenderSpace()
-		for i = 1, control:GetNumChildren() do
-			control:GetChild(i):Create3DRenderSpace()
-		end
-		control.params = {}
-	end
+        if control.params.borderKeepAnimationHandler and control.params.borderKeepAnimationHandler:IsPlaying() then
+            control.params.borderKeepAnimationHandler:Stop()
+        end
+        if control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() then
+            control.params.flippingPlaying:Stop()
+        end
 
+        ResetControlPings(control)
+        control.params = {}
+    end
 
-	self.controls3DPool:SetCustomFactoryBehavior(CustomFactoryBehavior)
-	self.controls3DPool:SetCustomResetBehavior(CustomPoolResetBehaviorControl)
+    local function CustomFactoryBehavior(control)
+        control:Create3DRenderSpace()
+        for i = 1, control:GetNumChildren() do
+            control:GetChild(i):Create3DRenderSpace()
+        end
+        control.params = {}
+    end
 
-	PVP_TestWorld:Create3DRenderSpace()
-	PVP_TestWorldIcon:Create3DRenderSpace()
-	PVP_TestWorldIcon:Set3DLocalDimensions(8, 8)
-	-- PVP_TestWorld:Set3DRenderSpaceOrigin(-1.1537978649139, 129.0823059082, -14.28395652771)
-	PVP_TestWorld:SetHidden(true)
+    self.controls3DPool:SetCustomFactoryBehavior(CustomFactoryBehavior)
+    self.controls3DPool:SetCustomResetBehavior(CustomPoolResetBehaviorControl)
 
-	PVP_World3DCrown:Create3DRenderSpace()
-	PVP_World3DCrownIcon:Create3DRenderSpace()
-	PVP_World3DCrownIcon:Set3DLocalDimensions(5, 5)
-	PVP_World3DCrown:SetHidden(true)
-	PVP_World3DCrown.params = {}
+    -- Set up 3D render spaces for static elements
+    PVP_TestWorld:Create3DRenderSpace()
+    PVP_TestWorldIcon:Create3DRenderSpace()
+    PVP_TestWorldIcon:Set3DLocalDimensions(8, 8)
+    PVP_TestWorld:SetHidden(true)
+
+    PVP_World3DCrown:Create3DRenderSpace()
+    PVP_World3DCrownIcon:Create3DRenderSpace()
+    PVP_World3DCrownIcon:Set3DLocalDimensions(5, 5)
+    PVP_World3DCrown:SetHidden(true)
+    PVP_World3DCrown.params = {}
 
 	-- PVP_TestWorldCamera:Create3DRenderSpace()
 	-- PVP_TestWorldCameraIcon:Create3DRenderSpace()
 	-- PVP_TestWorldCameraIcon:Set3DLocalDimensions(10, 10)
 	-- PVP_TestWorldCamera:SetHidden(true)
 
-	PVP_World3DCameraMeasurement:Create3DRenderSpace()
-	PVP_World3DCameraMeasurementIcon:Create3DRenderSpace()
-	PVP_World3DCameraMeasurementIcon:Set3DLocalDimensions(10, 10)
-	PVP_World3DCameraMeasurement:SetHidden(false)
-	PVP_World3DCameraMeasurementIcon:SetHidden(true)
+    PVP_World3DCameraMeasurement:Create3DRenderSpace()
+    PVP_World3DCameraMeasurementIcon:Create3DRenderSpace()
+    PVP_World3DCameraMeasurementIcon:Set3DLocalDimensions(10, 10)
+    PVP_World3DCameraMeasurement:SetHidden(false)
+    PVP_World3DCameraMeasurementIcon:SetHidden(true)
 
-	CALLBACK_MANAGER:RegisterCallback("On3DWorldOriginChanged", function()
-		-- d('New Origin Callback received!')
-		-- d('New origin callback time: '..tostring(GetFrameTimeMilliseconds()))
-		local currentCameraInfo = PVP.currentCameraInfo
-		if currentCameraInfo.lastDeltaX and currentCameraInfo.lastDeltaY then
-			d('ORIGIN CHANGED')
-			local objects = PVP.controls3DPool:GetActiveObjects()
-			-- local objectsCount = 0
-			for k, v in pairs(objects) do
-				local control = v
-				if control and control:GetName() and control.params.type ~= 'COMPASS' then
-					local newX = currentCameraInfo.current3DX +
-						(control.params.X - currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-					local newY = currentCameraInfo.current3DY +
-						(control.params.Y - currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
-
-					local oldX, oldZ, oldY = control:Get3DRenderSpaceOrigin()
-					-- control:Set3DRenderSpaceOrigin(oldX+currentCameraInfo.lastDeltaX, oldZ, oldY+currentCameraInfo.lastDeltaY)
-					control:Set3DRenderSpaceOrigin(newX + currentCameraInfo.lastDeltaX, oldZ,
-						newY + currentCameraInfo.lastDeltaY)
-
-					-- local _, oldZ = control:Get3DRenderSpaceOrigin()
-					control:Set3DRenderSpaceOrigin(newX, oldZ, newY)
-
-					-- objectsCount = objectsCount + 1
-				end
-			end
-			-- d('New Origin Processing done!')
-			-- d('objectsCount = '..tostring(objectsCount))
-			-- d('objectsCount internal = '..tostring(PVP.controls3DPool:GetActiveObjectCount()))
-		end
-	end)
+    CALLBACK_MANAGER:RegisterCallback("On3DWorldOriginChanged", function ()
+        local currentCameraInfo = PVP.currentCameraInfo
+        if currentCameraInfo.lastDeltaX and currentCameraInfo.lastDeltaY then
+            d("ORIGIN CHANGED")
+            local objects = PVP.controls3DPool:GetActiveObjects()
+            for k, control in pairs(objects) do
+                if control and control:GetName() and control.params.type ~= "COMPASS" then
+                    local newX = currentCameraInfo.current3DX + (control.params.X - currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
+                    local newY = currentCameraInfo.current3DY + (control.params.Y - currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+                    local _, oldZ, _ = control:Get3DRenderSpaceOrigin()
+                    control:Set3DRenderSpaceOrigin(newX, oldZ, newY)
+                end
+            end
+        end
+    end)
 
 	-- d('3d icons initiazlied!')
 	-- PVP:Setup3DMeasurements()
@@ -2388,7 +2375,7 @@ end
 
 local function GetBattlegroundStateString(battlegroundState)
 	local battlegroundStateString
-	if battlegroundState == BATTLEGROUND_STATE_PREGAME then
+	if battlegroundState == BATTLEGROUND_STATE_PREROUND then
 		battlegroundStateString = "Waiting for players..."
 	elseif battlegroundState == BATTLEGROUND_STATE_STARTING then
 		battlegroundStateString = "The match starts in " ..

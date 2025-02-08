@@ -9,7 +9,7 @@ local floor = zo_floor
 local GetGameTimeMilliseconds = GetGameTimeMilliseconds
 
 function PVP:FindNearbyKeepToRespawn(anyKeep)
-	local foundKeepId, minDistance = 0
+	local foundKeepId, minDistance = 0, 0
 	local selfX, selfY = GetMapPlayerPosition('player')
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
@@ -174,7 +174,7 @@ function PVP:FindNearbyCampToRespawn(onUpdate)
 		PVP_ForwardCamp_Icon:SetAlpha(0.5)
 		return false
 	end
-	local campIndex, count, minDistance, isUsable, campRadius = 0, 0
+	local campIndex, count, minDistance, isUsable, campRadius = 0, 0, 0, false, 0
 	local selfX, selfY = GetMapPlayerPosition('player')
 	for i = 1, GetNumForwardCamps(1) do
 		local _, targetX, targetY, radius, usable = GetForwardCampPinInfo(1, i)
