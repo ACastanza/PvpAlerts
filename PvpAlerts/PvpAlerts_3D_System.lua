@@ -3950,9 +3950,9 @@ local function FindNearbyPOIs()
 					if GetUnitZone(groupTag) == playerZone then
 						local x, y = GetMapPlayerPosition(groupTag)
 						POIGroupInsert(foundPOI, groupTag, selfX, selfY, x, y, GetRawUnitName(groupTag),
-							IsUnitGroupLeader(groupTag), IsUnitDead(groupTag),
-							GetUnitClassId(groupTag), IsUnitInCombat(groupTag), PVP.SV.groupleader3d and IsUnitGroupLeader(groupTag),
-							not (PVP.SV.onlyGroupLeader3d and not IsUnitGroupLeader(groupTag)))
+						isGroupLeader, IsUnitDead(groupTag),
+							GetUnitClassId(groupTag), IsUnitInCombat(groupTag), PVP.SV.groupleader3d and isGroupLeader,
+							not (PVP.SV.onlyGroupLeader3d and not isGroupLeader))
 					end
 				end
 			end
