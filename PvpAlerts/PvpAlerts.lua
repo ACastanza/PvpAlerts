@@ -1323,7 +1323,7 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 			if attackType == 'source' then
 				isAttacker = true
 				if self.SV.playNewAttackerSound and not IsActiveWorldBattleground() then
-					PVP:PlayLoudSound('DUEL_BOUNDARY_WARNING')
+					self:PlayLoudSound('DUEL_BOUNDARY_WARNING')
 					-- d('New attacker!')
 					-- d('unitName: '..unitName)
 					-- d('abilityId: '..abilityId)
@@ -1516,7 +1516,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 			if self.minorImportantAbilities[abilityId] then
 				if currentTime < self.majorAttackNotficiationLockout then return end
 				self.minorAttackNotficiationLockout = currentTime + hitValue
-				self.PlayLoudSound(COLLECTIBLE_ON_COOLDOWN)
+				self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, false,
 					false, false, hitValue)
@@ -1528,7 +1528,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 				}
 			else
 				self.majorAttackNotficiationLockout = currentTime + hitValue
-				self.PlayLoudSound(CONSOLE_GAME_ENTER)
+				self:PlayLoudSound('CONSOLE_GAME_ENTER')
 				if abilityName == "Charge Snare" then
 					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
 				end
