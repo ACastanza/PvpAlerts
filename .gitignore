@@ -7,3 +7,6 @@ cspell.json
 .gitattributes
 .vscode/settings.json
 .vscode/settings.json
+PvpAlerts_Definitions.lua
+PvpAlerts_Scoreboard_Definitions.lua
+strings.lua
