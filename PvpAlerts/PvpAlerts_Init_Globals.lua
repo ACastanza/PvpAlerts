@@ -1,7 +1,10 @@
+---@class (partial) PvpAlerts
 PVP_Alerts_Main_Table = {}
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
-PVP.globalConstants = {
+---@enum (value) PvpAlerts_globalConstants
+local Constants = {
 	-- ['PVP_BRIGHT_AD_COLOR']="EFD13C",
 	['PVP_BRIGHT_AD_COLOR'] = "C2AA49",
 	-- ['PVP_BRIGHT_EP_COLOR']="FF7161",
@@ -96,6 +99,13 @@ PVP.globalConstants = {
 	['PVP_ID_RETAIN_TIME_EFFECT'] = 100000,
 }
 
+PVP.globalConstants = Constants
+
+--- Retrieves a constant from the global constants table.
+--- Utilizing generics to capture the type so that callers can receive their expected type.
+--- @generic T : PvpAlerts_globalConstants
+--- @param globalName T The key whose value is being retrieved.
+--- @return T
 function PVP:GetGlobal(globalName)
-	return self.globalConstants[globalName]
+    return self.globalConstants[globalName]
 end

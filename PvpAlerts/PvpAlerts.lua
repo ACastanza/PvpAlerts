@@ -1,5 +1,5 @@
 -- // the code needs quite a bit of refactoring, which most likely will never happen:( //
-
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry

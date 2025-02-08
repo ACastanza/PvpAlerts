@@ -1,3 +1,4 @@
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 function PVP:DetectSpec(unitId, abilityId, result, sourceName, isBuff, damageBuff)

@@ -1,3 +1,4 @@
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 local PVP_ICON_MISSING = PVP:GetGlobal('PVP_ICON_MISSING')

@@ -1,3 +1,4 @@
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 local chat = PVP.CHAT
@@ -656,7 +657,7 @@ local function GetCameraInfoOld()
 end
 
 local function GetCameraInfo()
-	local cameraDistance2d, angle, x, y, z
+	local cameraDistance2d, _, angle, x, y, z
 
 	if PVP.currentCameraInfo then
 		cameraDistance2d, angle, x, y, z = PVP.currentCameraInfo.cameraDistance, PVP.currentCameraInfo.cameraAngleZ,
@@ -680,7 +681,7 @@ function PVP:SetupShadow(duration)
 	PVP.shadowInfo.Y = Y
 	PVP.shadowInfo.globalX = globalX
 	PVP.shadowInfo.globalY = globalY
-	local angle, Z
+	local _, angle, Z
 	_, _, angle, _, _, Z = GetCameraInfo()
 	Z = Z - angle * 7
 	PVP.shadowInfo.Z = Z
@@ -796,7 +797,7 @@ local function ProcessDynamicControlPosition(control)
 
 
 	if not control.params.height then
-		local newHeight
+		local _, newHeight
 		_, _, _, _, _, newHeight = GetCameraInfo()
 		control:Set3DRenderSpaceOrigin(controlX, newHeight + bias, controlY)
 		controlZ = newHeight + bias
@@ -1515,7 +1516,7 @@ local function GetCurrentMapCoordsFromKeepId(keepId)
 
 	local keepInfoInDB = PVP.AVAids[keepId]
 
-	local coordsNewX, coordsNewY, objectiveId
+	local _, coordsNewX, coordsNewY, objectiveId
 
 	if keepInfoInDB and keepInfoInDB[1].objectiveId ~= 0 then
 		objectiveId = keepInfoInDB[1].objectiveId
@@ -1558,7 +1559,7 @@ end
 
 local function GetCurrentTrustedCoords()
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
-	local current3DX, current3DY, currentMapX, currentMapY, success
+	local _, current3DX, current3DY, currentMapX, currentMapY, success
 
 	if PVP.controls3DPool:GetActiveObjectCount() > 0 then
 		local objects = PVP.controls3DPool:GetActiveObjects()
@@ -1652,7 +1653,7 @@ local function CalculatePlayerDistance(cameraX, cameraY, cameraZ, cameraAngleZ)
 	return cameraDistance
 end
 
-function Take3DMeasurements()
+local function Take3DMeasurements()
 	if PVP.suppressTest and (GetFrameTimeMilliseconds() > (PVP.suppressTest.currentTime + 6000)) then
 		if PVP.LMP:IsPingSuppressed(MAP_PIN_TYPE_PING, PVP.suppressTest.playerGroupTag) then
 			PVP.LMP:UnsuppressPing(
@@ -3095,7 +3096,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 			PVP.isWaitingOnTrustedFirstRun = true
 		end
 
-		local realCameraDistance
+		local _, realCameraDistance
 
 		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo()
 
@@ -3354,7 +3355,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		if isActivated then
 			PVP.isWaitingOnTrustedFirstRun = true
 		end
-		local realCameraDistance
+		local _, realCameraDistance
 
 		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo()
 
@@ -3632,7 +3633,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 			PVP.isWaitingOnTrustedFirstRun = true
 		end
 
-		local realCameraDistance
+		local _, realCameraDistance
 
 		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo()
 
