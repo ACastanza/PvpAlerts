@@ -53,10 +53,12 @@ local captureMeterSizeAdjustment = 4
 -- local cameraDistance = 10
 local playerHeight = 2
 local maxDistance = 0.0005
-local effectiveMaxDistance = 0.85 * maxDistance
-local effectiveMaxDistanceFar = 1.15 * maxDistance
+-- local effectiveMaxDistance = 0.85 * maxDistance
+-- local effectiveMaxDistanceFar = 1.15 * maxDistance
 
-local mydname = GetUnitDisplayName("player")
+-- local mydname = GetUnitDisplayName("player")
+
+local BGQUERY_LOCAL = BGQUERY_LOCAL
 
 local PVP_MAPINDEX_CYRODIIL = 14
 local PVP_MAPINDEX_IC = 26
@@ -81,10 +83,10 @@ local PVP_DISTANCE_MAX_MULTIPLIER_IC = 9
 -- local PVP_FALLOFF_DISTANCE1 = 0.05
 local PVP_MAX_DISTANCE = 0.20
 local PVP_SKIRMISH_MAX_DISTANCE = PVP_MAX_DISTANCE / 20
-local PVP_MIN_TOOLTIP_POPUP_DISTANCE = PVP_MAX_DISTANCE / 6.4
+--local PVP_MIN_TOOLTIP_POPUP_DISTANCE = PVP_MAX_DISTANCE / 6.4
 
 local PVP_POI_HEIGHT_GRACE_DISTANCE = 0.02
-local PVP_MIN_DISTANCE = 0
+--local PVP_MIN_DISTANCE = 0
 local PVP_POI_MIN_DISTANCE = 0.01
 local PVP_SKIRMISH_MIN_DISTANCE = PVP_POI_MIN_DISTANCE * 0.75
 
@@ -101,8 +103,8 @@ local PVP_PINTYPE_BRIDGE = PVP:GetGlobal('PVP_PINTYPE_BRIDGE')
 local PVP_PINTYPE_COMPASS = PVP:GetGlobal('PVP_PINTYPE_COMPASS')
 local PVP_PINTYPE_TOWNFLAG = PVP:GetGlobal('PVP_PINTYPE_TOWNFLAG')
 local PVP_PINTYPE_SHADOWIMAGE = PVP:GetGlobal('PVP_PINTYPE_SHADOWIMAGE')
-local PVP_MONKEY = PVP:GetGlobal('PVP_MONKEY')
-local PVP_BUNNY = PVP:GetGlobal('PVP_BUNNY')
+--local PVP_MONKEY = PVP:GetGlobal('PVP_MONKEY')
+--local PVP_BUNNY = PVP:GetGlobal('PVP_BUNNY')
 
 -- local PVP_PINTYPE_SHADOWIMAGE = 9999
 
@@ -117,13 +119,13 @@ local PVP_WAYPOINT_TEXTURE = 'esoui/art/compass/compass_waypoint.dds'
 
 local PVP_TEXTURES_PATH = PVP:GetGlobal('PVP_TEXTURES_PATH')
 
-local rankIcons = {
-	[1] = 'esoui/art/tutorial/ava_rankicon64_general.dds',
-	[2] = 'esoui/art/tutorial/ava_rankicon64_warlord.dds',
-	[3] = 'esoui/art/tutorial/ava_rankicon64_grandwarlord.dds',
-	[4] = 'esoui/art/tutorial/ava_rankicon64_overlord.dds',
-	[5] = 'esoui/art/tutorial/ava_rankicon64_grandoverlord.dds',
-}
+-- local rankIcons = {
+-- 	[1] = 'esoui/art/tutorial/ava_rankicon64_general.dds',
+-- 	[2] = 'esoui/art/tutorial/ava_rankicon64_warlord.dds',
+-- 	[3] = 'esoui/art/tutorial/ava_rankicon64_grandwarlord.dds',
+-- 	[4] = 'esoui/art/tutorial/ava_rankicon64_overlord.dds',
+-- 	[5] = 'esoui/art/tutorial/ava_rankicon64_grandoverlord.dds',
+-- }
 
 local icControls = {
 	['IC_BASE'] = true,
@@ -699,7 +701,7 @@ local function ReturnClosestBorderKeepId()
 	local playerX, playerY = GetMapPlayerPosition('player')
 	local minDistance, foundKeepId
 	for keepId in pairs(PVP.borderKeepsIds) do
-		local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
+		local _, targetX, targetY = GetKeepPinInfo(keepId, BGQUERY_LOCAL)
 		local distance = zo_distance(playerX, playerY, targetX, targetY)
 		if not minDistance or distance < minDistance then
 			minDistance = distance
@@ -789,7 +791,7 @@ local function ProcessDynamicControlPosition(control)
 	end
 
 	if control.params.type == 'SCROLL' and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
-		local _, X, Y = GetObjectivePinInfo(control.params.scrollKeepId, control.params.scrollObjectiveId, 1)
+		local _, X, Y = GetObjectivePinInfo(control.params.scrollKeepId, control.params.scrollObjectiveId, BGQUERY_LOCAL)
 		X = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
 		Y = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 		local Z = PVP.currentCameraInfo.cameraZ + 15
@@ -1101,13 +1103,13 @@ end
 function PVP:IsMiscPassable(keepId)
 	local keepType = GetKeepType(keepId)
 	if keepType == KEEPTYPE_MILEGATE then
-		if GetKeepDirectionalAccess(keepId, 1) == KEEP_PIECE_DIRECTIONAL_ACCESS_BIDIRECTIONAL then
+		if GetKeepDirectionalAccess(keepId, BGQUERY_LOCAL) == KEEP_PIECE_DIRECTIONAL_ACCESS_BIDIRECTIONAL then
 			return true
 		else
 			return false
 		end
 	elseif keepType == KEEPTYPE_BRIDGE then
-		if IsKeepPassable(keepId, 1) then
+		if IsKeepPassable(keepId, BGQUERY_LOCAL) then
 			return true
 		else
 			return false
@@ -1240,7 +1242,7 @@ local function GetControlColor(control, data, iconType)
 	elseif type == 'IC_BASE' then
 		colorR, colorG, colorB, alpha = PVP:GetTrueAllianceColors(data.alliance)
 	elseif type == 'TOWN_FLAG' then
-		control.params.alliance = GetCaptureAreaObjectiveOwner(data.keepId, data.objectiveId, 1)
+		control.params.alliance = GetCaptureAreaObjectiveOwner(data.keepId, data.objectiveId, BGQUERY_LOCAL)
 		colorR, colorG, colorB, alpha = PVP:GetTrueAllianceColors(control.params.alliance)
 	elseif type == 'COMPASS' then
 		if control.params.name == 'NORTH' then
@@ -1522,14 +1524,14 @@ local function GetCurrentMapCoordsFromKeepId(keepId)
 	if keepInfoInDB and keepInfoInDB[1].objectiveId ~= 0 then
 		objectiveId = keepInfoInDB[1].objectiveId
 		if PVP.midpointKeepIds[keepId] then
-			local _, apseX, apseY = GetObjectivePinInfo(keepId, keepInfoInDB[1].objectiveId, 1)
-			local _, naveX, naveY = GetObjectivePinInfo(keepId, keepInfoInDB[2].objectiveId, 1)
+			local _, apseX, apseY = GetObjectivePinInfo(keepId, keepInfoInDB[1].objectiveId, BGQUERY_LOCAL)
+			local _, naveX, naveY = GetObjectivePinInfo(keepId, keepInfoInDB[2].objectiveId, BGQUERY_LOCAL)
 			coordsNewX = (apseX + naveX) / 2
 			coordsNewY = (apseY + naveY) / 2
 		elseif PVP:KeepIdToKeepType(keepId) == PVP_KEEPTYPE_ARTIFACT_KEEP then
-			_, coordsNewX, coordsNewY = GetKeepPinInfo(keepId, 1)
+			_, coordsNewX, coordsNewY = GetKeepPinInfo(keepId, BGQUERY_LOCAL)
 		else
-			_, coordsNewX, coordsNewY = GetObjectivePinInfo(keepId, objectiveId, 1)
+			_, coordsNewX, coordsNewY = GetObjectivePinInfo(keepId, objectiveId, BGQUERY_LOCAL)
 		end
 	else
 		if PVP.borderKeepsIds[keepId] and keepInfoInDB[1].coords then
@@ -1541,7 +1543,7 @@ local function GetCurrentMapCoordsFromKeepId(keepId)
 				coordsNewY = (keepInfoInDB[1].coords.outsideCorner1.y + keepInfoInDB[1].coords.outsideCorner2.y) / 2
 			end
 		else
-			_, coordsNewX, coordsNewY = GetKeepPinInfo(keepId, 1)
+			_, coordsNewX, coordsNewY = GetKeepPinInfo(keepId, BGQUERY_LOCAL)
 		end
 	end
 
@@ -1882,7 +1884,7 @@ end
 
 local function IsAllianceAllowedLink(keepIdA, keepIdB)
 
-	local keepAlliance = GetKeepAlliance(keepIdA, 1)
+	local keepAlliance = GetKeepAlliance(keepIdA, BGQUERY_LOCAL)
 
 	if keepAlliance == 1 and not (CheckIfLockedAlliance(keepIdA, keepIdB, dcLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, epLinks)) then return true end
 	if keepAlliance == 2 and not (CheckIfLockedAlliance(keepIdA, keepIdB, adLinks) or CheckIfLockedAlliance(keepIdA, keepIdB, dcLinks)) then return true end
@@ -1890,7 +1892,7 @@ local function IsAllianceAllowedLink(keepIdA, keepIdB)
 end
 
 local function CanKeepBeTraveledTo(keepId, keepAlliance)
-	if not GetKeepHasResourcesForTravel(keepId, 1) then return end
+	if not GetKeepHasResourcesForTravel(keepId, BGQUERY_LOCAL) then return end
 	local connectedKeeps = connectedKeepsArray[keepId]
 	if connectedKeeps then
 		for _, v in ipairs(connectedKeeps) do
@@ -1915,7 +1917,7 @@ local function IsKeepLocked(keepId, keepIdType, keepAlliance)
 end
 
 local function IsFlagInObjectiveId(objectiveId)
-	local flagState = GetObjectiveControlState(0, objectiveId, 1)
+	local flagState = GetObjectiveControlState(0, objectiveId, BGQUERY_LOCAL)
 	if flagState == OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE then
 		local mappin = GetObjectivePinInfo(0, objectiveId, BGQUERY_LOCAL)
 		return true, ZO_MapPin.PIN_DATA[mappin].texture
@@ -2028,7 +2030,7 @@ local function GetUpgradeLevelString(control)
 	local keepId = control.params.keepId
 	if keepId then
 		if GetKeepResourceType(keepId) ~= 0 then
-			upgradeNumber = GetKeepDefensiveLevel(keepId, 1)
+			upgradeNumber = GetKeepDefensiveLevel(keepId, BGQUERY_LOCAL)
 		elseif GetKeepType(keepId) == KEEPTYPE_KEEP then
 			local combinedUpgradeLevel = 0
 			for i = 1, 3 do
@@ -2155,7 +2157,7 @@ local function GetScoringInfoString()
 			GetAllianceColoredString(scores[3][1], scores[3][2])
 	end
 
-	if not GetCampaignAllianceScore(currentCampaignId, 1) then
+	if not GetCampaignAllianceScore(currentCampaignId, BGQUERY_LOCAL) then
 		return PVP:Colorize("Campaign Score is not available at the moment!", 'CCCCCC')
 	end
 
@@ -2526,7 +2528,7 @@ local function PoiOnUpdate(control)
 					prefix = 'From '
 				end
 				mainText = PVP:Colorize(prefix, '808080') ..
-					PVP:Colorize(name, PVP:AllianceToColor(GetKeepAlliance(controlParams.doorDistrictKeepId, 1)))
+					PVP:Colorize(name, PVP:AllianceToColor(GetKeepAlliance(controlParams.doorDistrictKeepId, BGQUERY_LOCAL)))
 			elseif type == 'BG_BASE' then
 				mainText = GetBattlegroundTeamName(alliance) .. ' base'
 			elseif type == 'GROUP' then
@@ -2551,7 +2553,7 @@ local function PoiOnUpdate(control)
 			if alliance and not (type == 'MILEGATE' or type == 'BRIDGE') then
 				-- if (type == 'MILEGATE' or type == 'BRIDGE') then
 				-- if alliance ~= ALLIANCE_NONE then
-				-- mainText = PVP:Colorize(mainText, PVP:AllianceToColor(GetKeepAlliance(alliance, 1)))
+				-- mainText = PVP:Colorize(mainText, PVP:AllianceToColor(GetKeepAlliance(alliance, BGQUERY_LOCAL)))
 				-- else
 				-- mainText = PVP:Colorize(mainText, '808080')
 				-- end
@@ -2878,11 +2880,11 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		naveId = PVP.AVAids[control.params.keepId][2].objectiveId
 		apseId = PVP.AVAids[control.params.keepId][1].objectiveId
 
-		naveObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, naveId, 1))
-		apseObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, apseId, 1))
+		naveObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, naveId, BGQUERY_LOCAL))
+		apseObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, apseId, BGQUERY_LOCAL))
 
-		naveAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, naveId, 1)
-		apseAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, apseId, 1)
+		naveAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, naveId, BGQUERY_LOCAL)
+		apseAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, apseId, BGQUERY_LOCAL)
 
 		if naveAlliance == 0 and not isUnderAttack then
 			naveAlliance = keepAlliance
@@ -2896,8 +2898,8 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		if isTown then
 			otherId = PVP.AVAids[control.params.keepId][3].objectiveId
-			otherObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, otherId, 1))
-			otherAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, otherId, 1)
+			otherObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, otherId, BGQUERY_LOCAL))
+			otherAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, otherId, BGQUERY_LOCAL)
 			if otherAlliance == 0 and not isUnderAttack then
 				otherAlliance = keepAlliance
 			end
@@ -2956,7 +2958,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 			captureAlliance = keepAlliance
 		end
 
-		local percentage = PVP:GetCapturePercentFromAlliance(objectiveState, GetKeepAlliance(control.params.keepId, 1),
+		local percentage = PVP:GetCapturePercentFromAlliance(objectiveState, GetKeepAlliance(control.params.keepId, BGQUERY_LOCAL),
 			captureAlliance)
 
 		if percentage == 40 then
@@ -3709,7 +3711,7 @@ local function FindNearbyKeeps()
 
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
-		local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
+		local _, targetX, targetY = GetKeepPinInfo(keepId, BGQUERY_LOCAL)
 
 		if not (keepId > 153 and keepId < 163) and targetX ~= 0 and targetY ~= 0 then
 			local distance = zo_distance(selfX, selfY, targetX, targetY)
@@ -3837,14 +3839,14 @@ local function FindNearbyPOIs()
 			for i = 1, GetNumObjectives() do
 				local keepId, objectiveId, bgContext = GetObjectiveIdsForIndex(i)
 				if keepId == 0 and bgContext == BGQUERY_LOCAL and DoesObjectiveExist(keepId, objectiveId, bgContext) then
-					local flagState = GetObjectiveControlState(0, objectiveId, 1)
+					local flagState = GetObjectiveControlState(0, objectiveId, bgContext)
 					if flagState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE then
 						local pinType, targetX, targetY = GetObjectivePinInfo(keepId, objectiveId, bgContext)
 						if targetX ~= 0 and targetY ~= 0 then
 							local distance = zo_distance(selfX, selfY, targetX, targetY)
-							local name = GetObjectiveInfo(0, objectiveId, BGQUERY_LOCAL)
+							local name = GetObjectiveInfo(0, objectiveId, bgContext)
 							local holdingAlliance = GetCarryableObjectiveHoldingAllianceInfo(0, objectiveId,
-								BGQUERY_LOCAL)
+								bgContext)
 							insert(foundPOI,
 								{
 									pinType = pinType,
@@ -3911,14 +3913,14 @@ local function FindNearbyPOIs()
 		end
 
 		for k, v in pairs(PVP.elderScrollsIds) do
-			local name, _, scrollState = GetObjectiveInfo(k, v, 1)
-			local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, 1)
+			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
+			local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
 			local originalAlliance
 			if not IsActiveWorldBattleground() then
-				originalAlliance = GetArtifactScrollObjectiveOriginalOwningAlliance(k, v, 1)
+				originalAlliance = GetArtifactScrollObjectiveOriginalOwningAlliance(k, v, BGQUERY_LOCAL)
 			end
 			if scrollState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and scrollState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then --// scrolls in being carried //
-				local pinType, targetX, targetY = GetObjectivePinInfo(k, v, 1)
+				local pinType, targetX, targetY = GetObjectivePinInfo(k, v, BGQUERY_LOCAL)
 				if targetX ~= 0 and targetY ~= 0 then
 					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
@@ -4097,7 +4099,7 @@ local function FindNearbyPOIs()
 				for i = 1, 3 do
 					local keepId = foundObjectives[i].keepId
 					local objectiveId = foundObjectives[i].objectiveId
-					local _, targetX, targetY = GetObjectivePinInfo(keepId, objectiveId, 1)
+					local _, targetX, targetY = GetObjectivePinInfo(keepId, objectiveId, BGQUERY_LOCAL)
 					local targetZ
 
 					for j = 1, 3 do
@@ -4109,7 +4111,7 @@ local function FindNearbyPOIs()
 
 					local pinType = PVP_PINTYPE_TOWNFLAG
 					local name = foundObjectives[i].objectiveName
-					local alliance = GetCaptureAreaObjectiveOwner(keepId, objectiveId, 1)
+					local alliance = GetCaptureAreaObjectiveOwner(keepId, objectiveId, BGQUERY_LOCAL)
 					if targetX ~= 0 and targetY ~= 0 then
 						local distance = zo_distance(selfX, selfY, targetX, targetY)
 						if distance <= adjusted_POI_MAX_DISTANCE then
@@ -4217,7 +4219,7 @@ local function FindNearbyPOIs()
 				if subzoneDoors then
 					for k, v in pairs(subzoneDoors) do
 						local subzoneDoor = subzoneDoors[k]
-						-- local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR, subzoneDoor.x, subzoneDoor.y, subzoneDoor.z, PVP:Colorize(GetKeepName(subzoneDoor.location), PVP:AllianceToColor(GetKeepAlliance(subzoneDoor.location, 1))), subzoneDoor.type, subzoneDoor.angle
+						-- local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR, subzoneDoor.x, subzoneDoor.y, subzoneDoor.z, PVP:Colorize(GetKeepName(subzoneDoor.location), PVP:AllianceToColor(GetKeepAlliance(subzoneDoor.location, BGQUERY_LOCAL))), subzoneDoor.type, subzoneDoor.angle
 						local pinType, targetX, targetY, targetZ, name, doorType, angle = PVP_PINTYPE_IC_DOOR,
 						subzoneDoor.x, subzoneDoor.y, subzoneDoor.z,
 						GetKeepName(subzoneDoor.location), subzoneDoor.type, subzoneDoor.angle
