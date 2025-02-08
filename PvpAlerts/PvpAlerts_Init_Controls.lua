@@ -1,3 +1,4 @@
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 local PVP_NAME_FONT = PVP:GetGlobal('PVP_NAME_FONT')

@@ -1,3 +1,4 @@
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 local FLAGTYPE_OTHER = PVP:GetGlobal('FLAGTYPE_OTHER')

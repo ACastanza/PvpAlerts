@@ -1,4 +1,6 @@
+---@class (partial) PvpAlerts
 PVP_Alerts_Main_Table = {}
+---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
 PVP.globalConstants = {
@@ -96,6 +98,9 @@ PVP.globalConstants = {
 	['PVP_ID_RETAIN_TIME_EFFECT'] = 100000,
 }
 
+---@generic T
+---@param globalName T
+---@return T
 function PVP:GetGlobal(globalName)
 	return self.globalConstants[globalName]
 end
