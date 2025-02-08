@@ -201,6 +201,7 @@ local fixedHeight = {
 
 local nonClaimableKeepTypes = {
 	[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
+	[PVP_KEEPTYPE_BORDER_KEEP] = true,
 	[KEEPTYPE_ARTIFACT_KEEP] = true,
 	[KEEPTYPE_ARTIFACT_GATE] = true,
 	[KEEPTYPE_BORDER_KEEP] = true,
@@ -2197,8 +2198,7 @@ end
 local function ControlOnUpdate(control)
 	local controlParams = control.params
 	local keepId = controlParams.keepId
-	local keepType = PVP:KeepIdToKeepType(keepId)
-	local keepNotClaimable = nonClaimableKeepTypes[keepType]
+	local keepNotClaimable = nonClaimableKeepTypes[GetKeepType(keepId)]
 	local currentTime = GetFrameTimeMilliseconds()
 	if (currentTime - controlParams.lastUpdate) >= 10 then
 		controlParams.lastUpdate = currentTime
@@ -2304,8 +2304,7 @@ local function ControlOnUpdate(control)
 			end
 
 			local distanceText = GetUpgradeLevelString(control) .. GetFormattedDistanceText(control)
-			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)) ..
-				distanceText)
+			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)) .. distanceText)
 
 			SetupNormalWorldTooltip(true)
 		end
@@ -3036,7 +3035,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 				apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, not isScroll,
 				not (showCaptureTexture and not (control.params.percentage == 100 and not isUnderAttack)),
 				shouldHideFlags, totalSieges <= 0, control.params.siegesAD, control.params.siegesDC,
-				control.params.siegesEP, keepName, control.params.keepId, 'main')
+				control.params.siegesEP, keepName, control.params.keepId, PVP_OnScreen)
 			PVP_OnScreen.currentKeepId = neighbors
 		elseif PVP_OnScreen.currentKeepId and not IsPlayerNearObjective(PVP_OnScreen.currentKeepId) then
 			PVP_OnScreen.currentKeepId = nil
@@ -3051,19 +3050,19 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 					naveAlliance, apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, not isScroll,
 					not (showCaptureTexture and not (control.params.percentage == 100 and not isUnderAttack)),
 					shouldHideFlags, totalSieges <= 0, control.params.siegesAD, control.params.siegesDC,
-					control.params.siegesEP, keepName, control.params.keepId, 1)
+					control.params.siegesEP, keepName, control.params.keepId, PVP_OnScreen.neighbor1)
 			elseif PVP_OnScreen.currentKeepId[3] == control.params.keepId then
 				PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag, apseFlag, otherFlag,
 					naveAlliance, apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, not isScroll,
 					not (showCaptureTexture and not (control.params.percentage == 100 and not isUnderAttack)),
 					shouldHideFlags, totalSieges <= 0, control.params.siegesAD, control.params.siegesDC,
-					control.params.siegesEP, keepName, control.params.keepId, 2)
+					control.params.siegesEP, keepName, control.params.keepId, PVP_OnScreen.neighbor2)
 			elseif PVP_OnScreen.currentKeepId[4] == control.params.keepId then
 				PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag, apseFlag, otherFlag,
 					naveAlliance, apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, not isScroll,
 					not (showCaptureTexture and not (control.params.percentage == 100 and not isUnderAttack)),
 					shouldHideFlags, totalSieges <= 0, control.params.siegesAD, control.params.siegesDC,
-					control.params.siegesEP, keepName, control.params.keepId, 3)
+					control.params.siegesEP, keepName, control.params.keepId, PVP_OnScreen.neighbor3)
 			end
 		end
 	end
@@ -3292,7 +3291,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		if (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE') and GetPlayerLocationName() == control.params.name then
 			PVP:ManageOnScreen(control.params.texture, "", "", nil, nil, nil, nil, nil, control.params.alliance, "",
 				shouldHideUA, true, true, true, true, true, nil, nil, nil, control.params.name, control.params.keepId,
-				nil, true)
+				PVP_OnScreen, true)
 			PVP_OnScreen.currentKeepId = control.params.name
 		elseif PVP_OnScreen.currentKeepId and not IsPlayerNearObjective(PVP_OnScreen.currentKeepId) then
 			PVP_OnScreen.currentKeepId = nil

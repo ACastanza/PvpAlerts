@@ -105,7 +105,7 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 							apseAlliance, otherAlliance, siegeTexture, shouldHideUA, shouldHideLock, shouldHideScroll,
 							shouldHideCapture, shouldHideFlags, shouldHideSieges, siegesAD, siegesDC, siegesEP, keepName,
 							keepId, control, isMisc)
-	local isMainControl = not control or control == 'main'
+	local isMainControl = control == PVP_OnScreen
 	if isMainControl then
 		control = PVP_OnScreen
 		control.name:SetText(keepName)
@@ -128,30 +128,23 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 			control.neighbors:SetAnchor(TOP, control.siege, BOTTOM, 0, 15)
 		end
 	elseif keepId then
-		if control == 1 then
-			control = PVP_OnScreen.neighbor1
-		elseif control == 2 then
-			control = PVP_OnScreen.neighbor2
-		elseif control == 3 then
-			control = PVP_OnScreen.neighbor3
-		end
 		-- d('control', control)
 		-- d('keepId', keepId)
-		control.locked = control:GetNamedChild('Locked')
-		control.icon = control:GetNamedChild('Icon')
-		control.iconUA = control:GetNamedChild('IconUA')
-		control.bg = control:GetNamedChild('BG')
-		control.captureBG = control:GetNamedChild('CaptureBG')
-		control.captureBar = control:GetNamedChild('CaptureBar')
-		control.divider = control:GetNamedChild('Divider')
-		control.scroll = control:GetNamedChild('Scroll')
-		control.flags = control:GetNamedChild('Flags')
-		control.apse = control:GetNamedChild('Apse')
-		control.nave = control:GetNamedChild('Nave')
-		control.other = control:GetNamedChild('Other')
-		control.middle = control:GetNamedChild('Middle')
-		control.name = control:GetNamedChild('Name')
-		control.siege = control:GetNamedChild('Siege')
+		control.locked = control.locked or control:GetNamedChild('Locked')
+		control.icon = control.icon or control:GetNamedChild('Icon')
+		control.iconUA = control.iconUA or control:GetNamedChild('IconUA')
+		control.bg = control.bg or control:GetNamedChild('BG')
+		control.captureBG = control.captureBG or control:GetNamedChild('CaptureBG')
+		control.captureBar = control.captureBar or control:GetNamedChild('CaptureBar')
+		control.divider = control.divider or control:GetNamedChild('Divider')
+		control.scroll = control.scroll or control:GetNamedChild('Scroll')
+		control.flags = control.flags or control:GetNamedChild('Flags')
+		control.apse = control.apse or control:GetNamedChild('Apse')
+		control.nave = control.nave or control:GetNamedChild('Nave')
+		control.other = control.other or control:GetNamedChild('Other')
+		control.middle = control.middle or control:GetNamedChild('Middle')
+		control.name = control.name or control:GetNamedChild('Name')
+		control.siege = control.siege or control:GetNamedChild('Siege')
 	end
 
 	if keepId then
