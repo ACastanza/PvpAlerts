@@ -631,7 +631,7 @@ local function GetCameraInfoOld()
 	local angle = 0
 
 	while cameraTexture:Is3DQuadFacingCamera() == facing do
-		angle = angle + ZO_HALF_PI
+		angle = angle + pi / 200
 		cameraTexture:Set3DRenderSpaceOrientation(angle, 0, 0)
 	end
 
