@@ -175,7 +175,7 @@ function PVP:FindNearbyCampToRespawn(onUpdate)
 		PVP_ForwardCamp_Icon:SetAlpha(0.5)
 		return false
 	end
-	local campIndex, count, minDistance, isUsable, campRadius = 0, 0, 0, false, 0
+	local campIndex, count, minDistance, isUsable, campRadius = 0, 0, nil, nil, nil
 	local selfX, selfY = GetMapPlayerPosition('player')
 	for i = 1, GetNumForwardCamps(1) do
 		local _, targetX, targetY, radius, usable = GetForwardCampPinInfo(1, i)
