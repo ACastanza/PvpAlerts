@@ -19,8 +19,7 @@ function PVP:FindNearbyKeepToRespawn(anyKeep)
 			local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
 
 			if targetX ~= 0 and targetY ~= 0 then
-				local distance = zo_sqrt(((targetX - selfX) * (targetX - selfX)) +
-				((targetY - selfY) * (targetY - selfY)))
+				local distance = zo_distance3D(selfX, selfY, 0, targetX, targetY, 0)
 				if not minDistance then
 					minDistance = distance
 					foundKeepId = keepId
@@ -181,7 +180,7 @@ function PVP:FindNearbyCampToRespawn(onUpdate)
 		local _, targetX, targetY, radius, usable = GetForwardCampPinInfo(1, i)
 
 		if usable and targetX ~= 0 and targetY ~= 0 then
-			local distance = zo_sqrt(((targetX - selfX) * (targetX - selfX)) + ((targetY - selfY) * (targetY - selfY)))
+			local distance = zo_distance3D(selfX, selfY, 0, targetX, targetY, 0)
 
 			if distance / radius < 1 then count = count + 1 end
 
