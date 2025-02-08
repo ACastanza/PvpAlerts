@@ -135,30 +135,30 @@ local icControls = {
 }
 
 local connectedKeepsArray = {
-	[3] = { 109, 110, 5 },           --warden
-	[4] = { 109, 110, 5 },           --rayles
-	[5] = { 3, 4, 6, 7 },            --glade
-	[6] = { 5, 7, 18, 132 },         --ash
-	[7] = { 5, 6, 8, 134 },          --aw
+	[3] = { 109, 110, 5 },			--warden
+	[4] = { 109, 110, 5 },			--rayles
+	[5] = { 3, 4, 6, 7 },			--glade
+	[6] = { 5, 7, 18, 132 },		--ash
+	[7] = { 5, 6, 8, 134 },		 --aw
 	[8] = { 109, 110, 7, 9, 107, 108 }, --claw
-	[9] = { 10, 13, 8, 134 },        --chal
-	[10] = { 11, 12, 9, 13 },        --arrius
-	[11] = { 107, 108, 10 },         --king
-	[12] = { 107, 108, 10 },         --farra
-	[13] = { 10, 9, 14, 133 },       --brk
+	[9] = { 10, 13, 8, 134 },		--chal
+	[10] = { 11, 12, 9, 13 },		--arrius
+	[11] = { 107, 108, 10 },		--king
+	[12] = { 107, 108, 10 },		--farra
+	[13] = { 10, 9, 14, 133 },		--brk
 	[14] = { 107, 108, 13, 15, 105, 106 }, --drake
-	[15] = { 16, 17, 14, 133 },      --alessia
-	[16] = { 19, 20, 15, 17 },       --fare
-	[17] = { 16, 15, 18, 132 },      --roe
+	[15] = { 16, 17, 14, 133 },	 --alessia
+	[16] = { 19, 20, 15, 17 },		--fare
+	[17] = { 16, 15, 18, 132 },	 --roe
 	[18] = { 105, 106, 109, 110, 17, 6 }, --brindle
-	[19] = { 105, 106, 16 },         --bb
-	[20] = { 105, 106, 16 },         --bm
-	[132] = { 6, 17 },               --nik
-	[133] = { 13, 15 },              --sej
-	[134] = { 7, 9 },                --bleaks
-	[163] = { 8 },                   --Winter's Peak
-	[164] = { 18 },                  --Carmala
-	[165] = { 14 },                  --Harlun's
+	[19] = { 105, 106, 16 },		--bb
+	[20] = { 105, 106, 16 },		--bm
+	[132] = { 6, 17 },				--nik
+	[133] = { 13, 15 },			 --sej
+	[134] = { 7, 9 },				--bleaks
+	[163] = { 8 },					--Winter's Peak
+	[164] = { 18 },				 --Carmala
+	[165] = { 14 },				 --Harlun's
 }
 
 local adLinks = {
@@ -719,7 +719,7 @@ local function GetCurrentMapScaleTo3D()
 		local borderKeepId = IsInBorderKeepArea()
 		local currentMapIndex = GetCurrentMapIndex()
 		local doesMapMatchLocation = DoesCurrentMapMatchMapForPlayerLocation()
-		if borderKeepId then                           --// we are in a border keep area //
+		if borderKeepId then							--// we are in a border keep area //
 			if doesMapMatchLocation or not currentMapIndex then --// the map is actually the map of the border keep area //
 				return PVP.borderKeepIdToAreaScale[borderKeepId] or 453
 			else
@@ -1393,105 +1393,105 @@ local function ResetWorldTooltip()
 end
 
 function PVP:Init3D()
-    if self.controls3DPool then return end
+	if self.controls3DPool then return end
 
-    -- specify a parent control if needed (replace GuiRoot with your intended parent)
-    local parentControl = GuiRoot
-    self.controls3DPool = ZO_ControlPool:New("PVP_World3D", parentControl)
+	-- specify a parent control if needed (replace GuiRoot with your intended parent)
+	local parentControl = GuiRoot
+	self.controls3DPool = ZO_ControlPool:New("PVP_World3D", parentControl)
 
-    local function CustomPoolResetBehaviorControl(control)
-        if PVP.currentTooltip == control then
-            if control.params.type == "GROUP" or control.params.type == "SCROLL" then
-                PVP.savedTooltip = PVP.savedTooltip or {}
-                PVP.savedTooltip[control.params.name] =
-                {
-                    isGroup = control.params.groupTag,
-                    isScroll = control.params.scrollAlliance,
-                    currentPhase = control.params.currentPhase,
-                }
-            end
-            ResetWorldTooltip()
-        end
+	local function CustomPoolResetBehaviorControl(control)
+		if PVP.currentTooltip == control then
+			if control.params.type == "GROUP" or control.params.type == "SCROLL" then
+				PVP.savedTooltip = PVP.savedTooltip or {}
+				PVP.savedTooltip[control.params.name] =
+				{
+					isGroup = control.params.groupTag,
+					isScroll = control.params.scrollAlliance,
+					currentPhase = control.params.currentPhase,
+				}
+			end
+			ResetWorldTooltip()
+		end
 
-        control:SetHidden(true)
-        control:GetNamedChild("IconUA"):SetHidden(true)
-        control:GetNamedChild("BG"):SetHidden(true)
-        control:GetNamedChild("CaptureBG"):SetHidden(true)
-        control:GetNamedChild("CaptureBar"):SetHidden(true)
-        control:GetNamedChild("Divider"):SetHidden(true)
-        control:GetNamedChild("Scroll"):SetHidden(true)
-        control:GetNamedChild("Locked"):SetHidden(true)
-        control:GetNamedChild("Flags"):SetHidden(true)
-        control:GetNamedChild("Apse"):SetHidden(true)
-        control:GetNamedChild("Nave"):SetHidden(true)
-        control:GetNamedChild("Other"):SetHidden(true)
-        control:GetNamedChild("Middle"):SetHidden(true)
+		control:SetHidden(true)
+		control:GetNamedChild("IconUA"):SetHidden(true)
+		control:GetNamedChild("BG"):SetHidden(true)
+		control:GetNamedChild("CaptureBG"):SetHidden(true)
+		control:GetNamedChild("CaptureBar"):SetHidden(true)
+		control:GetNamedChild("Divider"):SetHidden(true)
+		control:GetNamedChild("Scroll"):SetHidden(true)
+		control:GetNamedChild("Locked"):SetHidden(true)
+		control:GetNamedChild("Flags"):SetHidden(true)
+		control:GetNamedChild("Apse"):SetHidden(true)
+		control:GetNamedChild("Nave"):SetHidden(true)
+		control:GetNamedChild("Other"):SetHidden(true)
+		control:GetNamedChild("Middle"):SetHidden(true)
 
-        control:SetHandler("OnUpdate", nil)
-        control:GetNamedChild("Icon"):SetTextureCoords(0, 1, 0, 1)
-        control:GetNamedChild("Ping"):SetTextureCoords(0, 1, 0, 1)
-        control:GetNamedChild("Icon"):Set3DRenderSpaceUsesDepthBuffer(false)
+		control:SetHandler("OnUpdate", nil)
+		control:GetNamedChild("Icon"):SetTextureCoords(0, 1, 0, 1)
+		control:GetNamedChild("Ping"):SetTextureCoords(0, 1, 0, 1)
+		control:GetNamedChild("Icon"):Set3DRenderSpaceUsesDepthBuffer(false)
 
-        if control.params.borderKeepAnimationHandler and control.params.borderKeepAnimationHandler:IsPlaying() then
-            control.params.borderKeepAnimationHandler:Stop()
-        end
-        if control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() then
-            control.params.flippingPlaying:Stop()
-        end
+		if control.params.borderKeepAnimationHandler and control.params.borderKeepAnimationHandler:IsPlaying() then
+			control.params.borderKeepAnimationHandler:Stop()
+		end
+		if control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying() then
+			control.params.flippingPlaying:Stop()
+		end
 
-        ResetControlPings(control)
-        control.params = {}
-    end
+		ResetControlPings(control)
+		control.params = {}
+	end
 
-    local function CustomFactoryBehavior(control)
-        control:Create3DRenderSpace()
-        for i = 1, control:GetNumChildren() do
-            control:GetChild(i):Create3DRenderSpace()
-        end
-        control.params = {}
-    end
+	local function CustomFactoryBehavior(control)
+		control:Create3DRenderSpace()
+		for i = 1, control:GetNumChildren() do
+			control:GetChild(i):Create3DRenderSpace()
+		end
+		control.params = {}
+	end
 
-    self.controls3DPool:SetCustomFactoryBehavior(CustomFactoryBehavior)
-    self.controls3DPool:SetCustomResetBehavior(CustomPoolResetBehaviorControl)
+	self.controls3DPool:SetCustomFactoryBehavior(CustomFactoryBehavior)
+	self.controls3DPool:SetCustomResetBehavior(CustomPoolResetBehaviorControl)
 
-    -- Set up 3D render spaces for static elements
-    PVP_TestWorld:Create3DRenderSpace()
-    PVP_TestWorldIcon:Create3DRenderSpace()
-    PVP_TestWorldIcon:Set3DLocalDimensions(8, 8)
-    PVP_TestWorld:SetHidden(true)
+	-- Set up 3D render spaces for static elements
+	PVP_TestWorld:Create3DRenderSpace()
+	PVP_TestWorldIcon:Create3DRenderSpace()
+	PVP_TestWorldIcon:Set3DLocalDimensions(8, 8)
+	PVP_TestWorld:SetHidden(true)
 
-    PVP_World3DCrown:Create3DRenderSpace()
-    PVP_World3DCrownIcon:Create3DRenderSpace()
-    PVP_World3DCrownIcon:Set3DLocalDimensions(5, 5)
-    PVP_World3DCrown:SetHidden(true)
-    PVP_World3DCrown.params = {}
+	PVP_World3DCrown:Create3DRenderSpace()
+	PVP_World3DCrownIcon:Create3DRenderSpace()
+	PVP_World3DCrownIcon:Set3DLocalDimensions(5, 5)
+	PVP_World3DCrown:SetHidden(true)
+	PVP_World3DCrown.params = {}
 
 	-- PVP_TestWorldCamera:Create3DRenderSpace()
 	-- PVP_TestWorldCameraIcon:Create3DRenderSpace()
 	-- PVP_TestWorldCameraIcon:Set3DLocalDimensions(10, 10)
 	-- PVP_TestWorldCamera:SetHidden(true)
 
-    PVP_World3DCameraMeasurement:Create3DRenderSpace()
-    PVP_World3DCameraMeasurementIcon:Create3DRenderSpace()
-    PVP_World3DCameraMeasurementIcon:Set3DLocalDimensions(10, 10)
-    PVP_World3DCameraMeasurement:SetHidden(false)
-    PVP_World3DCameraMeasurementIcon:SetHidden(true)
+	PVP_World3DCameraMeasurement:Create3DRenderSpace()
+	PVP_World3DCameraMeasurementIcon:Create3DRenderSpace()
+	PVP_World3DCameraMeasurementIcon:Set3DLocalDimensions(10, 10)
+	PVP_World3DCameraMeasurement:SetHidden(false)
+	PVP_World3DCameraMeasurementIcon:SetHidden(true)
 
-    CALLBACK_MANAGER:RegisterCallback("On3DWorldOriginChanged", function ()
-        local currentCameraInfo = PVP.currentCameraInfo
-        if currentCameraInfo.lastDeltaX and currentCameraInfo.lastDeltaY then
-            d("ORIGIN CHANGED")
-            local objects = PVP.controls3DPool:GetActiveObjects()
-            for k, control in pairs(objects) do
-                if control and control:GetName() and control.params.type ~= "COMPASS" then
-                    local newX = currentCameraInfo.current3DX + (control.params.X - currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-                    local newY = currentCameraInfo.current3DY + (control.params.Y - currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
-                    local _, oldZ, _ = control:Get3DRenderSpaceOrigin()
-                    control:Set3DRenderSpaceOrigin(newX, oldZ, newY)
-                end
-            end
-        end
-    end)
+	CALLBACK_MANAGER:RegisterCallback("On3DWorldOriginChanged", function ()
+		local currentCameraInfo = PVP.currentCameraInfo
+		if currentCameraInfo.lastDeltaX and currentCameraInfo.lastDeltaY then
+			d("ORIGIN CHANGED")
+			local objects = PVP.controls3DPool:GetActiveObjects()
+			for k, control in pairs(objects) do
+				if control and control:GetName() and control.params.type ~= "COMPASS" then
+					local newX = currentCameraInfo.current3DX + (control.params.X - currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
+					local newY = currentCameraInfo.current3DY + (control.params.Y - currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+					local _, oldZ, _ = control:Get3DRenderSpaceOrigin()
+					control:Set3DRenderSpaceOrigin(newX, oldZ, newY)
+				end
+			end
+		end
+	end)
 
 	-- d('3d icons initiazlied!')
 	-- PVP:Setup3DMeasurements()
@@ -3766,7 +3766,7 @@ end
 -- end
 local adjusted_MAX_DISTANCE
 local function POIGroupInsert(foundPOI, groupTag, selfX, selfY, targetX, targetY, name, isGroupLeader, isUnitDead,
-							  unitClass, isInCombat, shouldShowGroupLeaderAtAnyDistance, showit)
+							 unitClass, isInCombat, shouldShowGroupLeaderAtAnyDistance, showit)
 	-- if groupTag == "group21" or groupTag == "group22" then df("****** HERE %s %s %s %s*******", groupTag, tostring(targetX), tostring(targetY), tostring(showit)) end
 	if targetX ~= 0 and targetY ~= 0 and showit then
 		local unitSpecColor = PVP:GetUnitSpecColor(name)
@@ -4093,7 +4093,7 @@ local function FindNearbyPOIs()
 
 		if currentMapIndex == PVP_MAPINDEX_CYRODIIL then
 			local currentKeepId, foundObjectives = PVP:FindAVAIds(GetPlayerLocationName(), true)
-			local keepType                       = PVP:KeepIdToKeepType(currentKeepId)
+			local keepType						= PVP:KeepIdToKeepType(currentKeepId)
 
 			if keepType == KEEPTYPE_TOWN then
 				for i = 1, 3 do
@@ -4450,7 +4450,7 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		isZoneChange = false
 		isActivated = true
 	end
-	if not PVP:IsWorldMapHidden() then return end               -- // we can't trust map coordinates when the map is open to place 3d icons //
+	if not PVP:IsWorldMapHidden() then return end				-- // we can't trust map coordinates when the map is open to place 3d icons //
 
 	if PVP.isWaitingOnTrustedFirstRun and GetActivationInfo() then -- // initial 3d-to-map coordinates setup finally happened - reanchor all icons //
 		PVP.isWaitingOnTrustedFirstRun = false

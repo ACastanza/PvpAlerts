@@ -110,15 +110,15 @@ function ScoreboardList:Setup()
 	self.masterList = {}
 
 	local sortKeys = {
-		["name"]     = { caseInsensitive = true },
-		["points"]   = { caseInsensitive = true, tiebreaker = "name" },
-		["rank"]     = { caseInsensitive = true, tiebreaker = "points" },
-		["kills"]    = { caseInsensitive = true, tiebreaker = "points" },
-		["deaths"]   = { caseInsensitive = true, tiebreaker = "points" },
-		["assists"]  = { caseInsensitive = true, tiebreaker = "points" },
-		["damage"]   = { caseInsensitive = true, tiebreaker = "points" },
-		["healing"]  = { caseInsensitive = true, tiebreaker = "points" },
-		-- ["medals"]	= { caseInsensitive = true, tiebreaker = "points" },
+		["name"] = { caseInsensitive = true },
+		["points"] = { caseInsensitive = true, tiebreaker = "name" },
+		["rank"] = { caseInsensitive = true, tiebreaker = "points" },
+		["kills"] = { caseInsensitive = true, tiebreaker = "points" },
+		["deaths"] = { caseInsensitive = true, tiebreaker = "points" },
+		["assists"] = { caseInsensitive = true, tiebreaker = "points" },
+		["damage"] = { caseInsensitive = true, tiebreaker = "points" },
+		["healing"] = { caseInsensitive = true, tiebreaker = "points" },
+		-- ["medals"] = { caseInsensitive = true, tiebreaker = "points" },
 		["specials"] = { caseInsensitive = true, tiebreaker = "points" },
 	}
 

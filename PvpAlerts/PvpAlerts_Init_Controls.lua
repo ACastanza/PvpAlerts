@@ -11,13 +11,13 @@ local PVP_DEFAULT_HEAVY_ATTACK_ICON = PVP:GetGlobal('PVP_DEFAULT_HEAVY_ATTACK_IC
 
 function PVP:InitControls()
 	if self.noInitControls then
-	    self.delayedInitControls = true
-	    return
+		self.delayedInitControls = true
+		return
 	end
 	if self.delayedInitControls then
-	    self.delayedInitControls = false
-	    zo_callLater(function() self:InitControls() end, 250)
-	    return
+		self.delayedInitControls = false
+		zo_callLater(function() self:InitControls() end, 250)
+		return
 	end
 	PVP:SetupOnScreen()
 	PVP_Main:ClearAnchors()
@@ -503,15 +503,15 @@ function PVP:ManageFragments(fragment)
 end
 
 function PVP.EditNoteDialogSetup(dialog, data)
-    GetControl(dialog, "DisplayName"):SetText(data.playerName)
-    GetControl(dialog, "NoteEdit"):SetText(data.noteString)
+	GetControl(dialog, "DisplayName"):SetText(data.playerName)
+	GetControl(dialog, "NoteEdit"):SetText(data.noteString)
 
-    local deleteControl = GetControl(dialog, "Delete")
-    if data.noteString then
-        deleteControl:SetHidden(false)
-    else
-        deleteControl:SetHidden(true)
-    end
+	local deleteControl = GetControl(dialog, "Delete")
+	if data.noteString then
+		deleteControl:SetHidden(false)
+	else
+		deleteControl:SetHidden(true)
+	end
 end
 
 function PVP:RegisterCustomDialog()
@@ -531,7 +531,7 @@ function PVP:RegisterCustomDialog()
 				[1] =
 				{
 					control = GetControl(dialogControl, "Cancel"),
-                    text = SI_DIALOG_CANCEL,
+					text = SI_DIALOG_CANCEL,
 					keybind = "DIALOG_SECONDARY",
 				},
 
@@ -545,12 +545,12 @@ function PVP:RegisterCustomDialog()
 							data.changedCallback(data.playerName, nil)
 						end
 					end,
-                },
+				},
 
 				[3] =
 				{
 					control = GetControl(dialogControl, "Save"),
-                    text = SI_SAVE,
+					text = SI_SAVE,
 					keybind = "DIALOG_PRIMARY",
 					callback = function(dialog)
 						local data = dialog.data

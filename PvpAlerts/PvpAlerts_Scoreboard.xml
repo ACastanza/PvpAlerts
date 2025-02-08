@@ -17,7 +17,7 @@
 			</OnMouseExit>
 			 <OnMouseUp>
 				PVP_ScoreboardName_OnMouseUp(button, self)
-	     </OnMouseUp>
+			</OnMouseUp>
 			<Controls>
 				<Texture name="$(parent)BG" textureFile="esoui/art/miscellaneous/listitem_selectedhighlight.dds" color="FFFFFF" alpha="0.85" level="1" >
 					<AnchorFill />
@@ -172,8 +172,8 @@
 		</Control>
 
 		<TopLevelControl name="PVP_Scoreboard" hidden="true">
-		    <Dimensions x="1305" y="630" />
-	    <Anchor point="CENTER" offsetY="75" />
+			<Dimensions x="1305" y="630" />
+		<Anchor point="CENTER" offsetY="75" />
 			<OnInitialized>
 				PVP_InitScoreboard()
 			</OnInitialized>
@@ -339,9 +339,9 @@
 		</TopLevelControl>
 
 		<TopLevelControl name="PVP_Scoreboard_Tooltip_Medal_Template" mouseEnabled="false" movable="false" clampedToScreen="true" hidden="false" virtual="true" resizeToFitDescendents="false">
-	    <Dimensions x="500" y="75" />
+		<Dimensions x="500" y="75" />
 			<Anchor point="CENTER" offsetY="450"/>
-	    <Controls>
+		<Controls>
 				<Texture name="$(parent)Icon" textureFile="/esoui/art/icons/battleground_medal_flagcapture_002.dds" level="2">
 					<Dimensions x="70" y="70"/>
 					<Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="0" offsetY="0"/>

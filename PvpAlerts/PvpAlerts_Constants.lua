@@ -1011,26 +1011,26 @@ PVP.heavyAttackId = {
 }
 
 PVP.hitTypes = {
-	[ACTION_RESULT_BLOCKED]                = true,
-	[ACTION_RESULT_ABSORBED]               = true,
-	[ACTION_RESULT_BLOCKED_DAMAGE]         = true,
-	[ACTION_RESULT_CRITICAL_DAMAGE]        = true,
-	[ACTION_RESULT_DAMAGE]                 = true,
-	[ACTION_RESULT_DAMAGE_SHIELDED]        = true,
-	[ACTION_RESULT_IMMUNE]                 = true,
-	[ACTION_RESULT_MISS]                   = true,
-	[ACTION_RESULT_PARTIAL_RESIST]         = true,
-	[ACTION_RESULT_REFLECTED]              = true,
-	[ACTION_RESULT_RESIST]                 = true,
-	[ACTION_RESULT_WRECKING_DAMAGE]        = true,
+	[ACTION_RESULT_BLOCKED] = true,
+	[ACTION_RESULT_ABSORBED] = true,
+	[ACTION_RESULT_BLOCKED_DAMAGE] = true,
+	[ACTION_RESULT_CRITICAL_DAMAGE] = true,
+	[ACTION_RESULT_DAMAGE] = true,
+	[ACTION_RESULT_DAMAGE_SHIELDED] = true,
+	[ACTION_RESULT_IMMUNE] = true,
+	[ACTION_RESULT_MISS] = true,
+	[ACTION_RESULT_PARTIAL_RESIST] = true,
+	[ACTION_RESULT_REFLECTED] = true,
+	[ACTION_RESULT_RESIST] = true,
+	[ACTION_RESULT_WRECKING_DAMAGE] = true,
 
-	[ACTION_RESULT_DODGED]                 = true,
-	[ACTION_RESULT_DISORIENTED]            = true,
-	[ACTION_RESULT_EFFECT_GAINED]          = true,
+	[ACTION_RESULT_DODGED] = true,
+	[ACTION_RESULT_DISORIENTED] = true,
+	[ACTION_RESULT_EFFECT_GAINED] = true,
 	[ACTION_RESULT_EFFECT_GAINED_DURATION] = true,
-	[ACTION_RESULT_FEARED]                 = true,
-	[ACTION_RESULT_STUNNED]                = true,
-	[ACTION_RESULT_OFFBALANCE]             = true,
+	[ACTION_RESULT_FEARED] = true,
+	[ACTION_RESULT_STUNNED] = true,
+	[ACTION_RESULT_OFFBALANCE] = true,
 }
 
 -- PVP.heavyAttackIdFrame={
@@ -2847,24 +2847,24 @@ PVP.icGrates = {
 
 PVP.delvesCoords = {
 
-	{ x = 0.67226, y = 0.59793, z = 208.98, name = 'Cracked Wood Cave' }, --upd
-	{ x = 0.72170, y = 0.69504, z = 111.33, name = 'Newt Cave' },        --upd
-	{ x = 0.53730, y = 0.81005, z = 115.28, name = 'Bloodmane Cave' },   --upd
-	{ x = 0.45461, y = 0.72516, z = 189.43, name = 'Pothole Caverns' },  --upd
-	{ x = 0.36197, y = 0.69811, z = 257.57, name = 'Nisin Cave' },       --upd
-	{ x = 0.31646, y = 0.56291, z = 223.56, name = 'Haynote Cave' },     --upd
-	{ x = 0.28873, y = 0.48721, z = 262.09, name = 'Breakneck Cave' },   --upd
-	{ x = 0.20635, y = 0.50749, z = 258.06, name = 'Serpent Hollow Cave' }, --upd
-	{ x = 0.15506, y = 0.24113, z = 450.72, name = 'Lipsand Tarn' },     --upd
-	{ x = 0.36090, y = 0.22184, z = 336.45, name = 'Underpall Cave' },   --upd
-	{ x = 0.35449, y = 0.14113, z = 402.34, name = 'Echo Cave' },        --upd
-	{ x = 0.42162, y = 0.15316, z = 359.58, name = 'Capstone Cave' },    --upd
-	{ x = 0.50270, y = 0.21536, z = 319.53, name = 'Toadstool Hollow' }, --upd
-	{ x = 0.58314, y = 0.19519, z = 359.30, name = 'Red Ruby Cave' },    --upd
-	{ x = 0.75884, y = 0.34677, z = 309.13, name = 'Quickwater Cave' },  --upd
-	{ x = 0.80618, y = 0.25049, z = 389.05, name = 'Kingscrest Cavern' }, --upd
-	{ x = 0.71032, y = 0.49034, z = 206.61, name = 'Muck Valley Cavern' }, --upd
-	{ x = 0.80716, y = 0.46103, z = 258.69, name = 'Vahtacen' },         --upd
+	{ x = 0.67226, y = 0.59793, z = 208.98, name = 'Cracked Wood Cave' },
+	{ x = 0.72170, y = 0.69504, z = 111.33, name = 'Newt Cave' },
+	{ x = 0.53730, y = 0.81005, z = 115.28, name = 'Bloodmane Cave' },
+	{ x = 0.45461, y = 0.72516, z = 189.43, name = 'Pothole Caverns' },
+	{ x = 0.36197, y = 0.69811, z = 257.57, name = 'Nisin Cave' },
+	{ x = 0.31646, y = 0.56291, z = 223.56, name = 'Haynote Cave' },
+	{ x = 0.28873, y = 0.48721, z = 262.09, name = 'Breakneck Cave' },
+	{ x = 0.20635, y = 0.50749, z = 258.06, name = 'Serpent Hollow Cave' },
+	{ x = 0.15506, y = 0.24113, z = 450.72, name = 'Lipsand Tarn' },
+	{ x = 0.36090, y = 0.22184, z = 336.45, name = 'Underpall Cave' },
+	{ x = 0.35449, y = 0.14113, z = 402.34, name = 'Echo Cave' },
+	{ x = 0.42162, y = 0.15316, z = 359.58, name = 'Capstone Cave' },
+	{ x = 0.50270, y = 0.21536, z = 319.53, name = 'Toadstool Hollow' },
+	{ x = 0.58314, y = 0.19519, z = 359.30, name = 'Red Ruby Cave' },
+	{ x = 0.75884, y = 0.34677, z = 309.13, name = 'Quickwater Cave' },
+	{ x = 0.80618, y = 0.25049, z = 389.05, name = 'Kingscrest Cavern' },
+	{ x = 0.71032, y = 0.49034, z = 206.61, name = 'Muck Valley Cavern' },
+	{ x = 0.80716, y = 0.46103, z = 258.69, name = 'Vahtacen' },
 }
 
 PVP.miscCoords = {
@@ -3080,25 +3080,24 @@ PVP.objectiveIcons = {
 	[RESOURCETYPE_WOOD] = "/esoui/art/compass/ava_lumbermill_neutral.dds",
 
 	[KEEPTYPE_ARTIFACT_GATE] = {
-		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_ALDMERI_DOMINION]    = "/esoui/art/compass/ava_artifactgate_aldmeri_closed.dds",
-		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_DAGGERFALL_COVENANT] =
-		"/esoui/art/compass/ava_artifactgate_daggerfall_closed.dds",
-		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_EBONHEART_PACT]      = "/esoui/art/compass/ava_artifactgate_ebonheart_closed.dds",
-		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_ALDMERI_DOMINION]      = "/esoui/art/compass/ava_artifactgate_aldmeri_open.dds",
-		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_DAGGERFALL_COVENANT]   = "/esoui/art/compass/ava_artifactgate_daggerfall_open.dds",
-		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_EBONHEART_PACT]        = "/esoui/art/compass/ava_artifactgate_ebonheart_open.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_ALDMERI_DOMINION] = "/esoui/art/compass/ava_artifactgate_aldmeri_closed.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_DAGGERFALL_COVENANT] = "/esoui/art/compass/ava_artifactgate_daggerfall_closed.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_CLOSED_EBONHEART_PACT] = "/esoui/art/compass/ava_artifactgate_ebonheart_closed.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_ALDMERI_DOMINION] = "/esoui/art/compass/ava_artifactgate_aldmeri_open.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_DAGGERFALL_COVENANT] = "/esoui/art/compass/ava_artifactgate_daggerfall_open.dds",
+		[MAP_PIN_TYPE_ARTIFACT_GATE_OPEN_EBONHEART_PACT] = "/esoui/art/compass/ava_artifactgate_ebonheart_open.dds",
 	},
 
 	[PVP_KEEPTYPE_ARTIFACT_KEEP] = {
-		[ALLIANCE_ALDMERI_DOMINION]    = "/esoui/art/compass/ava_artifacttemple_aldmeri.dds",
+		[ALLIANCE_ALDMERI_DOMINION] = "/esoui/art/compass/ava_artifacttemple_aldmeri.dds",
 		[ALLIANCE_DAGGERFALL_COVENANT] = "/esoui/art/compass/ava_artifacttemple_daggerfall.dds",
-		[ALLIANCE_EBONHEART_PACT]      = "/esoui/art/compass/ava_artifacttemple_ebonheart.dds",
+		[ALLIANCE_EBONHEART_PACT] = "/esoui/art/compass/ava_artifacttemple_ebonheart.dds",
 	},
 
 	[PVP_KEEPTYPE_BORDER_KEEP] = {
-		[ALLIANCE_ALDMERI_DOMINION]    = "/esoui/art/compass/ava_borderkeep_pin_aldmeri.dds",
+		[ALLIANCE_ALDMERI_DOMINION] = "/esoui/art/compass/ava_borderkeep_pin_aldmeri.dds",
 		[ALLIANCE_DAGGERFALL_COVENANT] = "/esoui/art/compass/ava_borderkeep_pin_daggerfall.dds",
-		[ALLIANCE_EBONHEART_PACT]      = "/esoui/art/compass/ava_borderkeep_pin_ebonheart.dds",
+		[ALLIANCE_EBONHEART_PACT] = "/esoui/art/compass/ava_borderkeep_pin_ebonheart.dds",
 	},
 
 	-- [PVP_KEEPTYPE_BORDER_KEEP] =		{
@@ -3112,9 +3111,9 @@ PVP.objectiveIcons = {
 	[FLAGTYPE_APSE] = "/esoui/art/compass/ava_flagbase_neutral.dds",
 
 	[PVP_ALLIANCE_BASE_IC] = {
-		[ALLIANCE_ALDMERI_DOMINION]    = "/esoui/art/campaign/overview_allianceicon_aldmeri.dds",
+		[ALLIANCE_ALDMERI_DOMINION] = "/esoui/art/campaign/overview_allianceicon_aldmeri.dds",
 		[ALLIANCE_DAGGERFALL_COVENANT] = "/esoui/art/campaign/overview_allianceicon_daggefall.dds",
-		[ALLIANCE_EBONHEART_PACT]      = "/esoui/art/campaign/overview_allianceicon_ebonheart.dds",
+		[ALLIANCE_EBONHEART_PACT] = "/esoui/art/campaign/overview_allianceicon_ebonheart.dds",
 	},
 }
 

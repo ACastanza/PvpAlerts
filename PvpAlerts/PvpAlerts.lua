@@ -66,17 +66,17 @@ local ccImmunityBuffs = {
 
 local KILLING_BLOW_ACTION_RESULTS = {
 	[ACTION_RESULT_KILLING_BLOW] = true,
-	[ACTION_RESULT_DIED_XP]	  = true,
+	[ACTION_RESULT_DIED_XP] = true,
 }
 
 local DEAD_ACTION_RESULTS = {
-	[ACTION_RESULT_KILLING_BLOW]  = true,
-	[ACTION_RESULT_TARGET_DEAD]   = true,
-	[ACTION_RESULT_DIED]		  = true,
-	[ACTION_RESULT_DIED_XP]	   = true,
+	[ACTION_RESULT_KILLING_BLOW] = true,
+	[ACTION_RESULT_TARGET_DEAD] = true,
+	[ACTION_RESULT_DIED] = true,
+	[ACTION_RESULT_DIED_XP] = true,
 	[ACTION_RESULT_REINCARNATING] = true,
-	[ACTION_RESULT_RESURRECT]	 = true,
-	[ACTION_RESULT_CASTER_DEAD]   = true,
+	[ACTION_RESULT_RESURRECT] = true,
+	[ACTION_RESULT_CASTER_DEAD] = true,
 }
 
 local shadowReturnIds = {
@@ -1050,7 +1050,7 @@ function PVP:OnControlState(eventCode, keepId, objectiveId, battlegroundContext,
 end
 
 function PVP:OnCaptureStatus(eventCode, keepId, objectiveId, battlegroundContext, capturePoolValue, capturePoolMax,
-							 capturingPlayers, contestingPlayers, owningAlliance)
+							capturingPlayers, contestingPlayers, owningAlliance)
 	if self.SV.unlocked or not self.SV.showCaptureFrame or not self:IsValidBattlegroundContext(battlegroundContext) or not keepId or keepId == 0 then return end
 	local zoneName = GetPlayerLocationName()
 	if not zoneName or zoneName == "" then return end
@@ -1082,7 +1082,7 @@ function PVP:IsCurrentlyDead(unitName)
 end
 
 function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, beginTime, endTime, stackCount, iconName,
-					  buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId)
+					 buffType, effectType, abilityType, statusEffectType, unitName, unitId, abilityId)
 	if not PVP:IsInPVPZone() then return end
 	if unitName == self.playerName then return end
 	if IsActiveWorldBattleground() then
@@ -2855,34 +2855,34 @@ local function ConvertAlliancePlayerNames()
 end
 
 local function ArrayConversion(inputArray, indexArray, mainArray)
-    local outputArray = {}
+	local outputArray = {}
 	local num = #inputArray
-    for i = 1, num do
-        local newValue = mainArray[indexArray[inputArray[i]]]
-        outputArray[i] = newValue
-    end
-    return outputArray
+	for i = 1, num do
+		local newValue = mainArray[indexArray[inputArray[i]]]
+		outputArray[i] = newValue
+	end
+	return outputArray
 end
 
 local function SummaryConversion(inputArray, summaryType)
-    local summary
-    local outputArray = {}
+	local summary
+	local outputArray = {}
 	local num = #inputArray
-    local numberInCategory = PVP:Colorize(tostring(num), 'FFFF00')
-    if summaryType == 'group' then
-        summary = ' --- Group (' .. numberInCategory .. ') ---'
-    elseif summaryType == 'friends' then
-        summary = ' --- Friends (' .. numberInCategory .. ') ---'
-    elseif summaryType == 'kos' then
-        summary = ' --- KOS (' .. numberInCategory .. ') ---'
-    elseif summaryType == 'others' then
-        summary = ' --- Others (' .. numberInCategory .. ') ---'
-    end
-    insert(outputArray, summary)
-    for i = 1, num do
-        insert(outputArray, inputArray[i])
-    end
-    return outputArray
+	local numberInCategory = PVP:Colorize(tostring(num), 'FFFF00')
+	if summaryType == 'group' then
+		summary = ' --- Group (' .. numberInCategory .. ') ---'
+	elseif summaryType == 'friends' then
+		summary = ' --- Friends (' .. numberInCategory .. ') ---'
+	elseif summaryType == 'kos' then
+		summary = ' --- KOS (' .. numberInCategory .. ') ---'
+	elseif summaryType == 'others' then
+		summary = ' --- Others (' .. numberInCategory .. ') ---'
+	end
+	insert(outputArray, summary)
+	for i = 1, num do
+		insert(outputArray, inputArray[i])
+	end
+	return outputArray
 end
 
 function PVP:PopulateFromBGScoreboard()
@@ -2893,14 +2893,14 @@ function PVP:PopulateFromBGScoreboard()
 		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
 
 		-- {class = 3, name = "Test^Fx" , kills = 30, deaths = 20, assists = 100, damage = 10000000, healing = 3000000, points = 800, alliance = 3},
-    PVP.scoreboardListData = {}
+	PVP.scoreboardListData = {}
 
-    PVP.bgNames = PVP.bgNames or {}
-    PVP.bgScoreBoardData = PVP.bgScoreBoardData or {}
+	PVP.bgNames = PVP.bgNames or {}
+	PVP.bgScoreBoardData = PVP.bgScoreBoardData or {}
 
-    local battlegroundId = GetCurrentBattlegroundId()
-    local battlegrounRound = GetCurrentBattlegroundRoundIndex()
-    local battlegroundGameType = GetBattlegroundGameType(battlegroundId, battlegrounRound)
+	local battlegroundId = GetCurrentBattlegroundId()
+	local battlegrounRound = GetCurrentBattlegroundRoundIndex()
+	local battlegroundGameType = GetBattlegroundGameType(battlegroundId, battlegrounRound)
 	
 	local battlegroundLeaderboardTypes = {
 		[BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG] = BATTLEGROUND_LEADERBOARD_TYPE_FLAG_GAMES,
@@ -2924,179 +2924,179 @@ function PVP:PopulateFromBGScoreboard()
 	local battlegroundSpecialsType = battlegroundSpecialsTypes[battlegroundGameType]
 
 	if GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) == 0 then
-        QueryBattlegroundLeaderboardData()
-    end
+		QueryBattlegroundLeaderboardData()
+	end
 
-    local currentBgPlayers = {}
-    for i = 1, GetNumScoreboardEntries(battlegrounRound) do
-        local playerName, accName, bgAlliance = GetScoreboardEntryInfo(i, battlegrounRound)
-        local entryClass = GetScoreboardEntryClassId(i, battlegrounRound)
-        local entryKills = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_KILL, battlegrounRound)
-        local entryDeaths = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DEATH, battlegrounRound)
-        local entryAssists = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_ASSISTS, battlegrounRound)
-        local entryDamage = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DAMAGE_DONE, battlegrounRound)
-        local entryHealing = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_HEALING_DONE, battlegrounRound)
-        local entryPoints = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_SCORE, battlegrounRound)
-        local entrySpecials = GetScoreboardEntryScoreByType(i, battlegroundSpecialsType, battlegrounRound)
+	local currentBgPlayers = {}
+	for i = 1, GetNumScoreboardEntries(battlegrounRound) do
+		local playerName, accName, bgAlliance = GetScoreboardEntryInfo(i, battlegrounRound)
+		local entryClass = GetScoreboardEntryClassId(i, battlegrounRound)
+		local entryKills = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_KILL, battlegrounRound)
+		local entryDeaths = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DEATH, battlegrounRound)
+		local entryAssists = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_ASSISTS, battlegrounRound)
+		local entryDamage = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_DAMAGE_DONE, battlegrounRound)
+		local entryHealing = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_HEALING_DONE, battlegrounRound)
+		local entryPoints = GetScoreboardEntryScoreByType(i, SCORE_TRACKER_TYPE_SCORE, battlegrounRound)
+		local entrySpecials = GetScoreboardEntryScoreByType(i, battlegroundSpecialsType, battlegrounRound)
 
-        local bgColor = PVP:BgAllianceToHexColor(bgAlliance)
+		local bgColor = PVP:BgAllianceToHexColor(bgAlliance)
 
-        local entryRank
-        if battlegroundLeaderboardType then
-            for j = 1, GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) do
-                local rank, displayName, characterName, score = GetBattlegroundLeaderboardEntryInfo(
-                    battlegroundLeaderboardType, j)
-                if '@' .. displayName == accName then
-                    entryRank = rank
-                    break
-                end
-            end
-        end
+		local entryRank
+		if battlegroundLeaderboardType then
+			for j = 1, GetNumBattlegroundLeaderboardEntries(battlegroundLeaderboardType) do
+				local rank, displayName, characterName, score = GetBattlegroundLeaderboardEntryInfo(
+					battlegroundLeaderboardType, j)
+				if '@' .. displayName == accName then
+					entryRank = rank
+					break
+				end
+			end
+		end
 
-        local medalIdTable = {}
+		local medalIdTable = {}
 
-        local medalId = GetNextScoreboardEntryMedalId(i)
+		local medalId = GetNextScoreboardEntryMedalId(i)
 
-        while medalId do
-            local medalCount = GetScoreboardEntryNumEarnedMedalsById(i, medalId, battlegrounRound)
-            local _, _, _, medalPoints = GetMedalInfo(medalId)
-            insert(medalIdTable, { medalId = medalId, medalCount = medalCount, medalPoints = medalPoints })
-            -- insert(medalIdTable, {medalId = medalId, medalCount = medalCount})
-            medalId = GetNextScoreboardEntryMedalId(i,battlegrounRound, medalId)
-        end
+		while medalId do
+			local medalCount = GetScoreboardEntryNumEarnedMedalsById(i, medalId, battlegrounRound)
+			local _, _, _, medalPoints = GetMedalInfo(medalId)
+			insert(medalIdTable, { medalId = medalId, medalCount = medalCount, medalPoints = medalPoints })
+			-- insert(medalIdTable, {medalId = medalId, medalCount = medalCount})
+			medalId = GetNextScoreboardEntryMedalId(i,battlegrounRound, medalId)
+		end
 
 
-        if not entryRank then entryRank = 9999 end
+		if not entryRank then entryRank = 9999 end
 
-        insert(PVP.scoreboardListData, {
-            class = entryClass,
-            name = playerName,
-            kills = entryKills,
-            deaths = entryDeaths,
-            assists = entryAssists,
-            damage = entryDamage,
-            healing = entryHealing,
-            points = entryPoints,
-            alliance = bgAlliance,
-            rank = entryRank,
-            medals = medalIdTable,
-            specials = entrySpecials
-        })
+		insert(PVP.scoreboardListData, {
+			class = entryClass,
+			name = playerName,
+			kills = entryKills,
+			deaths = entryDeaths,
+			assists = entryAssists,
+			damage = entryDamage,
+			healing = entryHealing,
+			points = entryPoints,
+			alliance = bgAlliance,
+			rank = entryRank,
+			medals = medalIdTable,
+			specials = entrySpecials
+		})
 
-        local bgAccName = ZO_ShouldPreferUserId() and ZO_GetPrimaryPlayerNameFromUnitTag('player') or
-            ZO_GetSecondaryPlayerNameFromUnitTag('player')
+		local bgAccName = ZO_ShouldPreferUserId() and ZO_GetPrimaryPlayerNameFromUnitTag('player') or
+			ZO_GetSecondaryPlayerNameFromUnitTag('player')
 
-        if accName == bgAccName and PVP:IsMalformedName(self.playerName) then
-            self.playerName = playerName
-        end
+		if accName == bgAccName and PVP:IsMalformedName(self.playerName) then
+			self.playerName = playerName
+		end
 
-        currentBgPlayers[playerName] = true
+		currentBgPlayers[playerName] = true
 
-        PVP.bgNames[playerName] = bgAlliance
+		PVP.bgNames[playerName] = bgAlliance
 
-        local formattedName = self:GetFormattedClassNameLink(playerName, bgColor, nil, nil, nil, nil, entryClass)
+		local formattedName = self:GetFormattedClassNameLink(playerName, bgColor, nil, nil, nil, nil, entryClass)
 
-        if not PVP.bgScoreBoardData[playerName] then
-            PVP.bgScoreBoardData[playerName] = formattedName
-            if PVP.bgScoreBoardFirstRunDone and PVP.SV.showJoinedPlayers then
-                chat:Printf('%s joined battleground!', PVP.bgScoreBoardData[playerName])
-            end
-        end
+		if not PVP.bgScoreBoardData[playerName] then
+			PVP.bgScoreBoardData[playerName] = formattedName
+			if PVP.bgScoreBoardFirstRunDone and PVP.SV.showJoinedPlayers then
+				chat:Printf('%s joined battleground!', PVP.bgScoreBoardData[playerName])
+			end
+		end
 
 		local KOSOrFriend = self:IsKOSOrFriend(playerName, bgAccName)
-        if playerName ~= self.playerName then
-            local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName)
+		if playerName ~= self.playerName then
+			local statusIcon, isResurrect, isDead = FindAlliancePlayerInNames(playerName)
 
-            if KOSOrFriend then
-                if KOSOrFriend == "KOS" then
-                    formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
-                elseif KOSOrFriend == "friend" then
-                    formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
-                elseif KOSOrFriend == "cool" then
-                    formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
-                elseif KOSOrFriend == "groupleader" then
-                    formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
-                elseif KOSOrFriend == "group" then
-                    formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
-                elseif KOSOrFriend == "guild" then
-                    formattedName = formattedName .. self:GetGuildIcon() .. statusIcon
-                end
-            else
-                formattedName = formattedName .. statusIcon
-            end
-        else
-            formattedName = formattedName .. self:Colorize(' - YOU', 'FFFFFF')
-        end
+			if KOSOrFriend then
+				if KOSOrFriend == "KOS" then
+					formattedName = formattedName .. self:GetKOSIcon() .. statusIcon
+				elseif KOSOrFriend == "friend" then
+					formattedName = formattedName .. self:GetFriendIcon(19) .. statusIcon
+				elseif KOSOrFriend == "cool" then
+					formattedName = formattedName .. self:GetCoolIcon(19) .. statusIcon
+				elseif KOSOrFriend == "groupleader" then
+					formattedName = formattedName .. self:GetGroupLeaderIcon() .. statusIcon
+				elseif KOSOrFriend == "group" then
+					formattedName = formattedName .. self:GetGroupIcon() .. statusIcon
+				elseif KOSOrFriend == "guild" then
+					formattedName = formattedName .. self:GetGuildIcon() .. statusIcon
+				end
+			else
+				formattedName = formattedName .. statusIcon
+			end
+		else
+			formattedName = formattedName .. self:Colorize(' - YOU', 'FFFFFF')
+		end
 
 		if bgAlliance == 1 then
-            numberAD = numberAD + 1
-            insert(tableAD, formattedName)
-            tableNameToIndexAD[playerName] = numberAD
-            if KOSOrFriend == "groupleader" then
-                insert(groupLeaderTable, playerName)
-            elseif KOSOrFriend == "group" then
-                insert(groupMembersTable, playerName)
-            elseif KOSOrFriend == "KOS" then
-                insert(kosTableAD, playerName)
-            elseif KOSOrFriend == "friend" then
-                insert(friendsTableAD, playerName)
-            elseif KOSOrFriend == "cool" then
-                insert(friendsTableAD, playerName)
-            else
-                insert(othersTableAD, playerName)
-            end
-        elseif bgAlliance == 2 then
-            numberEP = numberEP + 1
-            insert(tableEP, formattedName)
-            tableNameToIndexEP[playerName] = numberEP
+			numberAD = numberAD + 1
+			insert(tableAD, formattedName)
+			tableNameToIndexAD[playerName] = numberAD
+			if KOSOrFriend == "groupleader" then
+				insert(groupLeaderTable, playerName)
+			elseif KOSOrFriend == "group" then
+				insert(groupMembersTable, playerName)
+			elseif KOSOrFriend == "KOS" then
+				insert(kosTableAD, playerName)
+			elseif KOSOrFriend == "friend" then
+				insert(friendsTableAD, playerName)
+			elseif KOSOrFriend == "cool" then
+				insert(friendsTableAD, playerName)
+			else
+				insert(othersTableAD, playerName)
+			end
+		elseif bgAlliance == 2 then
+			numberEP = numberEP + 1
+			insert(tableEP, formattedName)
+			tableNameToIndexEP[playerName] = numberEP
 
-            if KOSOrFriend == "groupleader" then
-                insert(groupLeaderTable, playerName)
-            elseif KOSOrFriend == "group" then
-                insert(groupMembersTable, playerName)
-            elseif KOSOrFriend == "KOS" then
-                insert(kosTableEP, playerName)
-            elseif KOSOrFriend == "friend" then
-                insert(friendsTableEP, playerName)
-            elseif KOSOrFriend == "cool" then
-                insert(friendsTableEP, playerName)
-            else
-                insert(othersTableEP, playerName)
-            end
-        elseif bgAlliance == 3 then
-            numberDC = numberDC + 1
-            insert(tableDC, formattedName)
-            tableNameToIndexDC[playerName] = numberDC
+			if KOSOrFriend == "groupleader" then
+				insert(groupLeaderTable, playerName)
+			elseif KOSOrFriend == "group" then
+				insert(groupMembersTable, playerName)
+			elseif KOSOrFriend == "KOS" then
+				insert(kosTableEP, playerName)
+			elseif KOSOrFriend == "friend" then
+				insert(friendsTableEP, playerName)
+			elseif KOSOrFriend == "cool" then
+				insert(friendsTableEP, playerName)
+			else
+				insert(othersTableEP, playerName)
+			end
+		elseif bgAlliance == 3 then
+			numberDC = numberDC + 1
+			insert(tableDC, formattedName)
+			tableNameToIndexDC[playerName] = numberDC
 
-            if KOSOrFriend == "groupleader" then
-                insert(groupLeaderTable, playerName)
-            elseif KOSOrFriend == "group" then
-                insert(groupMembersTable, playerName)
-            elseif KOSOrFriend == "KOS" then
-                insert(kosTableDC, playerName)
-            elseif KOSOrFriend == "friend" then
-                insert(friendsTableDC, playerName)
-            elseif KOSOrFriend == "cool" then
-                insert(friendsTableDC, playerName)
-            else
-                insert(othersTableDC, playerName)
-            end
-        end
-    end
+			if KOSOrFriend == "groupleader" then
+				insert(groupLeaderTable, playerName)
+			elseif KOSOrFriend == "group" then
+				insert(groupMembersTable, playerName)
+			elseif KOSOrFriend == "KOS" then
+				insert(kosTableDC, playerName)
+			elseif KOSOrFriend == "friend" then
+				insert(friendsTableDC, playerName)
+			elseif KOSOrFriend == "cool" then
+				insert(friendsTableDC, playerName)
+			else
+				insert(othersTableDC, playerName)
+			end
+		end
+	end
 
-    for k, v in pairs(PVP.bgScoreBoardData) do
-        if not currentBgPlayers[k] then
-            if PVP.SV.showJoinedPlayers then
-                chat:Printf('%s left battleground!', PVP.bgScoreBoardData[k])
-            end
-            PVP.bgScoreBoardData[k] = nil
-        end
-    end
-    PVP.bgScoreBoardFirstRunDone = true
+	for k, v in pairs(PVP.bgScoreBoardData) do
+		if not currentBgPlayers[k] then
+			if PVP.SV.showJoinedPlayers then
+				chat:Printf('%s left battleground!', PVP.bgScoreBoardData[k])
+			end
+			PVP.bgScoreBoardData[k] = nil
+		end
+	end
+	PVP.bgScoreBoardFirstRunDone = true
 
-    if PVP.bgScoreboard and PVP.bgScoreboard.list then PVP.bgScoreboard.list:RefreshData() end
+	if PVP.bgScoreboard and PVP.bgScoreboard.list then PVP.bgScoreboard.list:RefreshData() end
 
-    return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP
+	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP
 end
 
 function PVP:GetAllianceCountPlayers()
@@ -3119,19 +3119,19 @@ function PVP:GetAllianceCountPlayers()
 	if not IsActiveWorldBattleground() then
 		local alliancePlayerNames = ConvertAlliancePlayerNames()
 		for k, v in pairs(playerAlliance) do
-			local playerName					= idToName[k]
-			local alliancePlayerNameData 		= alliancePlayerNames[playerName] or {}
-			local playerDbRecord			= playersDb[playerName] or {}
-			local unitAccName					= playerDbRecord.unitAccName
-			local unitClass					   	= playerDbRecord.unitClass
-			local unitAlliance				 	= playerDbRecord.unitAlliance
-			local unitAvARank					= playerDbRecord.unitAvARank
-			local KOSOrFriend					= self:IsKOSOrFriend(playerName, unitAccName)
-			local isResurrect					= alliancePlayerNameData.isResurrect or false
-			local isDead						= alliancePlayerNameData.isDead or false
-			local isTarget						= alliancePlayerNameData.isTarget or false
-			local isAttacker					= alliancePlayerNameData.isAttacker or false
-			local statusIcon					= isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
+			local playerName = idToName[k]
+			local alliancePlayerNameData = alliancePlayerNames[playerName] or {}
+			local playerDbRecord = playersDb[playerName] or {}
+			local unitAccName = playerDbRecord.unitAccName
+			local unitClass = playerDbRecord.unitClass
+			local unitAlliance = playerDbRecord.unitAlliance
+			local unitAvARank = playerDbRecord.unitAvARank
+			local KOSOrFriend = self:IsKOSOrFriend(playerName, unitAccName)
+			local isResurrect = alliancePlayerNameData.isResurrect or false
+			local isDead = alliancePlayerNameData.isDead or false
+			local isTarget = alliancePlayerNameData.isTarget or false
+			local isAttacker = alliancePlayerNameData.isAttacker or false
+			local statusIcon = isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
 
 			local allianceColor, classIcons
 
@@ -3230,17 +3230,17 @@ function PVP:GetAllianceCountPlayers()
 		for k, _ in pairs(playerNames) do
 			if not foundNames[k] then
 				local playerName = k
-				local alliancePlayerNameData 		= alliancePlayerNames[playerName] or {}
-				local playerDbRecord				= playersDb[playerName] or {}
-				local unitAccName					= playerDbRecord.unitAccName
-				local unitAlliance				 	= playerDbRecord.unitAlliance
+				local alliancePlayerNameData = alliancePlayerNames[playerName] or {}
+				local playerDbRecord = playersDb[playerName] or {}
+				local unitAccName = playerDbRecord.unitAccName
+				local unitAlliance = playerDbRecord.unitAlliance
 				local formattedName
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, unitAccName)
-				local isResurrect					= alliancePlayerNameData.isResurrect or false
-				local isDead						= alliancePlayerNameData.isDead or false
-				local isTarget						= alliancePlayerNameData.isTarget or false
-				local isAttacker					= alliancePlayerNameData.isAttacker or false
-				local statusIcon					= isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
+				local isResurrect = alliancePlayerNameData.isResurrect or false
+				local isDead = alliancePlayerNameData.isDead or false
+				local isTarget = alliancePlayerNameData.isTarget or false
+				local isAttacker = alliancePlayerNameData.isAttacker or false
+				local statusIcon = isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
 	
 				if (not isDead) and (not isResurrect) then
 					if statusIcon == "" then
@@ -3906,7 +3906,7 @@ function PVP.Activated()
 					counter = counter + 1
 				end
 			end
-			if counter > 0 then chat:Printf('Processed %d  previously recorded player specs!', counter) end
+			if counter > 0 then chat:Printf('Processed %d previously recorded player specs!', counter) end
 			PVP.SV.rememberedSpecs = nil
 		end
 	end

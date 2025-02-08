@@ -107,5 +107,5 @@ PVP.globalConstants = Constants
 --- @param globalName T The key whose value is being retrieved.
 --- @return T
 function PVP:GetGlobal(globalName)
-    return self.globalConstants[globalName]
+	return self.globalConstants[globalName]
 end

@@ -155,18 +155,18 @@ local function GetCharAccLink(rawName, unitAccName, unitRace)
 end
 
 local function GetHighlightedCharAccLink(rawName, startIndex, endIndex)
-	local strippedName  = zo_strformat(SI_UNIT_NAME, rawName)
-	local nameLength    = zo_strlen(strippedName)
+	local strippedName = zo_strformat(SI_UNIT_NAME, rawName)
+	local nameLength = zo_strlen(strippedName)
 	local allianceColor = PVP:NameToAllianceColor(rawName, nil, true)
 	local playersDB = PVP.SV.playersDB
 	local playerDbRecord = playersDB[rawName]
 	local unitRace 	= playerDbRecord.unitRace
 	local unitAccName = playerDbRecord.unitAccName
-	local icon          = PVP:GetFormattedClassIcon(rawName, nil, allianceColor, nil, nil, nil, nil, nil, nil, nil, playerDbRecord or "none")
+	local icon = PVP:GetFormattedClassIcon(rawName, nil, allianceColor, nil, nil, nil, nil, nil, nil, nil, playerDbRecord or "none")
 
 	local normalPartBefore, normalPartAfter, highlightPart
 
-	highlightPart       = PVP:Colorize(
+	highlightPart = PVP:Colorize(
 		ZO_LinkHandler_CreateLinkWithoutBrackets(zo_strsub(strippedName, startIndex, endIndex), nil,
 			CHARACTER_LINK_TYPE,
 			rawName), 'FF00FF')
@@ -624,14 +624,14 @@ function PVP:FindAccInCOOL(unitPlayerName, unitAccName)
 end
 
 function PVP:AddKOS(playerName, isSlashCommand)
-	local SV       = self.SV
+	local SV = self.SV
 	if not SV.showKOSFrame then PVP.CHAT:Printf('KOS/COOL system is disabled!') end
 
 	if not playerName or playerName == "" then
 		d("Name was not provided!")
 		return
 	end
-	local KOSList  = SV.KOSList
+	local KOSList = SV.KOSList
 	local playersDB = SV.playersDB
 	local playerDbRecord = playersDB[playerName] or {}
 	playerDbRecord.unitCharName = playerName
@@ -683,7 +683,7 @@ function PVP:AddKOS(playerName, isSlashCommand)
 end
 
 function PVP:AddCOOL(playerName, isSlashCommand)
-	local SV       = self.SV
+	local SV = self.SV
 
 	if not SV.showKOSFrame then PVP.CHAT:Printf('KOS/COOL system is disabled!') end
 
@@ -692,7 +692,7 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 		return
 	end
 
-	local KOSList  = SV.KOSList
+	local KOSList = SV.KOSList
 	local coolList = SV.coolList
 	local playersDB = SV.playersDB
 
@@ -994,7 +994,7 @@ function PVP:RefreshLocalPlayers()
 	local potentialAllies = {}
 	local idToName = self.idToName
 	local playerNames = self.playerNames
-    local namesToDisplay = self.namesToDisplay
+	local namesToDisplay = self.namesToDisplay
 	local playerNotes = SV.playerNotes
 	local showPlayerNotes = SV.showPlayerNotes
 	local showFriends = SV.showFriends
@@ -1097,7 +1097,7 @@ function PVP:RefreshLocalPlayers()
 		end
 	end
 
-    self.localPlayers = localPlayers
+	self.localPlayers = localPlayers
 	self.potentialAllies = potentialAllies
 end
 
