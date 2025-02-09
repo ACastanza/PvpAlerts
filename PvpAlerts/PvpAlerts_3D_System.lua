@@ -245,22 +245,21 @@ function PVP:GetCaptureTexture(alliance, isCapture, threshold)
 	return texture
 end
 
-local function SetDimensions3DControl(control, iconSize3D, iconUASize3D, BGSize3D,
-	icon, iconUA, BG, captureBG, captureBar, divider, scroll, lock, flags, apse, nave, other, middle, ping)
-	icon = icon or control:GetNamedChild('Icon')
-	iconUA = iconUA or control:GetNamedChild('IconUA')
-	BG = BG or control:GetNamedChild('BG')
-	captureBG = captureBG or control:GetNamedChild('CaptureBG')
-	captureBar = captureBar or control:GetNamedChild('CaptureBar')
-	divider = divider or control:GetNamedChild('Divider')
-	scroll = scroll or control:GetNamedChild('Scroll')
-	lock = lock or control:GetNamedChild('Locked')
-	flags = flags or control:GetNamedChild('Flags')
-	apse = apse or control:GetNamedChild('Apse')
-	nave = nave or control:GetNamedChild('Nave')
-	other = other or control:GetNamedChild('Other')
-	middle = middle or control:GetNamedChild('Middle')
-	ping = ping or control:GetNamedChild('Ping')
+local function SetDimensions3DControl(control, iconSize3D, iconUASize3D, BGSize3D)
+	local lock = control.locked
+	local icon = control.icon
+	local iconUA = control.iconUA
+	local BG = control.bg
+	local captureBG = control.captureBG
+	local captureBar = control.captureBar
+	local divider = control.divider
+	local scroll = control.scroll
+	local flags = control.flags
+	local apse = control.apse
+	local nave = control.nave
+	local other = control.other
+	local middle = control.middle
+	local ping = control.ping
 
 	if control.params.type == 'SHADOW_IMAGE' then
 		icon:Set3DLocalDimensions(iconSize3D / 3, iconSize3D)
@@ -300,7 +299,7 @@ end
 
 local function SetupTextureCoords(control)
 	local type = control.params.type
-	local icon = control:GetNamedChild('Icon')
+	local icon = control.icon
 	if type == 'RALLY' then
 		if not control.params.textureState then
 			control.params.textureState = 1
@@ -585,7 +584,7 @@ local function StartFlipping3DAnimation(control, targetIcon, targetAlliance)
 
 
 	timeline:InsertCallback(function()
-		local icon = control:GetNamedChild('Icon')
+		local icon = control.icon
 		icon:SetTexture(targetIcon)
 	end, 0.377 * timeline:GetDuration())
 
@@ -860,9 +859,9 @@ local function GetActivationInfo()
 end
 
 local function SetCaptureBarVisibility(control)
-	local divider = control:GetNamedChild('Divider')
-	local captureBG = control:GetNamedChild('CaptureBG')
-	local captureBar = control:GetNamedChild('CaptureBar')
+	local divider = control.divider
+	local captureBG = control.captureBG
+	local captureBar = control.captureBar
 
 	if control.params.showCaptureTexture then
 		local isControlFlipping = control.params.flippingPlaying and control.params.flippingPlaying:IsPlaying()
@@ -897,10 +896,10 @@ local function ProcessRallyAnimation(control)
 
 	if currentState then
 		if control.params.type == "RALLY" then
-			control:GetNamedChild('Icon'):SetTextureCoords(((control.params.textureState / 3 - 1) * 64) / 2048,
+			control.icon:SetTextureCoords(((control.params.textureState / 3 - 1) * 64) / 2048,
 				(control.params.textureState / 3 * 64) / 2048, 0, 1)
 		elseif control.params.hasRally then
-			control:GetNamedChild('Ping'):SetTextureCoords(((control.params.textureState / 3 - 1) * 64) / 2048,
+			control.ping:SetTextureCoords(((control.params.textureState / 3 - 1) * 64) / 2048,
 				(control.params.textureState / 3 * 64) / 2048, 0, 1)
 		end
 	end
@@ -981,7 +980,7 @@ end
 
 local function SetShadowImageColor(control)
 	if not PVP.shadowInfo then return end
-	local icon = control:GetNamedChild('Icon')
+	local icon = control.icon
 
 	local function GetValidRange()
 		if PVP.shadowInfo.slotNumber then
@@ -1167,7 +1166,7 @@ local function GetControlTexture(control, data, iconType)
 				end
 			end
 		elseif type == 'SHADOW_IMAGE' then
-			local iconBG = control:GetNamedChild('BG')
+			local iconBG = control.bg
 			texture = GetShadowImageTexture()
 			iconBG:SetTexture(texture)
 			iconBG:SetColor(0, 0, 0, 1)
@@ -1450,6 +1449,26 @@ function PVP:Init3D()
 			control:GetChild(i):Create3DRenderSpace()
 		end
 		control.params = {}
+		control.locked = control:GetNamedChild('Locked')
+		control.icon = control:GetNamedChild('Icon')
+		control.iconUA = control:GetNamedChild('IconUA')
+		control.bg = control:GetNamedChild('BG')
+		control.captureBG = control:GetNamedChild('CaptureBG')
+		control.captureBar = control:GetNamedChild('CaptureBar')
+		control.divider = control:GetNamedChild('Divider')
+		control.scroll = control:GetNamedChild('Scroll')
+		control.flags = control:GetNamedChild('Flags')
+		control.apse = control:GetNamedChild('Apse')
+		control.nave = control:GetNamedChild('Nave')
+		control.other = control:GetNamedChild('Other')
+		control.middle = control:GetNamedChild('Middle')
+		control.name = control:GetNamedChild('Name')
+		control.siege = control:GetNamedChild('Siege')
+		control.ping = control:GetNamedChild('Ping')
+		control.neighbors = control:GetNamedChild('Neighbors')
+		control.neighbor1 = control.neighbors and control.neighbors:GetNamedChild('Neighbor1')
+		control.neighbor2 = control.neighbors and control.neighbors:GetNamedChild('Neighbor2')
+		control.neighbor3 = control.neighbors and control.neighbors:GetNamedChild('Neighbor3')
 	end
 
 	self.controls3DPool:SetCustomFactoryBehavior(CustomFactoryBehavior)
@@ -2219,7 +2238,7 @@ local function ControlOnUpdate(control)
 
 	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[keepId] then
 		local _, subzoneId = GetCurrentSubZonePOIIndices()
-		if PVP.districtKeepIdToSubzoneNumber[keepId] == subzoneId or isControlFlipping or not control:GetNamedChild('CaptureBG'):IsHidden() then
+		if PVP.districtKeepIdToSubzoneNumber[keepId] == subzoneId or isControlFlipping or not control.captureBG:IsHidden() then
 			control:SetAlpha(1)
 		else
 			control:SetAlpha(PVP.SV.neighboringDistrictsAlpha)
@@ -2779,12 +2798,12 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	end
 
 	-- local vars for controls
-	local icon = control:GetNamedChild('Icon')
-	local iconUA = control:GetNamedChild('IconUA')
-	local iconBG = control:GetNamedChild('BG')
-	local scroll = control:GetNamedChild('Scroll')
-	local lock = control:GetNamedChild('Locked')
-	local ping = control:GetNamedChild('Ping')
+	local lock = control.locked
+	local icon = control.icon
+	local iconUA = control.iconUA
+	local iconBG = control.bg
+	local scroll = control.scroll
+	local ping = control.ping
 
 
 	control.params.distance = distance
@@ -2852,11 +2871,11 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 	-- PVP.m2 = GetGameTimeMilliseconds()
 
 	if not shouldHideFlags then
-		local flags = control:GetNamedChild('Flags')
-		local apse = control:GetNamedChild('Apse')
-		local nave = control:GetNamedChild('Nave')
-		local other = control:GetNamedChild('Other')
-		local middle = control:GetNamedChild('Middle')
+		local flags = control.flags
+		local apse = control.apse
+		local nave = control.nave
+		local other = control.other
+		local middle = control.middle
 
 		local isTown = keepType == KEEPTYPE_TOWN
 		local isKeep = keepType == KEEPTYPE_KEEP
@@ -2987,7 +3006,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		if not (toHide or neutral) then
 			captureTexture = PVP:GetCaptureTexture(captureAlliance, isCapture, percentage)
-			local captureBar = control:GetNamedChild('CaptureBar')
+			local captureBar = control.captureBar
 			captureBar:SetTexture(captureTexture)
 		end
 	end
@@ -3204,13 +3223,13 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	if not control then
 		return
 	end
-	local icon = control:GetNamedChild('Icon')
-	local iconUA = control:GetNamedChild('IconUA')
-	local iconBG = control:GetNamedChild('BG')
-	local captureBG = control:GetNamedChild('CaptureBG')
-	local captureBar = control:GetNamedChild('CaptureBar')
-	local divider = control:GetNamedChild('Divider')
-	local ping = control:GetNamedChild('Ping')
+	local icon = control.icon
+	local iconUA = control.iconUA
+	local iconBG = control.bg
+	local captureBG = control.captureBG
+	local captureBar = control.captureBar
+	local divider = control.divider
+	local ping = control.ping
 
 	iconBG:SetHidden(true)
 	captureBG:SetHidden(true)
@@ -3329,9 +3348,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	SetupTextureCoords(control)
 	local POISize, POIUASize = GetControlSize(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
 
-	SetDimensions3DControl(control, POISize, POIUASize, POISize,
-		icon, iconUA, iconBG, captureBG, captureBar, divider, 
-		nil, nil, nil, nil, nil, nil, nil, ping)
+	SetDimensions3DControl(control, POISize, POIUASize, POISize)
 
 	control.params.dimensions = { POISize, POIUASize, POISize }
 
@@ -3556,13 +3573,13 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 	control.params.objectiveId = objectiveId
 	-- control.isCtfBase = isCtfBase
 
-	local icon = control:GetNamedChild('Icon')
-	local iconUA = control:GetNamedChild('IconUA')
-	local iconBG = control:GetNamedChild('BG')
-	local captureBG = control:GetNamedChild('CaptureBG')
-	local captureBar = control:GetNamedChild('CaptureBar')
-	local divider = control:GetNamedChild('Divider')
-	local scroll = control:GetNamedChild('Scroll')
+	local icon = control.icon
+	local iconUA = control.iconUA
+	local iconBG = control.bg
+	local captureBG = control.captureBG
+	local captureBar = control.captureBar
+	local divider = control.divider
+	local scroll = control.scroll
 
 	local currentControlAlliance = GetCaptureAreaObjectiveOwner(0, control.params.objectiveId, BGQUERY_LOCAL)
 
