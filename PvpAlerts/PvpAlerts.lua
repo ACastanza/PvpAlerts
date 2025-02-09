@@ -1526,16 +1526,23 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 					isHA = false,
 					coolDownStartTime = currentTime
 				}
-			else
+			elseif self.majorImportantAbilities[abilityId] then
 				self.majorAttackNotficiationLockout = currentTime + hitValue
 				self:PlayLoudSound('CONSOLE_GAME_ENTER')
-				if abilityName == "Charge Snare" then
-					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
+				if self.SV.secondaryAlert and hitValue > 500 then
+					zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
 				end
 				FlashHealthWarningStage(1, 150)
 				PVP_Main.currentChannel = nil
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, true,
+					false, false, hitValue)
+			elseif abilityName == "Charge Snare" then
+				if currentTime < self.majorAttackNotficiationLockout then return end
+				if currentTime < self.minorAttackNotficiationLockout then return end
+					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
+					self:OnDraw(false, sourceUnitId, abilityName,
+					abilityId, abilityIcon, sourceName, false,
 					false, false, hitValue)
 			end
 		end
