@@ -880,7 +880,7 @@ local function TooltipOnUpdate(control)
 	end
 end
 
-function PVP.SetToolTip(control, maxLength, isCounter, ...)
+function PVP.SetToolTip(control, maxNameWidth, isCounter, ...)
 	local args = { ... }
 	control:SetHandler("OnMouseEnter", function(self)
 		local side = TOP
@@ -889,7 +889,6 @@ function PVP.SetToolTip(control, maxLength, isCounter, ...)
 
 		if centerY < (GuiRoot:GetHeight() / 2) then side = BOTTOM end
 
-		PVP.Tooltips_ShowTextTooltip(self, side, maxLength, isCounter, unpack(args))
 		if not isCounter then
 			control.lastTooltipUpdate = GetFrameTimeMilliseconds()
 			control:SetHandler("OnUpdate", function() TooltipOnUpdate(control) end)
@@ -914,7 +913,6 @@ function PVP.ReleaseToolTip(control, isCurrentTooltip)
 	end
 end
 
-function PVP.Tooltips_ShowTextTooltip(control, side, maxLength, isCounter, ...)
 	local OFFSET_DISTANCE = 5
 	local OFFSETS_X =
 	{
@@ -943,7 +941,6 @@ function PVP.Tooltips_ShowTextTooltip(control, side, maxLength, isCounter, ...)
 	else
 		InitializeTooltip(PVP_Tooltip, control, SIDE_TO_TOOLTIP_SIDE[side], OFFSETS_X[side], OFFSETS_Y[side])
 	end
-	PVP_Tooltip:SetDimensionConstraints(0, 0, maxLength, 0)
 
 	PVP_Tooltip:SetFont("ZoFontWinH5")
 	for i = 1, select("#", ...) do
