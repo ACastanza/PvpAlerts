@@ -889,6 +889,7 @@ function PVP.SetToolTip(control, maxNameWidth, isCounter, ...)
 
 		if centerY < (GuiRoot:GetHeight() / 2) then side = BOTTOM end
 
+		PVP.Tooltips_ShowTextTooltip(self, side, maxNameWidth, isCounter, unpack(args))
 		if not isCounter then
 			control.lastTooltipUpdate = GetFrameTimeMilliseconds()
 			control:SetHandler("OnUpdate", function() TooltipOnUpdate(control) end)
@@ -913,6 +914,7 @@ function PVP.ReleaseToolTip(control, isCurrentTooltip)
 	end
 end
 
+function PVP.Tooltips_ShowTextTooltip(control, side, maxNameWidth, isCounter, ...)
 	local OFFSET_DISTANCE = 5
 	local OFFSETS_X =
 	{
@@ -941,6 +943,7 @@ end
 	else
 		InitializeTooltip(PVP_Tooltip, control, SIDE_TO_TOOLTIP_SIDE[side], OFFSETS_X[side], OFFSETS_Y[side])
 	end
+	PVP_Tooltip:SetDimensionConstraints(0, 0, maxNameWidth, 0)
 
 	PVP_Tooltip:SetFont("ZoFontWinH5")
 	for i = 1, select("#", ...) do
