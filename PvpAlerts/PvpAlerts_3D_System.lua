@@ -2193,25 +2193,24 @@ local function GetCampaignPositionInfoString(alliance)
 end
 
 local function ControlOnUpdate(control)
-	local controlParams = control.params
-	local keepId = controlParams.keepId
-	local keepNotClaimable = nonClaimableKeepTypes[GetKeepType(keepId)]
+	local params = control.params
+	local keepId = params.keepId
 	local currentTime = GetFrameTimeMilliseconds()
-	if (currentTime - controlParams.lastUpdate) >= 10 then
-		controlParams.lastUpdate = currentTime
-	else
+	if currentTime - params.lastUpdate < 10 then
 		return
 	end
+	params.lastUpdate = currentTime
+
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
-	if Hide3DControl(control, scaleAdjustment) then return end
-	local showingTooltipStart
+	if Hide3DControl(control, scaleAdjustment) then
+		return
+	end
+
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	control.multiplier = multiplier
-	local isControlFlipping = controlParams.flippingPlaying and controlParams.flippingPlaying:IsPlaying()
-	local isBorderKeepAnimationPlaying = controlParams.borderKeepAnimationHandler and
-		controlParams.borderKeepAnimationHandler:IsPlaying()
-	-- local isBorderKeepSelectedAnimationPlaying = control.borderKeepSelectedAnimationHandler and
-	-- 	control.borderKeepSelectedAnimationHandler:IsPlaying()
+
+	local isControlFlipping = params.flippingPlaying and params.flippingPlaying:IsPlaying() or false
+	local isBorderAnimPlaying = params.borderKeepAnimationHandler and params.borderKeepAnimationHandler:IsPlaying() or false
 	local showBorderKeepInfo = IsInBorderKeepArea() and PVP.borderKeepsIds[keepId]
 
 	if IsInImperialCityDistrict() and PVP.districtKeepIdToSubzoneNumber[keepId] then
@@ -2221,23 +2220,24 @@ local function ControlOnUpdate(control)
 		else
 			control:SetAlpha(PVP.SV.neighboringDistrictsAlpha)
 		end
-		if control:GetAlpha() < 0.01 then return end
+		if control:GetAlpha() < 0.01 then
+			return
+		end
 	else
 		control:SetAlpha(1)
 	end
 
-	if controlParams.hasRally then
+	if params.hasRally then
 		ProcessRallyAnimation(control)
 	end
 
-	local showTooltip
-
 	local heading = GetAdjustedPlayerCameraHeading()
+	local showTooltip = false
 
 	if ControlHasMouseOver(control, multiplier, heading) then
-		local alliance = controlParams.alliance
+		local alliance = params.alliance
 		control:SetAlpha(1)
-
+		-- Compute alliance colors fresh on mouse-over
 		PVP_WorldTooltipLabel:SetColor(PVP:HtmlToColor(PVP:AllianceToColor(alliance)))
 
 		if showBorderKeepInfo then
@@ -2245,7 +2245,6 @@ local function ControlOnUpdate(control)
 			PVP_WorldTooltip:SetAnchor(CENTER, GuiRoot, CENTER, 0, 0)
 			PVP_WorldTooltipLabel:ClearAnchors()
 			PVP_WorldTooltipLabel:SetAnchor(TOP, PVP_WorldTooltip, TOP, 0, 0)
-
 			PVP_WorldTooltipLabel:SetText(GetCampaignInfoString(alliance))
 			PVP_WorldTooltipLabel:SetFont('$(BOLD_FONT)|$(KB_28)|thick-outline')
 			PVP_WorldTooltipSubLabel:SetText(GetBorderKeepInfoString(keepId, alliance))
@@ -2267,34 +2266,30 @@ local function ControlOnUpdate(control)
 			PVP_WorldTooltipSiegeLabel:ClearAnchors()
 			PVP_WorldTooltipSiegeLabel:SetAnchor(TOP, PVP_WorldTooltipSubLabel, BOTTOM, 0, 0)
 		else
-			local guildClaimName, siegeCount
-			if keepNotClaimable then
-				guildClaimName = ''
-			else
-				guildClaimName = GetClaimedKeepGuildName(keepId, BGQUERY_LOCAL) or ''
-				if guildClaimName and guildClaimName ~= "" then
+			local keepNotClaimable = nonClaimableKeepTypes[GetKeepType(keepId)]
+			local guildClaimName = ""
+			if not keepNotClaimable then
+				guildClaimName = GetClaimedKeepGuildName(keepId, BGQUERY_LOCAL) or ""
+				if guildClaimName ~= "" then
 					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
 						PVP:Colorize(guildClaimName, PVP:AllianceToColor(alliance))
 				else
-					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') .. PVP:Colorize('Unclaimed', '808080')
+					guildClaimName = PVP:Colorize("Guild Owner: ", 'C5C29F') ..
+						PVP:Colorize("Unclaimed", "808080")
 				end
 			end
 
+			local siegeCount = ""
 			if control.totalSieges > 0 then
-				local siegeAD = controlParams.siegesAD > 0 and
-					(' ' .. PVP:Colorize(tostring(controlParams.siegesAD), PVP:AllianceToColor(1))) or ""
-				local siegeDC = controlParams.siegesDC > 0 and
-					(' ' .. PVP:Colorize(tostring(controlParams.siegesDC), PVP:AllianceToColor(3))) or ""
-				local siegeEP = controlParams.siegesEP > 0 and
-					(' ' .. PVP:Colorize(tostring(controlParams.siegesEP), PVP:AllianceToColor(2))) or ""
-				siegeCount = 'Siege:' .. siegeAD .. siegeDC .. siegeEP
-			else
-				siegeCount = ''
+				local siegeAD = params.siegesAD > 0 and (" " .. PVP:Colorize(tostring(params.siegesAD), PVP:AllianceToColor(1))) or ""
+				local siegeDC = params.siegesDC > 0 and (" " .. PVP:Colorize(tostring(params.siegesDC), PVP:AllianceToColor(3))) or ""
+				local siegeEP = params.siegesEP > 0 and (" " .. PVP:Colorize(tostring(params.siegesEP), PVP:AllianceToColor(2))) or ""
+				siegeCount = "Siege:" .. siegeAD .. siegeDC .. siegeEP
 			end
 
 			if keepNotClaimable then
 				PVP_WorldTooltipSubLabel:SetText(siegeCount)
-				PVP_WorldTooltipSiegeLabel:SetText('')
+				PVP_WorldTooltipSiegeLabel:SetText("")
 			else
 				PVP_WorldTooltipSubLabel:SetText(guildClaimName)
 				PVP_WorldTooltipSiegeLabel:SetText(siegeCount)
@@ -2302,46 +2297,38 @@ local function ControlOnUpdate(control)
 
 			local distanceText = GetUpgradeLevelString(control) .. GetFormattedDistanceText(control)
 			PVP_WorldTooltipLabel:SetText(zo_strformat(SI_ALERTTEXT_LOCATION_FORMAT, GetKeepName(keepId)) .. distanceText)
-
 			SetupNormalWorldTooltip(true)
 		end
-		showingTooltipStart = PVP.currentTooltip ~= control
-		if showingTooltipStart then
-			controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or 1
-		end
 
+		if PVP.currentTooltip ~= control then
+			params.currentPhase = IsPopPhaseValid(params.currentPhase) and params.currentPhase or 1
+		end
 		PVP.currentTooltip = control
 		showTooltip = true
 		SetCaptureBarVisibility(control)
 		PVP_WorldTooltip:SetHidden(false)
 	end
 
-	local hidingTooltipStart = not showTooltip and PVP.currentTooltip == control
-
-	if hidingTooltipStart then
+	if not showTooltip and PVP.currentTooltip == control then
 		ResetWorldTooltip()
 		SetCaptureBarVisibility(control)
-		controlParams.currentPhase = IsPopPhaseValid(controlParams.currentPhase) and controlParams.currentPhase or
-			GetNumberOfAnimationPhases()
+		params.currentPhase = IsPopPhaseValid(params.currentPhase) and params.currentPhase or GetNumberOfAnimationPhases()
 	end
-
-
-	local popMultiplier
 
 	if PVP.currentTooltip == control or isControlFlipping then
-		local dimensions = controlParams.dimensions
-		popMultiplier = GetPopInMultiplier(multiplier, control)
-		SetDimensions3DControl(control, dimensions[1] * popMultiplier,
-		dimensions[2] * popMultiplier, dimensions[3] * popMultiplier)
+		local dims = params.dimensions
+		local popMultiplier = GetPopInMultiplier(multiplier, control)
+		SetDimensions3DControl(control, dims[1] * popMultiplier, dims[2] * popMultiplier, dims[3] * popMultiplier)
 	end
 
-
 	if showBorderKeepInfo and PVP.currentTooltip ~= control then
-		if not isBorderKeepAnimationPlaying then
-			controlParams.borderKeepAnimationHandler = StartBorderKeep3DAnimation(control)
+		if not isBorderAnimPlaying then
+			params.borderKeepAnimationHandler = StartBorderKeep3DAnimation(control)
 		end
 	else
-		if isBorderKeepAnimationPlaying then controlParams.borderKeepAnimationHandler:Stop() end
+		if isBorderAnimPlaying then
+			params.borderKeepAnimationHandler:Stop()
+		end
 		if not isControlFlipping then
 			control:Set3DRenderSpaceOrientation(0, heading, 0)
 		end
