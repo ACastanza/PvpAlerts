@@ -11,28 +11,23 @@ local GetGameTimeMilliseconds = GetGameTimeMilliseconds
 local zo_distance3D = zo_distance3D
 
 function PVP:FindNearbyKeepToRespawn(anyKeep)
-	local foundKeepId, minDistance = 0, nil
 	local selfX, selfY = GetMapPlayerPosition('player')
+	local foundKeepId, minDistance
+
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
-
 		if anyKeep or (CanRespawnAtKeep(keepId) and not (IsInImperialCity() and GetKeepType(keepId) ~= KEEPTYPE_IMPERIAL_CITY_DISTRICT)) then
 			local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
-
 			if targetX ~= 0 and targetY ~= 0 then
 				local distance = zo_distance3D(selfX, selfY, 0, targetX, targetY, 0)
-				if not minDistance then
-					minDistance = distance
-					foundKeepId = keepId
-				elseif distance < minDistance then
-					minDistance = distance
-					foundKeepId = keepId
+				if not minDistance or distance < minDistance then
+					foundKeepId, minDistance = keepId, distance
 				end
 			end
 		end
 	end
 
-	if foundKeepId ~= 0 then return foundKeepId else return false end
+	return foundKeepId or false
 end
 
 function PVP:RespawnAtNearbyKeep()
