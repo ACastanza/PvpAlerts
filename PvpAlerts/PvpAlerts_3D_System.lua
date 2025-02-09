@@ -246,55 +246,33 @@ function PVP:GetCaptureTexture(alliance, isCapture, threshold)
 end
 
 local function SetDimensions3DControl(control, iconSize3D, iconUASize3D, BGSize3D)
-	local lock = control.locked
-	local icon = control.icon
-	local iconUA = control.iconUA
-	local BG = control.bg
-	local captureBG = control.captureBG
-	local captureBar = control.captureBar
-	local divider = control.divider
-	local scroll = control.scroll
-	local flags = control.flags
-	local apse = control.apse
-	local nave = control.nave
-	local other = control.other
-	local middle = control.middle
-	local ping = control.ping
+	local params = control.params
+	local keepId = params.keepId
+	local flagOffset = (keepId and ({ [KEEPTYPE_OUTPOST] = 4, [KEEPTYPE_TOWN] = 6 })[PVP:KeepIdToKeepType(keepId)]) or 1
+	local iconSizeWithOffset = iconSize3D + flagOffset
 
-	if control.params.type == 'SHADOW_IMAGE' then
-		icon:Set3DLocalDimensions(iconSize3D / 3, iconSize3D)
-		BG:Set3DLocalDimensions((iconSize3D / 3 + 1 / 5), iconSize3D + 1 / 5)
+	if params.type == 'SHADOW_IMAGE' then
+		control.icon:Set3DLocalDimensions(iconSize3D / 3, iconSize3D)
+		control.bg:Set3DLocalDimensions(iconSize3D / 3 + 1 / 5, iconSize3D + 1 / 5)
 	else
-		icon:Set3DLocalDimensions(iconSize3D, iconSize3D)
-		BG:Set3DLocalDimensions(BGSize3D, BGSize3D)
+		control.icon:Set3DLocalDimensions(iconSize3D, iconSize3D)
+		control.bg:Set3DLocalDimensions(BGSize3D, BGSize3D)
 	end
 
-	scroll:Set3DLocalDimensions(iconSize3D, iconSize3D)
-	lock:Set3DLocalDimensions(iconSize3D / 2.2, iconSize3D / 2.2)
-	iconUA:Set3DLocalDimensions(iconUASize3D, iconUASize3D)
-	ping:Set3DLocalDimensions(iconUASize3D * 2.2, iconUASize3D * 2.2)
+	control.scroll:Set3DLocalDimensions(iconSize3D, iconSize3D)
+	control.locked:Set3DLocalDimensions(iconSize3D / 2.2, iconSize3D / 2.2)
+	control.iconUA:Set3DLocalDimensions(iconUASize3D, iconUASize3D)
+	control.ping:Set3DLocalDimensions(iconUASize3D * 2.2, iconUASize3D * 2.2)
 
-	local flagOffset = 1
-	local keepId = control.params.keepId
-	if keepId then
-		local keepType = PVP:KeepIdToKeepType(keepId)
-		if keepType == KEEPTYPE_OUTPOST then
-			flagOffset = 4
-		elseif keepType == KEEPTYPE_TOWN then
-			flagOffset = 6
-		end
+	-- Apply the same dimensions to multiple elements
+	for _, element in pairs({ control.flags, control.middle, control.apse, control.nave, control.other }) do
+		element:Set3DLocalDimensions(iconSizeWithOffset, iconSizeWithOffset)
 	end
 
-	flags:Set3DLocalDimensions(iconSize3D + flagOffset, iconSize3D + flagOffset)
-	middle:Set3DLocalDimensions(iconSize3D + flagOffset, iconSize3D + flagOffset)
-	apse:Set3DLocalDimensions(iconSize3D + flagOffset, iconSize3D + flagOffset)
-	nave:Set3DLocalDimensions(iconSize3D + flagOffset, iconSize3D + flagOffset)
-	other:Set3DLocalDimensions(iconSize3D + flagOffset, iconSize3D + flagOffset)
-
-
-	captureBG:Set3DLocalDimensions(iconUASize3D + captureMeterSizeAdjustment, iconUASize3D + captureMeterSizeAdjustment)
-	captureBar:Set3DLocalDimensions(iconUASize3D + captureMeterSizeAdjustment, iconUASize3D + captureMeterSizeAdjustment)
-	divider:Set3DLocalDimensions(iconUASize3D + captureMeterSizeAdjustment, iconUASize3D + captureMeterSizeAdjustment)
+	local captureSize = iconUASize3D + captureMeterSizeAdjustment
+	for _, element in pairs({ control.captureBG, control.captureBar, control.divider }) do
+		element:Set3DLocalDimensions(captureSize, captureSize)
+	end
 end
 
 local function SetupTextureCoords(control)
