@@ -11,7 +11,7 @@ local GetGameTimeMilliseconds = GetGameTimeMilliseconds
 local zo_distance3D = zo_distance3D
 
 function PVP:FindNearbyKeepToRespawn(anyKeep)
-	local foundKeepId, minDistance = 0, 0
+	local foundKeepId, minDistance = 0, nil
 	local selfX, selfY = GetMapPlayerPosition('player')
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
