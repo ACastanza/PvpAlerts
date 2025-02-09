@@ -3188,25 +3188,22 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 end
 
 local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
+	local poi = PVP.currentNearbyPOIIds[i]
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
 
 	local control, key
-	if not PVP.currentNearbyPOIIds[i].poolKey then
+	if not poi.poolKey then
 		control, key = PVP.controls3DPool:AcquireObject()
-		PVP.currentNearbyPOIIds[i].poolKey = key
+		poi.poolKey = key
 	else
-		control = PVP.currentNearbyPOIIds[i].control
+		control = poi.control
 	end
+	if not control then return end
 
-	if not control then
-		return
-	end
-	local icon = control.icon
-	local iconUA = control.iconUA
-	local iconBG = control.bg
-	local captureBG = control.captureBG
-	local captureBar = control.captureBar
-	local divider = control.divider
+	local params = control.params
+	local icon, iconUA = control.icon, control.iconUA
+	local iconBG, captureBG = control.bg, control.captureBG
+	local captureBar, divider = control.captureBar, control.divider
 	local ping = control.ping
 
 	iconBG:SetHidden(true)
@@ -3214,134 +3211,114 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	captureBar:SetHidden(true)
 	divider:SetHidden(true)
 
-	-- local pinType = PVP.currentNearbyPOIIds[i].pinType
-
-
 	local ICONTYPE = 'POI'
-	control.params.type = GetControlType(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
-	control.params.texture = GetControlTexture(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
-	control.params.keepId = PVP.currentNearbyPOIIds[i].keepId
+	params.type	= GetControlType(control, poi, ICONTYPE)
+	params.texture = GetControlTexture(control, poi, ICONTYPE)
+	params.keepId  = poi.keepId
 
-	icon:SetTexture(control.params.texture)
-	local X, Y, Z = PVP.currentNearbyPOIIds[i].targetX, PVP.currentNearbyPOIIds[i].targetY, PVP.currentNearbyPOIIds[i].targetZ
+	icon:SetTexture(params.texture)
+	local X, Y, Z = poi.targetX, poi.targetY, poi.targetZ
 
 	local shouldHideUA
-
-	if PVP.currentNearbyPOIIds[i].isBgFlag then
-		local auraPinType, auraR, auraG, auraB = GetObjectiveAuraPinInfo(0, PVP.currentNearbyPOIIds[i].isBgFlag,
-			BGQUERY_LOCAL)
-		local auraTexture
-
+	if poi.isBgFlag then
+		local auraPinType, auraR, auraG, auraB = GetObjectiveAuraPinInfo(0, poi.isBgFlag, BGQUERY_LOCAL)
 		if PVP.auraPinTypes[auraPinType] then
-			auraTexture = ZO_MapPin.PIN_DATA[auraPinType].texture
-			iconUA:SetTexture(auraTexture)
+			iconUA:SetTexture(ZO_MapPin.PIN_DATA[auraPinType].texture)
 			iconUA:SetColor(auraR, auraG, auraB)
 			iconUA:SetHidden(false)
 		else
 			iconUA:SetHidden(true)
 		end
-	elseif control.params.type == 'TOWN_FLAG' then
-		local auraPinType, auraR, auraG, auraB = GetObjectiveAuraPinInfo(PVP.currentNearbyPOIIds[i].keepId,
-			PVP.currentNearbyPOIIds[i].objectiveId, BGQUERY_LOCAL)
-		local auraTexture
-
+	elseif params.type == 'TOWN_FLAG' then
+		local auraPinType, auraR, auraG, auraB = GetObjectiveAuraPinInfo(poi.keepId, poi.objectiveId, BGQUERY_LOCAL)
 		if not (auraR == 0 and auraG == 0 and auraB == 0) then
-			-- auraTexture = ZO_MapPin.PIN_DATA[94].texture
-			auraTexture = "EsoUI/Art/MapPins/battlegrounds_capturePoint_halo.dds"
-			iconUA:SetTexture(auraTexture)
+			iconUA:SetTexture("EsoUI/Art/MapPins/battlegrounds_capturePoint_halo.dds")
 			iconUA:SetColor(auraR, auraG, auraB)
 			iconUA:SetHidden(false)
 		else
 			iconUA:SetHidden(true)
 		end
 	else
-		if (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE') then
-			shouldHideUA = not GetKeepUnderAttack(control.params.keepId, BGQUERY_LOCAL)
+		if params.type == 'MILEGATE' or params.type == 'BRIDGE' then
+			shouldHideUA = not GetKeepUnderAttack(params.keepId, BGQUERY_LOCAL)
 		else
-			shouldHideUA = not IsSkirmishCloseToObjective(control.params.type == 'AYLEID_WELL', X, Y, scaleAdjustment)
+			shouldHideUA = not IsSkirmishCloseToObjective(params.type == 'AYLEID_WELL', X, Y, scaleAdjustment)
 		end
-		-- shouldHideUA = not IsSkirmishCloseToObjective(control.params.type == 'MILEGATE' or control.params.type == 'AYLEID_WELL', X, Y, scaleAdjustment)
 		iconUA:SetHidden(shouldHideUA)
 	end
-	local controlHasPing = control.params.hasRally or control.params.hasWaypoint
 
+	local controlHasPing = params.hasRally or params.hasWaypoint
 	if controlHasPing then
-		if control.params.hasRally then
+		if params.hasRally then
 			ping:SetTexture(PVP_RALLY_TEXTURE)
-		elseif control.params.hasWaypoint then
+		elseif params.hasWaypoint then
 			ping:SetTexture(PVP_WAYPOINT_TEXTURE)
 		end
 		ping:SetColor(1, 1, 1)
 	end
 	ping:SetHidden(not controlHasPing)
 
-	control.params.name = PVP.currentNearbyPOIIds[i].name
-	control.params.alliance = PVP.currentNearbyPOIIds[i].alliance
-	control.params.X = X
-	control.params.Y = Y
-	control.params.globalX = PVP.currentNearbyPOIIds[i].globalX
-	control.params.globalY = PVP.currentNearbyPOIIds[i].globalY
-	control.params.scaleAdjustment = scaleAdjustment
-	control.params.orientation3d = PVP.currentNearbyPOIIds[i].orientation3d
+	params.name = poi.name
+	params.alliance = poi.alliance
+	params.X = X
+	params.Y = Y
+	params.globalX = poi.globalX
+	params.globalY = poi.globalY
+	params.scaleAdjustment = scaleAdjustment
+	params.orientation3d = poi.orientation3d
 
 	if PVP.SV.showOnScreen and not PVP.SV.unlocked then
-		if (control.params.type == 'MILEGATE' or control.params.type == 'BRIDGE') and GetPlayerLocationName() == control.params.name then
-			PVP:ManageOnScreen(control.params.texture, "", "", nil, nil, nil, nil, nil, control.params.alliance, "",
-				shouldHideUA, true, true, true, true, true, nil, nil, nil, control.params.name, control.params.keepId,
-				PVP_OnScreen, true)
-			PVP_OnScreen.currentKeepId = control.params.name
+		if (params.type == 'MILEGATE' or params.type == 'BRIDGE') and GetPlayerLocationName() == params.name then
+			PVP:ManageOnScreen(params.texture, "", "", nil, nil, nil, nil, nil, params.alliance, "",
+				shouldHideUA, true, true, true, true, true, nil, nil, nil, params.name, params.keepId, PVP_OnScreen, true)
+			PVP_OnScreen.currentKeepId = params.name
 		elseif PVP_OnScreen.currentKeepId and not IsPlayerNearObjective(PVP_OnScreen.currentKeepId) then
 			PVP_OnScreen.currentKeepId = nil
 			PVP_OnScreen:SetHidden(true)
 		end
-
 		if not PVP_OnScreen.currentKeepId then
 			PVP_OnScreen:SetHidden(true)
 		end
 	end
-	if control.params.type == 'SHADOW_IMAGE' then
+
+	if params.type == 'SHADOW_IMAGE' then
 		SetShadowImageColor(control)
 	else
-		icon:SetColor(GetControlColor(control, PVP.currentNearbyPOIIds[i], ICONTYPE))
+		icon:SetColor(GetControlColor(control, poi, ICONTYPE))
 	end
 
-	-- if control.params.type == 'MILEGATE' then
-	-- d(icon:GetColor())
-	-- end
-	control.params.distance = PVP.currentNearbyPOIIds[i].distance
-	control.params.doorType = PVP.currentNearbyPOIIds[i].doorType
-	control.params.doorDistrictKeepId = PVP.currentNearbyPOIIds[i].doorDistrictKeepId
-	control.params.scrollAlliance = PVP.currentNearbyPOIIds[i].controllingAlliance
-	control.params.scrollOriginalAlliance = PVP.currentNearbyPOIIds[i].originalAlliance
-	control.params.isBgFlag = PVP.currentNearbyPOIIds[i].isBgFlag
-	control.params.scrollKeepId = PVP.currentNearbyPOIIds[i].scrollKeepId
-	control.params.scrollObjectiveId = PVP.currentNearbyPOIIds[i].scrollObjectiveId
-	control.params.groupTag = PVP.currentNearbyPOIIds[i].groupTag
-	control.params.isGroupLeader = PVP.currentNearbyPOIIds[i].isGroupLeader
-	control.params.keepId = PVP.currentNearbyPOIIds[i].keepId
-	control.params.objectiveId = PVP.currentNearbyPOIIds[i].objectiveId
-	control.params.x3d = PVP.currentNearbyPOIIds[i].x3d
-	control.params.y3d = PVP.currentNearbyPOIIds[i].y3d
+	params.distance = poi.distance
+	params.doorType = poi.doorType
+	params.doorDistrictKeepId = poi.doorDistrictKeepId
+	params.scrollAlliance = poi.controllingAlliance
+	params.scrollOriginalAlliance = poi.originalAlliance
+	params.isBgFlag = poi.isBgFlag
+	params.scrollKeepId = poi.scrollKeepId
+	params.scrollObjectiveId = poi.scrollObjectiveId
+	params.groupTag = poi.groupTag
+	params.isGroupLeader = poi.isGroupLeader
+	params.keepId = poi.keepId
+	params.objectiveId = poi.objectiveId
+	params.x3d = poi.x3d
+	params.y3d = poi.y3d
 
 	SetupTextureCoords(control)
-	local POISize, POIUASize = GetControlSize(control, PVP.currentNearbyPOIIds[i], ICONTYPE)
-
+	local POISize, POIUASize = GetControlSize(control, poi, ICONTYPE)
 	SetDimensions3DControl(control, POISize, POIUASize, POISize)
+	params.dimensions = { POISize, POIUASize, POISize }
 
-	control.params.dimensions = { POISize, POIUASize, POISize }
-
-	if icControls[control.params.type] then
-		control.params.isCurrent = PVP.currentNearbyPOIIds[i].isCurrent
+	if icControls[params.type] then
+		params.isCurrent = poi.isCurrent
 	end
 	Hide3DControl(control, scaleAdjustment)
 
 	local playerX, playerY = GetMapPlayerPosition('player')
-
-
 	local coordX, coordZ, coordY, cameraX, cameraY, allowedToActivate
+
 	if isActivated then
 		allowedToActivate, coordX, coordZ, coordY = GetActivationInfo()
 	end
+
 	if isActivated and allowedToActivate then
 		cameraX = 0
 		cameraY = 0
@@ -3352,12 +3329,9 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		if isActivated then
 			PVP.isWaitingOnTrustedFirstRun = true
 		end
-		local _, realCameraDistance
-
+		local realCameraDistance
 		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo()
-
 		if not realCameraDistance then return end
-
 		if isActivated or isNewObjective or PVP.currentCameraDistance == 0 then
 			local heading = GetPlayerCameraHeading3D()
 			cameraX = sin(heading) * realCameraDistance
@@ -3365,39 +3339,37 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		end
 	end
 
-	if fixedHeight[control.params.type] then
-		control.params.height = PVP.currentNearbyPOIIds[i].targetZ
-	elseif not control.params.isBgFlag then
-		control.params.height = IsCloseToObjectiveOrPlayer(control, X, Y, playerX, playerY)
+	if fixedHeight[params.type] then
+		params.height = poi.targetZ
+	elseif not params.isBgFlag then
+		params.height = IsCloseToObjectiveOrPlayer(control, X, Y, playerX, playerY)
 	end
-	Z = GetControlHeight(control, PVP.currentNearbyPOIIds[i], ICONTYPE, coordZ)
 
-	control.params.newZ = Z
+	Z = GetControlHeight(control, poi, ICONTYPE, coordZ)
+	params.newZ = Z
 
 	local oldX, oldZ, oldY = control:Get3DRenderSpaceOrigin()
 	if isNewObjective then
+		local mapScale3D = GetCurrentMapScaleTo3D()
 		if PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX and not isActivated then
-			X = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-			Y = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+			X = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * mapScale3D
+			Y = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * mapScale3D
 		else
-			X = coordX - cameraX + (X - playerX) * GetCurrentMapScaleTo3D()
-			Y = coordY - cameraY + (Y - playerY) * GetCurrentMapScaleTo3D()
+			X = coordX - cameraX + (X - playerX) * mapScale3D
+			Y = coordY - cameraY + (Y - playerY) * mapScale3D
 		end
 		control:Set3DRenderSpaceOrigin(X, Z, Y)
-
-		control.params.lastUpdate = GetFrameTimeMilliseconds()
-		if control:GetHandler() == nil then
+		params.lastUpdate = GetFrameTimeMilliseconds()
+		if not control:GetHandler() then
 			control:SetHandler("OnUpdate", function() PoiOnUpdate(control) end)
 		end
-	elseif control.params.type ~= "COMPASS" then
+	elseif params.type ~= "COMPASS" then
 		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
 	end
-	-- if control.isSewersSign then
-	-- d(control.params.X)
-	-- d(control.params.Y)
-	-- end
-	PVP.currentNearbyPOIIds[i].control = control
+
+	poi.control = control
 end
+
 
 local function BGObjectiveOnUpdate(control)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
