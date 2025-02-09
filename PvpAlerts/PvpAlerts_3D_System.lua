@@ -2237,7 +2237,6 @@ local function ControlOnUpdate(control)
 	if ControlHasMouseOver(control, multiplier, heading) then
 		local alliance = params.alliance
 		control:SetAlpha(1)
-		-- Compute alliance colors fresh on mouse-over
 		PVP_WorldTooltipLabel:SetColor(PVP:HtmlToColor(PVP:AllianceToColor(alliance)))
 
 		if showBorderKeepInfo then
