@@ -2872,10 +2872,9 @@ local function ArrayConversion(inputArray, indexArray, mainArray)
 end
 
 local function SummaryConversion(inputArray, summaryType)
-	local summary
-	local outputArray = {}
 	local num = #inputArray
 	local numberInCategory = PVP:Colorize(tostring(num), 'FFFF00')
+	local summary
 	if summaryType == 'group' then
 		summary = ' --- Group (' .. numberInCategory .. ') ---'
 	elseif summaryType == 'friends' then
@@ -2885,9 +2884,11 @@ local function SummaryConversion(inputArray, summaryType)
 	elseif summaryType == 'others' then
 		summary = ' --- Others (' .. numberInCategory .. ') ---'
 	end
-	insert(outputArray, summary)
+
+	local outputArray = {}
+	outputArray[1] = summary
 	for i = 1, num do
-		insert(outputArray, inputArray[i])
+		outputArray[i + 1] = inputArray[i]
 	end
 	return outputArray
 end
