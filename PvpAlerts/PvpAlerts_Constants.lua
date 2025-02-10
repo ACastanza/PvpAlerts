@@ -2626,15 +2626,20 @@ PVP.elderScrollsIds = {
 }
 
 PVP.elderScrollsPintypes = {
-	[119] = true, -- Elder Scroll of Altadoon
-	[120] = true, -- Elder Scroll of Mnem
-	[121] = true, -- Elder Scroll of Ghartok
-	[122] = true, -- Elder Scroll of Chim
-	[123] = true, -- Elder Scroll of Ni-Mohk
-	[124] = true, -- Elder Scroll of Alma Ruma
-	[125] = true,
-	[126] = true,
-	[127] = true,
+	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_NEUTRAL] = true,
+	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_ALDMERI] = true,
+	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_EBONHEART] = true,
+	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_DAGGERFALL] = true,
+	[MAP_PIN_TYPE_ARTIFACT_ALDMERI_OFFENSIVE] = true, --Altadoon
+	[MAP_PIN_TYPE_ARTIFACT_ALDMERI_DEFENSIVE] = true, -- Mnem
+	[MAP_PIN_TYPE_ARTIFACT_EBONHEART_OFFENSIVE] = true, -- Ghartok
+	[MAP_PIN_TYPE_ARTIFACT_EBONHEART_DEFENSIVE] = true, -- Chim
+	[MAP_PIN_TYPE_ARTIFACT_DAGGERFALL_OFFENSIVE] = true, -- Ni-Mohk
+	[MAP_PIN_TYPE_ARTIFACT_DAGGERFALL_DEFENSIVE] = true, -- Alma Ruma
+}
+
+PVP.daedricArtifactIds = {
+
 }
 
 PVP.districtKeepIdToSubzoneNumber = {
