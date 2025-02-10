@@ -1049,7 +1049,7 @@ local function GetControlType(control, data, iconType)
 			type = 'RALLY'
 		elseif pinType == MAP_PIN_TYPE_PING then
 			type = 'PING'
-		elseif PVP.artifactPintypes[pinType] or data.isBgFlag then
+		elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
 			type = 'SCROLL'
 		elseif data.isBgBase then
 			type = 'BG_BASE'
@@ -1851,7 +1851,7 @@ local function IsScrollInKeepId(keepId, keepIdType)
 	local isKeep = keepIdType == KEEPTYPE_KEEP
 	local isArtifactKeep = keepIdType == PVP_KEEPTYPE_ARTIFACT_KEEP
 	if not (isKeep or isArtifactKeep) then return false end
-	for k, v in pairs(PVP.artifactIds) do
+	for k, v in pairs(PVP.elderScrollsIds) do
 		local _, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
 		if isArtifactKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and keepId == k then
 			local mappin = GetObjectivePinInfo(k, v, BGQUERY_LOCAL)
@@ -3864,7 +3864,7 @@ local function FindNearbyPOIs()
 			end
 		end
 
-		for k, v in pairs(PVP.artifactIds) do
+		for k, v in pairs(PVP.elderScrollsIds) do
 			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
 			local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
 			local originalAlliance

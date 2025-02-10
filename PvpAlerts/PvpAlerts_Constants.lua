@@ -2616,7 +2616,7 @@ PVP.borderKeepsIds = {
 	[110] = true, -- Northern Highrock Gate
 }
 
-PVP.artifactIds = {
+PVP.elderScrollsIds = {
 	[118] = 136, -- Elder Scroll of Altadoon
 	[119] = 137, -- Elder Scroll of Mnem
 	[120] = 138, -- Elder Scroll of Ghartok
@@ -2625,7 +2625,7 @@ PVP.artifactIds = {
 	[123] = 141, -- Elder Scroll of Alma Ruma
 }
 
-PVP.artifactPintypes = {
+PVP.elderScrollsPintypes = {
 	[119] = true, -- Elder Scroll of Altadoon
 	[120] = true, -- Elder Scroll of Mnem
 	[121] = true, -- Elder Scroll of Ghartok
