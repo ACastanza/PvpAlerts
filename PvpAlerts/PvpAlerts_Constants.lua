@@ -2608,24 +2608,24 @@ PVP.borderKeepIdToAreaScale = {
 }
 
 PVP.borderKeepsIds = {
-	[110] = true, -- Northern Highrock Gate
-	[109] = true, -- Southern Highrock Gate
 	[105] = true, -- Western Elsweyr Gate
 	[106] = true, -- Eastern Elsweyr Gate
 	[107] = true, -- Southern Morrowind Gate
 	[108] = true, -- Northern Morrowind Gate
+	[109] = true, -- Southern Highrock Gate
+	[110] = true, -- Northern Highrock Gate
 }
 
-PVP.elderScrollsIds = {
-	[120] = 138, -- Elder Scroll of Ghartok
-	[119] = 137, -- Elder Scroll of Mnem
+PVP.artifactIds = {
 	[118] = 136, -- Elder Scroll of Altadoon
-	[123] = 141, -- Elder Scroll of Alma Ruma
-	[122] = 140, -- Elder Scroll of Ni-Mohk
+	[119] = 137, -- Elder Scroll of Mnem
+	[120] = 138, -- Elder Scroll of Ghartok
 	[121] = 139, -- Elder Scroll of Chim
+	[122] = 140, -- Elder Scroll of Ni-Mohk
+	[123] = 141, -- Elder Scroll of Alma Ruma
 }
 
-PVP.elderScrollsPintypes = {
+PVP.artifactPintypes = {
 	[119] = true, -- Elder Scroll of Altadoon
 	[120] = true, -- Elder Scroll of Mnem
 	[121] = true, -- Elder Scroll of Ghartok
@@ -2638,12 +2638,12 @@ PVP.elderScrollsPintypes = {
 }
 
 PVP.districtKeepIdToSubzoneNumber = {
-	[148] = 27, -- Elven Gardens
-	[147] = 30, -- Temple
-	[146] = 26, -- Arena
-	[143] = 25, -- Aboretum
-	[142] = 28, -- Memorial
 	[141] = 29, -- Nobles
+	[142] = 28, -- Memorial
+	[143] = 25, -- Aboretum
+	[146] = 26, -- Arena
+	[147] = 30, -- Temple
+	[148] = 27, -- Elven Gardens
 }
 
 PVP.icAllianceBases = {
