@@ -1515,22 +1515,7 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 		local ccImmune = self:IsPlayerCCImmune(currentTime, hitValue)
 		if (not ccImmune) then
 			local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
-			if self.minorImportantAbilities[abilityId] then
-				if currentTime < self.majorAttackNotficiationLockout then return end
-				self.minorAttackNotficiationLockout = currentTime + hitValue
-				if self.SV.enableAttackSound then
-					self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
-				end
-				self:OnDraw(false, sourceUnitId, abilityName,
-					abilityId, abilityIcon, sourceName, false,
-					false, false, hitValue)
-				PVP_Main.currentChannel = {
-					abilityId = abilityId,
-					sourceUnitId = sourceUnitId,
-					isHA = false,
-					coolDownStartTime = currentTime
-				}
-			elseif self.majorImportantAbilities[abilityId] then
+			if self.majorImportantAbilities[abilityId] then
 				self.majorAttackNotficiationLockout = currentTime + hitValue
 				local localAlert = sourceName ~= "AgonyWarning"
 				if self.SV.enableAttackSound then
@@ -1545,6 +1530,21 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, true,
 					false, false, hitValue)
+			elseif self.minorImportantAbilities[abilityId] then
+				if currentTime < self.majorAttackNotficiationLockout then return end
+				self.minorAttackNotficiationLockout = currentTime + hitValue
+				if self.SV.enableAttackSound then
+					self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
+				end
+				self:OnDraw(false, sourceUnitId, abilityName,
+					abilityId, abilityIcon, sourceName, false,
+					false, false, hitValue)
+				PVP_Main.currentChannel = {
+					abilityId = abilityId,
+					sourceUnitId = sourceUnitId,
+					isHA = false,
+					coolDownStartTime = currentTime
+				}
 			elseif abilityName == "Charge Snare" then
 				if currentTime < self.majorAttackNotficiationLockout then return end
 				if currentTime < self.minorAttackNotficiationLockout then return end
