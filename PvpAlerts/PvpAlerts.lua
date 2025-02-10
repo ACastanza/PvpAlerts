@@ -20,6 +20,8 @@ PVP.CHAT = chat
 
 local GetFrameTimeSeconds = GetFrameTimeSeconds
 local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
+local GetGameTimeMilliseconds = GetGameTimeMilliseconds
+--local GetGameTimeSeconds = GetGameTimeSeconds
 local sort = table.sort
 local insert = table.insert
 local remove = table.remove
@@ -1530,11 +1532,13 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 				}
 			elseif self.majorImportantAbilities[abilityId] then
 				self.majorAttackNotficiationLockout = currentTime + hitValue
+				local localAlert = sourceName ~= "AgonyWarning"
 				if self.SV.enableAttackSound then
-					self:PlayLoudSound('CONSOLE_GAME_ENTER')
-				end
-				if self.SV.secondaryAlert and hitValue > 500 then
-					zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
+					local secondaryAlert = self.SV.secondaryAlert
+					self:PlayLoudSound((secondaryAlert and not localAlert) and 'DUEL_START' or 'CONSOLE_GAME_ENTER')
+					if secondaryAlert and localAlert and hitValue > 500 then
+						zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
+					end
 				end
 				FlashHealthWarningStage(1, 150)
 				PVP_Main.currentChannel = nil
