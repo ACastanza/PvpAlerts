@@ -60,6 +60,7 @@ PVP.defaults = {
 
 	showAttacks = true,
 	showImportant = true,
+	enableAttackSound = true,
 	showHeavyAttacks = true,
 	showSnipes = true,
 	enableNetworking = true,

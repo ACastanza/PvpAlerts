@@ -1516,7 +1516,9 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 			if self.minorImportantAbilities[abilityId] then
 				if currentTime < self.majorAttackNotficiationLockout then return end
 				self.minorAttackNotficiationLockout = currentTime + hitValue
-				self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
+				if self.SV.enableAttackSound then
+					self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
+				end
 				self:OnDraw(false, sourceUnitId, abilityName,
 					abilityId, abilityIcon, sourceName, false,
 					false, false, hitValue)
@@ -1528,7 +1530,9 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 				}
 			elseif self.majorImportantAbilities[abilityId] then
 				self.majorAttackNotficiationLockout = currentTime + hitValue
-				self:PlayLoudSound('CONSOLE_GAME_ENTER')
+				if self.SV.enableAttackSound then
+					self:PlayLoudSound('CONSOLE_GAME_ENTER')
+				end
 				if self.SV.secondaryAlert and hitValue > 500 then
 					zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
 				end

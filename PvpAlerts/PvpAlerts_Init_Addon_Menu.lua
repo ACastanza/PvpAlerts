@@ -297,8 +297,8 @@ function PVP:InitializeAddonMenu()
 		},
 		{
 			type = "checkbox",
-			name = "Show important projectiles notification",
-			tooltip = "ON - notify about important projectiles, OFF - do not notify about important projectiles",
+			name = "Show Important Attacks Notification",
+			tooltip = "ON - notify about important attacks (e.g. Rush of Agony), OFF - do not notify about important attacks",
 			default = self.defaults.showImportant,
 			disabled = function() return not self.SV.enabled or not self.SV.showAttacks end,
 			getFunc = function() return self.SV.showImportant end,
@@ -309,7 +309,30 @@ function PVP:InitializeAddonMenu()
 		},
 		{
 			type = "checkbox",
-			name = "Show channaled abilities notification",
+			name = "Play Important Attack Sound",
+			tooltip = "Play a sound alert for important attacks",
+			default = self.defaults.enableAttackSound,
+			disabled = function() return not self.SV.enabled or not self.SV.showAttacks or not self.SV.showImportant end,
+			getFunc = function() return self.SV.enableAttackSound end,
+			setFunc = function(newValue)
+				self.SV.enableAttackSound = newValue
+			end,
+		},
+		{
+			type = "checkbox",
+			name = "Important Attack Networking",
+			tooltip = "Allows for limited information sharing between group members about some important AOE attacks",
+				default = self.defaults.enableNetworking,
+				disabled = function() return not self.SV.enabled or not self.SV.showAttacks or not self.SV.showImportant end,
+				getFunc = function() return self.SV.enableNetworking end,
+				setFunc = function(newValue)
+					self.SV.enableNetworking = newValue
+					self:InitNetworking()
+				end,
+		},
+		{
+			type = "checkbox",
+			name = "Show Channaled Abilities Notification",
 			tooltip =
 			"ON - notify about hard-hitting channeled abilities, OFF - do not notify about hard-hitting channeled abilities",
 			default = self.defaults.showSnipes,
@@ -322,7 +345,7 @@ function PVP:InitializeAddonMenu()
 		},
 		{
 			type = "checkbox",
-			name = "Show heavy attacks notification",
+			name = "Show Heavy Attacks Notification",
 			tooltip = "ON - notify about heavy attacks, OFF - do not notify about heavy attacks",
 			default = self.defaults.showHeavyAttacks,
 			disabled = function() return not self.SV.enabled or not self.SV.showAttacks end,
@@ -331,18 +354,6 @@ function PVP:InitializeAddonMenu()
 				self.SV.showHeavyAttacks = newValue
 				self:InitControls()
 			end,
-		},
-		{
-			type = "checkbox",
-			name = "Important Attack Networking",
-			tooltip = "Allows for limited information sharing between group members about some importnat AOE attacks",
-				default = self.defaults.enableNetworking,
-				disabled = function() return not self.SV.enabled or not self.SV.showAttacks or not self.SV.showImportant end,
-				getFunc = function() return self.SV.enableNetworking end,
-				setFunc = function(newValue)
-					self.SV.enableNetworking = newValue
-					self:InitNetworking()
-				end,
 		},
 		{
 			type = "header",
