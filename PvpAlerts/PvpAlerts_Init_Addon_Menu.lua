@@ -356,6 +356,19 @@ function PVP:InitializeAddonMenu()
 			end,
 		},
 		{
+			type = "checkbox",
+			name = "Show Piercing Marks",
+			tooltip =
+			"ON - notify about piercing marks, OFF - do not notify about piercing marks",
+			default = self.defaults.showPiercingMark,
+			disabled = function() return not self.SV.enabled or not self.SV.showAttacks end,
+			getFunc = function() return self.SV.showPiercingMark end,
+			setFunc = function(newValue)
+				self.SV.showPiercingMark = newValue
+				self:InitControls()
+			end,
+		},
+		{
 			type = "header",
 			name = "Kill Feed options",
 		},

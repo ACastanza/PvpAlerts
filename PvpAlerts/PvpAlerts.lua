@@ -1579,6 +1579,7 @@ function PVP:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, 
 end
 
 function PVP:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if not self.SV.showPiercingMark then return end
 	if currentTime < PVP.majorAttackNotficiationLockout or currentTime < PVP.minorAttackNotficiationLockout then return end
 	if result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Piercing Mark" and not self.piercingDelay then
 		self.piercingDelay = true
