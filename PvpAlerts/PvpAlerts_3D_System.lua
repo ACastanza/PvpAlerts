@@ -963,7 +963,7 @@ local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, player
 			FindMin(targetX, targetY, PVP.miscCoords[i].z)
 		end
 
-		for i = 1, #PVP.ayleidWellsCoords do --
+		for i = 1, #PVP.ayleidWellsCoords do
 			local targetX, targetY = PVP.ayleidWellsCoords[i].x, PVP.ayleidWellsCoords[i].y
 			FindMin(targetX, targetY, PVP.ayleidWellsCoords[i].z)
 		end
