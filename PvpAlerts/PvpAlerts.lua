@@ -1511,7 +1511,7 @@ end
 function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 	if self.SV.showImportant and (((self.majorImportantAbilities[abilityId] and self.majorImportantAbilities[abilityId][result]) or (self.minorImportantAbilities[abilityId] and self.minorImportantAbilities[abilityId][result])) or
 		(result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
-		if (self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]) and ((not hitValue) or (hitValue <= 200) or (hitValue > 5000)) then return end
+		if (not hitValue) or (hitValue <= 200) or (hitValue > 5000) then return end
 		local ccImmune = self:IsPlayerCCImmune(currentTime, hitValue)
 		if (not ccImmune) then
 			local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
