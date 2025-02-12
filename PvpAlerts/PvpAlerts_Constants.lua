@@ -921,18 +921,9 @@ PVP.magickaSkillLines = {
 
 PVP.majorImportantAbilities = {
 	[160184] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rush Of Agony
-	-- [189838] = 1, -- The Tide King's Gaze Debuff (Tracking?)
-	-- [189839] = 1, -- The Tide King's Gaze Debuff (Tracking?)
-	-- [191367] = 2, -- The Tide King's Gaze Debuff (Tracking?)
-	-- [199059] = 3, -- The Tide King's Gaze Debuff (Tracking?)
-	-- [199060] = 4, -- The Tide King's Gaze Debuff (Tracking?)
 }
 
 PVP.minorImportantAbilities = {
-	--["Cutting Dive"] = true,
-	--["Screaming Cliff Racer"] = true,
-	--["Dive"] = true,
-	-- ["Unrelenting Grip"] = true,
 	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Fiery Grip
 	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Unrelenting Grip
 	[32717] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
