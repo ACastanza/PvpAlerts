@@ -296,21 +296,21 @@ local function SetDimensions3DControl(control, iconSize3D, iconUASize3D, BGSize3
 end
 
 local function SetupTextureCoords(control)
-	local type = control.params.type
+	local controlType = control.params.type
 	local icon = control.icon
-	if type == 'RALLY' then
+	if controlType == 'RALLY' then
 		if not control.params.textureState then
 			control.params.textureState = 1
 			icon:SetTextureCoords(((control.params.textureState - 1) * 64) / 2048, (control.params.textureState * 64) /
 				2048, 0, 1)
 		end
-	elseif type == 'PING' then
+	elseif controlType == 'PING' then
 		icon:SetTextureCoords(0, 0.03125, 0, 1)
 	else
 		icon:SetTextureCoords(0, 1, 0, 1)
 	end
 
-	if (type == 'COMPASS' and PVP.SV.useDepthBufferCompass) or type == 'SEWERS_SIGN' then
+	if (controlType == 'COMPASS' and PVP.SV.useDepthBufferCompass) or controlType == 'SEWERS_SIGN' then
 		icon:Set3DRenderSpaceUsesDepthBuffer(true)
 	else
 		icon:Set3DRenderSpaceUsesDepthBuffer(false)
@@ -399,11 +399,11 @@ end
 
 local function GetPOIControlSelectedSizeMultiplier(control, scaleAdjustment, multiplier)
 	local sizeAdjustment = control.params.distance / (scaleAdjustment * PVP_MAX_DISTANCE)
-	local type = control.params.type
-	local isWaypoint = type == 'WAYPOINT'
-	local isPing = type == 'PING'
-	local isRally = type == 'RALLY'
-	local isGroup = type == 'GROUP'
+	local controlType = control.params.type
+	local isWaypoint = controlType == 'WAYPOINT'
+	local isPing = controlType == 'PING'
+	local isRally = controlType == 'RALLY'
+	local isGroup = controlType == 'GROUP'
 
 	if isWaypoint or isPing or isGroup then
 		if sizeAdjustment < 0.5 then
@@ -466,10 +466,10 @@ local function Hide3DControl(control, scaleAdjustment)
 	
 	local SV = PVP.SV
 	local controlParams = control.params
-	local type = controlParams.type
+	local controlType = controlParams.type
 	local distance = controlParams.distance
 
-	local controlTooClose = (type ~= "SHADOW_IMAGE") and distance < scaleAdjustment * SV.min3DIconsDistance
+	local controlTooClose = (controlType ~= "SHADOW_IMAGE") and distance < scaleAdjustment * SV.min3DIconsDistance
 	if controlTooClose then
 		control:SetHidden(true)
 		return true
@@ -485,8 +485,8 @@ local function Hide3DControl(control, scaleAdjustment)
 	local keepId = controlParams.keepId
 	local isCurrent = controlParams.isCurrent
 
-	local onScreenCheck = (IsPlayerNearObjective(keepId, true) and not ((type == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
-		(IsPlayerNearObjective(name) and (type == 'MILEGATE' or type == 'BRIDGE'))
+	local onScreenCheck = (IsPlayerNearObjective(keepId, true) and not ((controlType == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
+		(IsPlayerNearObjective(name) and (controlType == 'MILEGATE' or controlType == 'BRIDGE'))
 
 	local controlOnScreen = SV.showOnScreen and SV.onScreenReplace and onScreenCheck
 	if controlOnScreen then
@@ -501,13 +501,13 @@ local function Hide3DControl(control, scaleAdjustment)
 		['GROUP'] = true,
 		['COMPASS'] = true,
 	}
-	local controlTooFar = (not utilityControls[type]) and distance > scaleAdjustment * SV.max3DIconsDistance
+	local controlTooFar = (not utilityControls[controlType]) and distance > scaleAdjustment * SV.max3DIconsDistance
 	if controlTooFar then
 		control:SetHidden(true)
 		return true
 	end
 
-	if icControls[type] and not isCurrent then
+	if icControls[controlType] and not isCurrent then
 		control:SetHidden(true)
 		return true
 	end
@@ -1116,15 +1116,15 @@ local function GetControlTexture(control, data, iconType)
 
 
 	local texture
-	local type = control.params.type
+	local controlType = control.params.type
 
 	if iconType == "POI" then
-		if type == 'KILL_LOCATION' then
+		if controlType == 'KILL_LOCATION' then
 			texture = strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
-		elseif type == 'SCROLL' then
+		elseif controlType == 'SCROLL' then
 			texture = data.isBgFlag and ZO_MapPin.PIN_DATA[data.pinType].texture or
 				strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
-		elseif type == 'GROUP' then
+		elseif controlType == 'GROUP' then
 			if control.params.isGroupLeader then
 				texture = 'esoui/art/icons/mapkey/mapkey_groupleader.dds'
 			else
@@ -1135,28 +1135,28 @@ local function GetControlTexture(control, data, iconType)
 					texture = 'esoui/art/icons/mapkey/mapkey_groupmember.dds'
 				end
 			end
-		elseif type == 'SHADOW_IMAGE' then
+		elseif controlType == 'SHADOW_IMAGE' then
 			local iconBG = control.bg
 			texture = GetShadowImageTexture()
 			iconBG:SetTexture(texture)
 			iconBG:SetColor(0, 0, 0, 1)
 			iconBG:SetHidden(false)
-		elseif type == 'COMPASS' then
+		elseif controlType == 'COMPASS' then
 			texture = controlTypeToTexture[data.name]
-		elseif type == 'MILEGATE' then
+		elseif controlType == 'MILEGATE' then
 			if PVP:IsMiscPassable(data.keepId) then
 				texture = "EsoUI/Art/MapPins/AvA_milegate_passable.dds"
 			else
 				texture = "EsoUI/Art/MapPins/AvA_milegate_center_destroyed.dds"
 			end
-		elseif type == 'BRIDGE' then
+		elseif controlType == 'BRIDGE' then
 			if PVP:IsMiscPassable(data.keepId) then
 				texture = "EsoUI/Art/MapPins/AvA_bridge_passable.dds"
 			else
 				texture = "EsoUI/Art/MapPins/AvA_bridge_not_passable.dds"
 			end
 		else
-			texture = controlTypeToTexture[type]
+			texture = controlTypeToTexture[controlType]
 		end
 		return texture
 	end
@@ -1179,9 +1179,9 @@ local function GetControlColor(control, data, iconType)
 	}
 
 	local colorR, colorG, colorB, alpha
-	local type = control.params.type
+	local controlType = control.params.type
 
-	if type == 'GROUP' then
+	if controlType == 'GROUP' then
 		if data.isUnitDead then
 			colorR, colorG, colorB, alpha = 0.4, 0.4, 0.4, 1
 		elseif control.params.isGroupLeader then
@@ -1191,37 +1191,37 @@ local function GetControlColor(control, data, iconType)
 		else
 			colorR, colorG, colorB, alpha = 1, 1, 1, 1
 		end
-	elseif type == 'CAMP' then
+	elseif controlType == 'CAMP' then
 		colorR, colorG, colorB, alpha = PVP:GetTrueAllianceColors(PVP.allianceOfPlayer)
-	elseif type == 'BRIDGE' then
+	elseif controlType == 'BRIDGE' then
 		if PVP:IsMiscPassable(data.keepId) then
 			colorR, colorG, colorB, alpha = 0, 1, 0, 1
 		else
 			colorR, colorG, colorB, alpha = 1, 0, 0, 1
 		end
-	elseif type == 'MILEGATE' then
+	elseif controlType == 'MILEGATE' then
 		if PVP:IsMiscPassable(data.keepId) then
 			colorR, colorG, colorB, alpha = 0, 1, 0, 1
 		else
 			colorR, colorG, colorB, alpha = 1, 0, 0, 1
 		end
-	elseif type == 'PING' then
+	elseif controlType == 'PING' then
 		local groupNumber = strgsub(data.pingTag, 'group', '')
 		if not control.params.pingColor then control.params.pingColor = PVP.pingsColors[tonumber(groupNumber)] end
 		colorR, colorG, colorB, alpha = control.params.pingColor[1] / 255, control.params.pingColor[2] / 255, control.params.pingColor[3] / 255, 1
-	elseif type == 'IC_BASE' then
+	elseif controlType == 'IC_BASE' then
 		colorR, colorG, colorB, alpha = PVP:GetTrueAllianceColors(data.alliance)
-	elseif type == 'TOWN_FLAG' then
+	elseif controlType == 'TOWN_FLAG' then
 		control.params.alliance = GetCaptureAreaObjectiveOwner(data.keepId, data.objectiveId, BGQUERY_LOCAL)
 		colorR, colorG, colorB, alpha = PVP:GetTrueAllianceColors(control.params.alliance)
-	elseif type == 'COMPASS' then
+	elseif controlType == 'COMPASS' then
 		if control.params.name == 'NORTH' then
 			colorR, colorG, colorB, alpha = unpack(PVP.SV.compass3dColorNorth)
 		else
 			colorR, colorG, colorB, alpha = unpack(PVP.SV.compass3dColor)
 		end
 	else
-		colorR, colorG, colorB, alpha = unpack(controlColors[type])
+		colorR, colorG, colorB, alpha = unpack(controlColors[controlType])
 	end
 
 	if not alpha then alpha = 1 end
@@ -1248,18 +1248,18 @@ local function GetControlSize(control, data, iconType)
 
 
 	local POISize, POIUASize
-	local type = control.params.type
+	local controlType = control.params.type
 
 	if control.params.isBgFlag then
 		POISize, POIUASize = ICONSIZE - 13, ICONUASIZE - 17
 	else
-		if type == 'RALLY' or type == 'WAYPOINT' or type == 'PING' or type == 'GROUP' then
+		if controlType == 'RALLY' or controlType == 'WAYPOINT' or controlType == 'PING' or controlType == 'GROUP' then
 			local sizeAdjustment = control.params.distance / (control.params.scaleAdjustment * PVP_MAX_DISTANCE)
-			if type == 'WAYPOINT' or type == 'PING' or type == 'GROUP' then
+			if controlType == 'WAYPOINT' or controlType == 'PING' or controlType == 'GROUP' then
 				local size
-				if type == 'WAYPOINT' then
+				if controlType == 'WAYPOINT' then
 					size = ICONSIZE - 6
-				elseif type == 'PING' then
+				elseif controlType == 'PING' then
 					size = ICONSIZE - 6
 				else
 					if control.params.isGroupLeader then
@@ -1271,7 +1271,7 @@ local function GetControlSize(control, data, iconType)
 
 				if sizeAdjustment < 0.25 then
 					POISize = size
-				elseif type == 'GROUP' then
+				elseif controlType == 'GROUP' then
 					POISize = 2.5 * size * sizeAdjustment
 				else
 					POISize = 4 * size * sizeAdjustment
@@ -1281,7 +1281,7 @@ local function GetControlSize(control, data, iconType)
 			else
 				POISize = 4 * (ICONSIZE - 6) * sizeAdjustment
 			end
-		elseif type == 'COMPASS' then
+		elseif controlType == 'COMPASS' then
 			if control.params.name == "SOUTH" then
 				POISize = 0.8 * PVP.SV.compass3dSize
 			elseif control.params.name == "EAST" then
@@ -1291,13 +1291,13 @@ local function GetControlSize(control, data, iconType)
 			else
 				POISize = PVP.SV.compass3dSize
 			end
-		elseif sizeOffsets[type] then
-			POISize = ICONSIZE + sizeOffsets[type]
+		elseif sizeOffsets[controlType] then
+			POISize = ICONSIZE + sizeOffsets[controlType]
 		else
 			POISize = ICONSIZE - 6
 		end
 
-		if type == 'TOWN_FLAG' then
+		if controlType == 'TOWN_FLAG' then
 			POIUASize = POISize - 0.5
 		else
 			POIUASize = POISize * 1.4
@@ -1326,19 +1326,19 @@ local function GetControlHeight(control, data, iconType, dynamicZ)
 		['TOWN_FLAG'] = 15,
 	}
 
-	local type = control.params.type
+	local controlType = control.params.type
 	local height = control.params.height
 
 
 	if height then
-		if heightOffsets[type] then
-			height = height + heightOffsets[type]
+		if heightOffsets[controlType] then
+			height = height + heightOffsets[controlType]
 		else
 			height = height + 25
 		end
 	elseif control.params.isBgFlag then
 		height = dynamicZ + 10
-	elseif type == 'GROUP' then
+	elseif controlType == 'GROUP' then
 		height = dynamicZ + 6
 	else
 		height = dynamicZ + 15
@@ -2436,18 +2436,18 @@ local function PoiOnUpdate(control)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
 	local multiplier = GetDistanceMultiplier(control, scaleAdjustment)
 	local showTooltip
-	local type = controlParams.type
+	local controlType = controlParams.type
 	local name = controlParams.name
 	local alliance = controlParams.alliance
 
-	local shouldBgBaseHasEnhancedTooltip = type == 'BG_BASE' and alliance == GetUnitBattlegroundTeam('player') and
+	local shouldBgBaseHasEnhancedTooltip = controlType == 'BG_BASE' and alliance == GetUnitBattlegroundTeam('player') and
 		GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING
 
-	if type == 'RALLY' or controlParams.hasRally then
+	if controlType == 'RALLY' or controlParams.hasRally then
 		ProcessRallyAnimation(control)
 	end
 
-	if type == 'SHADOW_IMAGE' then
+	if controlType == 'SHADOW_IMAGE' then
 		SetShadowImageColor(control)
 	end
 
@@ -2458,7 +2458,7 @@ local function PoiOnUpdate(control)
 		['GROUP'] = true,
 	}
 
-	if icControls[type] and not controlParams.isCurrent then
+	if icControls[controlType] and not controlParams.isCurrent then
 		if PVP.currentTooltip == control then ResetWorldTooltip() end
 		return
 	end
@@ -2466,7 +2466,7 @@ local function PoiOnUpdate(control)
 	local heading = GetAdjustedPlayerCameraHeading()
 	if ControlHasMouseOver(control, multiplier, heading) then
 		local wasRestored
-		if PVP.savedTooltip and dynamicControls[type] and PVP.savedTooltip[name] then
+		if PVP.savedTooltip and dynamicControls[controlType] and PVP.savedTooltip[name] then
 			controlParams.currentPhase = PVP.savedTooltip[name].currentPhase
 			PVP.savedTooltip[controlParams.name] = nil
 			wasRestored = true
@@ -2492,9 +2492,9 @@ local function PoiOnUpdate(control)
 			PVP_WorldTooltipCampaignPositionInfoLabel:SetText(GetBattlegroundPositionInfoString(battlegroundGameType, bgAllianceHexColor))
 		else
 			local keepId = controlParams.keepId
-			if type == 'IC_BASE' then
+			if controlType == 'IC_BASE' then
 				mainText = GetAllianceName(alliance) .. ' base'
-			elseif type == 'IC_DOOR' then
+			elseif controlType == 'IC_DOOR' then
 				local prefix
 				if controlParams.doorType == 1 then
 					prefix = 'To '
@@ -2503,9 +2503,9 @@ local function PoiOnUpdate(control)
 				end
 				mainText = PVP:Colorize(prefix, '808080') ..
 					PVP:Colorize(name, PVP:AllianceToColor(GetKeepAlliance(controlParams.doorDistrictKeepId, BGQUERY_LOCAL)))
-			elseif type == 'BG_BASE' then
+			elseif controlType == 'BG_BASE' then
 				mainText = GetBattlegroundTeamName(alliance) .. ' base'
-			elseif type == 'GROUP' then
+			elseif controlType == 'GROUP' then
 				local formattedName = PVP:GetTargetChar(name)
 				mainText = formattedName and formattedName or zo_strformat(SI_PLAYER_NAME, name)
 			elseif name then
@@ -2516,49 +2516,49 @@ local function PoiOnUpdate(control)
 
 			local distanceText = GetFormattedDistanceText(control)
 
-			if type == 'IC_DOOR' then
+			if controlType == 'IC_DOOR' then
 				distanceText = PVP:Colorize(distanceText, '808080')
 			end
 
-			if type ~= 'COMPASS' then
+			if controlType ~= 'COMPASS' then
 				mainText = mainText .. distanceText
 			end
 
-			if alliance and not (type == 'MILEGATE' or type == 'BRIDGE') then
-				-- if (type == 'MILEGATE' or type == 'BRIDGE') then
+			if alliance and not (controlType == 'MILEGATE' or controlType == 'BRIDGE') then
+				-- if (controlType == 'MILEGATE' or controlType == 'BRIDGE') then
 				-- if alliance ~= ALLIANCE_NONE then
 				-- mainText = PVP:Colorize(mainText, PVP:AllianceToColor(GetKeepAlliance(alliance, BGQUERY_LOCAL)))
 				-- else
 				-- mainText = PVP:Colorize(mainText, '808080')
 				-- end
-				if type == 'BG_BASE' then
+				if controlType == 'BG_BASE' then
 					mainText = PVP:Colorize(mainText, PVP:BgAllianceToHexColor(alliance))
 				else
 					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(alliance))
 				end
-			elseif type == 'MILEGATE' then
+			elseif controlType == 'MILEGATE' then
 				if PVP:IsMiscPassable(keepId) then
 					mainText = PVP:Colorize(mainText, '00FF00')
 				else
 					mainText = PVP:Colorize(mainText, 'FF0000')
 				end
-			elseif type == 'BRIDGE' then
+			elseif controlType == 'BRIDGE' then
 				if PVP:IsMiscPassable(keepId) then
 					mainText = PVP:Colorize(mainText, '00FF00')
 				else
 					mainText = PVP:Colorize(mainText, 'FF0000')
 				end
-			elseif type == 'DELVE' then
+			elseif controlType == 'DELVE' then
 				mainText = PVP:Colorize(mainText, '00FF00')
-			elseif type == 'WAYPOINT' or type == 'PING' then
+			elseif controlType == 'WAYPOINT' or controlType == 'PING' then
 				mainText = PVP:Colorize(mainText, '00FFFF')
-			elseif type == 'RALLY' then
+			elseif controlType == 'RALLY' then
 				mainText = PVP:Colorize(mainText, 'CE9051')
-			elseif type == 'BG_POWERUP' then
+			elseif controlType == 'BG_POWERUP' then
 				mainText = PVP:Colorize(mainText, '00E5E5')
-			elseif type == 'CAMP' then
+			elseif controlType == 'CAMP' then
 				mainText = PVP:Colorize(mainText, PVP:AllianceToColor(PVP.allianceOfPlayer))
-			elseif type == 'SCROLL' then
+			elseif controlType == 'SCROLL' then
 				if controlParams.isBgFlag then
 					if controlParams.scrollAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(mainText,
@@ -2592,9 +2592,9 @@ local function PoiOnUpdate(control)
 							PVP:AllianceToColor(controlParams.scrollOriginalAlliance)) .. mainText
 					end
 				end
-			elseif type == 'IC_VAULT' then
+			elseif controlType == 'IC_VAULT' then
 				mainText = PVP:Colorize(mainText, '00FF00')
-			elseif type == 'IC_GRATE' then
+			elseif controlType == 'IC_GRATE' then
 				mainText = PVP:Colorize(mainText, 'FFFFFF')
 			else
 				mainText = PVP:Colorize(mainText, 'AAAAAA')
@@ -2664,7 +2664,7 @@ local function PoiOnUpdate(control)
 		popMultiplier = GetPopInMultiplier(adjustedMultiplier, control)
 	end
 
-	if type == 'BG_BASE' and GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING and PVP.currentTooltip ~= control then
+	if controlType == 'BG_BASE' and GetCurrentBattlegroundState() ~= BATTLEGROUND_STATE_RUNNING and PVP.currentTooltip ~= control then
 		if not (control.battlegroundTeamSignAnimationHandler and control.battlegroundTeamSignAnimationHandler:IsPlaying()) then
 			control.battlegroundTeamSignAnimationHandler = StartBorderKeep3DAnimation(control)
 		end
@@ -2672,21 +2672,21 @@ local function PoiOnUpdate(control)
 		if (control.battlegroundTeamSignAnimationHandler and control.battlegroundTeamSignAnimationHandler:IsPlaying()) then
 			control.battlegroundTeamSignAnimationHandler:Stop()
 		end
-		if type ~= 'SEWERS_SIGN' then
+		if controlType ~= 'SEWERS_SIGN' then
 			control:Set3DRenderSpaceOrientation(0, heading, 0)
 		else
 			control:Set3DRenderSpaceOrientation(0, controlParams.orientation3d and controlParams.orientation3d or 0, 0)
 		end
 	end
 
-	if type ~= 'COMPASS' then
+	if controlType ~= 'COMPASS' then
 		SetDimensions3DControl(control, controlParams.dimensions[1] * popMultiplier,
 			controlParams.dimensions[2] * popMultiplier, controlParams.dimensions[3] * popMultiplier)
 	end
 
-	if type == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and alliance ~= GetUnitBattlegroundTeam('player') then
+	if controlType == 'BG_BASE' and PVP.currentTooltip ~= control and GetCurrentBattlegroundState() == BATTLEGROUND_STATE_RUNNING and GetBattlegroundGameType(GetCurrentBattlegroundId()) ~= BATTLEGROUND_GAME_TYPE_DEATHMATCH and alliance ~= GetUnitBattlegroundTeam('player') then
 		control:SetAlpha(0.5)
-	elseif type == 'GROUP' and not (PVP.SV.allgroup3d or (controlParams.isGroupLeader and PVP.SV.groupleader3d)) then
+	elseif controlType == 'GROUP' and not (PVP.SV.allgroup3d or (controlParams.isGroupLeader and PVP.SV.groupleader3d)) then
 		local distanceThreshold = 0.1 * scaleAdjustment * PVP_MAX_DISTANCE
 		if controlParams.distance < distanceThreshold then
 			control:SetAlpha(0)
@@ -3396,7 +3396,7 @@ local function BGObjectiveOnUpdate(control)
 	controlGraceAngle = atan(0.5 * controlSize / distance)
 
 	local controlParams = control.params
-	local type = controlParams.type
+	local controlType = controlParams.type
 	local objectiveId = controlParams.objectiveId
 	local alliance = controlParams.alliance
 
@@ -3410,7 +3410,7 @@ local function BGObjectiveOnUpdate(control)
 			controlParams.distance < PVP.currentTooltip.params.distance
 
 		if (-angleZ > lowerBoundZ and -angleZ < higherBoundZ) and validTooltipStatus then
-			if type == 'CTF_BASE' then
+			if controlType == 'CTF_BASE' then
 				alliance = GetCaptureFlagObjectiveOriginalOwningAlliance(0,
 				objectiveId, BGQUERY_LOCAL)
 			else
@@ -3619,11 +3619,11 @@ end
 
 function PVP_SetMapPingOnMouseOver()
 	if not PVP.currentTooltip then return end
-	local type = PVP.currentTooltip.params.type
+	local controlType = PVP.currentTooltip.params.type
 	-- if PVP.SV.enabled and not PVP.SV.unlocked and PVP.SV.show3DIcons and type ~= 'SCROLL' then
 	if PVP.SV.enabled and not PVP.SV.unlocked and PVP.SV.show3DIcons then
 		if IsUnitGroupLeader('player') then
-			if PVP.currentTooltip.params.hasRally or type == 'RALLY' then
+			if PVP.currentTooltip.params.hasRally or controlType == 'RALLY' then
 				PVP.LMP:RemoveMapPing(MAP_PIN_TYPE_RALLY_POINT)
 			else
 				PVP.LMP:SetMapPing(MAP_PIN_TYPE_RALLY_POINT, MAP_TYPE_LOCATION_CENTERED, PVP.currentTooltip.params.X,
@@ -3631,7 +3631,7 @@ function PVP_SetMapPingOnMouseOver()
 			end
 		else
 			d("XXXX PVP_SetMapPingOnMouseOver")
-			if PVP.currentTooltip.params.hasWaypoint or type == 'WAYPOINT' then
+			if PVP.currentTooltip.params.hasWaypoint or controlType == 'WAYPOINT' then
 				PVP.LMP:RemoveMapPing(MAP_PIN_TYPE_PLAYER_WAYPOINT)
 			else
 				PVP.LMP:SetMapPing(MAP_PIN_TYPE_PLAYER_WAYPOINT, MAP_TYPE_LOCATION_CENTERED, PVP.currentTooltip.params.X,
