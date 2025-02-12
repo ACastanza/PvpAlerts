@@ -182,6 +182,26 @@ local epLinks = {
 	[4] = { 13, 14 },
 }
 
+local pinTypes = {
+    [PVP_PINTYPE_AYLEIDWELL] = 'AYLEID_WELL',
+    [PVP_PINTYPE_DELVE] = 'DELVE',
+    [PVP_PINTYPE_MILEGATE] = 'MILEGATE',
+    [PVP_PINTYPE_BRIDGE] = 'BRIDGE',
+    [MAP_PIN_TYPE_PLAYER_WAYPOINT] = 'WAYPOINT',
+    [MAP_PIN_TYPE_RALLY_POINT] = 'RALLY',
+    [MAP_PIN_TYPE_PING] = 'PING',
+    [PVP_PINTYPE_POWERUP] = 'BG_POWERUP',
+    [PVP_PINTYPE_SHADOWIMAGE] = 'SHADOW_IMAGE',
+    [PVP_PINTYPE_TOWNFLAG] = 'TOWN_FLAG',
+    [PVP_PINTYPE_COMPASS] = 'COMPASS',
+    [PVP_PINTYPE_IC_ALLIANCE_BASE] = 'IC_BASE',
+    [PVP_PINTYPE_IC_DOOR] = 'IC_DOOR',
+    [PVP_PINTYPE_IC_VAULT] = 'IC_VAULT',
+    [PVP_PINTYPE_IC_GRATE] = 'IC_GRATE',
+    [PVP_PINTYPE_SEWERS_SIGN] = 'SEWERS_SIGN'
+}
+
+
 local fixedHeight = {
 	['AYLEID_WELL'] = true,
 	['DELVE'] = true,
@@ -1028,54 +1048,26 @@ local function GetShadowImageTexture()
 end
 
 local function GetControlType(control, data, iconType)
-	local type
-	if iconType == "POI" then
-		local pinType = data.pinType
-		if ZO_MapPin.KILL_LOCATION_PIN_TYPES[pinType] then
-			type = 'KILL_LOCATION'
-		elseif ZO_MapPin.FORWARD_CAMP_PIN_TYPES[pinType] then
-			type = 'CAMP'
-		elseif pinType == PVP_PINTYPE_AYLEIDWELL then
-			type = 'AYLEID_WELL'
-		elseif pinType == PVP_PINTYPE_DELVE then
-			type = 'DELVE'
-		elseif pinType == PVP_PINTYPE_MILEGATE then
-			type = 'MILEGATE'
-		elseif pinType == PVP_PINTYPE_BRIDGE then
-			type = 'BRIDGE'
-		elseif pinType == MAP_PIN_TYPE_PLAYER_WAYPOINT then
-			type = 'WAYPOINT'
-		elseif pinType == MAP_PIN_TYPE_RALLY_POINT then
-			type = 'RALLY'
-		elseif pinType == MAP_PIN_TYPE_PING then
-			type = 'PING'
-		elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
-			type = 'SCROLL'
-		elseif data.isBgBase then
-			type = 'BG_BASE'
-		elseif pinType == PVP_PINTYPE_POWERUP then
-			type = 'BG_POWERUP'
-		elseif data.groupTag then
-			type = 'GROUP'
-		elseif pinType == PVP_PINTYPE_SHADOWIMAGE then
-			type = 'SHADOW_IMAGE'
-		elseif pinType == PVP_PINTYPE_TOWNFLAG then
-			type = 'TOWN_FLAG'
-		elseif pinType == PVP_PINTYPE_COMPASS then
-			type = 'COMPASS'
-		elseif pinType == PVP_PINTYPE_IC_ALLIANCE_BASE then
-			type = 'IC_BASE'
-		elseif pinType == PVP_PINTYPE_IC_DOOR then
-			type = 'IC_DOOR'
-		elseif pinType == PVP_PINTYPE_IC_VAULT then
-			type = 'IC_VAULT'
-		elseif pinType == PVP_PINTYPE_IC_GRATE then
-			type = 'IC_GRATE'
-		elseif pinType == PVP_PINTYPE_SEWERS_SIGN then
-			type = 'SEWERS_SIGN'
-		end
-		return type
-	end
+    if iconType == "POI" then
+        local pinType = data.pinType
+
+        local mappedType = pinTypes[pinType]
+        if mappedType then
+            return mappedType
+        end
+
+        if ZO_MapPin.KILL_LOCATION_PIN_TYPES[pinType] then
+            return 'KILL_LOCATION'
+        elseif ZO_MapPin.FORWARD_CAMP_PIN_TYPES[pinType] then
+            return 'CAMP'
+        elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
+            return 'SCROLL'
+        elseif data.isBgBase then
+            return 'BG_BASE'
+        elseif data.groupTag then
+            return 'GROUP'
+        end
+    end
 end
 
 function PVP:IsMiscPassable(keepId)
