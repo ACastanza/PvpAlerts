@@ -2585,9 +2585,13 @@ local function PoiOnUpdate(control)
 					end
 				else
 					if controlParams.scrollAlliance ~= ALLIANCE_NONE then
-						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.scrollAlliance))
+						local carrierName = GetCarryableObjectiveHoldingCharacterInfo(controlParams.scrollKeepId,
+						controlParams.scrollObjectiveId, BGQUERY_LOCAL)
+						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.scrollAlliance)) ..
+							PVP:Colorize('\nCarried by: ', controlParams.scrollAlliance) ..
+							(PVP:GetTargetChar(carrierName) or 'Unknown')
 					else
-						mainText = PVP:Colorize(mainText, '808080')
+						mainText = PVP:Colorize(mainText .. '\n(Uncontrolled)', '808080')
 					end
 					if controlParams.scrollOriginalAlliance ~= 0 then
 						mainText = PVP:Colorize(
