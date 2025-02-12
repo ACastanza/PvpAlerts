@@ -924,11 +924,11 @@ PVP.majorImportantAbilities = {
 }
 
 PVP.minorImportantAbilities = {
-	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Fiery Grip
-	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Unrelenting Grip
+	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip
+	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip
 	[32717] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
 	[32721] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
-	[40336] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Silver Leash
+	[40336] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Silver Leash
 	[62001] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip (From DBG)
 	[62004] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip (From DBG)
 	[118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
@@ -942,7 +942,7 @@ PVP.minorImportantAbilities = {
 	[185921] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Uncanny Adoration
 	[217228] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion
 	[217235] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion (From DBG)
-	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true},  -- Leashing Soul
+	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Leashing Soul
 	[217466] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst (From DBG)
 	[217979] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst
 }
