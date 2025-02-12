@@ -3861,7 +3861,6 @@ local function FindNearbyPOIs()
 
 		for k, v in pairs(PVP.elderScrollsIds) do
 			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
-			local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
 			local originalAlliance
 			if not IsActiveWorldBattleground() then
 				originalAlliance = GetArtifactScrollObjectiveOriginalOwningAlliance(k, v, BGQUERY_LOCAL)
@@ -3872,6 +3871,7 @@ local function FindNearbyPOIs()
 					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
 					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
+						local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
 						insert(foundPOI,
 							{
 								pinType = pinType,
