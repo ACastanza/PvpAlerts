@@ -2585,7 +2585,7 @@ local function PoiOnUpdate(control)
 					else
 						mainText = PVP:Colorize(mainText .. '\n(Uncontrolled)', '808080')
 					end
-					if controlParams.scrollOriginalAlliance ~= 0 then
+					if controlParams.scrollOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
 							zo_iconFormatInheritColor(
 								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, controlParams.scrollOriginalAlliance), 48, 48),
