@@ -485,11 +485,10 @@ local function Hide3DControl(control, scaleAdjustment)
 	local keepId = controlParams.keepId
 	local isCurrent = controlParams.isCurrent
 
-	local onScreenCheck = (IsPlayerNearObjective(keepId, true) and not ((controlType == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
+	local hideControlOnScreen = ((not SV.showOnScreen) and SV.onScreenReplace) and
+		(IsPlayerNearObjective(keepId, true) and not ((controlType == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
 		(IsPlayerNearObjective(name) and (controlType == 'MILEGATE' or controlType == 'BRIDGE'))
-
-	local controlOnScreen = SV.showOnScreen and SV.onScreenReplace and onScreenCheck
-	if controlOnScreen then
+	if hideControlOnScreen then
 		control:SetHidden(true)
 		return true
 	end
