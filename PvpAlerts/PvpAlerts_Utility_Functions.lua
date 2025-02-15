@@ -1200,10 +1200,10 @@ end
 --Original code comes from rdkgrouptool via AgonyWarning
 function PVP:SendWarning()
 	if AgonyWarning then return end
-	self.GPS:PushCurrentMap()
+	PVP.GPS:PushCurrentMap()
 	SetMapToMapListIndex(23)
-	self.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP:EncodeMessage(10, 10, 10, 10))
-	self.GPS:PopCurrentMap()
+	PVP.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP:EncodeMessage(10, 10, 10, 10))
+	PVP.GPS:PopCurrentMap()
 end
 
 function PVP.OnBeforePingAdded(pingType, pingTag, x, y, isPingOwner)
