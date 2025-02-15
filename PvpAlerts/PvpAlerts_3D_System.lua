@@ -757,7 +757,8 @@ end
 
 local function ProcessDynamicControlPosition(control)
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
-	if not control.params.type then return controlX, controlZ, controlY end
+	local controlType = control.params.type
+	if not controlType then return controlX, controlZ, controlY end
 	local bias, newX, newY
 
 	if control.params.isBgFlag then
@@ -766,9 +767,9 @@ local function ProcessDynamicControlPosition(control)
 		bias = 15
 	end
 
-	-- d(control.params.type)
+	-- d(controlType)
 	-- d(PVP.currentCameraInfo.player3dX)
-	if control.params.type == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX and PVP.currentCameraInfo.player3dY then
+	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX and PVP.currentCameraInfo.player3dY then
 		-- d('test')
 		if control.params.name == 'WEST' then
 			controlX = PVP.currentCameraInfo.cameraX - 500
@@ -787,8 +788,8 @@ local function ProcessDynamicControlPosition(control)
 		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
 	end
 
-	if control.params.type == 'SCROLL' and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
-		local _, X, Y = GetObjectivePinInfo(control.params.scrollKeepId, control.params.scrollObjectiveId, BGQUERY_LOCAL)
+	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
+		local _, X, Y = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
 		X = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
 		Y = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 		local Z = PVP.currentCameraInfo.cameraZ + 15
@@ -925,8 +926,9 @@ end
 
 local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, playerY)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
+	local controlType = control.params.type
 
-	if control.params.type == 'SCROLL' or control.params.type == 'GROUP' then
+	if controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT' or controlType == 'GROUP' then
 		if zo_distance(selfX, selfY, playerX, playerY) <= scaleAdjustment * PVP_MAX_DISTANCE * 0.1 then
 			return select(6, GetCameraInfo())
 		end
@@ -970,7 +972,7 @@ local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, player
 
 	if foundHeight then
 		return foundHeight
-	elseif control.params.type ~= 'SCROLL' then
+	elseif controlType ~= 'SCROLL' and controlType ~= 'DAEDRIC_ARTIFACT' then
 		return IsCloseToPlayer(control, selfX, selfY, playerX, playerY)
 	end
 end
@@ -1061,6 +1063,8 @@ local function GetControlType(control, data, iconType)
             return 'CAMP'
         elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
             return 'SCROLL'
+        elseif PVP.daedricArtifactPintypes[pinType] then
+            return 'DAEDRIC_ARTIFACT'
         elseif data.isBgBase then
             return 'BG_BASE'
         elseif data.groupTag then
@@ -1123,6 +1127,8 @@ local function GetControlTexture(control, data, iconType)
 		elseif controlType == 'SCROLL' then
 			texture = data.isBgFlag and ZO_MapPin.PIN_DATA[data.pinType].texture or
 				strgsub(ZO_MapPin.PIN_DATA[data.pinType].texture, 'MapPins', 'compass')
+		elseif controlType == 'DAEDRIC_ARTIFACT' then
+			texture = ZO_MapPin.PIN_DATA[data.pinType].texture
 		elseif controlType == 'GROUP' then
 			if control.params.isGroupLeader then
 				texture = 'esoui/art/icons/mapkey/mapkey_groupleader.dds'
@@ -1174,6 +1180,7 @@ local function GetControlColor(control, data, iconType)
 		['IC_VAULT'] = { 0, 1, 0, 1 },
 		['SEWERS_SIGN'] = { 1, 1, 1, 1 },
 		['SCROLL'] = { 1, 1, 1, 1 },
+		['DAEDRIC_ARTIFACT'] = { 1, 1, 1, 1 },
 		['BG_BASE'] = { 1, 1, 1, 1 },
 	}
 
@@ -1321,6 +1328,7 @@ local function GetControlHeight(control, data, iconType, dynamicZ)
 		['BG_BASE'] = 6,
 		['SHADOW_IMAGE'] = 1,
 		['SCROLL'] = control.params.isBgFlag and 10 or 15,
+		['DAEDRIC_ARTIFACT'] = 15,
 		['GROUP'] = 10,
 		['TOWN_FLAG'] = 15,
 	}
@@ -1370,12 +1378,13 @@ function PVP:Init3D()
 
 	local function CustomPoolResetBehaviorControl(control)
 		if PVP.currentTooltip == control then
-			if control.params.type == "GROUP" or control.params.type == "SCROLL" then
+			local controlType = control.params.type
+			if controlType == 'GROUP' or controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT' then
 				PVP.savedTooltip = PVP.savedTooltip or {}
 				PVP.savedTooltip[control.params.name] =
 				{
 					isGroup = control.params.groupTag,
-					isScroll = control.params.scrollAlliance,
+					isScroll = control.params.artifactAlliance,
 					currentPhase = control.params.currentPhase,
 				}
 			end
@@ -2454,6 +2463,7 @@ local function PoiOnUpdate(control)
 
 	local dynamicControls = {
 		['SCROLL'] = true,
+		['DAEDRIC_ARTIFACT'] = true,
 		['GROUP'] = true,
 	}
 
@@ -2559,7 +2569,7 @@ local function PoiOnUpdate(control)
 				mainText = PVP:Colorize(mainText, PVP:AllianceToColor(PVP.allianceOfPlayer))
 			elseif controlType == 'SCROLL' then
 				if controlParams.isBgFlag then
-					if controlParams.scrollAlliance ~= ALLIANCE_NONE then
+					if controlParams.artifactAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(mainText,
 							PVP:BgAllianceToHexColor(GetCaptureFlagObjectiveOriginalOwningAlliance(0,
 								controlParams.isBgFlag, BGQUERY_LOCAL)))
@@ -2572,26 +2582,38 @@ local function PoiOnUpdate(control)
 						mainText = mainText ..
 							PVP:Colorize(' carried by ', '808080') ..
 							PVP:Colorize(zo_strformat(SI_UNIT_NAME, carrierName),
-								PVP:BgAllianceToHexColor(controlParams.scrollAlliance))
+								PVP:BgAllianceToHexColor(controlParams.artifactAlliance))
 					end
 				else
-					if controlParams.scrollAlliance ~= ALLIANCE_NONE then
-						local carrierName = GetCarryableObjectiveHoldingCharacterInfo(controlParams.scrollKeepId,
-						controlParams.scrollObjectiveId, BGQUERY_LOCAL)
-						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.scrollAlliance)) ..
-							PVP:Colorize('\nCarried by: ', controlParams.scrollAlliance) ..
-							(PVP:GetTargetChar(carrierName) or 'Unknown')
-					else
-						mainText = PVP:Colorize(mainText .. '\n(Uncontrolled)', '808080')
-					end
-					if controlParams.scrollOriginalAlliance ~= ALLIANCE_NONE then
+					if controlParams.artifactAlliance ~= ALLIANCE_NONE then
+						local carrierName = GetCarryableObjectiveHoldingCharacterInfo(controlParams.artifactKeepId,
+						controlParams.artifactObjectiveId, BGQUERY_LOCAL)
+						local carrierToken = PVP:GetTargetChar(carrierName, 35,35)
+						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
+						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
+						else
+							mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
+						end
+					if controlParams.artifactOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
 							zo_iconFormatInheritColor(
-								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, controlParams.scrollOriginalAlliance), 48, 48),
-							PVP:AllianceToColor(controlParams.scrollOriginalAlliance)) .. mainText
+								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, controlParams.artifactOriginalAlliance), 48, 48),
+							PVP:AllianceToColor(controlParams.artifactOriginalAlliance)) .. mainText
 					end
 				end
-			elseif controlType == 'IC_VAULT' then
+			elseif controlType == 'DAEDRIC_ARTIFACT' then
+				if controlParams.artifactAlliance ~= ALLIANCE_NONE then
+					if not controlParams.controllingCharacter then
+						controlParams.controllingCharacter = GetCarryableObjectiveHoldingCharacterInfo(0,
+						controlParams.artifactObjectiveId, BGQUERY_LOCAL)
+					end
+					local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35,35)
+					carrierToken = carrierToken and ("\n " .. carrierToken) or ""
+					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
+				else
+					mainText = "\n" .. PVP:Colorize(mainText, '808080')
+				end
+		elseif controlType == 'IC_VAULT' then
 				mainText = PVP:Colorize(mainText, '00FF00')
 			elseif controlType == 'IC_GRATE' then
 				mainText = PVP:Colorize(mainText, 'FFFFFF')
@@ -3271,11 +3293,11 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	params.distance = poi.distance
 	params.doorType = poi.doorType
 	params.doorDistrictKeepId = poi.doorDistrictKeepId
-	params.scrollAlliance = poi.controllingAlliance
-	params.scrollOriginalAlliance = poi.originalAlliance
+	params.artifactAlliance = poi.controllingAlliance
+	params.artifactOriginalAlliance = poi.originalAlliance
 	params.isBgFlag = poi.isBgFlag
-	params.scrollKeepId = poi.scrollKeepId
-	params.scrollObjectiveId = poi.scrollObjectiveId
+	params.artifactKeepId = poi.artifactKeepId
+	params.artifactObjectiveId = poi.artifactObjectiveId
 	params.groupTag = poi.groupTag
 	params.isGroupLeader = poi.isGroupLeader
 	params.keepId = poi.keepId
@@ -3350,7 +3372,6 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 
 	poi.control = control
 end
-
 
 local function BGObjectiveOnUpdate(control)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
@@ -3644,6 +3665,7 @@ function PVP:FullReset3DIcons()
 	self.currentNearbyKeepIds = {}
 	self.currentNearbyPOIIds = {}
 	self.currentObjectivesIds = {}
+	self.activeDaedricArtifact = nil
 	if self.controls3DPool then self.controls3DPool:ReleaseAllObjects() end
 	ResetWorldTooltip()
 	PVP:Setup3DMeasurements()
@@ -3744,10 +3766,11 @@ local function FindNearbyPOIs()
 	local currentMapIndex = GetCurrentMapIndex()
 	local foundPOI = {}
 	local selfX, selfY = GetMapPlayerPosition('player')
+	local isActiveWorldBattleground = IsActiveWorldBattleground()
 
 	adjusted_MAX_DISTANCE = scaleAdjustment * PVP_MAX_DISTANCE
 
-	if IsActiveWorldBattleground() then
+	if isActiveWorldBattleground then
 		-- local bgId = GetCurrentBattlegroundId()
 		local battlegroundId = GetCurrentBattlegroundId()
 		local bgBases = PVP:GetBgBaseInfo(battlegroundId)
@@ -3862,7 +3885,7 @@ local function FindNearbyPOIs()
 		for k, v in pairs(PVP.elderScrollsIds) do
 			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
 			local originalAlliance
-			if not IsActiveWorldBattleground() then
+			if not isActiveWorldBattleground then
 				originalAlliance = GetArtifactScrollObjectiveOriginalOwningAlliance(k, v, BGQUERY_LOCAL)
 			end
 			if scrollState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and scrollState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then --// scrolls in being carried //
@@ -3880,11 +3903,61 @@ local function FindNearbyPOIs()
 								distance = distance,
 								name = name,
 								controllingAlliance = controllingAlliance,
-								scrollKeepId = k,
-								scrollObjectiveId = v,
+								artifactKeepId = k,
+								artifactObjectiveId = v,
 								originalAlliance = originalAlliance
 							})
 					end
+				end
+			end
+		end
+
+		local activeObjectiveId = PVP.activeDaedricArtifact
+		if activeObjectiveId then
+			local name, _, artifactState = GetObjectiveInfo(0, activeObjectiveId, BGQUERY_LOCAL)
+			if artifactState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
+				local pinType, targetX, targetY = GetObjectivePinInfo(0, activeObjectiveId, BGQUERY_LOCAL)
+				if targetX ~= 0 and targetY ~= 0 then
+					local distance = zo_distance(selfX, selfY, targetX, targetY)
+					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
+					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
+						local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(0, activeObjectiveId, BGQUERY_LOCAL)
+						local controllingCharacter  = GetCarryableObjectiveHoldingCharacterInfo(0, activeObjectiveId, BGQUERY_LOCAL)
+						if artifactState == OBJECTIVE_CONTROL_STATE_FLAG_HELD and controllingAlliance == ALLIANCE_NONE then
+							if controllingCharacter == PVP.playerName then
+								controllingAlliance = PVP.allianceOfPlayer
+							else
+								local playerDbRecord = PVP.SV.playersDB[controllingCharacter]
+								controllingAlliance = playerDbRecord and playerDbRecord.alliance or ALLIANCE_NONE
+							end
+						end
+						insert(foundPOI,
+							{
+								pinType = controllingAlliance and PVP.daedricArtifactAllianceToPinType[controllingAlliance] or PVP.daedricArtifactAllianceToPinType[ALLIANCE_NONE],
+								targetX = targetX,
+								targetY = targetY,
+								distance = distance,
+								name = name,
+								controllingAlliance = controllingAlliance,
+								controllingCharacter = controllingCharacter,
+								artifactKeepId = 0,
+								artifactObjectiveId = activeObjectiveId,
+								originalAlliance = ALLIANCE_NONE
+							})
+					end
+				end
+			end
+		else
+			-- If there isn't an active artifact set by EVENT_DAEDRIC_ARTIFACT_OBJECTIVE_STATE_CHANGED, 
+			-- then iterate through the possible IDs so if one was missed it can be updated next cycle
+			local candidateArtifacts = PVP.daedricArtifactObjectiveIds
+			local numArtifacts = #candidateArtifacts
+			for i = 1, numArtifacts do
+				local id = candidateArtifacts[i]
+				local _, _, artifactState = GetObjectiveInfo(0, id, BGQUERY_LOCAL)
+				if artifactState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
+					PVP.activeDaedricArtifact = id
+					break
 				end
 			end
 		end
@@ -4379,8 +4452,10 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP:FullReset3DIcons()
 		return
 	end
+
+	local isActiveWorldBattleground = IsActiveWorldBattleground()
 	if isActivated then -- // makes sure campaign tooltip stays up to date //
-		if IsActiveWorldBattleground() then
+		if isActiveWorldBattleground then
 			QueryBattlegroundLeaderboardData()
 		else
 			QueryCampaignSelectionData()
@@ -4415,7 +4490,7 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 	local foundKeeps, foundPOI, foundBgObjectives
 	-- PVP.afterInit3d = GetGameTimeMilliseconds()
 
-	if IsActiveWorldBattleground() then
+	if isActiveWorldBattleground then
 		foundBgObjectives = FindBgObjectives()
 	else
 		foundKeeps = FindNearbyKeeps() -- // returns a list of all keep objects nearby //

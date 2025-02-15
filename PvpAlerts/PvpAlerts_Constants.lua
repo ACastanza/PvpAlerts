@@ -2652,8 +2652,19 @@ PVP.elderScrollsPintypes = {
 	[MAP_PIN_TYPE_ARTIFACT_DAGGERFALL_DEFENSIVE] = true, -- Alma Ruma
 }
 
-PVP.daedricArtifactIds = {
-	[0] = 447, -- Volendrung
+-- Complete? List of possible IDs
+PVP.daedricArtifactObjectiveIds = {
+	439, 440, 441, 442, 443, 444, 445, 446, 447,
+	448, 449, 450, 451, 452, 453, 454, 455, 456,
+	457, 458, 459, 460, 461, 462
+}
+
+-- Confirmed IDs and their corresponding alliance/location
+PVP.daedricArtifactSpawnAlliance = {
+	[439] = ALLIANCE_ALDMERI_DOMINION, --Eastern Elsweyr Gate
+	[447] = ALLIANCE_EBONHEART_PACT, -- Northern Morrowind Gate
+	[455] = ALLIANCE_DAGGERFALL_COVENANT, --Southern Highrock Gate
+
 }
 
 PVP.daedricArtifactPintypes = {
@@ -2661,6 +2672,13 @@ PVP.daedricArtifactPintypes = {
 	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_ALDMERI] = true,
 	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_EBONHEART] = true,
 	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_DAGGERFALL] = true,
+}
+
+PVP.daedricArtifactAllianceToPinType = {
+	[ALLIANCE_NONE] = MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_NEUTRAL,
+	[ALLIANCE_ALDMERI_DOMINION] = MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_ALDMERI,
+	[ALLIANCE_EBONHEART_PACT] = MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_EBONHEART,
+	[ALLIANCE_DAGGERFALL_COVENANT] = MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_DAGGERFALL,
 }
 
 PVP.districtKeepIdToSubzoneNumber = {
