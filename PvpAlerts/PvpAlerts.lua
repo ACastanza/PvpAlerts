@@ -1102,7 +1102,7 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 
 	-- d(self.currentlyDead)
 
-	if unitName == "" or self.currentlyDead[unitId] or self.IsCurrentlyDead(unitName) then return end
+	if unitName == "" or self.currentlyDead[unitId] or self:IsCurrentlyDead(unitName) then return end
 
 	local currentTime = GetFrameTimeMilliseconds()
 
@@ -1433,7 +1433,7 @@ function PVP:ProcessAnonymousEvents(result, sourceName, targetName, targetUnitId
 end
 
 function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetName, currentTime)
-	if sourceName ~= "" and sourceName ~= self.playerName and not (self.currentlyDead[sourceUnitId]) or self.IsCurrentlyDead(sourceName) then
+	if sourceName ~= "" and sourceName ~= self.playerName and not (self.currentlyDead[sourceUnitId] or self:IsCurrentlyDead(sourceName)) then
 		local totalPlayers = self.totalPlayers
 		local idToName = self.idToName
 		if not self:CheckName(sourceName) then
@@ -1465,7 +1465,7 @@ function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetN
 end
 
 function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilityId, currentTime, hitValue, abilityName)
-	if targetName ~= "" and targetName ~= self.playerName and sourceName == self.playerName and not (self.currentlyDead[targetUnitId]) or self.IsCurrentlyDead(targetName) then
+	if targetName ~= "" and targetName ~= self.playerName and sourceName == self.playerName and not (self.currentlyDead[targetUnitId] or self:IsCurrentlyDead(targetName)) then
 		local totalPlayers = self.totalPlayers
 		local idToName = self.idToName
 		if not self:CheckName(targetName) then
