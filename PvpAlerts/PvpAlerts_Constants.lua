@@ -925,6 +925,8 @@ PVP.majorImportantAbilities = {
 
 PVP.minorImportantAbilities = {
 	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip
+	[20493] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip (From DBG)
+	[20494] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip (From DBG)
 	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip
 	[32717] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
 	[32721] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
@@ -943,6 +945,9 @@ PVP.minorImportantAbilities = {
 	[217228] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion
 	[217235] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion (From DBG)
 	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Leashing Soul
+	[216814] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
+	[216815] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
+	[216854] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
 	[217466] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst (From DBG)
 	[217979] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst
 }
@@ -954,6 +959,8 @@ PVP.abilityMessages = {
 	[160184] = "BLOCK - RUSH PULL - BLOCK",
 
 	[20492] = "BLOCK - DK CHAIN",
+	[20493] = "BLOCK - Fiery Grip (From DBG)",
+	[20494] = "BLOCK - Fiery Grip (From DBG)",
 	[20496] = "BLOCK - DK CHAIN",
 	[32717] = "BLOCK - LEAP",
 	[32721] = "BLOCK - LEAP",
@@ -971,6 +978,9 @@ PVP.abilityMessages = {
 	[185921] = "BLOCK - CHARM",
 	[217228] = "BLOCK - KNOCKBACK",
 	[217235] = "BLOCK - KNOCKBACK",
+	[216814] = "BLOCK - SOUL CHAIN",
+	[216815] = "BLOCK - SOUL CHAIN",
+	[216854] = "BLOCK - SOUL CHAIN",
 	[217784] = "BLOCK - SOUL CHAIN",
 	[217466] = "BLOCK - SOUL PULL",
 	[217979] = "BLOCK - SOUL PULL",
@@ -982,6 +992,7 @@ PVP.abilityIconSwaps = {
 	[163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
 	[163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
 	[185841] = GetAbilityIcon(201293), -- Rune of Displacement
+	[191083] = GetAbilityIcon(201293), -- Rune of Displacement
 }
 
 PVP.networkedAbilities = {
