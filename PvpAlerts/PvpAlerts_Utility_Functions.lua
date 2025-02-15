@@ -1159,8 +1159,7 @@ function PVP:GetGuildmateSharedGuilds(displayName, isGuildmate)
 	local firstGuildAllianceColor
 	local foundGuilds = 0
 	local playerSharedGuilds = self.guildmates[displayName]
-	for k, v in pairs(playerSharedGuilds) do
-		local guildId = GetGuildId(k)
+	for guildId, _ in pairs(playerSharedGuilds) do
 		foundGuilds = foundGuilds + 1
 		local guildName = GetGuildName(guildId)
 		local guildAlliance = GetGuildAlliance(guildId)
@@ -1190,11 +1189,71 @@ function PVP:PopulateGuildmateDatabase()
 			if not guildmateDatabase[displayName] then
 				guildmateDatabase[displayName] = {}
 			end
-			guildmateDatabase[displayName][i] = true
+			guildmateDatabase[displayName][guildId] = true
 		end
 	end
 	PVP.guildmates = guildmateDatabase
-	--PVP:PopulateReticleOverNamesBuffer(true)
+end
+
+function PVP:UpdateGuildId(eventCode, unitTag, oldGuildId, newGuildId)
+	local guildmateDatabase = PVP.guildmates or {}
+	for displayName, guilds in pairs(guildmateDatabase) do
+		if guilds[oldGuildId] then
+			guilds[oldGuildId] = nil
+			guilds[newGuildId] = true
+		end
+		guildmateDatabase[displayName] = guilds
+	end
+	PVP.guildmates = guildmateDatabase
+end
+
+function PVP:JoinedNewGuild(eventCode, guildServerId, characterName, guildId)
+	local guildmateDatabase = PVP.guildmates or {}
+	for i = 1, GetNumGuildMembers(guildId) do
+		local displayName, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, i)
+		if not guildmateDatabase[displayName] then
+			guildmateDatabase[displayName] = {}
+		end
+		guildmateDatabase[displayName][guildId] = true
+	end
+	PVP.guildmates = guildmateDatabase
+end
+
+function PVP:LeftGuild(eventCode, guildServerId, characterName, guildId)
+	local guildmateDatabase = PVP.guildmates or {}
+	for displayName, guilds in pairs(guildmateDatabase) do
+		if guilds[guildId] then
+			guilds[guildId] = nil
+		end
+		if not next(guilds) then
+			guildmateDatabase[displayName] = nil
+		else
+			guildmateDatabase[displayName] = guilds
+		end
+	end
+	PVP.guildmates = guildmateDatabase
+end
+
+function PVP:GuildMemberJoined(eventCode, guildId, displayName)
+	local guildmateDatabase = PVP.guildmates or {}
+	if not guildmateDatabase[displayName] then
+		guildmateDatabase[displayName] = {}
+	end
+	guildmateDatabase[displayName][guildId] = true
+	PVP.guildmates = guildmateDatabase
+end
+
+function PVP:GuildMemberLeft(eventCode, guildId, displayName)
+	local guildmateDatabase = PVP.guildmates or {}
+	if guildmateDatabase[displayName] then
+		if guildmateDatabase[displayName][guildId] then
+			guildmateDatabase[displayName][guildId] = nil
+		end
+		if not next(guildmateDatabase[displayName]) then
+			guildmateDatabase[displayName] = nil
+		end
+	end
+	PVP.guildmates = guildmateDatabase
 end
 
 --Original code comes from rdkgrouptool via AgonyWarning
