@@ -19,7 +19,7 @@ function PVP:InitControls()
 		zo_callLater(function() self:InitControls() end, 250)
 		return
 	end
-	PVP:SetupOnScreen()
+	self:SetupOnScreen()
 	PVP_Main:ClearAnchors()
 
 	local SV = self.SV
@@ -29,7 +29,7 @@ function PVP:InitControls()
 
 	PVP_Main:SetScale(1)
 
-	PVP.mainFrameLabelDimensionX,PVP.mainFrameLabelDimensionY = PVP_MainLabel:GetDimensions()
+	self.mainFrameLabelDimensionX, self.mainFrameLabelDimensionY = PVP_MainLabel:GetDimensions()
 	
 	-- PVP_MainLabel:SetResizeToFitDescendents(false)
 	local controlScale = SV.controlScale
@@ -113,9 +113,9 @@ function PVP:InitControls()
 
 	if unlocked then
 		-- self.testNamesProc={}
-		-- PVP:TestFunction()
+		-- self:TestFunction()
 		if SV.showAttacks then
-			PVP:OnDraw(false, "unlock", "unlocked frame", 0, "", "WARNING MESSAGE", false, false, false, 2500)
+			self:OnDraw(false, "unlock", "unlocked frame", 0, "", "WARNING MESSAGE", false, false, false, 2500)
 		end
 		if SV.showCounterFrame then
 			PVP_Counter_Label:SetText("Unlocked")
@@ -325,7 +325,7 @@ function PVP:InitControls()
 	PVP_Capture:SetMouseEnabled(unlocked)
 
 
-	PVP:Setup3DMeasurements()
+	self:Setup3DMeasurements()
 	self:UpdateNearbyKeepsAndPOIs(true)
 	self:SetSceneVisibility()
 
@@ -339,7 +339,7 @@ function PVP:SetSceneVisibility()
 	-- HUD_UI_SCENE:RemoveFragment(PVP_CAMP_SCENE_FRAGMENT)
 	-- LOOT_SCENE:RemoveFragment(PVP_CAMP_SCENE_FRAGMENT)
 
-	if self.SV.enabled and PVP:IsInPVPZone() and not self.SV.unlocked then
+	if self.SV.enabled and self:IsInPVPZone() and not self.SV.unlocked then
 		self:ManageFragments(PVP_COUNTER_SCENE_FRAGMENT)
 		self:ManageFragments(PVP_NAMES_SCENE_FRAGMENT)
 		self:ManageFragments(PVP_KILLFEED_SCENE_FRAGMENT)
@@ -353,7 +353,7 @@ function PVP:SetSceneVisibility()
 		self:ManageFragments(PVP_TUG_FRAGMENT)
 
 		-- PVP_Main:SetHidden(not (self.SV.unlocked and self.SV.enabled))
-		PVP:ResetMainFrame()
+		self:ResetMainFrame()
 		-- PVP_Main:SetHidden(true)
 		-- PVP_WorldTooltip:SetAlpha(0)
 		PVP_WorldTooltip:SetHidden(true)
@@ -437,7 +437,7 @@ function PVP:ManageFragments(fragment)
 	else return
 	end
 
-	-- local toShow = (self.SV.unlocked or (fragmentCondition and PVP:IsInPVPZone()))
+	-- local toShow = (self.SV.unlocked or (fragmentCondition and self:IsInPVPZone()))
 
 	-- if toShow then
 	if fragmentCondition then
@@ -497,7 +497,7 @@ function PVP:ManageFragments(fragment)
 		end
 	end
 
-	if sceneCondition and PVP.SV.enabled and PVP.IsInPVPZone() then
+	if sceneCondition and self.SV.enabled and self:IsInPVPZone() then
 		GAME_MENU_SCENE:RegisterCallback("StateChange", FrameMenuFix)
 	end
 end

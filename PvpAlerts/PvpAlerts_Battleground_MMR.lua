@@ -32,40 +32,41 @@ h5. BattlegroundState
  ]]
 
 function PVP:OnBattlegroundStateChanged(eventCode, previousState, currentState)
-	if not PVP.SV.mmr then PVP.SV.mmr = {} end
-	if not PVP.SV.mmr[PVP.playerName] then PVP.SV.mmr[PVP.playerName] = {} end
+	local SV = self.SV
+	if not SV.mmr then SV.mmr = {} end
+	if not SV.mmr[self.playerName] then SV.mmr[self.playerName] = {} end
 	local activityId = GetCurrentLFGActivityId()
 	local activityType = GetActivityType(activityId)
-	local lastMMR = PVP.SV.mmr[PVP.playerName] and PVP.SV.mmr[PVP.playerName][activityType] or 0
+	local lastMMR = SV.mmr[self.playerName] and SV.mmr[self.playerName][activityType] or 0
 	if (currentState == BATTLEGROUND_STATE_STARTING and previousState == BATTLEGROUND_STATE_NONE) or (previousState == BATTLEGROUND_STATE_STARTING) then
 		local currentMMR = GetPlayerMMRByType(activityType) or 0
-		PVP.SV.mmr[PVP.playerName][activityType] = currentMMR
+		SV.mmr[self.playerName][activityType] = currentMMR
 		local mmrDecay = lastMMR - currentMMR
 		if DoesCurrentBattlegroundImpactMMR() then
 			if currentMMR == lastMMR or (lastMMR == 0) then
-				PVP.CHAT:Printf("Your MMR starting this battleground is: %s.", currentMMR)
+				self.CHAT:Printf("Your MMR starting this battleground is: %s.", currentMMR)
 			else
-				PVP.CHAT:Printf("Your MMR has decayed by %s (from %s to %s) since your last ranked battlegound.",
+				self.CHAT:Printf("Your MMR has decayed by %s (from %s to %s) since your last ranked battleground.",
 					mmrDecay, lastMMR, currentMMR)
 			end
 		else
 			if currentMMR == lastMMR or (lastMMR == 0) then
-				PVP.CHAT:Printf("This Battleground has no MMR Impact. Your MMR starting this battleground is: %s.",
+				self.CHAT:Printf("This Battleground has no MMR Impact. Your MMR starting this battleground is: %s.",
 					currentMMR)
 			else
-				PVP.CHAT:Printf(
-					"This Battleground has no MMR Impact. Your MMR has decayed by %s (from %s to %s) since your last ranked battlegound.",
+				self.CHAT:Printf(
+					"This Battleground has no MMR Impact. Your MMR has decayed by %s (from %s to %s) since your last ranked battleground.",
 					mmrDecay, lastMMR, currentMMR)
 			end
 		end
 	elseif (currentState == BATTLEGROUND_STATE_FINISHED) then
 		if DoesCurrentBattlegroundImpactMMR() then
 			local currentMMR = GetPlayerMMRByType(activityType)
-			PVP.SV.mmr[PVP.playerName][activityType] = currentMMR
-			PVP.CHAT:Printf("Your MMR finishing this battleground is: %s", currentMMR)
+			SV.mmr[self.playerName][activityType] = currentMMR
+			self.CHAT:Printf("Your MMR finishing this battleground is: %s", currentMMR)
 		end
-	end;
-end;
+	end
+end
 
 --[[
 * EVENT_BATTLEGROUND_MMR_LOSS_REDUCED (*[BattlegroundMMRBonusType|#BattlegroundMMRBonusType]* _reductionReason_)
@@ -79,11 +80,11 @@ h5. BattlegroundMMRBonusType
 function PVP:OnBattlegroundMMRLossReduced(eventCode, reductionReason)
 	if not DoesCurrentBattlegroundImpactMMR() then return end
 	if (reductionReason == BG_MMR_BONUS_JOIN_IN_PROGRESS) then
-		PVP.CHAT:Printf("MMR Impact of this battleground is reduced due to joining a match in progress")
+		self.CHAT:Printf("MMR Impact of this battleground is reduced due to joining a match in progress")
 	elseif (reductionReason == BG_MMR_BONUS_LFM_REQUESTED) then
-		PVP.CHAT:Printf("MMR Impact of this battleground has been reduced due to a request for replacement players")
+		self.CHAT:Printf("MMR Impact of this battleground has been reduced due to a request for replacement players")
 	elseif (reductionReason == BG_MMR_BONUS_ALL) then
-		PVP.CHAT:Printf("This battleground will currently have full MMR impact")
+		self.CHAT:Printf("This battleground will currently have full MMR impact")
 	end
 end
 
@@ -111,9 +112,10 @@ local function DisplayMMR(character, isCurrentPlayer, update)
 end
 
 function PVP:ListMMR(flag)
-	local player = PVP.playerName or GetRawUnitName('player')
-	if not PVP.SV.mmr then PVP.SV.mmr = {} end
-	if not PVP.SV.mmr[player] then PVP.SV.mmr[player] = {} end
+	local player = self.playerName or GetRawUnitName('player')
+	local SV = self.SV
+	if not SV.mmr then SV.mmr = {} end
+	if not SV.mmr[player] then SV.mmr[player] = {} end
 
 	local update = flag == "update" or flag == "updateall"
 	local showAll = flag == "all" or flag == "updateall"
@@ -123,7 +125,7 @@ function PVP:ListMMR(flag)
 
 	-- Display MMR for all characters if "all" or "updateall" flag is set
 	if showAll then
-		for character, _ in pairs(PVP.SV.mmr) do
+		for character, _ in pairs(SV.mmr) do
 			if character ~= player then
 				DisplayMMR(character, false, update)
 			end
