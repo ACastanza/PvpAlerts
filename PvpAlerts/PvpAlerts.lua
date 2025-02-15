@@ -289,7 +289,7 @@ function PVP:UpdateActiveDaedricArtifactInfo(eventCode, artifactKeepId, artifact
 	controlEvent, controlState, controllingAlliance, lastControllingAlliance,
 	holderRawCharacterName, holderDisplayName, lastHolderRawCharacterName,
 	lastHolderDisplayName, pinType, artifactId)
-	d("Found artifact:" .. (artifactObjectiveId or ""))
+	--d("Found artifact:" .. (artifactObjectiveId or ""))
 	if controlState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
 		PVP.activeDaedricArtifact = artifactObjectiveId
 	else
