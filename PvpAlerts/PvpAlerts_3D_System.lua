@@ -2586,9 +2586,13 @@ local function PoiOnUpdate(control)
 					end
 				else
 					if controlParams.artifactAlliance ~= ALLIANCE_NONE then
-						local carrierName = GetCarryableObjectiveHoldingCharacterInfo(controlParams.artifactKeepId,
-						controlParams.artifactObjectiveId, BGQUERY_LOCAL)
-						local carrierToken = PVP:GetTargetChar(carrierName, 35,35)
+						if not controlParams.controllingCharacter then
+							local activeScrollInfo = PVP.activeScrolls[controlParams.artifactKeepId]
+							controlParams.controllingCharacter = activeScrollInfo and activeScrollInfo.playerName or
+								GetCarryableObjectiveHoldingCharacterInfo(controlParams.artifactKeepId,
+									controlParams.artifactObjectiveId, BGQUERY_LOCAL)
+						end
+						local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35, 35)
 						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
 						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
 						else
@@ -2607,7 +2611,7 @@ local function PoiOnUpdate(control)
 						controlParams.controllingCharacter = GetCarryableObjectiveHoldingCharacterInfo(0,
 						controlParams.artifactObjectiveId, BGQUERY_LOCAL)
 					end
-					local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35,35)
+					local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35, 35)
 					carrierToken = carrierToken and ("\n " .. carrierToken) or ""
 					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
 				else
@@ -3665,7 +3669,9 @@ function PVP:FullReset3DIcons()
 	self.currentNearbyKeepIds = {}
 	self.currentNearbyPOIIds = {}
 	self.currentObjectivesIds = {}
+	self.activeScrolls = {}
 	self.activeDaedricArtifact = nil
+
 	if self.controls3DPool then self.controls3DPool:ReleaseAllObjects() end
 	ResetWorldTooltip()
 	PVP:Setup3DMeasurements()
@@ -3894,7 +3900,15 @@ local function FindNearbyPOIs()
 					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
 					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
-						local controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
+						local controllingAlliance, controllingCharacter
+						if scrollState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
+							local scrollEventInfo = PVP.activeScrolls[k]
+							controllingAlliance = scrollEventInfo and scrollEventInfo.alliance or GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
+							controllingCharacter = scrollEventInfo and scrollEventInfo.character or GetCarryableObjectiveHoldingCharacterInfo(k, v, BGQUERY_LOCAL)
+						else
+							controllingAlliance = nil
+							controllingCharacter = nil
+						end
 						insert(foundPOI,
 							{
 								pinType = pinType,
@@ -3903,6 +3917,7 @@ local function FindNearbyPOIs()
 								distance = distance,
 								name = name,
 								controllingAlliance = controllingAlliance,
+								controllingCharacter = controllingCharacter,
 								artifactKeepId = k,
 								artifactObjectiveId = v,
 								originalAlliance = originalAlliance

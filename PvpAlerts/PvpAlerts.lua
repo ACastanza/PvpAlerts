@@ -285,6 +285,28 @@ function PVP:UpdateCampaignEmperor(eventCode, campaignId)
 	currentCampaignActiveEmperorAlliance = emperorAlliance
 end
 
+function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, artifactKeepId, playerName, playerAlliance, controlEvent, controlState, campaignId, displayName)
+	local currentCampaignId = GetCurrentCampaignId()
+	local scrollInfo = {}
+	if currentCampaignId ~= campaignId then return end
+	if controlState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
+		scrollInfo = {
+			playerName = playerName,
+			playerAlliance = playerAlliance,
+			controlEvent = controlEvent,
+			controlState = controlState,
+		}
+	else
+		scrollInfo = {
+			playerName = "",
+			playerAlliance = 0,
+			controlEvent = controlEvent,
+			controlState = controlState,
+		}
+	end
+	PVP.activeScrolls[artifactKeepId] = scrollInfo
+end
+
 function PVP:UpdateActiveDaedricArtifactInfo(eventCode, artifactKeepId, artifactObjectiveId, battlegroundContext,
 	controlEvent, controlState, controllingAlliance, lastControllingAlliance,
 	holderRawCharacterName, holderDisplayName, lastHolderRawCharacterName,
