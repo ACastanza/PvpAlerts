@@ -936,12 +936,14 @@ PVP.minorImportantAbilities = {
 	[118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
 	[118936] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Take Flight
 	[118938] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap
+	[160317] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dark Convergence
 	[163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
 	[163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
 	[163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
 	[185841] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement
-	[191083] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement (From DBG)
 	[185921] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Uncanny Adoration
+	[187526] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement (From DBG)
+	[191083] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement (From DBG)
 	[217228] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion
 	[217235] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion (From DBG)
 	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Leashing Soul
@@ -970,10 +972,12 @@ PVP.abilityMessages = {
 	[118928] = "BLOCK - LEAP",
 	[118936] = "BLOCK - LEAP",
 	[118938] = "BLOCK - LEAP",
+	[160317] = "MOVE - DARK CON",
 	[163227] = "BLOCK - METEOR",
 	[163236] = "BLOCK - METEOR",
 	[163238] = "BLOCK - METEOR",
 	[185841] = "BLOCK - DISPLACEMENT",
+	[187526] = "BLOCK - DISPLACEMENT",
 	[191083] = "BLOCK - DISPLACEMENT",
 	[185921] = "BLOCK - CHARM",
 	[217228] = "BLOCK - KNOCKBACK",
@@ -2662,9 +2666,10 @@ PVP.daedricArtifactObjectiveIds = {
 -- Confirmed IDs and their corresponding alliance/location
 PVP.daedricArtifactSpawnAlliance = {
 	[439] = ALLIANCE_ALDMERI_DOMINION, --Eastern Elsweyr Gate
+	[446] = ALLIANCE_ALDMERI_DOMINION, -- Beriel's Lament, East of Bloodmayne
 	[447] = ALLIANCE_EBONHEART_PACT, -- Northern Morrowind Gate
 	[455] = ALLIANCE_DAGGERFALL_COVENANT, --Southern Highrock Gate
-
+	[456] = ALLIANCE_DAGGERFALL_COVENANT, -- Amber Woodland, South of Fort Warden
 }
 
 PVP.daedricArtifactPintypes = {

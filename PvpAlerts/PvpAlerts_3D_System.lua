@@ -3930,7 +3930,7 @@ local function FindNearbyPOIs()
 		local activeObjectiveId = PVP.activeDaedricArtifact
 		if activeObjectiveId then
 			local name, _, artifactState = GetObjectiveInfo(0, activeObjectiveId, BGQUERY_LOCAL)
-			if artifactState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
+			if artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
 				local pinType, targetX, targetY = GetObjectivePinInfo(0, activeObjectiveId, BGQUERY_LOCAL)
 				if targetX ~= 0 and targetY ~= 0 then
 					local distance = zo_distance(selfX, selfY, targetX, targetY)
@@ -3970,7 +3970,7 @@ local function FindNearbyPOIs()
 			for i = 1, numArtifacts do
 				local id = candidateArtifacts[i]
 				local _, _, artifactState = GetObjectiveInfo(0, id, BGQUERY_LOCAL)
-				if artifactState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
+				if artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
 					PVP.activeDaedricArtifact = id
 					break
 				end
