@@ -307,7 +307,6 @@ function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, artifactKeepId, p
 		end
 		PVP.activeScrolls[artifactKeepId] = scrollInfo
 	else
-		scrollInfo = {
 		PVP.activeScrolls[artifactKeepId] = nil
 	end
 end
