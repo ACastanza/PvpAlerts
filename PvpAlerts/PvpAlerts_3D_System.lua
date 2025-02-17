@@ -1491,6 +1491,9 @@ function PVP:Init3D()
 		end
 	end)
 
+	if not PVP.activeScrolls then
+		PVP.activeScrolls = {}
+	end
 	-- d('3d icons initiazlied!')
 	-- PVP:Setup3DMeasurements()
 end
@@ -2474,11 +2477,16 @@ local function PoiOnUpdate(control)
 
 	local heading = GetAdjustedPlayerCameraHeading()
 	if ControlHasMouseOver(control, multiplier, heading) then
-		local wasRestored
-		if PVP.savedTooltip and dynamicControls[controlType] and PVP.savedTooltip[name] then
-			controlParams.currentPhase = PVP.savedTooltip[name].currentPhase
-			PVP.savedTooltip[controlParams.name] = nil
-			wasRestored = true
+		local wasRestored, controllingCharacter, artifactAlliance, artifactOriginalAlliance
+		if dynamicControls[controlType] then
+			if PVP.savedTooltip and PVP.savedTooltip[name] then
+				controlParams.currentPhase = PVP.savedTooltip[name].currentPhase
+				PVP.savedTooltip[controlParams.name] = nil
+				wasRestored = true
+			end
+			controllingCharacter = controlParams.controllingCharacter
+			artifactAlliance = controlParams.artifactAlliance
+			artifactOriginalAlliance = controlParams.artifactOriginalAlliance
 		end
 
 		control:SetAlpha(1)
@@ -2582,28 +2590,28 @@ local function PoiOnUpdate(control)
 						mainText = mainText ..
 							PVP:Colorize(' carried by ', '808080') ..
 							PVP:Colorize(zo_strformat(SI_UNIT_NAME, carrierName),
-								PVP:BgAllianceToHexColor(controlParams.artifactAlliance))
+								PVP:BgAllianceToHexColor(artifactAlliance))
 					end
 				else
-					if controlParams.artifactAlliance ~= ALLIANCE_NONE then
-						local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35, 35)
+					if artifactAlliance ~= ALLIANCE_NONE then
+						local carrierToken = PVP:GetTargetChar(controllingCharacter, 35, 35)
 						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
-						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
+						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(artifactAlliance)) .. carrierToken
 					else
 						mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
 					end
-					if controlParams.artifactOriginalAlliance ~= ALLIANCE_NONE then
+					if artifactOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
 							zo_iconFormatInheritColor(
-								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, controlParams.artifactOriginalAlliance), 48, 48),
-							PVP:AllianceToColor(controlParams.artifactOriginalAlliance)) .. mainText
+								PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, artifactOriginalAlliance), 48, 48),
+							PVP:AllianceToColor(artifactOriginalAlliance)) .. mainText
 					end
 				end
 			elseif controlType == 'DAEDRIC_ARTIFACT' then
-				if controlParams.artifactAlliance ~= ALLIANCE_NONE then
-					local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35, 35)
+				if artifactAlliance ~= ALLIANCE_NONE then
+					local carrierToken = PVP:GetTargetChar(controllingCharacter, 35, 35)
 					carrierToken = carrierToken and ("\n " .. carrierToken) or ""
-					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
+					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(artifactAlliance)) .. carrierToken
 				else
 					mainText = "\n" .. PVP:Colorize(mainText, '808080')
 				end
@@ -2628,9 +2636,7 @@ local function PoiOnUpdate(control)
 			end
 		end
 
-
 		PVP.currentTooltip = control
-
 
 		if shouldBgBaseHasEnhancedTooltip then
 			PVP_WorldTooltipLabel:SetFont('$(BOLD_FONT)|$(KB_28)|thick-outline')
@@ -2662,7 +2668,6 @@ local function PoiOnUpdate(control)
 		PVP_WorldTooltip:SetHidden(false)
 	end
 	-- end
-
 
 	if not showTooltip and PVP.currentTooltip == control then
 		ResetWorldTooltip()
@@ -3876,7 +3881,7 @@ local function FindNearbyPOIs()
 			end
 		end
 
-		local activeScrolls =  PVP.activeScrolls or {}
+		local activeScrolls =  PVP.activeScrolls
 		for k, v in pairs(PVP.elderScrollsIds) do
 			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
 			local originalAlliance
@@ -3889,23 +3894,29 @@ local function FindNearbyPOIs()
 					local distance = zo_distance(selfX, selfY, targetX, targetY)
 					-- if distance<=adjusted_MAX_DISTANCE and pinType~=MAP_PIN_TYPE_INVALID and distance>scaleAdjustment*PVP_POI_MIN_DISTANCE*0.75 then
 					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
-						local controllingAlliance, controllingCharacter
+						local controllingCharacter = ""
+						local controllingAlliance = ALLIANCE_NONE
 						if scrollState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
-							local scrollEventInfo = activeScrolls and activeScrolls[k]
-							if scrollEventInfo then
-								controllingCharacter = scrollEventInfo.playerName
-								controllingAlliance = scrollEventInfo.playerAlliance
-							else
+							local scrollEventInfo = activeScrolls[k] or {}
+
+							if scrollEventInfo.playerName == nil or scrollEventInfo.playerName == "" then
 								controllingCharacter = GetCarryableObjectiveHoldingCharacterInfo(k, v, BGQUERY_LOCAL)
-								controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
-								activeScrolls[k] = {
-									playerName = controllingCharacter,
-									playerAlliance = controllingAlliance,
-									controlState = scrollState,
-								}
-								PVP.activeScrolls = activeScrolls
+								scrollEventInfo.playerName = controllingCharacter
+							else
+								controllingCharacter = scrollEventInfo.playerName
 							end
+
+							if scrollEventInfo.playerAlliance == nil or scrollEventInfo.playerAlliance == ALLIANCE_NONE then
+								controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
+								scrollEventInfo.playerAlliance = controllingAlliance
+							else
+								controllingAlliance = scrollEventInfo.playerAlliance
+							end
+
+							scrollEventInfo.controlState = scrollState
+							activeScrolls[k] = scrollEventInfo
 						end
+
 						insert(foundPOI,
 							{
 								pinType = pinType,

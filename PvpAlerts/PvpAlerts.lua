@@ -288,6 +288,7 @@ end
 function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, artifactKeepId, playerName, playerAlliance, controlEvent, controlState, campaignId, displayName)
 	local currentCampaignId = PVP.currentCampaignId or GetCurrentCampaignId()
 	if currentCampaignId ~= campaignId then return end
+	if not PVP.activeScrolls then PVP.activeScrolls = {} end
 	if controlState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and controlState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then
 		local scrollInfo = {}
 		if controlState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
