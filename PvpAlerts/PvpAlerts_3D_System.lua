@@ -3897,7 +3897,7 @@ local function FindNearbyPOIs()
 						local controllingCharacter = ""
 						local controllingAlliance = ALLIANCE_NONE
 						if scrollState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
-							local scrollEventInfo = activeScrolls[k] or {}
+							local scrollEventInfo = activeScrolls[name] or {}
 
 							if scrollEventInfo.playerName == nil or scrollEventInfo.playerName == "" then
 								controllingCharacter = GetCarryableObjectiveHoldingCharacterInfo(k, v, BGQUERY_LOCAL)
@@ -3914,7 +3914,7 @@ local function FindNearbyPOIs()
 							end
 
 							scrollEventInfo.controlState = scrollState
-							activeScrolls[k] = scrollEventInfo
+							activeScrolls[name] = scrollEventInfo
 						end
 
 						insert(foundPOI,

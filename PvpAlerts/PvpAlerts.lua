@@ -285,10 +285,9 @@ function PVP:UpdateCampaignEmperor(eventCode, campaignId)
 	currentCampaignActiveEmperorAlliance = emperorAlliance
 end
 
-function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, artifactKeepId, playerName, playerAlliance, controlEvent, controlState, campaignId, displayName)
+function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, keepId, playerName, playerAlliance, controlEvent, controlState, campaignId, displayName)
 	local currentCampaignId = PVP.currentCampaignId or GetCurrentCampaignId()
 	if currentCampaignId ~= campaignId then return end
-	if not PVP.elderScrollsIds[artifactKeepId] then return end
 	if not PVP.activeScrolls then PVP.activeScrolls = {} end
 	if controlState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and controlState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then
 		local scrollInfo = {}
@@ -307,9 +306,9 @@ function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, artifactKeepId, p
 				controlState = controlState,
 			}
 		end
-		PVP.activeScrolls[artifactKeepId] = scrollInfo
+		PVP.activeScrolls[artifactName] = scrollInfo
 	else
-		PVP.activeScrolls[artifactKeepId] = nil
+		PVP.activeScrolls[artifactName] = nil
 	end
 end
 
