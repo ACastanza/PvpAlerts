@@ -2586,18 +2586,12 @@ local function PoiOnUpdate(control)
 					end
 				else
 					if controlParams.artifactAlliance ~= ALLIANCE_NONE then
-						if not controlParams.controllingCharacter then
-							local activeScrollInfo = PVP.activeScrolls[controlParams.artifactKeepId]
-							controlParams.controllingCharacter = activeScrollInfo and activeScrollInfo.playerName or
-								GetCarryableObjectiveHoldingCharacterInfo(controlParams.artifactKeepId,
-									controlParams.artifactObjectiveId, BGQUERY_LOCAL)
-						end
 						local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35, 35)
 						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
 						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
-						else
-							mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
-						end
+					else
+						mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
+					end
 					if controlParams.artifactOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
 							zo_iconFormatInheritColor(
@@ -2607,10 +2601,6 @@ local function PoiOnUpdate(control)
 				end
 			elseif controlType == 'DAEDRIC_ARTIFACT' then
 				if controlParams.artifactAlliance ~= ALLIANCE_NONE then
-					if not controlParams.controllingCharacter then
-						controlParams.controllingCharacter = GetCarryableObjectiveHoldingCharacterInfo(0,
-						controlParams.artifactObjectiveId, BGQUERY_LOCAL)
-					end
 					local carrierToken = PVP:GetTargetChar(controlParams.controllingCharacter, 35, 35)
 					carrierToken = carrierToken and ("\n " .. carrierToken) or ""
 					mainText = PVP:Colorize(mainText, PVP:AllianceToColor(controlParams.artifactAlliance)) .. carrierToken
@@ -3137,8 +3127,6 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
 	end
 
-	PVP.currentNearbyKeepIds[keepId] = control
-
 	local currentCampaignId = PVP.currentCampaignId
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
 	if emperorAlliance ~= ALLIANCE_NONE then
@@ -3192,6 +3180,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		PVP_World3DCrown:SetHidden(true)
 	end
 	-- PVP.m8 = GetGameTimeMilliseconds()
+	return control
 end
 
 local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
@@ -3297,14 +3286,12 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	params.distance = poi.distance
 	params.doorType = poi.doorType
 	params.doorDistrictKeepId = poi.doorDistrictKeepId
+	params.controllingCharacter = poi.controllingCharacter
 	params.artifactAlliance = poi.controllingAlliance
 	params.artifactOriginalAlliance = poi.originalAlliance
 	params.isBgFlag = poi.isBgFlag
 	params.artifactKeepId = poi.artifactKeepId
 	params.artifactObjectiveId = poi.artifactObjectiveId
-	params.controllingCharacter = poi.controllingCharacter
-	params.controllingAlliance = poi.controllingAlliance
-	params.originalAlliance = poi.originalAlliance
 	params.groupTag = poi.groupTag
 	params.isGroupLeader = poi.isGroupLeader
 	params.keepId = poi.keepId
@@ -3377,7 +3364,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
 	end
 
-	poi.control = control
+	return control
 end
 
 local function BGObjectiveOnUpdate(control)
@@ -3641,7 +3628,7 @@ local function SetupNewBattlegroundObjective3DMarker(objectiveId, distance, isAc
 		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
 	end
 
-	PVP.currentObjectivesIds[objectiveId] = control
+	return control
 end
 
 function PVP_SetMapPingOnMouseOver()
@@ -3889,6 +3876,7 @@ local function FindNearbyPOIs()
 			end
 		end
 
+		local activeScrolls =  PVP.activeScrolls or {}
 		for k, v in pairs(PVP.elderScrollsIds) do
 			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
 			local originalAlliance
@@ -3903,9 +3891,20 @@ local function FindNearbyPOIs()
 					if distance <= adjusted_MAX_DISTANCE and pinType ~= MAP_PIN_TYPE_INVALID then
 						local controllingAlliance, controllingCharacter
 						if scrollState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
-							local scrollEventInfo = PVP.activeScrolls[k]
-							controllingAlliance = scrollEventInfo and scrollEventInfo.alliance or GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
-							controllingCharacter = scrollEventInfo and scrollEventInfo.character or GetCarryableObjectiveHoldingCharacterInfo(k, v, BGQUERY_LOCAL)
+							local scrollEventInfo = activeScrolls and activeScrolls[k]
+							if scrollEventInfo then
+								controllingCharacter = scrollEventInfo.playerName
+								controllingAlliance = scrollEventInfo.playerAlliance
+							else
+								controllingCharacter = GetCarryableObjectiveHoldingCharacterInfo(k, v, BGQUERY_LOCAL)
+								controllingAlliance = GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
+								activeScrolls[k] = {
+									playerName = controllingCharacter,
+									playerAlliance = controllingAlliance,
+									controlState = scrollState,
+								}
+								PVP.activeScrolls = activeScrolls
+							end
 						end
 						insert(foundPOI,
 							{
@@ -4525,8 +4524,8 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP.beforeMarker = GetGameTimeMilliseconds()
 		local cc = 0
 		for k, v in pairs(foundKeeps) do
-			SetupNew3DMarker(k, v, isActivated, not currentNearbyKeepIds[k]) -- // sets up the 3d icons for each relevant keep //
-			cc = cc + 1
+			local newMarker = SetupNew3DMarker(k, v, isActivated, not currentNearbyKeepIds[k]) -- // sets up the 3d icons for each relevant keep //
+			currentNearbyKeepIds[k] = newMarker
 		end
 		PVP.cc = cc
 		PVP.afterMarker = GetGameTimeMilliseconds()
@@ -4546,8 +4545,9 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		end
 
 		for k, v in pairs(foundBgObjectives) do
-			SetupNewBattlegroundObjective3DMarker(k, v.distance, isActivated, not currentObjectivesIds[k],
+			local newBgControl = SetupNewBattlegroundObjective3DMarker(k, v.distance, isActivated, not currentObjectivesIds[k],
 				v.isCtfBase) -- // sets up the 3d icons for each relevant keep //
+			currentObjectivesIds[k] = newBgControl
 		end
 	else
 		for k, v in pairs(currentObjectivesIds) do
@@ -4584,7 +4584,8 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP.beforePoi = GetGameTimeMilliseconds()
 		for i = 1, #currentNearbyPOIIds do
 			local isNewObjective = i > oldTableSize
-			SetupNew3DPOIMarker(i, isActivated, isNewObjective)
+			local newPoiControl = SetupNew3DPOIMarker(i, isActivated, isNewObjective)
+			currentNearbyPOIIds[i].control = newPoiControl
 		end
 		PVP.afterPoi = GetGameTimeMilliseconds()
 	else
