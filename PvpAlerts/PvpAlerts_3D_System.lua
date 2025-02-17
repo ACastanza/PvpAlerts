@@ -2047,7 +2047,7 @@ end
 
 local function GetEmperorInfoString(isWorldCrown)
 	local text, accountNameFromDB, unitCharNameFromDB, formattedEmperorName
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 	local userDisplayNameType = PVP.SV.userDisplayNameType or PVP.defaults.userDisplayNameType
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
 	if emperorAlliance == ALLIANCE_NONE then
@@ -2082,7 +2082,7 @@ local function GetEmperorInfoString(isWorldCrown)
 end
 
 local function GetCampaignInfoString(alliance)
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 	local isAssignedCampaign = GetAssignedCampaignId() == currentCampaignId
 	local isGuestCampaign = GetGuestCampaignId() == currentCampaignId
 	local campaignTypeString
@@ -2113,7 +2113,7 @@ local function GetHoldingsInfoString(alliance)
 		[2] = 'ebonheart',
 		[3] = 'daggefall',
 	}
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 	local numKeeps = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_KEEP, alliance)
 	local numResources = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_RESOURCE, alliance)
 	local numOutposts = GetTotalCampaignHoldings(currentCampaignId, HOLDINGTYPE_OUTPOST, alliance)
@@ -2137,7 +2137,7 @@ local function GetHoldingsInfoString(alliance)
 end
 
 local function GetScoringInfoString()
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 	local function ReturnCampaignScoresInAscendingOrder()
 		local scores = {}
 		for i = 1, 3 do
@@ -2166,7 +2166,7 @@ local function GetScoringInfoString()
 end
 
 local function GetCampaignPositionInfoString(alliance)
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 	local currentRanking, currentAP
 	local formattedPlayerName = PVP:GetFormattedName(PVP.playerName)
 	for i = 1, GetNumCampaignAllianceLeaderboardEntries(currentCampaignId, alliance) do
@@ -3139,7 +3139,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 	PVP.currentNearbyKeepIds[keepId] = control
 
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(currentCampaignId)
 	if emperorAlliance ~= ALLIANCE_NONE then
 		PVP_World3DCrownIcon:SetColor(PVP:GetTrueAllianceColors(emperorAlliance))
@@ -3302,6 +3302,9 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	params.isBgFlag = poi.isBgFlag
 	params.artifactKeepId = poi.artifactKeepId
 	params.artifactObjectiveId = poi.artifactObjectiveId
+	params.controllingCharacter = poi.controllingCharacter
+	params.controllingAlliance = poi.controllingAlliance
+	params.originalAlliance = poi.originalAlliance
 	params.groupTag = poi.groupTag
 	params.isGroupLeader = poi.isGroupLeader
 	params.keepId = poi.keepId
@@ -3669,8 +3672,6 @@ function PVP:FullReset3DIcons()
 	self.currentNearbyKeepIds = {}
 	self.currentNearbyPOIIds = {}
 	self.currentObjectivesIds = {}
-	self.activeScrolls = {}
-	self.activeDaedricArtifact = nil
 
 	if self.controls3DPool then self.controls3DPool:ReleaseAllObjects() end
 	ResetWorldTooltip()
@@ -3905,9 +3906,6 @@ local function FindNearbyPOIs()
 							local scrollEventInfo = PVP.activeScrolls[k]
 							controllingAlliance = scrollEventInfo and scrollEventInfo.alliance or GetCarryableObjectiveHoldingAllianceInfo(k, v, BGQUERY_LOCAL)
 							controllingCharacter = scrollEventInfo and scrollEventInfo.character or GetCarryableObjectiveHoldingCharacterInfo(k, v, BGQUERY_LOCAL)
-						else
-							controllingAlliance = nil
-							controllingCharacter = nil
 						end
 						insert(foundPOI,
 							{
@@ -3916,10 +3914,10 @@ local function FindNearbyPOIs()
 								targetY = targetY,
 								distance = distance,
 								name = name,
-								controllingAlliance = controllingAlliance,
-								controllingCharacter = controllingCharacter,
 								artifactKeepId = k,
 								artifactObjectiveId = v,
+								controllingCharacter = controllingCharacter,
+								controllingAlliance = controllingAlliance,
 								originalAlliance = originalAlliance
 							})
 					end
@@ -3953,10 +3951,10 @@ local function FindNearbyPOIs()
 								targetY = targetY,
 								distance = distance,
 								name = name,
-								controllingAlliance = controllingAlliance,
-								controllingCharacter = controllingCharacter,
 								artifactKeepId = 0,
 								artifactObjectiveId = activeObjectiveId,
+								controllingCharacter = controllingCharacter,
+								controllingAlliance = controllingAlliance,
 								originalAlliance = ALLIANCE_NONE
 							})
 					end

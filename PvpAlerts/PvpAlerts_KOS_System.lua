@@ -784,7 +784,7 @@ local function CheckActive(KOSNamesList, kosActivityList, reportActive)
 	local currentTime = GetFrameTimeSeconds()
 	if kosActivityList and kosActivityList.measureTime and (currentTime - kosActivityList.measureTime) < 60 then return kosActivityList end
 	QueryCampaignLeaderboardData()
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = PVP.currentCampaignId
 
 	if not kosActivityList or not kosActivityList.activeChars then
 		kosActivityList = { activeChars = {} }

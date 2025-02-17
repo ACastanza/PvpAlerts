@@ -277,7 +277,7 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 end
 
 function PVP:UpdateCampaignEmperor(eventCode, campaignId)
-	if not campaignId == GetCurrentCampaignId() then return end
+	if not campaignId == PVP.currentCampaignId then return end
 	local emperorAlliance, emperorRawName, emperorAccName = GetCampaignEmperorInfo(campaignId)
 	emperorRawName = tostring(emperorRawName)
 	currentCampaignActiveEmperor = self:GetRootNames(emperorRawName)
@@ -286,25 +286,30 @@ function PVP:UpdateCampaignEmperor(eventCode, campaignId)
 end
 
 function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, artifactKeepId, playerName, playerAlliance, controlEvent, controlState, campaignId, displayName)
-	local currentCampaignId = GetCurrentCampaignId()
-	local scrollInfo = {}
+	local currentCampaignId = PVP.currentCampaignId or GetCurrentCampaignId()
 	if currentCampaignId ~= campaignId then return end
-	if controlState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
-		scrollInfo = {
-			playerName = playerName,
-			playerAlliance = playerAlliance,
-			controlEvent = controlEvent,
-			controlState = controlState,
-		}
+	if controlState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and controlState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_ENEMY_BASE then
+		local scrollInfo = {}
+		if controlState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
+			scrollInfo = {
+				playerName = playerName,
+				playerAlliance = playerAlliance,
+				controlEvent = controlEvent,
+				controlState = controlState,
+			}
+		else
+			scrollInfo = {
+				playerName = "",
+				playerAlliance = 0,
+				controlEvent = controlEvent,
+				controlState = controlState,
+			}
+		end
+		PVP.activeScrolls[artifactKeepId] = scrollInfo
 	else
 		scrollInfo = {
-			playerName = "",
-			playerAlliance = 0,
-			controlEvent = controlEvent,
-			controlState = controlState,
-		}
+		PVP.activeScrolls[artifactKeepId] = nil
 	end
-	PVP.activeScrolls[artifactKeepId] = scrollInfo
 end
 
 function PVP:UpdateActiveDaedricArtifactInfo(eventCode, artifactKeepId, artifactObjectiveId, battlegroundContext,
@@ -1023,7 +1028,7 @@ function PVP:OnZoneChange(_, zoneName, newZone)
 	if not self.SV.unlocked and self.SV.showCaptureFrame then self:SetupCurrentObjective(zoneText) end
 
 	self:UpdateNearbyKeepsAndPOIs(nil, true)
-	local currentCampaignId = GetCurrentCampaignId()
+	local currentCampaignId = self.currentCampaignId
 	if currentCampaignId ~= 0 then
 		self:UpdateCampaignEmperor(nil, currentCampaignId)
 	end
@@ -2831,6 +2836,7 @@ end
 
 function PVP:FullReset()
 	if self.isPlaying then self.isPlaying:Stop() end
+	local currentCampaignId = GetCurrentCampaignId()
 
 	self.bgScoreBoardFirstRunDone = false
 	self.piercingDelay = false
@@ -2855,9 +2861,17 @@ function PVP:FullReset()
 	self.reportTimer = 0
 	self.killFeedDelay = 0
 	self.killFeedRatioDelay = 0
+	self.ccImmunity = {}
+
+	if currentCampaignId ~= self.currentCampaignId then
+		self.activeScrolls = {}
+		self.activeDaedricArtifact = nil
+	end
+	self.currentCampaignId = currentCampaignId
 
 	self:KillFeedRatio_Reset()
 	self:InitControls()
+
 	if self.SV.showKOSFrame then self:RefreshLocalPlayers() end
 end
 
@@ -3883,7 +3897,6 @@ function PVP:InitEnabledAddon()
 		self:RegisterCustomDialog()
 		self.playerName = GetRawUnitName('player')
 		self.allianceOfPlayer = GetUnitAlliance('player')
-		self.ccImmunity = {}
 		self:RefreshKOSandCoolAccList()
 		self:PopulateGuildmateDatabase()
 		PVP_KOS_Text:SetHandler("OnLinkMouseUp",
