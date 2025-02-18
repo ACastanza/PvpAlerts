@@ -184,22 +184,22 @@ local epLinks = {
 }
 
 local pinTypes = {
-    [PVP_PINTYPE_AYLEIDWELL] = 'AYLEID_WELL',
-    [PVP_PINTYPE_DELVE] = 'DELVE',
-    [PVP_PINTYPE_MILEGATE] = 'MILEGATE',
-    [PVP_PINTYPE_BRIDGE] = 'BRIDGE',
-    [MAP_PIN_TYPE_PLAYER_WAYPOINT] = 'WAYPOINT',
-    [MAP_PIN_TYPE_RALLY_POINT] = 'RALLY',
-    [MAP_PIN_TYPE_PING] = 'PING',
-    [PVP_PINTYPE_POWERUP] = 'BG_POWERUP',
-    [PVP_PINTYPE_SHADOWIMAGE] = 'SHADOW_IMAGE',
-    [PVP_PINTYPE_TOWNFLAG] = 'TOWN_FLAG',
-    [PVP_PINTYPE_COMPASS] = 'COMPASS',
-    [PVP_PINTYPE_IC_ALLIANCE_BASE] = 'IC_BASE',
-    [PVP_PINTYPE_IC_DOOR] = 'IC_DOOR',
-    [PVP_PINTYPE_IC_VAULT] = 'IC_VAULT',
-    [PVP_PINTYPE_IC_GRATE] = 'IC_GRATE',
-    [PVP_PINTYPE_SEWERS_SIGN] = 'SEWERS_SIGN'
+	[PVP_PINTYPE_AYLEIDWELL] = 'AYLEID_WELL',
+	[PVP_PINTYPE_DELVE] = 'DELVE',
+	[PVP_PINTYPE_MILEGATE] = 'MILEGATE',
+	[PVP_PINTYPE_BRIDGE] = 'BRIDGE',
+	[MAP_PIN_TYPE_PLAYER_WAYPOINT] = 'WAYPOINT',
+	[MAP_PIN_TYPE_RALLY_POINT] = 'RALLY',
+	[MAP_PIN_TYPE_PING] = 'PING',
+	[PVP_PINTYPE_POWERUP] = 'BG_POWERUP',
+	[PVP_PINTYPE_SHADOWIMAGE] = 'SHADOW_IMAGE',
+	[PVP_PINTYPE_TOWNFLAG] = 'TOWN_FLAG',
+	[PVP_PINTYPE_COMPASS] = 'COMPASS',
+	[PVP_PINTYPE_IC_ALLIANCE_BASE] = 'IC_BASE',
+	[PVP_PINTYPE_IC_DOOR] = 'IC_DOOR',
+	[PVP_PINTYPE_IC_VAULT] = 'IC_VAULT',
+	[PVP_PINTYPE_IC_GRATE] = 'IC_GRATE',
+	[PVP_PINTYPE_SEWERS_SIGN] = 'SEWERS_SIGN'
 }
 
 
@@ -464,57 +464,32 @@ local function Hide3DControl(control, scaleAdjustment)
 		control:SetHidden(true)
 		return true
 	end
-	
+
 	local SV = PVP.SV
 	local controlParams = control.params
 	local controlType = controlParams.type
 	local distance = controlParams.distance
-
-	local controlTooClose = (controlType ~= "SHADOW_IMAGE") and distance < scaleAdjustment * SV.min3DIconsDistance
-	if controlTooClose then
-		control:SetHidden(true)
-		return true
-	end
-
-	local onScreenKeeps = {
-		[PVP_KEEPTYPE_ARTIFACT_KEEP] = true,
-		[PVP_KEEPTYPE_BORDER_KEEP] = true,
-		[KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true,
-	}
-
-	local name = controlParams.name
 	local keepId = controlParams.keepId
 	local isCurrent = controlParams.isCurrent
+	local name = controlParams.name
 
-	local hideControlOnScreen = ((not SV.showOnScreen) and SV.onScreenReplace) and
-		(IsPlayerNearObjective(keepId, true) and not ((controlType == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
-		(IsPlayerNearObjective(name) and (controlType == 'MILEGATE' or controlType == 'BRIDGE'))
-	if hideControlOnScreen then
-		control:SetHidden(true)
-		return true
-	end
+	-- Distance checks
+	local minIconDistance = scaleAdjustment * SV.min3DIconsDistance
+	local maxIconDistance = scaleAdjustment * SV.max3DIconsDistance
+	local maxResourceDistance = scaleAdjustment * SV.maxResource3DIconsDistance
 
-	local utilityControls = {
-		['RALLY'] = true,
-		['WAYPOINT'] = true,
-		['PING'] = true,
-		['GROUP'] = true,
-		['COMPASS'] = true,
-	}
-	local controlTooFar = (not utilityControls[controlType]) and distance > scaleAdjustment * SV.max3DIconsDistance
-	if controlTooFar then
-		control:SetHidden(true)
-		return true
-	end
+	-- Utility controls and keep checks
+	local utilityControls = { ['RALLY'] = true, ['WAYPOINT'] = true, ['PING'] = true, ['GROUP'] = true, ['COMPASS'] = true }
+	local onScreenKeeps = { [PVP_KEEPTYPE_ARTIFACT_KEEP] = true, [PVP_KEEPTYPE_BORDER_KEEP] = true, [KEEPTYPE_IMPERIAL_CITY_DISTRICT] = true }
 
-	if icControls[controlType] and not isCurrent then
-		control:SetHidden(true)
-		return true
-	end
-
-	local keepCheck = keepId and GetKeepResourceType(keepId) ~= 0 and
-		(distance > scaleAdjustment * SV.maxResource3DIconsDistance or distance > scaleAdjustment * SV.max3DIconsDistance)
-	if keepCheck then
+	if (controlType ~= "SHADOW_IMAGE" and SV.min3DIconsDistance > 0 and distance < minIconDistance) or
+		(keepId and GetKeepResourceType(keepId) ~= 0 and (distance > maxResourceDistance or distance > maxIconDistance)) or
+		(not utilityControls[controlType] and distance > maxIconDistance) or
+		(icControls[controlType] and not isCurrent) or
+		((not SV.showOnScreen and SV.onScreenReplace) and (
+			(IsPlayerNearObjective(keepId, true) and not ((controlType == 'TOWN_FLAG') or onScreenKeeps[PVP:KeepIdToKeepType(keepId)])) or
+			(IsPlayerNearObjective(name) and (controlType == 'MILEGATE' or controlType == 'BRIDGE'))
+		)) then
 		control:SetHidden(true)
 		return true
 	end
@@ -1059,28 +1034,28 @@ local function GetShadowImageTexture()
 end
 
 local function GetControlType(control, data, iconType)
-    if iconType == "POI" then
-        local pinType = data.pinType
+	if iconType == "POI" then
+		local pinType = data.pinType
 
-        local mappedType = pinTypes[pinType]
-        if mappedType then
-            return mappedType
-        end
+		local mappedType = pinTypes[pinType]
+		if mappedType then
+			return mappedType
+		end
 
-        if ZO_MapPin.KILL_LOCATION_PIN_TYPES[pinType] then
-            return 'KILL_LOCATION'
-        elseif ZO_MapPin.FORWARD_CAMP_PIN_TYPES[pinType] then
-            return 'CAMP'
-        elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
-            return 'SCROLL'
-        elseif PVP.daedricArtifactPintypes[pinType] then
-            return 'DAEDRIC_ARTIFACT'
-        elseif data.isBgBase then
-            return 'BG_BASE'
-        elseif data.groupTag then
-            return 'GROUP'
-        end
-    end
+		if ZO_MapPin.KILL_LOCATION_PIN_TYPES[pinType] then
+			return 'KILL_LOCATION'
+		elseif ZO_MapPin.FORWARD_CAMP_PIN_TYPES[pinType] then
+			return 'CAMP'
+		elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
+			return 'SCROLL'
+		elseif PVP.daedricArtifactPintypes[pinType] then
+			return 'DAEDRIC_ARTIFACT'
+		elseif data.isBgBase then
+			return 'BG_BASE'
+		elseif data.groupTag then
+			return 'GROUP'
+		end
+	end
 end
 
 function PVP:IsMiscPassable(keepId)
@@ -2605,10 +2580,10 @@ local function PoiOnUpdate(control)
 				else
 					if artifactAlliance ~= ALLIANCE_NONE then
 						local carrierToken = PVP:GetTargetChar(controllingCharacter, 35, 35)
-						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
+						carrierToken = carrierToken and ("\n		  " .. carrierToken) or ""
 						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(artifactAlliance)) .. carrierToken
 					else
-						mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
+						mainText = "\n		  " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
 					end
 					if artifactOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
