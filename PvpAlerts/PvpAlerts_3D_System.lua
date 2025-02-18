@@ -34,6 +34,7 @@ local floor = zo_floor
 local abs = zo_abs
 local pairs = pairs
 local pi = ZO_PI
+local ZO_HALF_PI = ZO_HALF_PI
 
 local sort = table.sort
 local insert = table.insert
