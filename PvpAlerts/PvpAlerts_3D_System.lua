@@ -760,50 +760,45 @@ local function ProcessDynamicControlPosition(control)
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
 	local controlType = control.params.type
 	if not controlType then return controlX, controlZ, controlY end
-	local bias, newX, newY
 
-	if control.params.isBgFlag then
-		bias = 10
+	local bias = control.params.isBgFlag and 10 or 15
+
+	-- Determine base height: Use params.height if it exists, otherwise use camera height
+	local height
+	if control.params.height then
+		height = control.params.height + bias
 	else
-		bias = 15
+		local _, _, _, _, _, cameraHeight = GetCameraInfo()
+		height = cameraHeight + bias
 	end
+	controlZ = height
 
-	-- d(controlType)
-	-- d(PVP.currentCameraInfo.player3dX)
 	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX and PVP.currentCameraInfo.player3dY then
-		-- d('test')
+		local camX, camY, camZ = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ
+		local compassOffset = 500
+
 		if control.params.name == 'WEST' then
-			controlX = PVP.currentCameraInfo.cameraX - 500
-			controlY = PVP.currentCameraInfo.cameraY
+			controlX, controlY = camX - compassOffset, camY
 		elseif control.params.name == 'EAST' then
-			controlX = PVP.currentCameraInfo.cameraX + 500
-			controlY = PVP.currentCameraInfo.cameraY
+			controlX, controlY = camX + compassOffset, camY
 		elseif control.params.name == 'NORTH' then
-			controlX = PVP.currentCameraInfo.cameraX
-			controlY = PVP.currentCameraInfo.cameraY - 500
+			controlX, controlY = camX, camY - compassOffset
 		elseif control.params.name == 'SOUTH' then
-			controlX = PVP.currentCameraInfo.cameraX
-			controlY = PVP.currentCameraInfo.cameraY + 500
+			controlX, controlY = camX, camY + compassOffset
 		end
-		controlZ = PVP.currentCameraInfo.cameraZ + PVP.SV.compass3dHeight
-		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
+		controlZ = camZ + PVP.SV.compass3dHeight
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
-		local _, X, Y = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
-		controlX = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-		controlY = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
-		controlZ = PVP.currentCameraInfo.cameraZ + 15
-		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
+		local _, mapX, mapY = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
+		local scaleTo3D = GetCurrentMapScaleTo3D()
+
+		controlX = PVP.currentCameraInfo.current3DX + (mapX - PVP.currentCameraInfo.currentMapX) * scaleTo3D
+		controlY = PVP.currentCameraInfo.current3DY + (mapY - PVP.currentCameraInfo.currentMapY) * scaleTo3D
 	end
 
+	control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
 
-	if not control.params.height then
-		local _, newHeight
-		_, _, _, _, _, newHeight = GetCameraInfo()
-		control:Set3DRenderSpaceOrigin(controlX, newHeight + bias, controlY)
-		controlZ = newHeight + bias
-	end
 	return controlX, controlZ, controlY
 end
 
