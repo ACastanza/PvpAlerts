@@ -790,7 +790,7 @@ local function ProcessDynamicControlPosition(control)
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
-		local X, Y = control.params.X, control.params.Y
+		local _, X, Y = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
 		controlX = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
 		controlY = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
 		controlZ = PVP.currentCameraInfo.cameraZ + 15
