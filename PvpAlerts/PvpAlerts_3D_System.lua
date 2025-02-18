@@ -763,7 +763,7 @@ local function ProcessDynamicControlPosition(control)
 
 	local bias = control.params.isBgFlag and 10 or 15
 
-	-- Determine base height: Use params.height if it exists, otherwise use camera height
+	-- Determine base height
 	local height
 	if control.params.height then
 		height = control.params.height + bias
@@ -771,8 +771,11 @@ local function ProcessDynamicControlPosition(control)
 		local _, _, _, _, _, cameraHeight = GetCameraInfo()
 		height = cameraHeight + bias
 	end
+
+	-- Default controlZ to height unless modified by positioning logic
 	controlZ = height
 
+	-- Compass positioning
 	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX and PVP.currentCameraInfo.player3dY then
 		local camX, camY, camZ = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ
 		local compassOffset = 500
@@ -786,18 +789,27 @@ local function ProcessDynamicControlPosition(control)
 		elseif control.params.name == 'SOUTH' then
 			controlX, controlY = camX, camY + compassOffset
 		end
+
 		controlZ = camZ + PVP.SV.compass3dHeight
 	end
 
+	-- Scroll and Daedric Artifact positioning
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
 		local _, mapX, mapY = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
 		local scaleTo3D = GetCurrentMapScaleTo3D()
 
 		controlX = PVP.currentCameraInfo.current3DX + (mapX - PVP.currentCameraInfo.currentMapX) * scaleTo3D
 		controlY = PVP.currentCameraInfo.current3DY + (mapY - PVP.currentCameraInfo.currentMapY) * scaleTo3D
+		controlZ = height
 	end
 
-	control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
+	-- Height jitter reduction: Cache the last height and only update if significantly different
+	local tolerance = 0.1
+	control.lastHeight = control.lastHeight or controlZ -- Initialize if not already set
+	if abs(control.lastHeight - controlZ) > tolerance then
+		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
+		control.lastHeight = controlZ
+	end
 
 	return controlX, controlZ, controlY
 end
@@ -911,14 +923,16 @@ local function IsCloseToPlayer(control, selfX, selfY, playerX, playerY)
 	if control.params.height then return control.params.height end
 
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
-
 	if not playerX then
 		playerX, playerY = GetMapPlayerPosition('player')
 	end
-	local distance = zo_distance(selfX, selfY, playerX, playerY)
 
-	if distance <= scaleAdjustment * PVP_POI_HEIGHT_GRACE_DISTANCE / 3 then return select(6, GetCameraInfo()) end
+	local distance = zo_distance(selfX, selfY, playerX, playerY)
+	if distance <= scaleAdjustment * PVP_POI_HEIGHT_GRACE_DISTANCE / 3 then
+		return select(6, GetCameraInfo()) -- Use camera height if close
+	end
 end
+
 
 local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, playerY)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
@@ -926,7 +940,7 @@ local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, player
 
 	if controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT' or controlType == 'GROUP' then
 		if zo_distance(selfX, selfY, playerX, playerY) <= scaleAdjustment * PVP_MAX_DISTANCE * 0.1 then
-			return select(6, GetCameraInfo())
+			return select(6, GetCameraInfo()) -- Use camera height if close
 		end
 	end
 
