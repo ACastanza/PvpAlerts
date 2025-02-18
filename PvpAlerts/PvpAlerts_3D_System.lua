@@ -202,7 +202,6 @@ local pinTypes = {
 	[PVP_PINTYPE_SEWERS_SIGN] = 'SEWERS_SIGN'
 }
 
-
 local fixedHeight = {
 	['AYLEID_WELL'] = true,
 	['DELVE'] = true,
@@ -780,7 +779,8 @@ local function ProcessDynamicControlPosition(control)
 
 	-- Height jitter reduction: Cache the last height and only update if significantly different
 	local tolerance = 0.1
-	control.lastHeight = control.lastHeight or controlZ -- Initialize if not already set
+	control.lastHeight = control.lastHeight or controlZ
+
 	if abs(control.lastHeight - controlZ) > tolerance then
 		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
 		control.lastHeight = controlZ
@@ -907,7 +907,6 @@ local function IsCloseToPlayer(control, selfX, selfY, playerX, playerY)
 		return select(6, GetCameraInfo()) -- Use camera height if close
 	end
 end
-
 
 local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, playerY)
 	local scaleAdjustment = GetCurrentMapScaleAdjustment()
@@ -2580,10 +2579,10 @@ local function PoiOnUpdate(control)
 				else
 					if artifactAlliance ~= ALLIANCE_NONE then
 						local carrierToken = PVP:GetTargetChar(controllingCharacter, 35, 35)
-						carrierToken = carrierToken and ("\n		  " .. carrierToken) or ""
+						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
 						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(artifactAlliance)) .. carrierToken
 					else
-						mainText = "\n		  " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
+						mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
 					end
 					if artifactOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
