@@ -40,6 +40,7 @@ local PVP_FIGHT_DCEP = PVP:GetGlobal('PVP_FIGHT_DCEP')
 local PVP_ID_RETAIN_TIME = PVP:GetGlobal('PVP_ID_RETAIN_TIME')
 local PVP_ID_RETAIN_TIME_EFFECT = PVP:GetGlobal('PVP_ID_RETAIN_TIME_EFFECT')
 
+local IsActiveWorldBattleground = IsActiveWorldBattleground
 local GetFrameTimeMilliseconds = GetFrameTimeMilliseconds
 local zo_distance = zo_distance
 
@@ -772,11 +773,18 @@ end
 
 function PVP:GetValidName(name)
 	if not name or name == '' then return end
-	if not PVP:IsMalformedName(name) then return name end
+	if not self:IsMalformedName(name) then return name end
 	-- if not PVP.bgNames then return end
 
-	if PVP.bgNames and PVP.bgNames[name .. '^Mx'] then return name .. '^Mx' end
-	if PVP.bgNames and PVP.bgNames[name .. '^Fx'] then return name .. '^Fx' end
+	if IsActiveWorldBattleground() then
+		local bgNames = self.bgNames
+		if bgNames and bgNames[name .. '^Mx'] then return name .. '^Mx' end
+		if bgNames and bgNames[name .. '^Fx'] then return name .. '^Fx' end
+	else
+		local playersDb = self.SV.playersDB
+		if playersDb and playersDb[name .. '^Mx'] then return name .. '^Mx' end
+		if playersDb and playersDb[name .. '^Fx'] then return name .. '^Fx' end
+	end
 end
 
 function PVP:GetRootNames(name)

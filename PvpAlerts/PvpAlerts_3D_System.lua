@@ -3916,7 +3916,7 @@ local function FindNearbyPOIs()
 							scrollEventInfo.controlState = scrollState
 							activeScrolls[name] = scrollEventInfo
 						end
-
+						d(controllingCharacter)
 						insert(foundPOI,
 							{
 								pinType = pinType,
