@@ -135,6 +135,13 @@ local icControls = {
 	['IC_GRATE'] = true,
 }
 
+local dynamicControls = {
+	['SCROLL'] = true,
+	['DAEDRIC_ARTIFACT'] = true,
+	['GROUP'] = true,
+	['COMPASS'] = true,
+}
+
 local connectedKeepsArray = {
 	[3] = { 109, 110, 5 },			--warden
 	[4] = { 109, 110, 5 },			--rayles
@@ -731,14 +738,17 @@ local function GetFormattedDistanceText(control)
 end
 
 local function ProcessDynamicControlPosition(control)
+	local controlParams = control.params
+	local controlType = controlParams.type
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
-	local controlType = control.params.type
-	if not controlType then return controlX, controlZ, controlY end
 
+	if (not controlType) --[[or (not dynamicControls[controlType])]] then return controlX, controlZ, controlY end
+
+	local controlName = controlParams.name
+	local controlOldHeight = controlParams.oldHeight
+	
 	local bias = control.params.isBgFlag and 10 or 15
-
-	-- Determine base height
-	local height
+	local height = control.params.isBgFlag and 10 or 15
 	if control.params.height then
 		height = control.params.height + bias
 	else
@@ -746,28 +756,23 @@ local function ProcessDynamicControlPosition(control)
 		height = cameraHeight + bias
 	end
 
-	-- Default controlZ to height unless modified by positioning logic
-	controlZ = height
-
-	-- Compass positioning
 	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX and PVP.currentCameraInfo.player3dY then
 		local camX, camY, camZ = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ
 		local compassOffset = 500
 
-		if control.params.name == 'WEST' then
+		if controlName == 'WEST' then
 			controlX, controlY = camX - compassOffset, camY
-		elseif control.params.name == 'EAST' then
+		elseif controlName == 'EAST' then
 			controlX, controlY = camX + compassOffset, camY
-		elseif control.params.name == 'NORTH' then
+		elseif controlName == 'NORTH' then
 			controlX, controlY = camX, camY - compassOffset
-		elseif control.params.name == 'SOUTH' then
+		elseif controlName == 'SOUTH' then
 			controlX, controlY = camX, camY + compassOffset
 		end
 
 		controlZ = camZ + PVP.SV.compass3dHeight
 	end
 
-	-- Scroll and Daedric Artifact positioning
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
 		local _, mapX, mapY = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
 		local scaleTo3D = GetCurrentMapScaleTo3D()
@@ -775,17 +780,18 @@ local function ProcessDynamicControlPosition(control)
 		controlX = PVP.currentCameraInfo.current3DX + (mapX - PVP.currentCameraInfo.currentMapX) * scaleTo3D
 		controlY = PVP.currentCameraInfo.current3DY + (mapY - PVP.currentCameraInfo.currentMapY) * scaleTo3D
 		controlZ = height
+
 	end
 
-	-- Height jitter reduction: Cache the last height and only update if significantly different
 	local tolerance = 0.1
-	control.lastHeight = control.lastHeight or controlZ
-
-	if abs(control.lastHeight - controlZ) > tolerance then
-		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
-		control.lastHeight = controlZ
+	local testHeight = controlOldHeight or controlZ
+	if abs(testHeight - height) > tolerance then
+		controlParams.oldHeight = controlType == 'COMPASS' and height or (height - bias)
+	else
+		controlParams.height = controlOldHeight
 	end
 
+	control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
 	return controlX, controlZ, controlY
 end
 
@@ -927,30 +933,31 @@ local function IsCloseToObjectiveOrPlayer(control, selfX, selfY, playerX, player
 			minDistance = distance
 			foundHeight = possibleHeight
 		end
+		return minDistance, foundHeight
 	end
 
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
 		local _, targetX, targetY = GetKeepPinInfo(keepId, BGQUERY_LOCAL)
 		if PVP.AVAids[keepId] and PVP.AVAids[keepId][1] and PVP.AVAids[keepId][1].height then
-			FindMin(targetX, targetY, PVP.AVAids[keepId][1].height)
+			minDistance, foundHeight = FindMin(targetX, targetY, PVP.AVAids[keepId][1].height)
 		end
 	end
 
 	if scaleAdjustment == 1 then
 		for i = 1, #PVP.delvesCoords do
 			local targetX, targetY = PVP.delvesCoords[i].x, PVP.delvesCoords[i].y
-			FindMin(targetX, targetY, PVP.delvesCoords[i].z)
+			minDistance, foundHeight = FindMin(targetX, targetY, PVP.delvesCoords[i].z)
 		end
 
 		for i = 1, #PVP.miscCoords do
 			local targetX, targetY = PVP.miscCoords[i].x, PVP.miscCoords[i].y
-			FindMin(targetX, targetY, PVP.miscCoords[i].z)
+			minDistance, foundHeight = FindMin(targetX, targetY, PVP.miscCoords[i].z)
 		end
 
 		for i = 1, #PVP.ayleidWellsCoords do
 			local targetX, targetY = PVP.ayleidWellsCoords[i].x, PVP.ayleidWellsCoords[i].y
-			FindMin(targetX, targetY, PVP.ayleidWellsCoords[i].z)
+			minDistance, foundHeight = FindMin(targetX, targetY, PVP.ayleidWellsCoords[i].z)
 		end
 	end
 
@@ -2447,12 +2454,6 @@ local function PoiOnUpdate(control)
 	end
 
 	if Hide3DControl(control, scaleAdjustment) then return end
-
-	local dynamicControls = {
-		['SCROLL'] = true,
-		['DAEDRIC_ARTIFACT'] = true,
-		['GROUP'] = true,
-	}
 
 	if icControls[controlType] and not controlParams.isCurrent then
 		if PVP.currentTooltip == control then ResetWorldTooltip() end
