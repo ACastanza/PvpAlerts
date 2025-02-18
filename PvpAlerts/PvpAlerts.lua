@@ -293,7 +293,7 @@ function PVP:UpdateActiveArtifactInfo(eventCode, artifactName, keepId, playerNam
 		local scrollInfo = {}
 		if controlState == OBJECTIVE_CONTROL_STATE_FLAG_HELD then
 			scrollInfo = {
-				playerName = playerName,
+				playerName = PVP:GetValidName(playerName),
 				playerAlliance = playerAlliance,
 				controlEvent = controlEvent,
 				controlState = controlState,
