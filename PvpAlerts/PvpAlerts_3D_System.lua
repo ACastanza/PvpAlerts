@@ -790,11 +790,11 @@ local function ProcessDynamicControlPosition(control)
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
-		local _, X, Y = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
-		X = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-		Y = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
-		local Z = PVP.currentCameraInfo.cameraZ + 15
-		control:Set3DRenderSpaceOrigin(X, Z, Y)
+		local X, Y = control.params.X, control.params.Y
+		controlX = PVP.currentCameraInfo.current3DX + (X - PVP.currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
+		controlY = PVP.currentCameraInfo.current3DY + (Y - PVP.currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+		controlZ = PVP.currentCameraInfo.cameraZ + 15
+		control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
 	end
 
 
@@ -3917,7 +3917,6 @@ local function FindNearbyPOIs()
 							scrollEventInfo.controlState = scrollState
 							activeScrolls[name] = scrollEventInfo
 						end
-						d(controllingCharacter)
 						insert(foundPOI,
 							{
 								pinType = pinType,
