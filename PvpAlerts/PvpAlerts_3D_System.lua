@@ -748,9 +748,10 @@ local function ProcessDynamicControlPosition(control)
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
 	if not controlType then return controlX, controlZ, controlY end
 
+	local currentCameraInfo = PVP.currentCameraInfo
 	-- Get the raw height (without bias)
 	local rawHeight
-	local cameraHeight = PVP.currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
+	local cameraHeight = currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
 	if not controlParams.height then
 		rawHeight = cameraHeight
 	else
@@ -758,7 +759,7 @@ local function ProcessDynamicControlPosition(control)
 	end
 
 	-- Apply the bias check before smoothing
-	local bias = control.params.isBgFlag and 10 or 15
+	local bias = controlParams.isBgFlag and 10 or 15
 	rawHeight = max(rawHeight, cameraHeight)
 
 	-- Smooth the raw height first
@@ -773,8 +774,8 @@ local function ProcessDynamicControlPosition(control)
 	local targetHeight = newSmoothedRaw + bias
 
 	-- Adjust for specific control types
-	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX then
-		local camX, camY, camZ = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ
+	if controlType == 'COMPASS' and currentCameraInfo and currentCameraInfo.player3dX then
+		local camX, camY, camZ = currentCameraInfo.cameraX, currentCameraInfo.cameraY, currentCameraInfo.cameraZ
 		local compassOffset = 500
 		if controlParams.name == 'WEST' then
 			controlX, controlY = camX - compassOffset, camY
@@ -788,11 +789,10 @@ local function ProcessDynamicControlPosition(control)
 		targetHeight = camZ + PVP.SV.compass3dHeight
 	end
 
-	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
-		local _, mapX, mapY = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
+	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and currentCameraInfo and currentCameraInfo.current3DX then
 		local scaleTo3D = GetCurrentMapScaleTo3D()
-		controlX = PVP.currentCameraInfo.current3DX + (mapX - PVP.currentCameraInfo.currentMapX) * scaleTo3D
-		controlY = PVP.currentCameraInfo.current3DY + (mapY - PVP.currentCameraInfo.currentMapY) * scaleTo3D
+		controlX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
+		controlY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
 	end
 
 	-- Now we use the height with the correct offset
@@ -1486,8 +1486,9 @@ function PVP:Init3D()
 			local objects = PVP.controls3DPool:GetActiveObjects()
 			for k, control in pairs(objects) do
 				if control and control:GetName() and control.params.type ~= "COMPASS" then
-					local newX = currentCameraInfo.current3DX + (control.params.X - currentCameraInfo.currentMapX) * GetCurrentMapScaleTo3D()
-					local newY = currentCameraInfo.current3DY + (control.params.Y - currentCameraInfo.currentMapY) * GetCurrentMapScaleTo3D()
+					local scaleTo3D = GetCurrentMapScaleTo3D()
+					local newX = currentCameraInfo.current3DX + (control.params.X - currentCameraInfo.currentMapX) * scaleTo3D
+					local newY = currentCameraInfo.current3DY + (control.params.Y - currentCameraInfo.currentMapY) * scaleTo3D
 					local _, oldZ, _ = control:Get3DRenderSpaceOrigin()
 					control:Set3DRenderSpaceOrigin(newX, oldZ, newY)
 				end
