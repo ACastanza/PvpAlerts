@@ -1300,15 +1300,15 @@ function PVP:BattleReport()
 	end
 end
 
-function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType, abilityId, result)
+function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType, abilityId, result, unitId, playerDbRecord)
 	-- if not (self.SV.showNamesFrame and self.SV.playersDB[unitName]) then return end
-	local playerDbRecord = self.SV.playersDB[unitName]
+	playerDbRecord = playerDbRecord or self.SV.playersDB[unitName]
 	if not playerDbRecord then return end
 
 	local isInBG = IsActiveWorldBattleground()
 	local isValidBGNameToDisplay = isInBG and self.bgNames and self.bgNames[unitName] and self.bgNames[unitName] ~= 0 and
 		self.bgNames[unitName] ~= GetUnitBattlegroundTeam('player')
-	local unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
+	local unitAlliance = self.playerAlliance[unitId] or playerDbRecord and playerDbRecord.unitAlliance
 	local isValidCyroNameToDisplay = (not isInBG) and (unitAlliance ~= self.allianceOfPlayer)
 
 	local namesToDisplay = self.namesToDisplay
@@ -1423,7 +1423,7 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 				if self.namesToDisplay[i].unitName == deadName and not self.namesToDisplay[i].isDead then
 					self.namesToDisplay[i].isDead = true
 					self.namesToDisplay[i].currentTime = currentTime
-					self:UpdateNamesToDisplay(deadName, currentTime, true, 'target')
+					self:UpdateNamesToDisplay(deadName, currentTime, true, 'target', nil, nil, targetUnitId)
 					break
 				end
 			end
@@ -1473,9 +1473,9 @@ function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetN
 				self.playerAlliance[sourceUnitId] = nil
 			end
 		else
-			local playersDB = self.SV.playersDB
-			if playersDB[sourceName] then
-				self.playerAlliance[sourceUnitId] = playersDB[sourceName].unitAlliance
+			local playerDbRecord = self.SV.playersDB[sourceName]
+			if playerDbRecord then
+				self.playerAlliance[sourceUnitId] = playerDbRecord.unitAlliance
 				idToName[sourceUnitId] = sourceName
 				self:DetectSpec(sourceUnitId, abilityId, result, sourceName, false)
 				totalPlayers[sourceUnitId] = currentTime
@@ -1484,7 +1484,7 @@ function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetN
 						self.miscAbilities[sourceName] = self.miscAbilities[sourceName] or {}
 						self.miscAbilities[sourceName].chargeId = abilityId
 					end
-					self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result)
+					self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result, sourceUnitId, playerDbRecord)
 				end
 			end
 		end
@@ -1505,12 +1505,12 @@ function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilit
 				self.playerAlliance[targetUnitId] = nil
 			end
 		else
-			local playersDB = self.SV.playersDB
-			if playersDB[targetName] then
-				self.playerAlliance[targetUnitId] = playersDB[targetName].unitAlliance
+			local playerDbRecord = self.SV.playersDB[targetName]
+			if playerDbRecord then
+				self.playerAlliance[targetUnitId] = playerDbRecord.unitAlliance
 				idToName[targetUnitId] = targetName
 				totalPlayers[targetUnitId] = currentTime
-				self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result)
+				self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result, targetUnitId, playerDbRecord)
 
 				if result == ACTION_RESULT_REFLECTED then
 					self.miscAbilities[targetName] = self.miscAbilities[targetName] or {}
@@ -3705,7 +3705,7 @@ function PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, 
 
 	if found then self.totalPlayers[found] = currentTime end
 	self.playerNames[unitName] = currentTime
-	self:UpdateNamesToDisplay(unitName, currentTime, true)
+	self:UpdateNamesToDisplay(unitName, currentTime, true, nil, nil, nil, found)
 end
 
 function PVP.OnTargetChanged()
