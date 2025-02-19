@@ -1288,6 +1288,8 @@ local function GetControlSize(control, data, iconType)
 			else
 				POISize = PVP.SV.compass3dSize
 			end
+		elseif controlType == 'DAEDRIC_ARTIFACT' then
+			POISize = ICONSIZE / 2
 		elseif sizeOffsets[controlType] then
 			POISize = ICONSIZE + sizeOffsets[controlType]
 		else
