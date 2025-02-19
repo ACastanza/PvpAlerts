@@ -3520,7 +3520,8 @@ function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarg
 	end
 
 	local allianceColor = self:NameToAllianceColor(unitName, isDead or isResurrect, nil, unitAlliance)
-	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
+	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor,isDead or isResurrect,
+		nil, nil, nil, nil, currentTime, playerDbRecord.unitAvaRank, playerDbRecord or "none")
 	local charName = self:Colorize(self:GetFormattedName(unitName), allianceColor)
 	local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
 	if userDisplayNameType == "both" then
@@ -3607,7 +3608,8 @@ function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
 				end
 
 				local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect, nil, unitAlliance)
-				local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect, nil, nil, nil, nil, playerDbRecord.unitAvaRank, playerDbRecord or "none")
+				local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect,
+					nil, nil, nil, nil, currentTime, playerDbRecord.unitAvaRank, playerDbRecord or "none")
 				local charName = self:Colorize(self:GetFormattedName(playerName), allianceColor)
 				local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
 				if userDisplayNameType == "both" then

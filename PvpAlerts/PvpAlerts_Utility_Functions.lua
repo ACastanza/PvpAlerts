@@ -371,7 +371,7 @@ function PVP:GetFormattedClassIcon(playerName, dimension, allianceColor, isDeado
 	playerDbRecord = playerDbRecord or self.SV.playersDB[playerName]
 
 	if ((not playerDbRecord) or (playerDbRecord == "none")) and (not isPlayer) and (not unitClass) then
-		return unitAvARank and self:GetFormattedAvaRankIcon(unitAvARank or playerDbRecord.unitAvARank, allianceColor, dimension, playerName) or ""
+		return unitAvARank and self:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, playerName) or ""
 	end
 
 	if playerDbRecord == "none" then playerDbRecord = nil end
