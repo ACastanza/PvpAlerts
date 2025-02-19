@@ -22,6 +22,7 @@ local GetPlayerLocationName = GetPlayerLocationName
 local strgsub= zo_strgsub
 
 local ceil = zo_ceil
+local max = zo_max
 local asin = math.asin
 --local acos = zo_cos
 local tan = zo_tan
@@ -737,60 +738,70 @@ local function GetFormattedDistanceText(control)
 	return ' (' .. string.format("%.0f", control.params.distance * GetCurrentMapScaleTo3D()) .. 'm)'
 end
 
+local function interpolate(a, b, t)
+	return a + (b - a) * t
+end
+
 local function ProcessDynamicControlPosition(control)
 	local controlParams = control.params
 	local controlType = controlParams.type
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
+	if not controlType then return controlX, controlZ, controlY end
 
-	if (not controlType) --[[or (not dynamicControls[controlType])]] then return controlX, controlZ, controlY end
-
-	local controlName = controlParams.name
-	local controlOldHeight = controlParams.oldHeight
-	
-	local bias = control.params.isBgFlag and 10 or 15
-	local height = control.params.isBgFlag and 10 or 15
-	if control.params.height then
-		height = control.params.height + bias
+	-- Get the raw height (without bias)
+	local rawHeight
+	local cameraHeight = PVP.currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
+	if not controlParams.height then
+		rawHeight = cameraHeight
 	else
-		local _, _, _, _, _, cameraHeight = GetCameraInfo()
-		height = cameraHeight + bias
+		rawHeight = controlParams.height
 	end
 
-	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX and PVP.currentCameraInfo.player3dY then
+	-- Apply the bias check before smoothing
+	local bias = control.params.isBgFlag and 10 or 15
+	rawHeight = max(rawHeight, cameraHeight)
+
+	-- Smooth the raw height first
+	local smoothingFactor = 0.01
+	local previousSmoothedRaw = controlParams.smoothedHeight or rawHeight
+	local newSmoothedRaw = interpolate(previousSmoothedRaw, rawHeight, smoothingFactor)
+	if abs(newSmoothedRaw - rawHeight) < 0.01 then
+		newSmoothedRaw = rawHeight
+	end
+
+	-- Apply the bias after smoothing
+	local targetHeight = newSmoothedRaw + bias
+
+	-- Adjust for specific control types
+	if controlType == 'COMPASS' and PVP.currentCameraInfo and PVP.currentCameraInfo.player3dX then
 		local camX, camY, camZ = PVP.currentCameraInfo.cameraX, PVP.currentCameraInfo.cameraY, PVP.currentCameraInfo.cameraZ
 		local compassOffset = 500
-
-		if controlName == 'WEST' then
+		if controlParams.name == 'WEST' then
 			controlX, controlY = camX - compassOffset, camY
-		elseif controlName == 'EAST' then
+		elseif controlParams.name == 'EAST' then
 			controlX, controlY = camX + compassOffset, camY
-		elseif controlName == 'NORTH' then
+		elseif controlParams.name == 'NORTH' then
 			controlX, controlY = camX, camY - compassOffset
-		elseif controlName == 'SOUTH' then
+		elseif controlParams.name == 'SOUTH' then
 			controlX, controlY = camX, camY + compassOffset
 		end
-
-		controlZ = camZ + PVP.SV.compass3dHeight
+		targetHeight = camZ + PVP.SV.compass3dHeight
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX then
 		local _, mapX, mapY = GetObjectivePinInfo(control.params.artifactKeepId, control.params.artifactObjectiveId, BGQUERY_LOCAL)
 		local scaleTo3D = GetCurrentMapScaleTo3D()
-
 		controlX = PVP.currentCameraInfo.current3DX + (mapX - PVP.currentCameraInfo.currentMapX) * scaleTo3D
 		controlY = PVP.currentCameraInfo.current3DY + (mapY - PVP.currentCameraInfo.currentMapY) * scaleTo3D
-		controlZ = height
-
 	end
 
-	local tolerance = 0.1
-	local testHeight = controlOldHeight or controlZ
-	if abs(testHeight - height) > tolerance then
-		controlParams.oldHeight = controlType == 'COMPASS' and height or (height - bias)
-	else
-		controlParams.height = controlOldHeight
-	end
+	-- Now we use the height with the correct offset
+	controlZ = targetHeight
 
+	-- Store the new smoothed raw height and final smoothed height
+	controlParams.smoothedHeight = newSmoothedRaw
+
+	-- Set the control's position
 	control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
 	return controlX, controlZ, controlY
 end
@@ -2585,7 +2596,7 @@ local function PoiOnUpdate(control)
 						carrierToken = carrierToken and ("\n          " .. carrierToken) or ""
 						mainText = PVP:Colorize(mainText, PVP:AllianceToColor(artifactAlliance)) .. carrierToken
 					else
-						mainText = "\n          " .. PVP:Colorize(mainText .. '(Uncontrolled)', '808080')
+						mainText = PVP:Colorize(mainText .. '\n          (Uncontrolled)', '808080')
 					end
 					if artifactOriginalAlliance ~= ALLIANCE_NONE then
 						mainText = PVP:Colorize(
@@ -3337,7 +3348,6 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	Z = GetControlHeight(control, poi, ICONTYPE, coordZ)
 	params.newZ = Z
 
-	local oldX, oldZ, oldY = control:Get3DRenderSpaceOrigin()
 	if isNewObjective then
 		local mapScale3D = GetCurrentMapScaleTo3D()
 		if PVP.currentCameraInfo and PVP.currentCameraInfo.current3DX and not isActivated then
@@ -3353,7 +3363,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 			control:SetHandler("OnUpdate", function() PoiOnUpdate(control) end)
 		end
 	elseif params.type ~= "COMPASS" then
-		control:Set3DRenderSpaceOrigin(oldX, Z, oldY)
+		ProcessDynamicControlPosition(control)
 	end
 
 	return control
