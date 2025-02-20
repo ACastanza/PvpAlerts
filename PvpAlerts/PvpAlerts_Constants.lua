@@ -2927,8 +2927,7 @@ PVP.miscCoords = {
 		z = 132.91,
 		name = 'Niben River Bridge',
 		pinType = PVP_PINTYPE_BRIDGE,
-		alliance =
-			ALLIANCE_NONE,
+		alliance = ALLIANCE_NONE,
 		keepId = 156
 	},
 	{ -- Kingscrest Milegate
@@ -2937,8 +2936,7 @@ PVP.miscCoords = {
 		z = 385.14,
 		name = 'Kingscrest Milegate',
 		pinType = PVP_PINTYPE_MILEGATE,
-		alliance =
-			ALLIANCE_NONE,
+		alliance = ALLIANCE_NONE,
 		keepId = 160
 	},
 	{ -- Bay Bridge
@@ -2947,8 +2945,7 @@ PVP.miscCoords = {
 		z = 121.52,
 		name = 'Bay Bridge',
 		pinType = PVP_PINTYPE_BRIDGE,
-		alliance =
-			ALLIANCE_NONE,
+		alliance = ALLIANCE_NONE,
 		keepId = 157
 	},
 	{ -- Chorrol Milegate
@@ -2957,8 +2954,7 @@ PVP.miscCoords = {
 		z = 257.76,
 		name = 'Chorrol Milegate',
 		pinType = PVP_PINTYPE_MILEGATE,
-		alliance =
-			ALLIANCE_NONE,
+		alliance = ALLIANCE_NONE,
 		keepId = 159
 	},
 	{ -- Horunn Milegate
@@ -2967,8 +2963,7 @@ PVP.miscCoords = {
 		z = 321.10,
 		name = 'Horunn Milegate',
 		pinType = PVP_PINTYPE_MILEGATE,
-		alliance =
-			ALLIANCE_NONE,
+		alliance = ALLIANCE_NONE,
 		keepId = 161
 	},
 	{ -- Priory Milegate
@@ -2977,8 +2972,7 @@ PVP.miscCoords = {
 		z = 241.42,
 		name = 'Priory Milegate',
 		pinType = PVP_PINTYPE_MILEGATE,
-		alliance =
-			ALLIANCE_NONE,
+		alliance = ALLIANCE_NONE,
 		keepId = 158
 	},
 	{ -- Chalman Milegate
