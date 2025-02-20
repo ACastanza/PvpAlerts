@@ -2921,7 +2921,7 @@ PVP.delvesCoords = {
 }
 
 PVP.miscCoords = {
-	{
+	{ -- Niben River Bridge
 		x = 0.61220,
 		y = 0.64072,
 		z = 132.91,
@@ -2931,7 +2931,7 @@ PVP.miscCoords = {
 			ALLIANCE_NONE,
 		keepId = 156
 	},
-	{
+	{ -- Kingscrest Milegate
 		x = 0.66992,
 		y = 0.13765,
 		z = 385.14,
@@ -2941,7 +2941,7 @@ PVP.miscCoords = {
 			ALLIANCE_NONE,
 		keepId = 160
 	},
-	{
+	{ -- Bay Bridge
 		x = 0.66469,
 		y = 0.71974,
 		z = 121.52,
@@ -2951,7 +2951,7 @@ PVP.miscCoords = {
 			ALLIANCE_NONE,
 		keepId = 157
 	},
-	{
+	{ -- Chorrol Milegate
 		x = 0.16387,
 		y = 0.41751,
 		z = 257.76,
@@ -2961,7 +2961,7 @@ PVP.miscCoords = {
 			ALLIANCE_NONE,
 		keepId = 159
 	},
-	{
+	{ -- Horunn Milegate
 		x = 0.61824,
 		y = 0.21514,
 		z = 321.10,
@@ -2971,7 +2971,7 @@ PVP.miscCoords = {
 			ALLIANCE_NONE,
 		keepId = 161
 	},
-	{
+	{ -- Priory Milegate
 		x = 0.24247,
 		y = 0.41867,
 		z = 241.42,
@@ -2981,7 +2981,7 @@ PVP.miscCoords = {
 			ALLIANCE_NONE,
 		keepId = 158
 	},
-	{
+	{ -- Chalman Milegate
 		x = 0.54010,
 		y = 0.29418,
 		z = 254.83,
@@ -2990,7 +2990,7 @@ PVP.miscCoords = {
 		alliance = 9,
 		keepId = 162
 	},
-	{
+	{ -- Ash Milegate
 		x = 0.35996,
 		y = 0.46201,
 		z = 248.67,
@@ -2999,7 +2999,7 @@ PVP.miscCoords = {
 		alliance = 6,
 		keepId = 155
 	},
-	{
+	{ -- Alessia Bridge
 		x = 0.58858,
 		y = 0.53298,
 		z = 141.97,
@@ -3008,7 +3008,13 @@ PVP.miscCoords = {
 		alliance = 15,
 		keepId = 154
 	},
-	{ x = 0.78137, y = 0.38986, z = 312.47, name = 'Cheydinhal', pinType = 'town' },
+	{ -- Cheydinhal
+		x = 0.78137,
+		y = 0.38986,
+		z = 312.47, 
+		name = 'Cheydinhal',
+		pinType = 'town'
+	},
 }
 
 PVP.icCoords = {
