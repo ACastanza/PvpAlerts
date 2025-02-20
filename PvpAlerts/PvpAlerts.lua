@@ -3900,7 +3900,7 @@ function PVP:InitEnabledAddon()
 		self.playerName = GetRawUnitName('player')
 		self.allianceOfPlayer = GetUnitAlliance('player')
 		self:RefreshKOSandCoolAccList()
-		self:PopulateGuildmateDatabase()
+		self.guildmates = self:PopulateGuildmateDatabase()
 		PVP_KOS_Text:SetHandler("OnLinkMouseUp",
 			function(self, _, link, button) return ZO_LinkHandler_OnLinkMouseUp(link, button, self) end)
 		PVP_Names_Text:SetHandler("OnLinkMouseUp",

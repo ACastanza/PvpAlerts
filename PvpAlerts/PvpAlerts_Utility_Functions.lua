@@ -1161,12 +1161,16 @@ end
 
 function PVP:GetGuildmateSharedGuilds(displayName, isGuildmate)
 	if (not displayName) or (displayName == "") then return "" end
-	if (not isGuildmate) and (isGuildmate ~= nil) or not self.guildmates[displayName] then return "" end
+	local guildmateDatabase = self.guildmates
+	if not guildmateDatabase then
+		guildmateDatabase = self:PopulateGuildmateDatabase()
+	end
+	if (not isGuildmate) and (isGuildmate ~= nil) or not guildmateDatabase[displayName] then return "" end
 
 	local guildNamesToken = ""
 	local firstGuildAllianceColor
 	local foundGuilds = 0
-	local playerSharedGuilds = self.guildmates[displayName]
+	local playerSharedGuilds = guildmateDatabase[displayName]
 	for guildId, _ in pairs(playerSharedGuilds) do
 		foundGuilds = foundGuilds + 1
 		local guildName = GetGuildName(guildId)
@@ -1200,7 +1204,7 @@ function PVP:PopulateGuildmateDatabase()
 			guildmateDatabase[displayName][guildId] = true
 		end
 	end
-	PVP.guildmates = guildmateDatabase
+	return guildmateDatabase
 end
 
 function PVP:UpdateGuildId(eventCode, unitTag, oldGuildId, newGuildId)
