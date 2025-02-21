@@ -751,7 +751,7 @@ local function ProcessDynamicControlPosition(control)
 	local currentCameraInfo = PVP.currentCameraInfo
 	-- Get the raw height (without bias)
 	local rawHeight
-	local cameraHeight = currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
+	local cameraHeight = currentCameraInfo and currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
 	if not controlParams.height then
 		rawHeight = cameraHeight
 	else
