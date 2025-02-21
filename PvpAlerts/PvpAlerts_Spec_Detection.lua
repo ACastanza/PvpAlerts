@@ -130,7 +130,8 @@ function PVP:IsStaminaAbility(abilityName)
 	if self.staminaAbilitiesSmall[abilityName] then return 'small' end
 
 	for i = 1, GetNumSkillLines(SKILL_TYPE_WEAPON) do
-		if self.staminaSkillLines[GetSkillLineInfo(SKILL_TYPE_WEAPON, i)] then
+		local skillLineData = SKILLS_DATA_MANAGER:GetSkillLineDataByIndices(SKILL_TYPE_WEAPON, i)
+		if skillLineData and self.staminaSkillLines[skillLineData:GetName()] then
 			for j = 1, GetNumSkillAbilities(SKILL_TYPE_WEAPON, i) do
 				if GetSkillAbilityInfo(SKILL_TYPE_WEAPON, i, j) == abilityName then return 'big' end
 			end
@@ -145,7 +146,8 @@ function PVP:IsMagickaAbility(abilityName)
 	if self.magickaAbilitiesSmall[abilityName] then return 'small' end
 
 	for i = 1, GetNumSkillLines(SKILL_TYPE_WEAPON) do
-		if self.magickaSkillLines[GetSkillLineInfo(SKILL_TYPE_WEAPON, i)] then
+		local skillLineData = SKILLS_DATA_MANAGER:GetSkillLineDataByIndices(SKILL_TYPE_WEAPON, i)
+		if skillLineData and self.magickaSkillLines[skillLineData:GetName()] then
 			for j = 1, GetNumSkillAbilities(SKILL_TYPE_WEAPON, i) do
 				if GetSkillAbilityInfo(SKILL_TYPE_WEAPON, i, j) == abilityName then return 'big' end
 			end
