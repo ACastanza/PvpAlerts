@@ -2092,12 +2092,9 @@ end
 local function GetCampaignInfoString(alliance)
 	local currentCampaignId = PVP.currentCampaignId
 	local isAssignedCampaign = GetAssignedCampaignId() == currentCampaignId
-	local isGuestCampaign = GetGuestCampaignId() == currentCampaignId
 	local campaignTypeString
 	if isAssignedCampaign then
 		campaignTypeString = " (Assigned)"
-	elseif isGuestCampaign then
-		campaignTypeString = " (Guest)"
 	else
 		campaignTypeString = ""
 	end
