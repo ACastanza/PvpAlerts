@@ -798,10 +798,10 @@ function PVP:FindAVAIds(zoneName, forceCurrentId)
 
 	local foundObjectives = {}
 
-	for i = 1, GetNumAvAObjectives() do
-		local keepId, objectiveId, battlegroundContext = GetAvAObjectiveKeysByIndex(i)
+	for i = 1, GetNumObjectives() do
+		local keepId, objectiveId, battlegroundContext = GetObjectiveIdsForIndex(i)
 		if self:IsValidBattlegroundContext(battlegroundContext) and ((neighbours and neighborsKeepIdToType[keepId]) or (not neighbours and keepId == targetKeepId)) then
-			local objectiveName, objectiveType, objectiveState, allianceParam1, allianceParam2 = GetAvAObjectiveInfo(
+			local objectiveName, objectiveType, objectiveState, allianceParam1, allianceParam2 = GetObjectiveInfo(
 				keepId, objectiveId, battlegroundContext)
 			local isArtifact = (objectiveType ~= 4)
 
