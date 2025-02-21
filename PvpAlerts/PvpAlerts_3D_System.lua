@@ -1114,7 +1114,7 @@ local function GetControlTexture(control, data, iconType)
 		['IC_BASE'] = PVP:GetObjectiveIcon(PVP_ALLIANCE_BASE_IC, data.alliance),
 		['IC_VAULT'] = select(4, GetPOIMapInfo(IC_ZONEID, data.poiId)),
 		['SEWERS_SIGN'] = PVP_TEXTURES_PATH .. 'wrongWay.dds',
-		['BG_BASE'] = GetGamepadBattlegroundTeamIcon(data.pinType),
+		['BG_BASE'] = ZO_GetGamepadBattlegroundTeamIcon(data.pinType),
 		-- ['TOWN_FLAG'] = ZO_MapPin.PIN_DATA[40].texture,
 		['TOWN_FLAG'] = "EsoUI/Art/MapPins/battlegrounds_capturePoint_pin_neutral.dds",
 	}
@@ -2092,12 +2092,9 @@ end
 local function GetCampaignInfoString(alliance)
 	local currentCampaignId = PVP.currentCampaignId
 	local isAssignedCampaign = GetAssignedCampaignId() == currentCampaignId
-	local isGuestCampaign = GetGuestCampaignId() == currentCampaignId
 	local campaignTypeString
 	if isAssignedCampaign then
 		campaignTypeString = " (Assigned)"
-	elseif isGuestCampaign then
-		campaignTypeString = " (Guest)"
 	else
 		campaignTypeString = ""
 	end
@@ -2388,7 +2385,7 @@ local function GetBattlegroundTeamsInfo()
 	local countSL, countFD, countPD = 0, 0, 0
 
 	for i = 1, GetNumScoreboardEntries() do
-		local alliance = GetScoreboardEntryBattlegroundAlliance(i)
+		local alliance = GetScoreboardEntryBattlegroundTeam(i)
 		if alliance == BATTLEGROUND_TEAM_FIRE_DRAKES then
 			countFD = countFD + 1
 		elseif alliance == BATTLEGROUND_TEAM_PIT_DAEMONS then
@@ -2877,8 +2874,8 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		naveId = PVP.AVAids[control.params.keepId][2].objectiveId
 		apseId = PVP.AVAids[control.params.keepId][1].objectiveId
 
-		naveObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, naveId, BGQUERY_LOCAL))
-		apseObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, apseId, BGQUERY_LOCAL))
+		naveObjectiveState = select(3, GetObjectiveInfo(control.params.keepId, naveId, BGQUERY_LOCAL))
+		apseObjectiveState = select(3, GetObjectiveInfo(control.params.keepId, apseId, BGQUERY_LOCAL))
 
 		naveAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, naveId, BGQUERY_LOCAL)
 		apseAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, apseId, BGQUERY_LOCAL)
@@ -2895,7 +2892,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		if isTown then
 			otherId = PVP.AVAids[control.params.keepId][3].objectiveId
-			otherObjectiveState = select(3, GetAvAObjectiveInfo(control.params.keepId, otherId, BGQUERY_LOCAL))
+			otherObjectiveState = select(3, GetObjectiveInfo(control.params.keepId, otherId, BGQUERY_LOCAL))
 			otherAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, otherId, BGQUERY_LOCAL)
 			if otherAlliance == 0 and not isUnderAttack then
 				otherAlliance = keepAlliance
@@ -3435,7 +3432,7 @@ local function BGObjectiveOnUpdate(control)
 			end
 
 			-- PVP_WorldTooltipLabel:SetColor(PVP:BgAllianceToHexColor(alliance))
-			PVP_WorldTooltipLabel:SetColor(GetBattlegroundAllianceColor(alliance):UnpackRGBA())
+			PVP_WorldTooltipLabel:SetColor(GetBattlegroundTeamColor(alliance):UnpackRGBA())
 
 
 			local distanceText = GetFormattedDistanceText(control)

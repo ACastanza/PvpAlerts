@@ -1093,7 +1093,7 @@ function PVP:OnCaptureStatus(eventCode, keepId, objectiveId, battlegroundContext
 	if not zoneName or zoneName == "" then return end
 
 
-	local objectiveName = GetAvAObjectiveInfo(keepId, objectiveId, battlegroundContext)
+	local objectiveName = GetObjectiveInfo(keepId, objectiveId, battlegroundContext)
 
 	local foundObjectives = {
 		isCaptureStatus = GetFrameTimeMilliseconds(),
@@ -1187,7 +1187,7 @@ function PVP:KillFeedRatio_Add(alliance, location)
 			EP = 0,
 			zone = {},
 			startTime = GetFrameTimeSeconds(),
-			startAP = GetCarriedCurrencyAmount(CURT_ALLIANCE_POINTS),
+			startAP = GetCurrencyAmount(CURT_ALLIANCE_POINTS, CURRENCY_LOCATION_CHARACTER),
 			earnedAP = 0
 		}
 	end

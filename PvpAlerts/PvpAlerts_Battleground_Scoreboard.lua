@@ -556,7 +556,7 @@ function ScoreboardList:FilterScrollList()
 		end
 
 
-		formattedName = GetColoredBattlegroundAllianceName(alliance)
+		formattedName = GetColoredBattlegroundTeamName(alliance)
 
 		control:GetNamedChild("Score"):SetText(formattedScore)
 		control:GetNamedChild("Name"):SetText(formattedName:upper())
@@ -730,7 +730,7 @@ function ScoreboardList:FilterScrollList()
 			for i = 1, nTeams do
 				local color
 
-				color = ZO_ColorDef:New(GetBattlegroundAllianceColor(scores[i][2]))
+				color = ZO_ColorDef:New(GetBattlegroundTeamColor(scores[i][2]))
 
 				scores[i][3] = tostring(scores[i][1])
 			end
@@ -764,7 +764,7 @@ function ScoreboardList:FilterScrollList()
 
 			winnerTitleString = PVP:ColorizeToBgTeamColor(winningTeamAlliance,
 					PVP:GetBattlegroundTeamBadgeTextFormattedIcon(winningTeamAlliance, 48, 48)) ..
-				GetColoredBattlegroundAllianceName(winningTeamAlliance)
+                    GetColoredBattlegroundTeamName(winningTeamAlliance)
 
 			if hasRounds then
 				self.frame:GetNamedChild("Title"):SetText(winnerTitleString .. " have won the round!")
@@ -846,9 +846,9 @@ end
 function ScoreboardList:SetupPlayerRow(control, data)
 	local _
 	local isPlayer = data.name == (PVP.playerName or GetRawUnitName('player'))
-	local bg1 = ZO_ColorDef:New(GetBattlegroundAllianceColor(1))
-	local bg2 = ZO_ColorDef:New(GetBattlegroundAllianceColor(2))
-	local bg3 = ZO_ColorDef:New(GetBattlegroundAllianceColor(3))
+	local bg1 = ZO_ColorDef:New(GetBattlegroundTeamColor(1))
+	local bg2 = ZO_ColorDef:New(GetBattlegroundTeamColor(2))
+	local bg3 = ZO_ColorDef:New(GetBattlegroundTeamColor(3))
 
 	control.data = data
 
@@ -1057,7 +1057,7 @@ function PVP_ScoreboardRow_OnMouseEnter(control)
 	InitializeTooltip(PVPScoreboardTooltip, PVP_Scoreboard, BOTTOMLEFT, -100, -72, BOTTOMRIGHT)
 
 	local teamColor = ZO_ColorDef:New(PVP:HtmlToColor(
-		ZO_ColorDef:New(GetBattlegroundAllianceColor(control.data.alliance)):ToHex(), nil, true))
+		ZO_ColorDef:New(GetBattlegroundTeamColor(control.data.alliance)):ToHex(), nil, true))
 
 	PVPScoreboardTooltipBG:SetEdgeColor(teamColor:UnpackRGBA())
 	PVPScoreboardTooltipIcon:SetTexture(PVP:GetBattlegroundTeamBadgeIcon(control.data.alliance))

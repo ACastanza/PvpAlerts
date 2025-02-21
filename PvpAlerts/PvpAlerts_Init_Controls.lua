@@ -255,9 +255,9 @@ function PVP:InitControls()
 	PVP_Counter_CountContainer_CountEP:SetMouseEnabled(true)
 
 	if IsActiveWorldBattleground() then
-		PVP_Counter_CountContainer_CountAD:SetColor(GetBattlegroundAllianceColor(1):UnpackRGBA())
-		PVP_Counter_CountContainer_CountDC:SetColor(GetBattlegroundAllianceColor(3):UnpackRGBA())
-		PVP_Counter_CountContainer_CountEP:SetColor(GetBattlegroundAllianceColor(2):UnpackRGBA())
+		PVP_Counter_CountContainer_CountAD:SetColor(GetBattlegroundTeamColor(1):UnpackRGBA())
+		PVP_Counter_CountContainer_CountDC:SetColor(GetBattlegroundTeamColor(3):UnpackRGBA())
+		PVP_Counter_CountContainer_CountEP:SetColor(GetBattlegroundTeamColor(2):UnpackRGBA())
 	else
 		PVP_Counter_CountContainer_CountAD:SetColor(0.764,0.666,0.286)
 		PVP_Counter_CountContainer_CountDC:SetColor(0.407,0.556,0.694)
