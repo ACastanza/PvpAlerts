@@ -4409,7 +4409,7 @@ local function FindBgObjectives()
 	-- if battlegroundType == BATTLEGROUND_GAME_TYPE_MURDERBALL then return end
 	-- if PVP.arcaneIds[battlegroundId] then return end
 
-	if not PVP:IsInSupportedBattlegroundGametype() then return end
+	--if not PVP:IsInSupportedBattlegroundGametype() then return end
 
 
 	local foundObjectives = {}

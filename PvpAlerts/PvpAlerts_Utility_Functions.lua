@@ -981,6 +981,9 @@ function PVP:IsInSupportedBattlegroundGametype()
 		[BATTLEGROUND_GAME_TYPE_CAPTURE_THE_FLAG] = true,
 		[BATTLEGROUND_GAME_TYPE_DEATHMATCH] = true,
 		[BATTLEGROUND_GAME_TYPE_DOMINATION] = true,
+		[BATTLEGROUND_GAME_TYPE_KING_OF_THE_HILL] = true, -- untested
+		[BATTLEGROUND_GAME_TYPE_CRAZY_KING] = true, -- untested
+		[BATTLEGROUND_GAME_TYPE_MURDERBALL] = true -- untested
 	}
 
 	local function isSupportedGametype(battlegroundId)

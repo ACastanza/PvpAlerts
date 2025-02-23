@@ -869,7 +869,8 @@ local function createIsResurrectList(namesToDisplay)
 	return isResurrectList
 end
 
-function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
+function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates,
+	isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode, userDisplayNameType)
 	local unitAccName = dbRec.unitAccName
 	local unitAlliance = dbRec.unitAlliance
 	local isKOS = KOSAccList[unitAccName] ~= nil
@@ -889,25 +890,28 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList,
 	}
 
 	local isResurrect = isResurrectList[rawName] or false
+	local isAlly = (unitAlliance == allianceOfPlayer)
 	local newString = nil
 	local isActive = false
 	local newPotentialAlly = nil
 
 	if isKOS then
-		local isAlly = (unitAlliance == allianceOfPlayer)
 		isActive = kosActivityList.activeChars[unitAccName]
 
 		if (mode == 2 and isAlly) or (mode == 3 and not isAlly) or mode == 1 then
 			if unitId ~= 0 then
+				local allianceColor = self:NameToAllianceColor(rawName)
 				local kosIcon = self:GetKOSIcon(nil, isAlly and "FFFFFF" or nil) or ""
 				local resurrectIcon = FormatResurrectIcon(isResurrect)
 				local importantIcon = BuildImportantIcon(unitAccName, isFriend, isCool, isGuildmate, isPlayerGrouped)
 				local playerNoteToken = hasPlayerNote and FormatPlayerNote(playerNote) or ""
-				PVP_KOS_Text:AddMessage(
-					self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName), nil, isResurrect,
-					nil, nil, nil, unitId, currentTime, nil, dbRec or "none") ..
-					self:GetFormattedAccountNameLink(unitAccName, isAlly and "FFFFFF" or "BB4040") ..
-					kosIcon .. resurrectIcon .. importantIcon .. playerNoteToken
+				local className = userDisplayNameType == "user" and self:GetFormattedClassIcon(
+					rawName, nil, allianceColor, nil, nil, nil, 
+					nil, unitId, currentTime, nil, dbRec or "none") or 
+					self:GetFormattedClassNameLink(rawName, allianceColor, nil, isResurrect,
+					nil, nil, nil, unitId, currentTime, nil, dbRec or "none")
+				local accountName = self:GetFormattedAccountNameLink(unitAccName, userDisplayNameType ~= "user" and (isAlly and "FFFFFF" or "BB4040") or allianceColor)
+				PVP_KOS_Text:AddMessage(className .. accountName .. kosIcon .. resurrectIcon .. importantIcon .. playerNoteToken
 				)
 			end
 		end
@@ -946,19 +950,19 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList,
 			playerNote = hasPlayerNote and playerNote or nil,
 			isResurrect = isResurrect
 		}
-		local isAlly = (unitAlliance == allianceOfPlayer)
 		local validAlliance = (mode == 1) or (mode == 2 and isAlly) or (mode == 3 and not isAlly)
 		if validAlliance and not isKOS then
+			local allianceColor = self:NameToAllianceColor(rawName)
 			local resurrectIcon = FormatResurrectIcon(isResurrect)
 			local importantIcon = BuildImportantIcon(unitAccName, isFriend, isCool, isGuildmate, isPlayerGrouped)
 			local playerNoteToken = hasPlayerNote and FormatPlayerNote(playerNote) or ""
-
-			PVP_KOS_Text:AddMessage(
-				self:GetFormattedClassNameLink(rawName, self:NameToAllianceColor(rawName), isResurrect, nil,
-				nil, nil, nil, unitId, currentTime, nil, dbRec or "none") ..
-				self:GetFormattedAccountNameLink(unitAccName, "40BB40") ..
-				resurrectIcon .. importantIcon .. playerNoteToken
-			)
+			local className = userDisplayNameType == "user" and self:GetFormattedClassIcon(
+				rawName, nil, allianceColor, nil, nil, nil,
+				nil, unitId, currentTime, nil, dbRec or "none") or
+				self:GetFormattedClassNameLink(rawName, allianceColor, isResurrect, nil,
+				nil, nil, nil, unitId, currentTime, nil, dbRec or "none")
+			local accountName = self:GetFormattedAccountNameLink(unitAccName, userDisplayNameType ~= "user" and "40BB40" or allianceColor)
+			PVP_KOS_Text:AddMessage(className .. accountName .. resurrectIcon .. importantIcon .. playerNoteToken)
 		end
 	end
 
@@ -968,6 +972,7 @@ end
 function PVP:RefreshLocalPlayers()
 	local SV = self.SV
 	if SV.unlocked then return end
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
 
 	local KOSList = SV.KOSList
 	local coolList = SV.coolList
@@ -1009,7 +1014,10 @@ function PVP:RefreshLocalPlayers()
 	for unitId, rawName in pairs(idToName) do
 		local dbRec = playersDB[rawName]
 		if dbRec then
-			local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
+			local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(
+			unitId, rawName, dbRec, currentTime, KOSAccList, kosActivityList,
+			coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes,
+			showFriends, showGuildMates, allianceOfPlayer, mode, userDisplayNameType)
 			localPlayers[rawName] = newLocalPlayer
 			if newString then
 				if isActive then
@@ -1028,7 +1036,10 @@ function PVP:RefreshLocalPlayers()
 		if not localPlayers[rawName] then
 			local dbRec = playersDB[rawName]
 			if dbRec then
-				local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(1234567890, rawName, dbRec, currentTime, KOSAccList, kosActivityList, coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes, showFriends, showGuildMates, allianceOfPlayer, mode)
+				local newLocalPlayer, newString, isActive, newPotentialAlly = self:ProcessLocalPlayer(
+				1234567890, rawName, dbRec, currentTime, KOSAccList, kosActivityList,
+				coolAccList, guildmates, isResurrectList, playerNotes, showPlayerNotes,
+				showFriends, showGuildMates, allianceOfPlayer, mode, userDisplayNameType)
 				localPlayers[rawName] = newLocalPlayer
 				if newString then
 					if isActive then
