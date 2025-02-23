@@ -1,7 +1,7 @@
 ## APIVersion: 101044
 ## Title: Miat's Pvp Alerts
 ## Author: Dorrino, Valandil, Incanus
-## AddonVersion: 31603
+## AddonVersion: 31604
 ## SavedVariables: PvpAlertsSettings
 ## OptionalDependsOn: LibAddonMenu-2.0
 ## DependsOn: LibAddonMenu-2.0 LibGPS LibMapPing LibChatMessage
