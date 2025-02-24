@@ -718,7 +718,7 @@ function ScoreboardList:FilterScrollList()
 			local scores = {}
 			local nTeams = GetBattlegroundNumTeams(battlegroundId)
 			for i = 1, nTeams do
-				table.insert(scores, { GetCurrentBattlegroundScore(i), i })
+				table.insert(scores, { GetCurrentBattlegroundScore(GetCurrentBattlegroundRoundIndex()), i })
 			end
 
 			local function sortingFn(score1, score2)
@@ -958,7 +958,11 @@ function ScoreboardList:SetupPlayerRow(control, data)
 					else
 						medalControl:SetParent(PVP_ScoreboardPlayerMedals)
 					end
-					medalControl:SetAnchor(LEFT, self.lastActiveMedal, RIGHT, 25, 0)
+					if self.lastActiveMedal and self.lastActiveMedal ~= medalControl then
+						medalControl:SetAnchor(LEFT, self.lastActiveMedal, RIGHT, 25, 0)
+					else
+						medalControl:SetAnchor(LEFT, medalControl:GetParent(), LEFT, (numActive - 1) * 25, 0)
+					end
 				end
 				-- control:GetNamedChild('Icon'):SetDesaturation(1)
 				if data.medals[i].medalCount > 1 then
