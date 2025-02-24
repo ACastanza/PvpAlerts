@@ -3327,7 +3327,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		if isActivated then
 			PVP.isWaitingOnTrustedFirstRun = true
 		end
-		local realCameraDistance
+		local _, realCameraDistance
 		realCameraDistance, _, _, coordX, coordY, coordZ = GetCameraInfo()
 		if not realCameraDistance then return end
 		if isActivated or isNewObjective or PVP.currentCameraDistance == 0 then
