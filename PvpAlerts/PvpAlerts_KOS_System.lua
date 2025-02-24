@@ -905,13 +905,13 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList,
 				local resurrectIcon = FormatResurrectIcon(isResurrect)
 				local importantIcon = BuildImportantIcon(unitAccName, isFriend, isCool, isGuildmate, isPlayerGrouped)
 				local playerNoteToken = hasPlayerNote and FormatPlayerNote(playerNote) or ""
-				local className = userDisplayNameType == "user" and self:GetFormattedClassIcon(
+				local charInfo = userDisplayNameType == "user" and self:GetFormattedClassIcon(
 					rawName, nil, allianceColor, nil, nil, nil, 
 					nil, unitId, currentTime, nil, dbRec or "none") or 
 					self:GetFormattedClassNameLink(rawName, allianceColor, nil, isResurrect,
 					nil, nil, nil, unitId, currentTime, nil, dbRec or "none")
 				local accountName = self:GetFormattedAccountNameLink(unitAccName, userDisplayNameType ~= "user" and (isAlly and "FFFFFF" or "BB4040") or allianceColor)
-				PVP_KOS_Text:AddMessage(className .. accountName .. kosIcon .. resurrectIcon .. importantIcon .. playerNoteToken
+				PVP_KOS_Text:AddMessage(charInfo .. accountName .. kosIcon .. resurrectIcon .. importantIcon .. playerNoteToken
 				)
 			end
 		end
@@ -956,13 +956,13 @@ function PVP:ProcessLocalPlayer(unitId, rawName, dbRec, currentTime, KOSAccList,
 			local resurrectIcon = FormatResurrectIcon(isResurrect)
 			local importantIcon = BuildImportantIcon(unitAccName, isFriend, isCool, isGuildmate, isPlayerGrouped)
 			local playerNoteToken = hasPlayerNote and FormatPlayerNote(playerNote) or ""
-			local className = userDisplayNameType == "user" and self:GetFormattedClassIcon(
+			local charInfo = userDisplayNameType == "user" and self:GetFormattedClassIcon(
 				rawName, nil, allianceColor, nil, nil, nil,
 				nil, unitId, currentTime, nil, dbRec or "none") or
 				self:GetFormattedClassNameLink(rawName, allianceColor, isResurrect, nil,
 				nil, nil, nil, unitId, currentTime, nil, dbRec or "none")
 			local accountName = self:GetFormattedAccountNameLink(unitAccName, userDisplayNameType ~= "user" and "40BB40" or allianceColor)
-			PVP_KOS_Text:AddMessage(className .. accountName .. resurrectIcon .. importantIcon .. playerNoteToken)
+			PVP_KOS_Text:AddMessage(charInfo .. accountName .. resurrectIcon .. importantIcon .. playerNoteToken)
 		end
 	end
 
