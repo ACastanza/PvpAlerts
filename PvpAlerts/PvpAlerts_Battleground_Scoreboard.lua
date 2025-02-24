@@ -718,7 +718,7 @@ function ScoreboardList:FilterScrollList()
 			local scores = {}
 			local nTeams = GetBattlegroundNumTeams(battlegroundId)
 			for i = 1, nTeams do
-				table.insert(scores, { GetCurrentBattlegroundScore(GetCurrentBattlegroundRoundIndex()), i })
+				table.insert(scores, { GetCurrentBattlegroundScore(i), i })
 			end
 
 			local function sortingFn(score1, score2)
