@@ -205,7 +205,9 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		chat:Printf('Main KOS = %dms', PVP.endKos - PVP.endCounter)
 		chat:Printf('3d loop time = %dms', end_all - start3d)
 
-		chat:Printf('New Marker time = %dms', PVP.afterMarker - PVP.beforeMarker)
+		if PVP.afterMarker and PVP.beforeMarker then
+			chat:Printf('New Marker time = %dms', PVP.afterMarker - PVP.beforeMarker)
+		end
 		if PVP.afterPoi and PVP.beforePoi then
 			chat:Printf('New Poi time = %dms', PVP.afterPoi - PVP.beforePoi)
 		end
