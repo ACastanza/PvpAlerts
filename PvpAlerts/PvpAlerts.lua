@@ -2672,6 +2672,11 @@ function PVP:OnAlliancePointUpdate(eventCode, alliancePoints, playSound, differe
 	-- end
 end
 
+function PVP:OnAlliancePointCachedUpdate(eventCode, currencyType, playSound, difference, reason, reasonSupplementaryInfo)
+	if currencyType ~= CURT_ALLIANCE_POINTS then return end
+	PVP:OnAlliancePointUpdate(eventCode, currencyType, playSound, difference, reason, reasonSupplementaryInfo)
+end
+
 function PVP:OnMedalAwarded(eventCode, medalId, medalName, medalIcon, medalPoints)
 	if not self.SV.showMedalsFrame or self.SV.unlocked then return end
 	local alliance = GetUnitBattlegroundTeam('player')
@@ -2762,6 +2767,7 @@ function PVP:OnOff()
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_MAP_PING, function(...) self:OnMapPing(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_MEDAL_AWARDED, function(...) self:OnMedalAwarded(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ALLIANCE_POINT_UPDATE, function(...) self:OnAlliancePointUpdate(...) end)
+			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_PENDING_CURRENCY_REWARD_CACHED, function(...) self:OnAlliancePointCachedUpdate(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_ACTION_SLOT_ABILITY_USED, function(...) self:OnAbilityUsed(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_LEADER_UPDATE, function() PVP:InitControls() end)
 			EVENT_MANAGER:RegisterForUpdate(self.name, 250, PVP.OnUpdate)
