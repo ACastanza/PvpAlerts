@@ -794,7 +794,7 @@ function PVP:GetRootNames(name)
 end
 
 function PVP:UpdatePlayerDbAccountName(unitCharName, unitAccName, oldUnitAccName)
-	local nameChangeNote = " (AutoNote: Previous name " .. oldUnitAccName .. ")"
+	local nameChangeNote = "(AutoNote: Previous name " .. oldUnitAccName .. ")"
 
 	local isOnList
 
