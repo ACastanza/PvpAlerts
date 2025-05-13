@@ -791,8 +791,20 @@ local function ProcessDynamicControlPosition(control)
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and currentCameraInfo and currentCameraInfo.current3DX then
 		local scaleTo3D = GetCurrentMapScaleTo3D()
-		controlX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
-		controlY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
+		local targetX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
+		local targetY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
+
+		local prevX = controlParams.smoothedX or targetX
+		local prevY = controlParams.smoothedY or targetY
+
+		controlX = interpolate(prevX, targetX, smoothingFactor)
+		controlY = interpolate(prevY, targetY, smoothingFactor)
+
+		if abs(controlX - targetX) < 0.01 then controlX = targetX end
+		if abs(controlY - targetY) < 0.01 then controlY = targetY end
+
+		controlParams.smoothedX = controlX
+		controlParams.smoothedY = controlY
 	end
 
 	-- Now we use the height with the correct offset
@@ -3256,6 +3268,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	ping:SetHidden(not controlHasPing)
 
 	params.name = poi.name
+	params.poiKey = poi.poiKey
 	params.alliance = poi.alliance
 	params.X = X
 	params.Y = Y
@@ -3359,6 +3372,11 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		params.lastUpdate = GetFrameTimeMilliseconds()
 		if not control:GetHandler() then
 			control:SetHandler("OnUpdate", function() PoiOnUpdate(control) end)
+		end
+		if poi.poiKey then
+			EVENT_MANAGER:RegisterForUpdate("PVP3DPOI_" .. poi.poiKey, 1, function()
+				ProcessDynamicControlPosition(control)
+			end)
 		end
 	elseif params.type ~= "COMPASS" then
 		ProcessDynamicControlPosition(control)
@@ -3913,6 +3931,7 @@ local function FindNearbyPOIs()
 						end
 						insert(foundPOI,
 							{
+								poiKey = k .. "_" .. v,
 								pinType = pinType,
 								targetX = targetX,
 								targetY = targetY,
@@ -3950,6 +3969,7 @@ local function FindNearbyPOIs()
 						end
 						insert(foundPOI,
 							{
+								poiKey = 0 .. "_" .. activeObjectiveId,
 								pinType = controllingAlliance and PVP.daedricArtifactAllianceToPinType[controllingAlliance] or PVP.daedricArtifactAllianceToPinType[ALLIANCE_NONE],
 								targetX = targetX,
 								targetY = targetY,
@@ -4565,13 +4585,21 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		for i = #currentNearbyPOIIds, 1, -1 do
 			local found
 			for k = 1, #foundPOI do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
-				if foundPOI[k].pinType == currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or PVP.killLocationPintypeToName[foundPOI[k].pinType] or
-						(foundPOI[k].targetX == currentNearbyPOIIds[i].targetX and
-							foundPOI[k].targetY == currentNearbyPOIIds[i].targetY and
-							(not foundPOI[k].pingTag or foundPOI[k].pingTag == currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
+				local currentFoundPOI = foundPOI[k]
+				local currentNearbyPOI = currentNearbyPOIIds[i]
+				if currentFoundPOI.pinType == currentNearbyPOI.pinType and (
+					currentFoundPOI.pinType == PVP_PINTYPE_COMPASS or
+					PVP.killLocationPintypeToName[currentFoundPOI.pinType] or
+					(currentFoundPOI.poiKey and currentNearbyPOI.poiKey and currentFoundPOI.poiKey == currentNearbyPOI.poiKey) or
+					(currentFoundPOI.targetX == currentNearbyPOI.targetX and currentFoundPOI.targetY == currentNearbyPOI.targetY and (not currentFoundPOI.pingTag or currentFoundPOI.pingTag == currentNearbyPOI.pingTag))
+				) then -- // found the same object - update its values //
 					found = k
-					currentNearbyPOIIds[i].name = foundPOI[k].name
-					currentNearbyPOIIds[i].distance = foundPOI[k].distance
+					for key, value in pairs(currentFoundPOI) do
+						if key ~= 'control' and key ~= 'poolKey' then
+							currentNearbyPOI[key] = value
+						end
+					end
+					currentNearbyPOIIds[i] = currentNearbyPOI
 					break
 				end
 			end
@@ -4595,6 +4623,9 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP.afterPoi = GetGameTimeMilliseconds()
 	else
 		for i = 1, #currentNearbyPOIIds do
+			if currentNearbyPOIIds[i].poiKey then
+				EVENT_MANAGER:UnregisterForUpdate("PVP3DPOI_" .. currentNearbyPOIIds[i].poiKey)
+			end
 			controls3DPool:ReleaseObject(currentNearbyPOIIds[i].poolKey)
 		end
 		currentNearbyPOIIds = {}
