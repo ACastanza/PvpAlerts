@@ -742,13 +742,14 @@ local function interpolate(a, b, t)
 	return a + (b - a) * t
 end
 
-local function ProcessDynamicControlPosition(control)
+local function ProcessDynamicControlPosition(control, forcePosRefresh)
 	local controlParams = control.params
 	local controlType = controlParams.type
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
 	if not controlType then return controlX, controlZ, controlY end
 
 	local currentCameraInfo = PVP.currentCameraInfo
+
 	-- Get the raw height (without bias)
 	local rawHeight
 	local cameraHeight = currentCameraInfo and currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
@@ -763,9 +764,8 @@ local function ProcessDynamicControlPosition(control)
 	rawHeight = max(rawHeight, cameraHeight)
 
 	-- Smooth the raw height first
-	local smoothingFactor = 0.01
 	local previousSmoothedRaw = controlParams.smoothedHeight or rawHeight
-	local newSmoothedRaw = interpolate(previousSmoothedRaw, rawHeight, smoothingFactor)
+	local newSmoothedRaw = interpolate(previousSmoothedRaw, rawHeight, 0.01)
 	if abs(newSmoothedRaw - rawHeight) < 0.01 then
 		newSmoothedRaw = rawHeight
 	end
@@ -790,6 +790,11 @@ local function ProcessDynamicControlPosition(control)
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and currentCameraInfo and currentCameraInfo.current3DX then
+		if forcePosRefresh then
+			local objectivePinType, objectiveX, objectiveY = GetObjectivePinInfo(controlParams.artifactKeepId, controlParams.artifactObjectiveId, BGQUERY_LOCAL)
+			controlParams.X = objectiveX
+			controlParams.Y = objectiveY
+		end
 		local scaleTo3D = GetCurrentMapScaleTo3D()
 		local targetX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
 		local targetY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
@@ -797,8 +802,8 @@ local function ProcessDynamicControlPosition(control)
 		local prevX = controlParams.smoothedX or targetX
 		local prevY = controlParams.smoothedY or targetY
 
-		controlX = interpolate(prevX, targetX, smoothingFactor)
-		controlY = interpolate(prevY, targetY, smoothingFactor)
+		controlX = interpolate(prevX, targetX, 0.25)
+		controlY = interpolate(prevY, targetY, 0.25)
 
 		if abs(controlX - targetX) < 0.01 then controlX = targetX end
 		if abs(controlY - targetY) < 0.01 then controlY = targetY end
@@ -3374,8 +3379,8 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 			control:SetHandler("OnUpdate", function() PoiOnUpdate(control) end)
 		end
 		if poi.poiKey then
-			EVENT_MANAGER:RegisterForUpdate("PVP3DPOI_" .. poi.poiKey, 1, function()
-				ProcessDynamicControlPosition(control)
+			EVENT_MANAGER:RegisterForUpdate("PVP3DPOI_" .. poi.poiKey, 25, function()
+				ProcessDynamicControlPosition(control, true)
 			end)
 		end
 	elseif params.type ~= "COMPASS" then
