@@ -2726,7 +2726,7 @@ PVP.daedricArtifactObjectiveIds = {
 
 -- Confirmed IDs and their corresponding alliance/location
 PVP.daedricArtifactSpawnAlliance = {
-	[439] = ALLIANCE_ALDMERI_DOMINION, --Eastern Elsweyr Gate
+	[439] = ALLIANCE_ALDMERI_DOMINION, -- Eastern Elsweyr Gate
 	[445] = ALLIANCE_ALDMERI_DOMINION, -- Colovian Lowlands, Between Blackboot and Bloodmayne
 	[446] = ALLIANCE_ALDMERI_DOMINION, -- Beriel's Lament, East of Bloodmayne
 	[447] = ALLIANCE_EBONHEART_PACT, -- Northern Morrowind Gate
