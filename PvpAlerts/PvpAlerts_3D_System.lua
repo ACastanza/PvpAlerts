@@ -742,16 +742,16 @@ local function interpolate(a, b, t)
 	return a + (b - a) * t
 end
 
-local function ProcessDynamicControlPosition(control, forcePosRefresh)
+local function ProcessDynamicControlPosition(control)
 	local controlParams = control.params
 	local controlType = controlParams.type
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
 	if not controlType then return controlX, controlZ, controlY end
 
-	local currentCameraInfo = PVP.currentCameraInfo
 
+	local rawHeight, rawSmoothedHeight, smoothedX, smoothedY
+	local currentCameraInfo = PVP.currentCameraInfo
 	-- Get the raw height (without bias)
-	local rawHeight
 	local cameraHeight = currentCameraInfo and currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
 	if not controlParams.height then
 		rawHeight = cameraHeight
@@ -766,12 +766,16 @@ local function ProcessDynamicControlPosition(control, forcePosRefresh)
 	-- Smooth the raw height first
 	local previousSmoothedRaw = controlParams.smoothedHeight or rawHeight
 	local newSmoothedRaw = interpolate(previousSmoothedRaw, rawHeight, 0.01)
-	if abs(newSmoothedRaw - rawHeight) < 0.01 then
-		newSmoothedRaw = rawHeight
+	if abs(rawHeight - previousSmoothedRaw) < 5 then
+		rawSmoothedHeight = previousSmoothedRaw
+	elseif abs(rawHeight - newSmoothedRaw) < 0.1 then
+		rawSmoothedHeight = rawHeight
+	else
+		rawSmoothedHeight = newSmoothedRaw
 	end
 
 	-- Apply the bias after smoothing
-	local targetHeight = newSmoothedRaw + bias
+	local targetHeight = rawSmoothedHeight + bias
 
 	-- Adjust for specific control types
 	if controlType == 'COMPASS' and currentCameraInfo and currentCameraInfo.player3dX then
@@ -790,11 +794,9 @@ local function ProcessDynamicControlPosition(control, forcePosRefresh)
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and currentCameraInfo and currentCameraInfo.current3DX then
-		if forcePosRefresh then
-			local objectivePinType, objectiveX, objectiveY = GetObjectivePinInfo(controlParams.artifactKeepId, controlParams.artifactObjectiveId, BGQUERY_LOCAL)
-			controlParams.X = objectiveX
-			controlParams.Y = objectiveY
-		end
+		local objectivePinType, objectiveX, objectiveY = GetObjectivePinInfo(controlParams.artifactKeepId, controlParams.artifactObjectiveId, BGQUERY_LOCAL)
+		controlParams.X = objectiveX
+		controlParams.Y = objectiveY
 		local scaleTo3D = GetCurrentMapScaleTo3D()
 		local targetX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
 		local targetY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
@@ -802,11 +804,11 @@ local function ProcessDynamicControlPosition(control, forcePosRefresh)
 		local prevX = controlParams.smoothedX or targetX
 		local prevY = controlParams.smoothedY or targetY
 
-		controlX = interpolate(prevX, targetX, 0.25)
-		controlY = interpolate(prevY, targetY, 0.25)
+		smoothedX = interpolate(prevX, targetX, 0.33)
+		smoothedY = interpolate(prevY, targetY, 0.33)
 
-		if abs(controlX - targetX) < 0.01 then controlX = targetX end
-		if abs(controlY - targetY) < 0.01 then controlY = targetY end
+		if abs(targetX - smoothedX) < 0.1 then controlX = targetX else controlX = smoothedX end
+		if abs(targetY - smoothedY) < 0.1 then controlY = targetY else controlY = smoothedY end
 
 		controlParams.smoothedX = controlX
 		controlParams.smoothedY = controlY
@@ -816,7 +818,7 @@ local function ProcessDynamicControlPosition(control, forcePosRefresh)
 	controlZ = targetHeight
 
 	-- Store the new smoothed raw height and final smoothed height
-	controlParams.smoothedHeight = newSmoothedRaw
+	controlParams.smoothedHeight = rawSmoothedHeight
 
 	-- Set the control's position
 	control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
@@ -3376,17 +3378,14 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		control:Set3DRenderSpaceOrigin(X, Z, Y)
 		params.lastUpdate = GetFrameTimeMilliseconds()
 		if not control:GetHandler() then
-			control:SetHandler("OnUpdate", function() PoiOnUpdate(control) end)
-		end
-		if poi.poiKey then
-			EVENT_MANAGER:RegisterForUpdate("PVP3DPOI_" .. poi.poiKey, 25, function()
-				ProcessDynamicControlPosition(control, true)
+			control:SetHandler("OnUpdate", function()
+				PoiOnUpdate(control)
+				if control.params.type ~= "COMPASS" then
+					ProcessDynamicControlPosition(control)
+				end
 			end)
 		end
-	elseif params.type ~= "COMPASS" then
-		ProcessDynamicControlPosition(control)
 	end
-
 	return control
 end
 
@@ -4434,7 +4433,7 @@ local function FindBgObjectives()
 	-- if battlegroundType == BATTLEGROUND_GAME_TYPE_MURDERBALL then return end
 	-- if PVP.arcaneIds[battlegroundId] then return end
 
-	--if not PVP:IsInSupportedBattlegroundGametype() then return end
+	if not PVP:IsInSupportedBattlegroundGametype() then return end
 
 
 	local foundObjectives = {}
@@ -4628,9 +4627,6 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP.afterPoi = GetGameTimeMilliseconds()
 	else
 		for i = 1, #currentNearbyPOIIds do
-			if currentNearbyPOIIds[i].poiKey then
-				EVENT_MANAGER:UnregisterForUpdate("PVP3DPOI_" .. currentNearbyPOIIds[i].poiKey)
-			end
 			controls3DPool:ReleaseObject(currentNearbyPOIIds[i].poolKey)
 		end
 		currentNearbyPOIIds = {}
