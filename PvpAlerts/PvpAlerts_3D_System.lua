@@ -748,9 +748,10 @@ local function ProcessDynamicControlPosition(control)
 	local controlX, controlZ, controlY = control:Get3DRenderSpaceOrigin()
 	if not controlType then return controlX, controlZ, controlY end
 
+
+	local rawHeight, rawSmoothedHeight, smoothedX, smoothedY
 	local currentCameraInfo = PVP.currentCameraInfo
 	-- Get the raw height (without bias)
-	local rawHeight
 	local cameraHeight = currentCameraInfo and currentCameraInfo.cameraZ or (select(6, GetCameraInfo()))
 	if not controlParams.height then
 		rawHeight = cameraHeight
@@ -763,15 +764,18 @@ local function ProcessDynamicControlPosition(control)
 	rawHeight = max(rawHeight, cameraHeight)
 
 	-- Smooth the raw height first
-	local smoothingFactor = 0.01
 	local previousSmoothedRaw = controlParams.smoothedHeight or rawHeight
-	local newSmoothedRaw = interpolate(previousSmoothedRaw, rawHeight, smoothingFactor)
-	if abs(newSmoothedRaw - rawHeight) < 0.01 then
-		newSmoothedRaw = rawHeight
+	local newSmoothedRaw = interpolate(previousSmoothedRaw, rawHeight, 0.01)
+	if abs(rawHeight - previousSmoothedRaw) < 5 then
+		rawSmoothedHeight = previousSmoothedRaw
+	elseif abs(rawHeight - newSmoothedRaw) < 0.1 then
+		rawSmoothedHeight = rawHeight
+	else
+		rawSmoothedHeight = newSmoothedRaw
 	end
 
 	-- Apply the bias after smoothing
-	local targetHeight = newSmoothedRaw + bias
+	local targetHeight = rawSmoothedHeight + bias
 
 	-- Adjust for specific control types
 	if controlType == 'COMPASS' and currentCameraInfo and currentCameraInfo.player3dX then
@@ -790,16 +794,31 @@ local function ProcessDynamicControlPosition(control)
 	end
 
 	if (controlType == 'SCROLL' or controlType == 'DAEDRIC_ARTIFACT') and currentCameraInfo and currentCameraInfo.current3DX then
+		local objectivePinType, objectiveX, objectiveY = GetObjectivePinInfo(controlParams.artifactKeepId, controlParams.artifactObjectiveId, BGQUERY_LOCAL)
+		controlParams.X = objectiveX
+		controlParams.Y = objectiveY
 		local scaleTo3D = GetCurrentMapScaleTo3D()
-		controlX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
-		controlY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
+		local targetX = currentCameraInfo.current3DX + (controlParams.X - currentCameraInfo.currentMapX) * scaleTo3D
+		local targetY = currentCameraInfo.current3DY + (controlParams.Y - currentCameraInfo.currentMapY) * scaleTo3D
+
+		local prevX = controlParams.smoothedX or targetX
+		local prevY = controlParams.smoothedY or targetY
+
+		smoothedX = interpolate(prevX, targetX, 0.33)
+		smoothedY = interpolate(prevY, targetY, 0.33)
+
+		if abs(targetX - smoothedX) < 0.1 then controlX = targetX else controlX = smoothedX end
+		if abs(targetY - smoothedY) < 0.1 then controlY = targetY else controlY = smoothedY end
+
+		controlParams.smoothedX = controlX
+		controlParams.smoothedY = controlY
 	end
 
 	-- Now we use the height with the correct offset
 	controlZ = targetHeight
 
 	-- Store the new smoothed raw height and final smoothed height
-	controlParams.smoothedHeight = newSmoothedRaw
+	controlParams.smoothedHeight = rawSmoothedHeight
 
 	-- Set the control's position
 	control:Set3DRenderSpaceOrigin(controlX, controlZ, controlY)
@@ -3256,6 +3275,7 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 	ping:SetHidden(not controlHasPing)
 
 	params.name = poi.name
+	params.poiKey = poi.poiKey
 	params.alliance = poi.alliance
 	params.X = X
 	params.Y = Y
@@ -3358,12 +3378,14 @@ local function SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 		control:Set3DRenderSpaceOrigin(X, Z, Y)
 		params.lastUpdate = GetFrameTimeMilliseconds()
 		if not control:GetHandler() then
-			control:SetHandler("OnUpdate", function() PoiOnUpdate(control) end)
+			control:SetHandler("OnUpdate", function()
+				PoiOnUpdate(control)
+				if control.params.type ~= "COMPASS" then
+					ProcessDynamicControlPosition(control)
+				end
+			end)
 		end
-	elseif params.type ~= "COMPASS" then
-		ProcessDynamicControlPosition(control)
 	end
-
 	return control
 end
 
@@ -3913,6 +3935,7 @@ local function FindNearbyPOIs()
 						end
 						insert(foundPOI,
 							{
+								poiKey = k .. "_" .. v,
 								pinType = pinType,
 								targetX = targetX,
 								targetY = targetY,
@@ -3950,6 +3973,7 @@ local function FindNearbyPOIs()
 						end
 						insert(foundPOI,
 							{
+								poiKey = 0 .. "_" .. activeObjectiveId,
 								pinType = controllingAlliance and PVP.daedricArtifactAllianceToPinType[controllingAlliance] or PVP.daedricArtifactAllianceToPinType[ALLIANCE_NONE],
 								targetX = targetX,
 								targetY = targetY,
@@ -4565,13 +4589,21 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		for i = #currentNearbyPOIIds, 1, -1 do
 			local found
 			for k = 1, #foundPOI do -- // releases all active objects NOT found on this iteration (i.e. player got out of range) //
-				if foundPOI[k].pinType == currentNearbyPOIIds[i].pinType and (foundPOI[k].pinType == PVP_PINTYPE_COMPASS or PVP.killLocationPintypeToName[foundPOI[k].pinType] or
-						(foundPOI[k].targetX == currentNearbyPOIIds[i].targetX and
-							foundPOI[k].targetY == currentNearbyPOIIds[i].targetY and
-							(not foundPOI[k].pingTag or foundPOI[k].pingTag == currentNearbyPOIIds[i].pingTag))) then -- // found the same object - updates its distance from player and the name //
+				local currentFoundPOI = foundPOI[k]
+				local currentNearbyPOI = currentNearbyPOIIds[i]
+				if currentFoundPOI.pinType == currentNearbyPOI.pinType and (
+					currentFoundPOI.pinType == PVP_PINTYPE_COMPASS or
+					PVP.killLocationPintypeToName[currentFoundPOI.pinType] or
+					(currentFoundPOI.poiKey and currentNearbyPOI.poiKey and currentFoundPOI.poiKey == currentNearbyPOI.poiKey) or
+					(currentFoundPOI.targetX == currentNearbyPOI.targetX and currentFoundPOI.targetY == currentNearbyPOI.targetY and (not currentFoundPOI.pingTag or currentFoundPOI.pingTag == currentNearbyPOI.pingTag))
+				) then -- // found the same object - update its values //
 					found = k
-					currentNearbyPOIIds[i].name = foundPOI[k].name
-					currentNearbyPOIIds[i].distance = foundPOI[k].distance
+					for key, value in pairs(currentFoundPOI) do
+						if key ~= 'control' and key ~= 'poolKey' then
+							currentNearbyPOI[key] = value
+						end
+					end
+					currentNearbyPOIIds[i] = currentNearbyPOI
 					break
 				end
 			end
