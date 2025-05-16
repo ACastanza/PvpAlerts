@@ -1,6 +1,8 @@
 ---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 
+--PVP_Alerts_Main_Table:TestThisScale() -- REMOVE THIS LINE
+
 local texturePath = PVP:GetGlobal('PVP_TEXTURES_PATH')
 local PVP_NIGHTBLADE_ICON = "esoui/art/icons/class/class_nightblade.dds"
 local PVP_TEMPLAR_ICON = "esoui/art/icons/class/class_templar.dds"
@@ -924,36 +926,35 @@ PVP.majorImportantAbilities = {
 }
 
 PVP.minorImportantAbilities = {
-	[20492] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip
-	[20493] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip (From DBG)
-	[20494] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip (From DBG)
-	[20496] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip
-	[32717] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
-	[32721] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
-	[40336] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Silver Leash
-	[62001] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip (From DBG)
-	[62004] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip (From DBG)
-	[118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
-	[118936] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Take Flight
-	[118938] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap
-	[160317] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dark Convergence
-	[163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
-	[163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
-	[183267] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of the Colorless Pool
-	[185918] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Eldrich Horror
-	[163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
-	[185841] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement
-	[185921] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Uncanny Adoration
-	[187526] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement (From DBG)
-	--[191083] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement (From DBG) Synergy??
-	[217228] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion
-	[217235] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion (From DBG)
-	[217784] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Leashing Soul
-	[216814] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
-	[216815] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
-	[216854] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
-	[217466] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst (From DBG)
-	[217979] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst
+	-- [20492] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip
+	-- [20493] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip (From DBG)
+	-- [20494] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Fiery Grip (From DBG)
+	-- [20496] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip
+	-- [32717] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
+	-- [32721] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap (From DBG)
+	-- [40336] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Silver Leash
+	-- [62001] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip (From DBG)
+	-- [62004] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Unrelenting Grip (From DBG)
+	-- [118928] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dragon Leap
+	-- [118936] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Take Flight
+	-- [118938] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ferocious Leap
+	-- [160317] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Dark Convergence
+	-- [163227] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Meteor (Called)
+	-- [163236] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Shooting Star (Called)
+	-- [183267] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of the Colorless Pool
+	-- [185918] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Eldrich Horror
+	-- [163238] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Ice Comet (Called)
+	-- [185841] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement
+	-- [185921] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Uncanny Adoration
+	-- [187526] =  {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Rune of Displacement (From DBG)
+	-- [217228] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion
+	-- [217235] = {[ACTION_RESULT_BEGIN] = true, [ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Repelling Explosion (From DBG)
+	-- [217784] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true},  -- Leashing Soul
+	-- [216814] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
+	-- [216815] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
+	-- [216854] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Soul (From DBG)
+	-- [217466] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst (From DBG)
+	-- [217979] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Leashing Burst
 }
 
 PVP.abilityIdIgnoreList = {
@@ -962,45 +963,43 @@ PVP.abilityIdIgnoreList = {
 PVP.abilityMessages = {
 	[160184] = "BLOCK - RUSH PULL - BLOCK",
 
-	[20492] = "BLOCK - DK CHAIN",
-	[20493] = "BLOCK - Fiery Grip (From DBG)",
-	[20494] = "BLOCK - Fiery Grip (From DBG)",
-	[20496] = "BLOCK - DK CHAIN",
-	[32717] = "BLOCK - LEAP",
-	[32721] = "BLOCK - LEAP",
-	[40336] = "BLOCK - LEASH",
-	[62001] = "BLOCK - DK CHAIN",
-	[62004] = "BLOCK - DK CHAIN",
-	[118928] = "BLOCK - LEAP",
-	[118936] = "BLOCK - LEAP",
-	[118938] = "BLOCK - LEAP",
-	[160317] = "MOVE - DARK CON",
-	[163227] = "BLOCK - METEOR",
-	[163236] = "BLOCK - METEOR",
-	[163238] = "BLOCK - METEOR",
-	[183267] = "BLOCK - ARC FEAR",
-	[185918] = "BLOCK - ARC FEAR",
-	[185841] = "BLOCK - DISPLACEMENT",
-	[187526] = "BLOCK - DISPLACEMENT",
-	--[191083] = "BLOCK - DISPLACEMENT",
-	[185921] = "BLOCK - CHARM",
-	[217228] = "BLOCK - KNOCKBACK",
-	[217235] = "BLOCK - KNOCKBACK",
-	[216814] = "BLOCK - SOUL CHAIN",
-	[216815] = "BLOCK - SOUL CHAIN",
-	[216854] = "BLOCK - SOUL CHAIN",
-	[217784] = "BLOCK - SOUL CHAIN",
-	[217466] = "BLOCK - SOUL PULL",
-	[217979] = "BLOCK - SOUL PULL",
+	-- [20492] = "BLOCK - DK CHAIN",
+	-- [20493] = "BLOCK - Fiery Grip (From DBG)",
+	-- [20494] = "BLOCK - Fiery Grip (From DBG)",
+	-- [20496] = "BLOCK - DK CHAIN",
+	-- [32717] = "BLOCK - LEAP",
+	-- [32721] = "BLOCK - LEAP",
+	-- [40336] = "BLOCK - LEASH",
+	-- [62001] = "BLOCK - DK CHAIN",
+	-- [62004] = "BLOCK - DK CHAIN",
+	-- [118928] = "BLOCK - LEAP",
+	-- [118936] = "BLOCK - LEAP",
+	-- [118938] = "BLOCK - LEAP",
+	-- [160317] = "MOVE - DARK CON",
+	-- [163227] = "BLOCK - METEOR",
+	-- [163236] = "BLOCK - METEOR",
+	-- [163238] = "BLOCK - METEOR",
+	-- [183267] = "BLOCK - ARC FEAR",
+	-- [185918] = "BLOCK - ARC FEAR",
+	-- [185841] = "BLOCK - DISPLACEMENT",
+	-- [187526] = "BLOCK - DISPLACEMENT",
+	-- [185921] = "BLOCK - CHARM",
+	-- [217228] = "BLOCK - KNOCKBACK",
+	-- [217235] = "BLOCK - KNOCKBACK",
+	-- [216814] = "BLOCK - SOUL CHAIN",
+	-- [216815] = "BLOCK - SOUL CHAIN",
+	-- [216854] = "BLOCK - SOUL CHAIN",
+	-- [217784] = "BLOCK - SOUL CHAIN",
+	-- [217466] = "BLOCK - SOUL PULL",
+	-- [217979] = "BLOCK - SOUL PULL",
 }
 
 PVP.abilityIconSwaps = {
 	[160184] = "/esoui/art/icons/ability_mage_023.dds",
-	[163227] = GetAbilityIcon(16536), -- Meteor (Called)
-	[163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
-	[163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
-	[185841] = GetAbilityIcon(201293), -- Rune of Displacement
-	[191083] = GetAbilityIcon(201293), -- Rune of Displacement
+	-- [163227] = GetAbilityIcon(16536), -- Meteor (Called)
+	-- [163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
+	-- [163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
+	-- [185841] = GetAbilityIcon(201293), -- Rune of Displacement
 }
 
 PVP.networkedAbilities = {
