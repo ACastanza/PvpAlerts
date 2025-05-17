@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.16.6"
+PVP.textVersion = "3.16.6.1"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -2778,7 +2778,6 @@ function PVP:OnOff()
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_DAEDRIC_ARTIFACT_OBJECTIVE_STATE_CHANGED, function(...) self:UpdateActiveDaedricArtifactInfo(...) end)
 			-- EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_STATE_CHANGED, function(...) self:OnBattlegroundStateChanged(...) end)
 			-- EVENT_MANAGER:RegisterForEvent(self.name, EVENT_BATTLEGROUND_MMR_LOSS_REDUCED, function(...) self:OnBattlegroundMMRLossReduced(...) end)
-			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_GUILD_ID_CHANGED, function(...) self:UpdateGuildId(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_GUILD_SELF_JOINED_GUILD, function(...) self:JoinedNewGuild(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_GUILD_SELF_LEFT_GUILD, function(...) self:LeftGuild(...) end)
 			EVENT_MANAGER:RegisterForEvent(self.name, EVENT_GUILD_MEMBER_ADDED, function(...) self:GuildMemberJoined(...) end)

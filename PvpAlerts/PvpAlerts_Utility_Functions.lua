@@ -1210,18 +1210,6 @@ function PVP:PopulateGuildmateDatabase()
 	return guildmateDatabase
 end
 
-function PVP:UpdateGuildId(eventCode, unitTag, oldGuildId, newGuildId)
-	local guildmateDatabase = PVP.guildmates or {}
-	for displayName, guilds in pairs(guildmateDatabase) do
-		if guilds[oldGuildId] then
-			guilds[oldGuildId] = nil
-			guilds[newGuildId] = true
-		end
-		guildmateDatabase[displayName] = guilds
-	end
-	PVP.guildmates = guildmateDatabase
-end
-
 function PVP:JoinedNewGuild(eventCode, guildServerId, characterName, guildId)
 	local guildmateDatabase = PVP.guildmates or {}
 	for i = 1, GetNumGuildMembers(guildId) do
