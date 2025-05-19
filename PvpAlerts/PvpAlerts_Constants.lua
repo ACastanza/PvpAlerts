@@ -2707,7 +2707,7 @@ PVP.elderScrollsIds = {
 	[123] = 141, -- Elder Scroll of Alma Ruma
 }
 
-PVP.elderScrollsPintypes = {
+PVP.elderScrollsPinTypes = {
 	[MAP_PIN_TYPE_ARTIFACT_ALDMERI_OFFENSIVE] = true, -- Altadoon
 	[MAP_PIN_TYPE_ARTIFACT_ALDMERI_DEFENSIVE] = true, -- Mnem
 	[MAP_PIN_TYPE_ARTIFACT_EBONHEART_OFFENSIVE] = true, -- Ghartok
@@ -2734,7 +2734,7 @@ PVP.daedricArtifactSpawnAlliance = {
 	[456] = ALLIANCE_DAGGERFALL_COVENANT, -- Amber Woodland, South of Fort Warden
 }
 
-PVP.daedricArtifactPintypes = {
+PVP.daedricArtifactPinTypes = {
 	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_NEUTRAL] = true,
 	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_ALDMERI] = true,
 	[MAP_PIN_TYPE_AVA_DAEDRIC_ARTIFACT_VOLENDRUNG_EBONHEART] = true,

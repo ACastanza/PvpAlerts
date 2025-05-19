@@ -1082,9 +1082,9 @@ local function GetControlType(control, data, iconType)
 			return 'KILL_LOCATION'
 		elseif ZO_MapPin.FORWARD_CAMP_PIN_TYPES[pinType] then
 			return 'CAMP'
-		elseif PVP.elderScrollsPintypes[pinType] or data.isBgFlag then
+		elseif PVP.elderScrollsPinTypes[pinType] or data.isBgFlag then
 			return 'SCROLL'
-		elseif PVP.daedricArtifactPintypes[pinType] then
+		elseif PVP.daedricArtifactPinTypes[pinType] then
 			return 'DAEDRIC_ARTIFACT'
 		elseif data.isBgBase then
 			return 'BG_BASE'
