@@ -1174,10 +1174,10 @@ function PVP:GetGuildmateSharedGuilds(displayName, isGuildmate)
 	local firstGuildAllianceColor
 	local foundGuilds = 0
 	local playerSharedGuilds = guildmateDatabase[displayName]
-	for guildId, _ in pairs(playerSharedGuilds) do
+	for guildId, guildInfo in pairs(playerSharedGuilds) do
 		foundGuilds = foundGuilds + 1
-		local guildName = GetGuildName(guildId)
-		local guildAlliance = GetGuildAlliance(guildId)
+		local guildName = guildInfo.name or GetGuildName(guildId)
+		local guildAlliance = guildInfo.alliance or GetGuildAlliance(guildId)
 		local guildAllianceColor = self:GetTrueAllianceColorsHex(guildAlliance)
 
 		if foundGuilds > 1 then
@@ -1198,13 +1198,19 @@ function PVP:PopulateGuildmateDatabase()
 	local guildmateDatabase = {}
 	for i = 1, GetNumGuilds() do
 		local guildId = GetGuildId(i)
+		local guildName = GetGuildName(guildId)
+		local guildAlliance = GetGuildAlliance(guildId)
 		local numMembers = GetNumGuildMembers(guildId)
 		for j = 1, numMembers do
 			local displayName, note, rankIndex, playerStatus, secsSinceLogoff = GetGuildMemberInfo(guildId, j)
 			if not guildmateDatabase[displayName] then
 				guildmateDatabase[displayName] = {}
 			end
-			guildmateDatabase[displayName][guildId] = true
+			guildmateDatabase[displayName][guildId] = { 
+				name = guildName,
+				--shortName = PVP:GetGuildShortName(guildId),
+				alliance = guildAlliance,
+			}
 		end
 	end
 	return guildmateDatabase
@@ -1217,7 +1223,11 @@ function PVP:JoinedNewGuild(eventCode, guildServerId, characterName, guildId)
 		if not guildmateDatabase[displayName] then
 			guildmateDatabase[displayName] = {}
 		end
-		guildmateDatabase[displayName][guildId] = true
+		guildmateDatabase[displayName][guildId] = {
+			name = GetGuildName(guildId),
+			--shortName = PVP:GetGuildShortName(guildId),
+			alliance = GetGuildAlliance(guildId),
+		}
 	end
 	PVP.guildmates = guildmateDatabase
 end
@@ -1242,7 +1252,11 @@ function PVP:GuildMemberJoined(eventCode, guildId, displayName)
 	if not guildmateDatabase[displayName] then
 		guildmateDatabase[displayName] = {}
 	end
-	guildmateDatabase[displayName][guildId] = true
+	guildmateDatabase[displayName][guildId] = {
+		name = GetGuildName(guildId),
+		--shortName = PVP:GetGuildShortName(guildId),
+		alliance = GetGuildAlliance(guildId),
+	}
 	PVP.guildmates = guildmateDatabase
 end
 
