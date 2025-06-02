@@ -564,25 +564,3 @@ function PVP:RegisterCustomDialog()
 			}
 		})
 end
-
-function PVP:InitNetworking()
-	if PVP.SV.enableNetworking and PVP.addonEnabled then
-		if not PVP.networkingEnabled then
-			PVP.LMP:RegisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
-			PVP.LMP:RegisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
-			PVP.networkingEnabled = true
-		end
-	elseif PVP.SV.enableNetworking and not PVP.addonEnabled then
-		if PVP.networkingEnabled then
-			PVP.LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
-			PVP.LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
-			PVP.networkingEnabled = false
-		end
-	elseif not PVP.SV.enableNetworking and PVP.addonEnabled then
-		if PVP.networkingEnabled then
-			PVP.LMP:UnregisterCallback("BeforePingAdded", PVP.OnBeforePingAdded)
-			PVP.LMP:UnregisterCallback("AfterPingRemoved", PVP.OnAfterPingRemoved)
-			PVP.networkingEnabled = false
-		end
-	end
-end

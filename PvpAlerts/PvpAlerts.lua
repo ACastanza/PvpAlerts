@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.16.6.1"
+PVP.textVersion = "3.16.7"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -1554,11 +1554,10 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 			local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
 			if self.majorImportantAbilities[abilityId] then
 				self.majorAttackNotficiationLockout = currentTime + hitValue
-				local localAlert = sourceName ~= "AgonyWarning"
 				if SV.enableAttackSound then
 					local secondaryAlert = SV.secondaryAlert
-					self:PlayLoudSound((secondaryAlert and not localAlert) and 'DUEL_START' or 'CONSOLE_GAME_ENTER')
-					if secondaryAlert and localAlert and hitValue > 500 then
+					self:PlayLoudSound(secondaryAlert and 'DUEL_START' or 'CONSOLE_GAME_ENTER')
+					if secondaryAlert and hitValue > 500 then
 						zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
 					end
 				end
@@ -1591,11 +1590,6 @@ function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitI
 					false, false, hitValue)
 			end
 		end
-
-		if self.networkedAbilities[abilityId] and SV.enableNetworking and GetGroupSize() ~= 0 and not (sourceName == "AgonyWarning") then
-			PVP:SendWarning()
-		end
-
 	end
 end
 
@@ -1662,8 +1656,8 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 	end
 
 	local SV = self.SV
-	-- if GetUnitClassId('player') == 3 and SV.show3DIcons and SV.shadowImage3d and targetType == 1 and shadowReturnIds[abilityId] then
-	if GetUnitClassId('player') == 3 and SV.show3DIcons and SV.shadowImage3d then
+	-- if SV.show3DIcons and SV.shadowImage3d and targetType == 1 and shadowReturnIds[abilityId] then
+	if SV.show3DIcons and SV.shadowImage3d then
 		if shadowSetupIds[abilityId] and result == 2245 then
 			self.shadowTime = hitValue
 		end
@@ -2824,7 +2818,6 @@ function PVP:OnOff()
 		self:InitControls()
 		self:FullReset3DIcons()
 		self:ProcessCachedPlayerNameChanges()
-		self:InitNetworking()
 
 		if not (self.SV.enabled and self.SV.unlocked) then
 			PVP_TargetName:SetAlpha(0)
@@ -3901,7 +3894,6 @@ function PVP:InitEnabledAddon()
 		EVENT_MANAGER:RegisterForUpdate(self.name, 250, self.OnUpdate)
 		self:Init3D()
 		self:InitControls()
-		self:InitNetworking()
 		self:RegisterCustomDialog()
 		self.playerName = GetRawUnitName('player')
 		self.allianceOfPlayer = GetUnitAlliance('player')
