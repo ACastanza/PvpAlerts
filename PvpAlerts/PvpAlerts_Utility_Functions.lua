@@ -1273,57 +1273,6 @@ function PVP:GuildMemberLeft(eventCode, guildId, displayName)
 	PVP.guildmates = guildmateDatabase
 end
 
---Original code comes from rdkgrouptool via AgonyWarning
-function PVP:SendWarning()
-	if AgonyWarning then return end
-	PVP.GPS:PushCurrentMap()
-	SetMapToMapListIndex(23)
-	PVP.LMP:SetMapPing(MAP_PIN_TYPE_PING, MAP_TYPE_LOCATION_CENTERED, PVP:EncodeMessage(10, 10, 10, 10))
-	PVP.GPS:PopCurrentMap()
-end
-
-function PVP.OnBeforePingAdded(pingType, pingTag, x, y, isPingOwner)
-	if (pingType == MAP_PIN_TYPE_PING) then
-		PVP.GPS:PushCurrentMap()
-		SetMapToMapListIndex(23)
-		x, y = PVP.LMP:GetMapPing(pingType, pingTag)
-		local b0, b1, b2, b3 = PVP:DecodeMessage(x,y)
-		PVP.GPS:PopCurrentMap()
-		PVP.LMP:SuppressPing(pingType, pingTag)
-
-		if not PVP.SV.showAttacks then return end
-		local pingData = PVP.networkingPingData[b0 .. "_" .. b1 .. "_" .. b2 .. "_" .. b3]
-		if pingData then
-			PVP:ProcessImportantAttacks(pingData.result, pingData.abilityName, pingData.abilityId, 1234567, pingData.sourceName, pingData.hitValue, GetFrameTimeMilliseconds())
-		end
-	end
-end
-
-function PVP.OnAfterPingRemoved(pingType, pingTag, x, y, isPingOwner)
-	if (pingType == MAP_PIN_TYPE_PING) then
-		PVP.LMP:UnsuppressPing(pingType, pingTag)
-	end
-end
-
---Original code comes from libgroupsocket via AgonyWarning
-function PVP:DecodeMessage(x, y)
-	x = zo_floor(x / PVP.MapStepSize + 0.5)
-	y = zo_floor(y / PVP.MapStepSize + 0.5)
-	local b0 = zo_floor(x / 0x100)
-	local b1 = x % 0x100
-	local b2 = zo_floor(y / 0x100)
-	local b3 = y % 0x100
-	return b0, b1, b2, b3
-end
-
-function PVP:EncodeMessage(b0, b1, b2, b3)
-	b0 = b0 or 0
-	b1 = b1 or 0
-	b2 = b2 or 0
-	b3 = b3 or 0
-	return (b0 * 0x100 + b1) * PVP.MapStepSize, (b2 * 0x100 + b3) * PVP.MapStepSize
-end
-
 function GetPvpDbPlayerInfo(playerName, returnInfoToken, tokenColor)
 	local isMalformedName, unitAccName, unitCharName, unitAlliance, unitClass, unitRace, unitSpec, unitAvARank, lastSeen, unitAccNameToken, unitCharNameToken, allianceColor
 	isMalformedName = PVP:IsMalformedName(playerName)

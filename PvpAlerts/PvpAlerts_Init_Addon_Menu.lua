@@ -320,18 +320,6 @@ function PVP:InitializeAddonMenu()
 		},
 		{
 			type = "checkbox",
-			name = "Important Attack Networking",
-			tooltip = "Allows for limited information sharing between group members about some important AOE attacks",
-				default = self.defaults.enableNetworking,
-				disabled = function() return not self.SV.enabled or not self.SV.showAttacks or not self.SV.showImportant end,
-				getFunc = function() return self.SV.enableNetworking end,
-				setFunc = function(newValue)
-					self.SV.enableNetworking = newValue
-					self:InitNetworking()
-				end,
-		},
-		{
-			type = "checkbox",
 			name = "Show Channaled Abilities Notification",
 			tooltip =
 			"ON - notify about hard-hitting channeled abilities, OFF - do not notify about hard-hitting channeled abilities",

@@ -4472,7 +4472,7 @@ local function GetCurrentMapScaleFromBgObjectiveId()
 end
 
 function PVP:OnAbilityUsed(eventCode, slotNum)
-	if not (GetUnitClassId('player') == 3 and PVP.SV.show3DIcons and PVP.SV.shadowImage3d) then return end
+	if not (PVP.SV.show3DIcons and PVP.SV.shadowImage3d) then return end
 	local isSetup = GetSlotBoundId(slotNum) == 35441
 	local isReturn = GetSlotBoundId(slotNum) == 35445
 	if isSetup or isReturn then

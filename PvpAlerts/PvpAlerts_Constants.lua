@@ -66,7 +66,6 @@ PVP.defaults = {
 	showHeavyAttacks = true,
 	showPiercingMark = false,
 	showSnipes = true,
-	enableNetworking = true,
 	-- showNumberStealthed=true,
 
 	showKOSFrame = true,
@@ -1000,21 +999,6 @@ PVP.abilityIconSwaps = {
 	-- [163236] = GetAbilityIcon(40493), -- Shooting Star (Called)
 	-- [163238] = GetAbilityIcon(40489), -- Ice Comet (Called)
 	-- [185841] = GetAbilityIcon(201293), -- Rune of Displacement
-}
-
-PVP.networkedAbilities = {
-	[160184] = true, -- Rush Of Agony
-}
-
-PVP.networkingPingData = {
-	["10_10_10_10"] = {
-		["result"] = ACTION_RESULT_EFFECT_GAINED,
-		["abilityName"]= "When you deal direct damage with a Blink, Charge, Leap, Teleport, or Pull",
-		["abilityId"] = 160184,
-		["sourceUnitId"] = 123456,
-		["sourceName"] = "AgonyWarning",
-		["hitValue"] = 800,
-	}
 }
 
 PVP.heavyAttackNames = {
