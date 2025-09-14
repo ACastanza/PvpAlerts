@@ -4493,7 +4493,6 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		PVP:FullReset3DIcons()
 		return
 	end
-
 	local isActiveWorldBattleground = IsActiveWorldBattleground()
 	if isActivated then -- // makes sure campaign tooltip stays up to date //
 		if isActiveWorldBattleground then
@@ -4529,6 +4528,8 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 	local controls3DPool = self.controls3DPool
 
 	local foundKeeps, foundPOI, foundBgObjectives
+	local showPerformance = self.SV.show3DPerformance
+
 	-- PVP.afterInit3d = GetGameTimeMilliseconds()
 
 	if isActiveWorldBattleground then
@@ -4550,14 +4551,14 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 				currentNearbyKeepIds[k] = nil
 			end
 		end
-		PVP.beforeMarker = GetGameTimeMilliseconds()
+		PVP.beforeMarker = showPerformance and GetGameTimeMilliseconds() or 0
 		local cc = 0
 		for k, v in pairs(foundKeeps) do
 			local newMarker = SetupNew3DMarker(k, v, isActivated, not currentNearbyKeepIds[k]) -- // sets up the 3d icons for each relevant keep //
 			currentNearbyKeepIds[k] = newMarker
 		end
 		PVP.cc = cc
-		PVP.afterMarker = GetGameTimeMilliseconds()
+		PVP.afterMarker = showPerformance and GetGameTimeMilliseconds() or 0
 	else
 		for k, v in pairs(currentNearbyKeepIds) do
 			controls3DPool:ReleaseObject(v.poolKey)
@@ -4618,13 +4619,13 @@ function PVP:UpdateNearbyKeepsAndPOIs(isActivated, isZoneChange) --// main funct
 		for i = 1, #foundPOI do -- // adds non duplicated objects to the currently active poi objects table //
 			insert(currentNearbyPOIIds, foundPOI[i])
 		end
-		PVP.beforePoi = GetGameTimeMilliseconds()
+		PVP.beforePoi = showPerformance and GetGameTimeMilliseconds() or 0
 		for i = 1, #currentNearbyPOIIds do
 			local isNewObjective = i > oldTableSize
 			local newPoiControl = SetupNew3DPOIMarker(i, isActivated, isNewObjective)
 			currentNearbyPOIIds[i].control = newPoiControl
 		end
-		PVP.afterPoi = GetGameTimeMilliseconds()
+		PVP.afterPoi = showPerformance and GetGameTimeMilliseconds() or 0
 	else
 		for i = 1, #currentNearbyPOIIds do
 			controls3DPool:ReleaseObject(currentNearbyPOIIds[i].poolKey)

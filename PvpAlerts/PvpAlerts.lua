@@ -152,7 +152,9 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		return average
 	end
 
-	local start_main = GetGameTimeMilliseconds()
+	local showPerformance = SV.showPerformance
+
+	local start_main = showPerformance and GetGameTimeMilliseconds() or 0
 	if not PVP.addonPerformance then
 		PVP.addonPerformance = {}
 		PVP.addonPerformance.maxProcessingTime = 0
@@ -187,14 +189,14 @@ function PVP.OnUpdate() -- // main loop of the addon, is called each 250ms //
 		end
 		PVP.killFeedRatioDelay = 0
 	end
-	local start_refresh = GetGameTimeMilliseconds()
+	local start_refresh = showPerformance and GetGameTimeMilliseconds() or 0
 	PVP:MainRefresh(currentTime) -- // main loop for pvpalerts.lua functions //
-	local end_refresh = GetGameTimeMilliseconds()
+	local end_refresh = showPerformance and GetGameTimeMilliseconds() or 0
 	PVP:ProcessDistrictNamePrompt() -- // a tiny feature to check if you mousever a district ladder, while in an ic lobby //
-	local start3d = GetGameTimeMilliseconds()
+	local start3d = showPerformance and GetGameTimeMilliseconds() or 0
 	PVP:UpdateNearbyKeepsAndPOIs() -- // 3d icons main loop //
-	local end_all = GetGameTimeMilliseconds()
-	if SV.showPerformance then
+	local end_all = showPerformance and GetGameTimeMilliseconds() or 0
+	if showPerformance then
 		chat:Print('----------------------------')
 		chat:Printf('Main loop time = %dms', start3d - start_main)
 		chat:Printf('Main refresh = %dms', end_refresh - start_refresh)
@@ -672,20 +674,21 @@ end
 
 function PVP:MainRefresh(currentTime)
 	local SV = self.SV
-	self.startR = GetGameTimeMilliseconds()
+	local showPerformance = SV.showPerformance
+	self.startR = showPerformance and GetGameTimeMilliseconds() or 0
 	self:RemoveDuplicateNames()
-	self.endD = GetGameTimeMilliseconds()
+	self.endD = showPerformance and GetGameTimeMilliseconds() or 0
 	local totalCount = self:CountTotal(currentTime)
-	self.endC = GetGameTimeMilliseconds()
+	self.endC = showPerformance and GetGameTimeMilliseconds() or 0
 	self:ProcessNpcs(currentTime)
-	self.endN = GetGameTimeMilliseconds()
+	self.endN = showPerformance and GetGameTimeMilliseconds() or 0
 	if self:ShouldShowCampFrame() then self:ManageCampFrame() end
-	self.endCamp = GetGameTimeMilliseconds()
+	self.endCamp = showPerformance and GetGameTimeMilliseconds() or 0
 	if self.SV.showCounterFrame or self.SV.showTug then
-		self.beforeC = GetGameTimeMilliseconds()
+		self.beforeC = showPerformance and GetGameTimeMilliseconds() or 0
 		local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = self:GetAllianceCountPlayers()
 		localActivePlayerCache = { numberAD, numberDC, numberEP, tableAD, tableDC, tableEP }
-		self.afterC = GetGameTimeMilliseconds()
+		self.afterC = showPerformance and GetGameTimeMilliseconds() or 0
 		if SV.showCounterFrame then
 			local containerControl = PVP_Counter:GetNamedChild('_CountContainer')
 			local labelControl = PVP_Counter:GetNamedChild('_Label')
@@ -843,13 +846,13 @@ function PVP:MainRefresh(currentTime)
 		end
 	end
 
-	self.endCounter = GetGameTimeMilliseconds()
+	self.endCounter = showPerformance and GetGameTimeMilliseconds() or 0
 	self.Timer = currentTime
 
 	if SV.showKOSFrame and (SCENE_MANAGER:GetCurrentScene() == HUD_SCENE or SCENE_MANAGER:GetCurrentScene() == LOOT_SCENE) then
 		self:RefreshLocalPlayers()
 	end
-	self.endKos = GetGameTimeMilliseconds()
+	self.endKos = showPerformance and GetGameTimeMilliseconds() or 0
 end
 
 function PVP_ClearTooltip(control)

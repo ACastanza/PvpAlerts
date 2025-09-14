@@ -2714,7 +2714,7 @@ PVP.daedricArtifactSpawnAlliance = {
 	[446] = ALLIANCE_ALDMERI_DOMINION, -- Beriel's Lament, East of Bloodmayne
 	[447] = ALLIANCE_EBONHEART_PACT, -- Northern Morrowind Gate
 	[448] = ALLIANCE_EBONHEART_PACT, -- North of Kingscrest
-	[455] = ALLIANCE_DAGGERFALL_COVENANT, --Southern Highrock Gate
+	[455] = ALLIANCE_DAGGERFALL_COVENANT, -- Southern Highrock Gate
 	[456] = ALLIANCE_DAGGERFALL_COVENANT, -- Amber Woodland, South of Fort Warden
 }
 
