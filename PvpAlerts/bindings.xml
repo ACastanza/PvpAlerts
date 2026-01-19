@@ -35,6 +35,13 @@
 				<Down>PVP_Alerts_Main_Table:ScoreboardToggle(true)</Down>
 				<Up>PVP_Alerts_Main_Table:ScoreboardToggle()</Up>
 	    </Action>
+	    <Action name="PVP_ALERTS_TOGGLE_KILLFEED_SCOREBOARD">
+				<Down>PVP_Alerts_Main_Table:KillfeedScoreboardToggle(true)</Down>
+				<Up>PVP_Alerts_Main_Table:KillfeedScoreboardToggle()</Up>
+	    </Action>
+	    <Action name="PVP_ALERTS_CLEAR_KILLFEED_SCOREBOARD">
+				<Down>PVP_Alerts_Main_Table:ClearKillfeedScoreboard()</Down>
+	    </Action>
 
 		</Category>
 	</Layer>
@@ -50,6 +57,10 @@
 			<Action name="PVP_ALERTS_TOGGLE_BG_SCOREBOARD_HIDDEN" inheritsBindFrom="PVP_ALERTS_TOGGLE_BG_SCOREBOARD" hideAction="true">
 				<Down>PVP_Alerts_Main_Table:ScoreboardToggle(true)</Down>
 				<Up>PVP_Alerts_Main_Table:ScoreboardToggle()</Up>
+			</Action>
+			<Action name="PVP_ALERTS_TOGGLE_KILLFEED_SCOREBOARD_HIDDEN" inheritsBindFrom="PVP_ALERTS_TOGGLE_KILLFEED_SCOREBOARD" hideAction="true">
+				<Down>PVP_Alerts_Main_Table:KillfeedScoreboardToggle(true)</Down>
+				<Up>PVP_Alerts_Main_Table:KillfeedScoreboardToggle()</Up>
 			</Action>
 		</Category>
 	 </Layer>

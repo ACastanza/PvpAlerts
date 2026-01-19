@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.16.7"
+PVP.textVersion = "3.17.0"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -1990,6 +1990,8 @@ function PVP:ProcessKillfeedEntry(targetValidName, targetDisplayName, targetAlli
 			chat:Print(outputText)
 		end
 	end
+
+	self:AddKillfeedScoreboardKill(sourceValidName, sourceAlliance, targetValidName, targetAlliance, sourceDisplayName, targetDisplayName)
 end
 
 function PVP:OnKillfeed(_, killLocation, sourceDisplayName, sourceCharacterName, sourceAlliance, sourceRank, targetDisplayName, targetCharacterName, targetAlliance, targetRank)
@@ -2229,7 +2231,7 @@ function PVP:OnDraw(isHeavyAttack, sourceUnitId, abilityName, abilityId, ability
 
 	local abilityMessages = self.abilityMessages
 	if abilityMessages[abilityId] then
-		local setName = abilityMessages[abilityId]
+		local setName = abilityMessages[abilityId] .. (enemyName or "Unknown")
 		nameWidth = PVP_MainLabel:GetStringWidth(setName)
 		PVP_MainLabel:SetWidth(nameWidth / weirdScale)
 		formattedName = self:Colorize(setName, "FF0000")
@@ -2312,10 +2314,10 @@ function PVP:StartAnimation(control, animationType, hitValue)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 0, ZO_EaseOutQuadratic, 1, 1.6, PVP_SET_SCALE_FROM_SV)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 300, 400, ZO_EaseInQuadratic, 1.6, 1, PVP_SET_SCALE_FROM_SV)
 	elseif animationType == 'attackerFrame' then
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 100, 0, ZO_EaseOutQuadratic, 0, self.SV.newAttackerFrameAlpha)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 0, ZO_EaseOutQuadratic, self.SV.newAttackerFrameScale, self.SV.newAttackerFrameScale * 1.6, PVP_SET_SCALE_FROM_SV)
 		self:InsertAnimationType(timeline, ANIMATION_SCALE, control, 200, 250, ZO_EaseInQuadratic, self.SV.newAttackerFrameScale * 1.6, self.SV.newAttackerFrameScale, PVP_SET_SCALE_FROM_SV)
-		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1500, self.SV.newAttackerFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, nil, 0)
+		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, 1500, self.SV.newAttackerFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, self.SV.newAttackerFrameAlpha, 0)
 	elseif animationType == 'fadeOut' then
 		self:InsertAnimationType(timeline, ANIMATION_ALPHA, control, self.SV.targetNameFrameFadeoutTime, self.SV.targetNameFrameDelayBeforeFadeout, ZO_EaseOutQuadratic, control:GetAlpha(), 0)
 	else
@@ -2734,6 +2736,7 @@ function PVP:OnOff()
 
 	SLASH_COMMANDS["/who"] = function(name) PVP.Who(self, name, true) end
 	SLASH_COMMANDS["/pvpnote"] = function(noteString) PVP.managePlayerNote(self, noteString) end
+	SLASH_COMMANDS["/clearsb"] = function() PVP:ClearKillfeedScoreboard() end
 	--SLASH_COMMANDS["/mmr"] = function(update) PVP.ListMMR(self, flag) end
 	if self.SV.enabled and self:IsInPVPZone() then
 		if not self.addonEnabled then
@@ -4218,6 +4221,7 @@ function PVP.OnLoad(eventCode, addonName)
 	PVP_MEDALS_FRAGMENT = ZO_FadeSceneFragment:New(PVP_Medals, nil, 0)
 	PVP_ONSCREEN_FRAGMENT = ZO_FadeSceneFragment:New(PVP_OnScreen, nil, 0)
 	PVP_TUG_FRAGMENT = ZO_FadeSceneFragment:New(PVP_TUG, nil, 0)
+
 	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_SHOW_AD', 'Toggle AD tooltip')
 	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_SHOW_DC', 'Toggle DC tooltip')
 	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_SHOW_EP', 'Toggle EP tooltip')
@@ -4226,6 +4230,8 @@ function PVP.OnLoad(eventCode, addonName)
 	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_ADD_COOL_MOUSEOVER', 'Mouseover Add to COOL')
 	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_WHO_IS', 'Mouseover Whois')
 	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_TOGGLE_BG_SCOREBOARD', 'Toggle Scoreboard')
+	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_TOGGLE_KILLFEED_SCOREBOARD', 'Toggle Killfeed Scoreboard')
+	ZO_CreateStringId('SI_BINDING_NAME_PVP_ALERTS_CLEAR_KILLFEED_SCOREBOARD', 'Clear Killfeed Scoreboard')
 	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_KOS", "Remove from KOS")
 	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_WHO", "Who is this?")
 	ZO_CreateStringId("SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS", "Add to KOS")

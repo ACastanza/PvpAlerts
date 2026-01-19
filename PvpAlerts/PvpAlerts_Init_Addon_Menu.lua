@@ -1182,6 +1182,19 @@ function PVP:InitializeAddonMenu()
 		},
 		{
 			type = "checkbox",
+			name = "Killfeed Scoreboard button toggle",
+			tooltip =
+			"ON - the button works as a toggle, OFF - shows killfeed scoreboard on button press and hides on button release",
+			default = self.defaults.killfeedScoreboardToggle,
+			disabled = function() return not self.SV.enabled end,
+			getFunc = function() return self.SV.killfeedScoreboardToggle end,
+			setFunc = function(newValue)
+				self.SV.killfeedScoreboardToggle = newValue
+				self:InitControls()
+			end,
+		},
+		{
+			type = "checkbox",
 			name = "Show joined/left players in battelgrounds",
 			tooltip = "ON - show players messages in chat, OFF - don't show players messages in chat",
 			default = self.defaults.showJoinedPlayers,

@@ -1,0 +1,277 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<GuiXml>
+    <Controls>
+        <Label name="PVP_KillfeedScoreboardRowLabel" linkEnabled="true" font="ZoFontGame" wrapMode="ELLIPSIS" horizontalAlignment="CENTER" verticalAlignment="CENTER" virtual="true">
+            <OnInitialized>
+                self.nonRecolorable = true
+            </OnInitialized>
+        </Label>
+
+        <!-- Row template for event entries in player details -->
+        <Label name="PVP_KillfeedPlayerDetailsEventRow" mouseEnabled="false" virtual="true" font="ZoFontGame" wrapMode="WRAP" horizontalAlignment="LEFT" verticalAlignment="TOP" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+            <Dimensions x="550"/>
+        </Label>
+
+        <!-- Custom checkbox template for guild selection -->
+        <Button name="PVP_GuildCheckboxTemplate" mouseEnabled="true" virtual="true" clickSound="Click">
+            <Dimensions x="24" y="24"/>
+            <Textures normal="EsoUI/Art/Buttons/Checkbox_Unchecked_up.dds" pressed="EsoUI/Art/Buttons/Checkbox_Checked_up.dds" mouseOver="EsoUI/Art/Buttons/Checkbox_Unchecked_over.dds"/>
+            <Controls>
+                <Label name="$(parent)Label" font="ZoFontGame" horizontalAlignment="LEFT" verticalAlignment="CENTER">
+                    <Anchor point="LEFT" relativeTo="$(parent)" relativePoint="RIGHT" offsetX="5" offsetY="0"/>
+                </Label>
+            </Controls>
+        </Button>
+
+        <!-- Row template for player entries -->
+        <Control name="PVP_KillfeedScoreboardRow" mouseEnabled="true" virtual="true" resizeToFitDescendents="true">
+        <Dimensions x="400" y="28"/>
+        <OnMouseEnter>PVP_KillfeedScoreboardRow_OnMouseEnter(self)</OnMouseEnter>
+        <OnMouseExit>PVP_KillfeedScoreboardRow_OnMouseExit(self)</OnMouseExit>
+        <OnMouseUp>PVP_KillfeedScoreboardRow_OnMouseUp(self, button, upInside)</OnMouseUp>
+        <Controls>
+            <Label name="$(parent)Name" inherits="PVP_KillfeedScoreboardRowLabel" horizontalAlignment="LEFT">
+                <Anchor point="LEFT" relativePoint="LEFT" relativeTo="$(parent)"/>
+                <Dimensions x="200" y="28"/>
+            </Label>
+            <Label name="$(parent)Kills" inherits="PVP_KillfeedScoreboardRowLabel">
+                <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$(parent)Name"/>
+                <Dimensions x="50" y="28"/>
+            </Label>
+            <Label name="$(parent)Deaths" inherits="PVP_KillfeedScoreboardRowLabel">
+                <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$(parent)Kills"/>
+                <Dimensions x="50" y="28"/>
+            </Label>
+            <Label name="$(parent)KD" inherits="PVP_KillfeedScoreboardRowLabel">
+                <Anchor point="LEFT" relativePoint="RIGHT" relativeTo="$(parent)Deaths"/>
+                <Dimensions x="100" y="28"/>
+            </Label>
+        </Controls>
+        </Control>
+
+        <Control name="PVP_KillfeedScoreboardSectionHeader" virtual="true">
+            <Dimensions x="800" y="32"/>
+            <Controls>
+                <Texture name="$(parent)BG" textureFile="esoui/art/miscellaneous/listitem_highlight.dds" color="FFFFFF" alpha="0.2" level="1">
+                    <AnchorFill/>
+                    <TextureCoords top="0" bottom="1" left="0.015" right="0.75"/>
+                    <OnInitialized>
+                        self.nonRecolorable = true
+                    </OnInitialized>
+                </Texture>
+                <Label name="$(parent)Title" inherits="PVP_KillfeedScoreboardRowLabel" horizontalAlignment="LEFT" font="ZoFontWinH3" wrapMode="ELLIPSIS">
+                    <Anchor point="LEFT" offsetX="10"/>
+                    <Dimensions x="760" y="32"/>
+                </Label>
+            </Controls>
+        </Control>
+
+        <Control name="PVP_KillfeedScoreboardList" virtual="true">
+            <Controls>
+                <Label name="$(parent)AllianceHeader" inherits="PVP_KillfeedScoreboardRowLabel" horizontalAlignment="CENTER" font="ZoFontWinH3" wrapMode="ELLIPSIS">
+                    <Anchor point="TOPLEFT" offsetX="0" offsetY="0"/>
+                    <Dimensions x="400" y="32"/>
+                </Label>
+                <Label name="$(parent)AllianceSubHeader" inherits="PVP_KillfeedScoreboardRowLabel" horizontalAlignment="CENTER" font="ZoFontGame" wrapMode="ELLIPSIS">
+                    <Anchor point="TOPLEFT" offsetX="0" offsetY="32"/>
+                    <Dimensions x="400" y="20"/>
+                </Label>
+                <Control name="$(parent)Headers">
+                    <Anchor point="TOPLEFT" offsetX="0" offsetY="54"/>
+                    <Dimensions x="400" y="32"/>
+                    <Controls>
+                        <Control name="$(parent)Name" inherits="ZO_SortHeader">
+                            <OnInitialized>
+                                ZO_SortHeader_Initialize(self, "Name", "name", ZO_SORT_ORDER_UP, TEXT_ALIGN_LEFT, "ZoFontGame")
+                            </OnInitialized>
+                            <Anchor point="TOPLEFT"/>
+                            <Dimensions x="200" y="30"/>
+                        </Control>
+                        <Control name="$(parent)Kills" inherits="ZO_SortHeader">
+                            <OnInitialized>
+                                ZO_SortHeader_Initialize(self, "K", "kills", ZO_SORT_ORDER_DOWN, TEXT_ALIGN_CENTER, "ZoFontGame")
+                            </OnInitialized>
+                            <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)Name"/>
+                            <Dimensions x="50" y="30"/>
+                        </Control>
+                        <Control name="$(parent)Deaths" inherits="ZO_SortHeader">
+                            <OnInitialized>
+                                ZO_SortHeader_Initialize(self, "D", "deaths", ZO_SORT_ORDER_DOWN, TEXT_ALIGN_CENTER, "ZoFontGame")
+                            </OnInitialized>
+                            <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)Kills"/>
+                            <Dimensions x="50" y="30"/>
+                        </Control>
+                        <Control name="$(parent)KD" inherits="ZO_SortHeader">
+                            <OnInitialized>
+                                ZO_SortHeader_Initialize(self, "K/D", "kd", ZO_SORT_ORDER_DOWN, TEXT_ALIGN_CENTER, "ZoFontGame")
+                            </OnInitialized>
+                            <Anchor point="TOPLEFT" relativePoint="TOPRIGHT" relativeTo="$(parent)Deaths"/>
+                            <Dimensions x="100" y="30"/>
+                        </Control>
+                    </Controls>
+                </Control>
+                <Control name="$(parent)List" inherits="ZO_ScrollList">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Headers" relativePoint="BOTTOMLEFT" offsetY="3"/>
+                    <Dimensions x="400" y="436"/>
+                </Control>
+            </Controls>
+        </Control>
+
+        <TopLevelControl name="PVP_KillfeedScoreboard" hidden="true" movable="true" clampedToScreen="true">
+            <Dimensions x="1250" y="600"/>
+            <Anchor point="CENTER" relativePoint="CENTER"/>
+			<OnInitialized>
+				PVP_InitKillfeedScoreboard()
+			</OnInitialized>
+            <Controls>
+                <Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" edgeColor="000000">
+                    <AnchorFill/>
+                </Backdrop>
+
+                <!-- Drag handle at the top to move the scoreboard -->
+                <Control name="$(parent)DragHandle" mouseEnabled="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="0" offsetY="0"/>
+                    <Dimensions x="1250" y="30"/>
+                    <OnMouseDown>self:GetParent():StartMoving()</OnMouseDown>
+                    <OnMouseUp>self:GetParent():StopMovingOrResizing()</OnMouseUp>
+                </Control>
+
+                <Label name="$(parent)Info" font="$(BOLD_FONT)|$(KB_20)|soft-shadow-thick" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" text="Killfeed Scoreboard">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="10" offsetY="10"/>
+                </Label>
+
+                <Label name="$(parent)Players" font="$(BOLD_FONT)|$(KB_20)|soft-shadow-thick" horizontalAlignment="RIGHT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" text="Players: 0">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)" offsetX="-10" offsetY="40"/>
+                </Label>
+
+                <!-- List 1 - Left column -->
+                <Control name="$(parent)List1" inherits="PVP_KillfeedScoreboardList">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="10" offsetY="60"/>
+                    <Dimensions x="400" y="500"/>
+                </Control>
+
+                <!-- List 2 - Middle column -->
+                <Control name="$(parent)List2" inherits="PVP_KillfeedScoreboardList">
+                    <Anchor point="LEFT" relativeTo="$(parent)List1" relativePoint="RIGHT" offsetX="10" offsetY="0"/>
+                    <Dimensions x="400" y="500"/>
+                </Control>
+
+                <!-- List 3 - Right column -->
+                <Control name="$(parent)List3" inherits="PVP_KillfeedScoreboardList">
+                    <Anchor point="LEFT" relativeTo="$(parent)List2" relativePoint="RIGHT" offsetX="10" offsetY="0"/>
+                    <Dimensions x="400" y="500"/>
+                </Control>
+
+                <Button name="$(parent)CloseButton" clickSound="Click">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)" offsetX="-10" offsetY="10"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="EsoUI/Art/Buttons/decline_up.dds" pressed="EsoUI/Art/Buttons/decline_down.dds" mouseOver="EsoUI/Art/Buttons/decline_over.dds"/>
+                    <OnClicked>SCENE_MANAGER:Hide("PVPKillfeedScoreboardScene")</OnClicked>
+                </Button>
+                <Button name="$(parent)ClearButton" clickSound="Click">
+                    <Anchor point="RIGHT" relativeTo="$(parent)CloseButton" relativePoint="LEFT" offsetX="-35" offsetY="0"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="EsoUI/Art/Buttons/minus_up.dds" pressed="EsoUI/Art/Buttons/minus_down.dds" mouseOver="EsoUI/Art/Buttons/minus_over.dds"/>
+                    <OnClicked>PVP_KillfeedScoreboard_OnClear()</OnClicked>
+                    <OnMouseEnter>InitializeTooltip(InformationTooltip, self, BOTTOM, 0, 0); InformationTooltip:AddLine("Clear Scoreboard", "", 1, 1, 1)</OnMouseEnter>
+                    <OnMouseExit>ClearTooltip(InformationTooltip)</OnMouseExit>
+                </Button>
+                <Button name="$(parent)GroupFilterButton" clickSound="Click" drawLayer="TOP" drawLevel="2">
+                    <Anchor point="RIGHT" relativeTo="$(parent)ClearButton" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="esoui/art/icons/mapkey/mapkey_groupmember.dds" pressed="esoui/art/icons/mapkey/mapkey_groupmember.dds" mouseOver="esoui/art/icons/mapkey/mapkey_groupmember.dds"/>
+                    <OnClicked>PVP_KillfeedScoreboard_OnToggleGroupFilter()</OnClicked>
+                    <OnMouseEnter>InitializeTooltip(InformationTooltip, self, BOTTOM, 0, 0); InformationTooltip:AddLine("Filter: Group Members", "", 1, 1, 1)</OnMouseEnter>
+                    <OnMouseExit>ClearTooltip(InformationTooltip)</OnMouseExit>
+                </Button>
+                <Button name="$(parent)GuildFilterButton" clickSound="Click" drawLayer="TOP" drawLevel="2">
+                    <Anchor point="RIGHT" relativeTo="$(parent)GroupFilterButton" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="esoui/art/tutorial/gamepad/gp_overview_guild.dds" pressed="esoui/art/tutorial/gamepad/gp_overview_guild.dds" mouseOver="esoui/art/tutorial/gamepad/gp_overview_guild.dds"/>
+                    <OnClicked>PVP_KillfeedScoreboard_OnToggleGuildFilter()</OnClicked>
+                    <OnMouseUp>PVP_KillfeedScoreboard_GuildFilterButton_OnMouseUp(self, button)</OnMouseUp>
+                    <OnMouseEnter>InitializeTooltip(InformationTooltip, self, BOTTOM, 0, 0); InformationTooltip:AddLine("Left-click: Filter Guildmates | Right-click: Select Guilds", "", 1, 1, 1)</OnMouseEnter>
+                    <OnMouseExit>ClearTooltip(InformationTooltip)</OnMouseExit>
+                </Button>
+                <Button name="$(parent)RefreshButton" clickSound="Click">
+                    <Anchor point="RIGHT" relativeTo="$(parent)GuildFilterButton" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="EsoUI/Art/Buttons/edit_up.dds" pressed="EsoUI/Art/Buttons/edit_down.dds" mouseOver="EsoUI/Art/Buttons/edit_over.dds"/>
+                    <OnClicked>PVP_KillfeedScoreboard_OnRefresh()</OnClicked>
+                    <OnMouseEnter>InitializeTooltip(InformationTooltip, self, BOTTOM, 0, 0); InformationTooltip:AddLine("Refresh Scoreboard", "", 1, 1, 1)</OnMouseEnter>
+                    <OnMouseExit>ClearTooltip(InformationTooltip)</OnMouseExit>
+                </Button>
+                <Button name="$(parent)StartButton" clickSound="Click">
+                    <Anchor point="RIGHT" relativeTo="$(parent)RefreshButton" relativePoint="LEFT" offsetX="-5" offsetY="0"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="EsoUI/Art/Buttons/accept_up.dds" pressed="EsoUI/Art/Buttons/accept_down.dds" mouseOver="EsoUI/Art/Buttons/accept_over.dds"/>
+                    <OnClicked>PVP_KillfeedScoreboard_OnToggleLogging()</OnClicked>
+                    <OnMouseEnter>PVP_KillfeedScoreboardStartButton_OnMouseEnter(self)</OnMouseEnter>
+                    <OnMouseExit>ClearTooltip(InformationTooltip)</OnMouseExit>
+                </Button>
+            </Controls>
+        </TopLevelControl>
+
+        <!-- Detailed Player Stats Window -->
+        <TopLevelControl name="PVP_KillfeedPlayerDetails" hidden="true" movable="true" clampedToScreen="true" mouseEnabled="true">
+            <Dimensions x="600" y="700"/>
+            <Anchor point="CENTER" relativePoint="CENTER"/>
+            <Controls>
+                <Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" edgeColor="000000">
+                    <AnchorFill/>
+                </Backdrop>
+
+                <!-- Drag handle -->
+                <Control name="$(parent)DragHandle" mouseEnabled="true">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="0" offsetY="0"/>
+                    <Dimensions x="600" y="30"/>
+                    <OnMouseDown>self:GetParent():StartMoving()</OnMouseDown>
+                    <OnMouseUp>self:GetParent():StopMovingOrResizing()</OnMouseUp>
+                </Control>
+
+                <Label name="$(parent)PlayerName" font="$(BOLD_FONT)|$(KB_20)|soft-shadow-thick" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="10" offsetY="35"/>
+                </Label>
+
+                <Label name="$(parent)Stats" font="$(BOLD_FONT)|$(KB_18)|soft-shadow-thick" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)PlayerName" relativePoint="BOTTOMLEFT" offsetY="10"/>
+                    <Dimensions x="580" y="60"/>
+                </Label>
+
+                <Control name="$(parent)EventList" inherits="ZO_ScrollList">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)Stats" relativePoint="BOTTOMLEFT" offsetY="10"/>
+                    <Dimensions x="580" y="540"/>
+                </Control>
+
+                <Button name="$(parent)CloseButton" clickSound="Click">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)" offsetX="-5" offsetY="5"/>
+                    <Dimensions x="30" y="30"/>
+                    <Textures normal="EsoUI/Art/Buttons/decline_up.dds" pressed="EsoUI/Art/Buttons/decline_down.dds" mouseOver="EsoUI/Art/Buttons/decline_over.dds"/>
+                    <OnClicked>PVP_KillfeedPlayerDetails:SetHidden(true)</OnClicked>
+                </Button>
+            </Controls>
+        </TopLevelControl>
+
+        <!-- Guild Selection Menu -->
+        <TopLevelControl name="PVP_KillfeedGuildSelectMenu" hidden="true" clampedToScreen="true" mouseEnabled="true" movable="false">
+            <Dimensions x="200" y="200"/>
+            <Anchor point="TOPLEFT"/>
+            <Controls>
+                <Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" edgeColor="000000">
+                    <AnchorFill/>
+                </Backdrop>
+                
+                <Control name="$(parent)Scroll" inherits="ZO_ScrollContainer">
+                    <AnchorFill offsetX="5" offsetY="5" offsetXEnd="-5" offsetYEnd="-5"/>
+                    <Controls>
+                        <Control name="$(parent)Content">
+                            <Anchor point="TOPLEFT"/>
+                            <Dimensions x="180" y="10"/>
+                        </Control>
+                    </Controls>
+                </Control>
+            </Controls>
+        </TopLevelControl>
+
+    </Controls>
+</GuiXml>
