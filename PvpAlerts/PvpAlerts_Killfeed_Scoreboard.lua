@@ -29,6 +29,7 @@ local KillfeedScoreboardList = ZO_SortFilterList:Subclass()
 
 -- Cache for alliance colors to reduce API calls
 local allianceColorCache = {}
+
 local function GetCachedAllianceColor(alliance)
     if not allianceColorCache[alliance] then
         allianceColorCache[alliance] = PVP:GetTrueAllianceColorsHex(alliance)
@@ -41,22 +42,558 @@ local function FormatPlayerDisplayName(characterName, displayName)
     
     if userDisplayNameType == "user" then
         if displayName and displayName ~= "" then
-            return displayName
+            return zo_strformat(SI_UNIT_NAME, displayName)
         else
             return zo_strformat(SI_UNIT_NAME, characterName)
         end
     elseif userDisplayNameType == "both" then
-        return zo_strformat(SI_UNIT_NAME, characterName) .. " " .. (displayName or "")
+        return zo_strformat(SI_UNIT_NAME, characterName) .. (displayName or "")
     else
         return zo_strformat(SI_UNIT_NAME, characterName)
     end
 end
 
-PVP.killfeedScoreboard = {}
+function PVP:IsGroupMember(characterName)
+	if not characterName or characterName == "" then
+		return false
+	end
+	
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.historicalGroupMembers then
+        killfeedScoreboard.historicalGroupMembers = {}
+    end
+    return killfeedScoreboard.historicalGroupMembers[characterName] or false
+end
 
-PVP.killfeedScoreboard.currentDetailsPlayerName = nil
+function PVP:UpdateHistoricalGroupMembers()
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.historicalGroupMembers then
+        killfeedScoreboard.historicalGroupMembers = {}
+    end
+
+	for i = 1, GetGroupSize() do
+		local unitTag = GetGroupUnitTagByIndex(i)
+		if unitTag then
+			local displayName = GetUnitDisplayName(unitTag)
+			if displayName and displayName ~= "" then
+                killfeedScoreboard.historicalGroupMembers[displayName] = true
+			end
+		end
+	end
+end
+
+function PVP:GetAvailableGuilds()
+	local guilds = {}
+	for i = 1, GetNumGuilds() do
+		local guildId = GetGuildId(i)
+		local guildName = GetGuildName(guildId)
+		insert(guilds, { id = guildId, name = guildName })
+	end
+	return guilds
+end
+
+function PVP:IsGuildmateInSelected(displayName)
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard or not killfeedScoreboard.selectedGuilds then
+		return false
+	end
+	
+    local guildmates = self.guildmates
+	if not guildmates or not guildmates[displayName] then
+		return false
+	end
+	-- Check if player is in any of the selected guilds
+	for guildId, _ in pairs(guildmates[displayName]) do
+        if killfeedScoreboard.selectedGuilds[guildId] then
+			return true
+		end
+	end
+	
+	return false
+end
+
+function PVP:GetPlayerRecentEvents(playerName)
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.playerStats or not killfeedScoreboard.playerStats[playerName] then
+        return {}
+    end
+    
+    local allEvents = killfeedScoreboard.playerStats[playerName].events or {}
+    local events = {}
+    
+    for _, event in ipairs(allEvents) do
+        local isKill = (event.source == playerName)
+        
+        insert(events, {
+            type = isKill and "kill" or "death",
+            opponent = isKill and event.target or event.source,
+            opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName,
+            opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance,
+            opponentClass = isKill and event.targetClass or event.sourceClass,
+            timestamp = event.timestamp
+        })
+    end
+    
+    sort(events, function(a, b) return a.timestamp > b.timestamp end)
+    
+    return events
+end
+
+function PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.playerStats or not killfeedScoreboard.playerStats[playerName] then
+        return nil
+    end
+    
+    local stats = killfeedScoreboard.playerStats[playerName]
+    local events = stats.events or {}
+    
+    local killsByAlliance = {
+        [ALLIANCE_ALDMERI_DOMINION] = 0,
+        [ALLIANCE_DAGGERFALL_COVENANT] = 0,
+        [ALLIANCE_EBONHEART_PACT] = 0
+    }
+    local deathsByAlliance = {
+        [ALLIANCE_ALDMERI_DOMINION] = 0,
+        [ALLIANCE_DAGGERFALL_COVENANT] = 0,
+        [ALLIANCE_EBONHEART_PACT] = 0
+    }
+    
+    local kills = 0
+    local deaths = 0
+    
+    local playerInGroup = false
+    local playerInGuild = false
+    if applyFilters and (killfeedScoreboard.filterGroupOnly or killfeedScoreboard.filterGuildOnly) then
+        if killfeedScoreboard.filterGroupOnly and stats.displayName then
+            playerInGroup = self:IsGroupMember(stats.displayName)
+        end
+        if killfeedScoreboard.filterGuildOnly and stats.displayName then
+            playerInGuild = self:IsGuildmateInSelected(stats.displayName)
+        end
+    end
+    
+    if applyFilters and (killfeedScoreboard.filterGroupOnly or killfeedScoreboard.filterGuildOnly) then
+        for _, event in ipairs(events) do
+            local isKill = (event.source == playerName)
+            local opponent = isKill and event.target or event.source
+            local opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName
+            local opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance
+
+            local isOpponentAllianceDisabled = opponentAlliance and killfeedScoreboard.disabledAlliances[opponentAlliance]
+            
+            if not killfeedScoreboard.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
+                local countThisEvent = false
+                if playerInGroup or playerInGuild then
+                    countThisEvent = true
+                end
+                if not countThisEvent and opponentDisplayName then
+                    if killfeedScoreboard.filterGroupOnly and self:IsGroupMember(opponentDisplayName) then
+                        countThisEvent = true
+                    end
+                    if killfeedScoreboard.filterGuildOnly and self:IsGuildmateInSelected(opponentDisplayName) then
+                        countThisEvent = true
+                    end
+                end
+                
+                if countThisEvent then
+                    if isKill then
+                        kills = kills + 1
+                        if opponentAlliance then
+                            killsByAlliance[opponentAlliance] = killsByAlliance[opponentAlliance] + 1
+                        end
+                    else
+                        deaths = deaths + 1
+                        if opponentAlliance then
+                            deathsByAlliance[opponentAlliance] = deathsByAlliance[opponentAlliance] + 1
+                        end
+                    end
+                end
+            end
+        end
+    else
+        for _, event in ipairs(events) do
+            local isKill = (event.source == playerName)
+            local opponent = isKill and event.target or event.source
+            local opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance
+            
+            local isOpponentAllianceDisabled = opponentAlliance and killfeedScoreboard.disabledAlliances[opponentAlliance]
+
+            if not killfeedScoreboard.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
+                if isKill then
+                    kills = kills + 1
+                    if opponentAlliance then
+                        killsByAlliance[opponentAlliance] = killsByAlliance[opponentAlliance] + 1
+                    end
+                else
+                    deaths = deaths + 1
+                    if opponentAlliance then
+                        deathsByAlliance[opponentAlliance] = deathsByAlliance[opponentAlliance] + 1
+                    end
+                end
+            end
+        end
+    end
+    
+    return {
+        kills = kills,
+        deaths = deaths,
+        killsByAlliance = killsByAlliance,
+        deathsByAlliance = deathsByAlliance
+    }
+end
+
+function PVP_ShowPlayerDetails(playerName)
+	if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then return end
+	
+	PVP.killfeedScoreboard.currentDetailsPlayerName = playerName
+	
+	local playerStats = PVP.killfeedScoreboard.playerStats[playerName]
+	local aggregates = PVP:CalculatePlayerAggregateStats(playerName, true)
+	
+	if not aggregates then return end
+	
+	local classID = playerStats.class or 0
+	local classIcon = ""
+	if classID > 0 and PVP.classIcons then
+		classIcon = PVP.classIcons[classID] or ""
+	end
+	
+	local formattedPlayerName = FormatPlayerDisplayName(playerName, playerStats.displayName)
+	
+	local nameText
+	if classIcon ~= "" then
+		nameText = zo_iconFormatInheritColor(classIcon, 28, 28) .. " " .. formattedPlayerName
+	else
+		nameText = formattedPlayerName
+	end
+	
+	local allianceHex = GetCachedAllianceColor(playerStats.alliance or ALLIANCE_NONE)
+	nameText = PVP:Colorize(nameText, allianceHex)
+	
+	PVP_KillfeedPlayerDetailsPlayerName:SetText(nameText)
+	PVP_KillfeedPlayerDetailsPlayerName:SetMouseEnabled(true)
+	PVP_KillfeedPlayerDetailsPlayerName:SetHandler("OnMouseUp", function(self, button, upInside)
+		if upInside and button == MOUSE_BUTTON_INDEX_RIGHT then
+			if CHAT_SYSTEM and CHAT_SYSTEM.ShowPlayerContextMenu then
+				CHAT_SYSTEM:ShowPlayerContextMenu(playerStats.displayName, playerName)
+			end
+		end
+	end)
+	
+	local kdRatio = aggregates.deaths > 0 and (aggregates.kills / aggregates.deaths) or aggregates.kills
+	local statsText = format("Kills: %s | Deaths: %s | K/D: %s",
+		PVP:Colorize(tostring(aggregates.kills), "00FF00"),
+		PVP:Colorize(tostring(aggregates.deaths), "FF0000"),
+		PVP:Colorize(format("%.2f", kdRatio), "FFFF00")
+	)
+	
+	local adHex = GetCachedAllianceColor(ALLIANCE_ALDMERI_DOMINION)
+	local dcHex = GetCachedAllianceColor(ALLIANCE_DAGGERFALL_COVENANT)
+	local epHex = GetCachedAllianceColor(ALLIANCE_EBONHEART_PACT)
+	
+	statsText = statsText .. "\n" .. format("vs |c%sAD|r: %d/%d  |  vs |c%sDC|r: %d/%d  |  vs |c%sEP|r: %d/%d",
+		adHex, aggregates.killsByAlliance[ALLIANCE_ALDMERI_DOMINION] or 0, aggregates.deathsByAlliance[ALLIANCE_ALDMERI_DOMINION] or 0,
+		dcHex, aggregates.killsByAlliance[ALLIANCE_DAGGERFALL_COVENANT] or 0, aggregates.deathsByAlliance[ALLIANCE_DAGGERFALL_COVENANT] or 0,
+		epHex, aggregates.killsByAlliance[ALLIANCE_EBONHEART_PACT] or 0, aggregates.deathsByAlliance[ALLIANCE_EBONHEART_PACT] or 0
+	)
+	
+	PVP_KillfeedPlayerDetailsStats:SetText(statsText)
+	
+	local events = PVP:GetPlayerRecentEvents(playerName)
+	
+	if not PVP.killfeedScoreboard.eventsList then
+		local eventListControl = PVP_KillfeedPlayerDetailsEventList
+		if eventListControl then
+            PVP.killfeedScoreboard.eventsList = eventListControl
+            ZO_ScrollList_AddDataType(PVP.killfeedScoreboard.eventsList, 1, "PVP_KillfeedPlayerDetailsEventRow", 32,
+                function(control, data)
+                    control:SetText(data.text)
+                    control.eventData = data
+                    control:SetMouseEnabled(true)
+                    
+                    control:SetHandler("OnMouseUp", function(self, button, upInside)
+                        if upInside and button == MOUSE_BUTTON_INDEX_RIGHT and self.eventData and self.eventData.opponentName and self.eventData.opponentDisplayName then
+                            if CHAT_SYSTEM and CHAT_SYSTEM.ShowPlayerContextMenu then
+                                CHAT_SYSTEM:ShowPlayerContextMenu(self.eventData.opponentDisplayName, self.eventData.opponentName)
+                            end
+                        end
+                    end)
+                end)
+		end
+	end
+	
+	if PVP.killfeedScoreboard.eventsList then
+		local scrollData = ZO_ScrollList_GetDataList(PVP.killfeedScoreboard.eventsList)
+		ZO_ScrollList_Clear(PVP.killfeedScoreboard.eventsList)
+		
+        local subjectMatchesFilter = false
+        if PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly then
+            if PVP.killfeedScoreboard.filterGroupOnly and PVP:IsGroupMember(playerStats.displayName) then
+                subjectMatchesFilter = true
+            elseif PVP.killfeedScoreboard.filterGuildOnly and PVP:IsGuildmateInSelected(playerStats.displayName) then
+                subjectMatchesFilter = true
+            end
+        end
+
+		for _, event in ipairs(events) do
+			local timestamp = event.timestamp
+			local timeStr = ZO_FormatTime(zo_floor((GetGameTimeMilliseconds() - timestamp) / 1000), TIME_FORMAT_STYLE_COLONS, TIME_FORMAT_PRECISION_SECONDS)
+			
+			local formattedOpponentName = FormatPlayerDisplayName(event.opponent, event.opponentDisplayName)
+			
+            local isOpponentDisabled = PVP.killfeedScoreboard.disabledPlayers[event.opponent] or false
+            local isOpponentAllianceDisabled = PVP.killfeedScoreboard.disabledAlliances[event.opponentAlliance] or false
+            local isOpponentFilteredOut = false
+            
+            if PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly then
+                if not subjectMatchesFilter then
+                    local matchesFilter = false
+                    local opponentDisplayName = event.opponentDisplayName
+                    
+                    if PVP.killfeedScoreboard.filterGroupOnly and PVP:IsGroupMember(opponentDisplayName) then
+                        matchesFilter = true
+                    elseif PVP.killfeedScoreboard.filterGuildOnly and PVP:IsGuildmateInSelected(opponentDisplayName) then
+                        matchesFilter = true
+                    end
+                    
+                    if not matchesFilter then isOpponentFilteredOut = true end
+                else
+                    isOpponentFilteredOut = false
+                end
+            end
+            
+            local isDimmed = isOpponentDisabled or isOpponentAllianceDisabled or isOpponentFilteredOut
+
+			local opponentAllianceHex = PVP:AllianceToColor(event.opponentAlliance or ALLIANCE_NONE, isDimmed)
+			local opponentName = PVP:Colorize(formattedOpponentName, opponentAllianceHex)
+			
+			local eventText
+			if event.type == "kill" then
+				eventText = format("[%s] %s killed %s", timeStr, PVP:Colorize("KILL", "00FF00"), opponentName)
+			else
+				eventText = format("[%s] %s by %s", timeStr, PVP:Colorize("DEATH", "FF0000"), opponentName)
+			end
+			
+			insert(scrollData, ZO_ScrollList_CreateDataEntry(1, { 
+				text = eventText,
+				opponentName = event.opponent,
+				opponentDisplayName = event.opponentDisplayName
+			}))
+		end
+		
+		if #scrollData == 0 then
+			insert(scrollData, ZO_ScrollList_CreateDataEntry(1, { text = "No events recorded" }))
+		end
+		
+		ZO_ScrollList_Commit(PVP.killfeedScoreboard.eventsList)
+	end
+	
+	PVP_KillfeedPlayerDetails:SetHidden(false)
+	PVP_KillfeedPlayerDetails:BringWindowToTop()
+end
+
+function PVP:RefreshPlayerDetailsIfOpen()
+    local killfeedScoreboard = self.killfeedScoreboard
+    if killfeedScoreboard.currentDetailsPlayerName and 
+	   PVP_KillfeedPlayerDetails and 
+	   not PVP_KillfeedPlayerDetails:IsHidden() then
+        PVP_ShowPlayerDetails(killfeedScoreboard.currentDetailsPlayerName)
+	end
+end
+
+function PVP:RefreshKillfeedScoreboards()
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard or not killfeedScoreboard.lists then return end
+    
+    if not killfeedScoreboard.playerStats then
+        killfeedScoreboard.playerStats = {}
+    end
+    
+    self:UpdateHistoricalGroupMembers()
+
+    local totalPlayers = 0
+    local disabledPlayers = 0
+    
+    local allianceStats = {}
+    local alliancePlayers = {}
+    for i = 1, 3 do
+        allianceStats[i] = { 
+            alliance = i, 
+            totalKills = 0, 
+            totalDeaths = 0,
+            totalPlayers = 0,
+            enabledPlayers = 0,
+            killsByAlliance = {
+                [ALLIANCE_ALDMERI_DOMINION] = 0,
+                [ALLIANCE_DAGGERFALL_COVENANT] = 0,
+                [ALLIANCE_EBONHEART_PACT] = 0
+            },
+            deathsByAlliance = {
+                [ALLIANCE_ALDMERI_DOMINION] = 0,
+                [ALLIANCE_DAGGERFALL_COVENANT] = 0,
+                [ALLIANCE_EBONHEART_PACT] = 0
+            }
+        }
+        alliancePlayers[i] = {}
+    end
+    
+    for playerName, stats in pairs(killfeedScoreboard.playerStats) do
+        local alliance = stats.alliance
+        
+        local passesDirectFilter = false
+        if not killfeedScoreboard.filterGroupOnly and not killfeedScoreboard.filterGuildOnly then
+            passesDirectFilter = true
+        else
+            if killfeedScoreboard.filterGroupOnly and self:IsGroupMember(stats.displayName) then
+                passesDirectFilter = true
+            elseif killfeedScoreboard.filterGuildOnly and self:IsGuildmateInSelected(stats.displayName) then
+                passesDirectFilter = true
+            end
+        end
+
+        local isPlayerDisabled = killfeedScoreboard.disabledPlayers[playerName] or false
+        local isAllianceDisabled = (alliance and killfeedScoreboard.disabledAlliances[alliance]) or false
+        local isDisabled = isPlayerDisabled or isAllianceDisabled
+        
+        local applyFilters = true 
+        local aggregates = self:CalculatePlayerAggregateStats(playerName, applyFilters)
+        local includePlayer = false
+        
+        if passesDirectFilter then
+             includePlayer = true
+        elseif aggregates and (aggregates.kills + aggregates.deaths > 0) then
+             includePlayer = true
+        end
+
+        if includePlayer then
+            if isDisabled then
+                disabledPlayers = disabledPlayers + 1
+                if alliance and allianceStats[alliance] then
+                    allianceStats[alliance].totalPlayers = allianceStats[alliance].totalPlayers + 1
+                end
+            else
+                totalPlayers = totalPlayers + 1
+                if alliance and allianceStats[alliance] then
+                    allianceStats[alliance].totalPlayers = allianceStats[alliance].totalPlayers + 1
+                    allianceStats[alliance].enabledPlayers = allianceStats[alliance].enabledPlayers + 1
+                end
+            end
+            
+            if alliance and alliancePlayers[alliance] then
+                if aggregates then
+                    local kills = aggregates.kills
+                    local deaths = aggregates.deaths
+                    
+                    insert(alliancePlayers[alliance], {
+                        name = playerName,
+                        sortName = FormatPlayerDisplayName(playerName, stats.displayName),
+                        displayName = stats.displayName,
+                        kills = kills,
+                        deaths = deaths,
+                        killsByAlliance = aggregates.killsByAlliance,
+                        deathsByAlliance = aggregates.deathsByAlliance,
+                        alliance = alliance,
+                        rank = stats.rank or 9999,
+                        class = stats.class or 0,
+                        lastSeen = stats.lastSeen or 0,
+                        kd = (deaths > 0) and (kills / deaths) or kills,
+                    })
+                    
+                    if not isDisabled then
+                        allianceStats[alliance].totalKills = allianceStats[alliance].totalKills + kills
+                        allianceStats[alliance].totalDeaths = allianceStats[alliance].totalDeaths + deaths
+                        
+                        if aggregates.killsByAlliance then
+                            for kAlliance, count in pairs(aggregates.killsByAlliance) do
+                                allianceStats[alliance].killsByAlliance[kAlliance] = (allianceStats[alliance].killsByAlliance[kAlliance] or 0) + count
+                            end
+                        end
+                        if aggregates.deathsByAlliance then
+                            for kAlliance, count in pairs(aggregates.deathsByAlliance) do
+                                allianceStats[alliance].deathsByAlliance[kAlliance] = (allianceStats[alliance].deathsByAlliance[kAlliance] or 0) + count
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+    
+    local totalPlayersText = "Players: " .. tostring(totalPlayers)
+    if disabledPlayers > 0 then
+        totalPlayersText = totalPlayersText .. " (" .. tostring(disabledPlayers) .. " disabled)"
+    end
+    if PVP_KillfeedScoreboardPlayers then
+        PVP_KillfeedScoreboardPlayers:SetText(totalPlayersText)
+    end
+    
+    if PVP_KillfeedScoreboardInfo then
+        PVP_KillfeedScoreboardInfo:SetText("Killfeed Scoreboard - " .. GetPlayerLocationName())
+    end
+    
+    sort(allianceStats, function(a, b)
+        local kdA = a.totalDeaths > 0 and (a.totalKills / a.totalDeaths) or a.totalKills
+        local kdB = b.totalDeaths > 0 and (b.totalKills / b.totalDeaths) or b.totalKills
+        return kdA > kdB
+    end)
+    
+    for i = 1, 3 do
+        local statsData = allianceStats[i]
+        local alliance = statsData.alliance
+        local players = alliancePlayers[alliance]
+        
+        sort(players, function(a, b)
+            return a.kd > b.kd
+        end)
+        
+        killfeedScoreboard.lists[i].masterList = players
+        
+        local allianceName = GetAllianceName(alliance)
+        local icon = GetAllianceBannerIcon(alliance)
+        
+        local isAllianceDisabled = killfeedScoreboard.disabledAlliances[alliance] or false
+        local colorHex = self:AllianceToColor(alliance, isAllianceDisabled)
+        
+        local totalKills = statsData.totalKills
+        local totalDeaths = statsData.totalDeaths
+        local kd = (totalDeaths > 0) and (totalKills / totalDeaths) or totalKills
+        local kdText = format("%.2f", kd)
+        local headerNameText = zo_iconFormatInheritColor(icon, 28, 28) .. "  " .. allianceName .. "  (K/D " .. kdText .. ")"
+        
+        if isAllianceDisabled then
+             headerNameText = headerNameText .. " (Disabled)"
+        end
+        
+        local enabledCount = statsData.enabledPlayers or 0
+        local totalCount = statsData.totalPlayers or 0
+        local playerCountText
+        if totalCount > enabledCount then
+            playerCountText = enabledCount .. "/" .. totalCount
+        else
+            playerCountText = tostring(enabledCount)
+        end
+        
+        local headerStatsText = "Kills: " .. tostring(totalKills) .. " | Deaths: " .. tostring(totalDeaths) .. " (Players: " .. playerCountText .. ")"
+        
+        local headerControl = PVP_KillfeedScoreboard:GetNamedChild("List" .. i .. "AllianceHeader")
+        if headerControl then
+            headerControl.allianceId = alliance
+            headerControl.statsData = statsData
+            headerControl:SetText(self:Colorize(headerNameText, colorHex))
+        end
+        local subHeaderControl = PVP_KillfeedScoreboard:GetNamedChild("List" .. i .. "AllianceSubHeader")
+        if subHeaderControl then
+            subHeaderControl:SetText(self:Colorize(headerStatsText, colorHex))
+        end
+        
+        killfeedScoreboard.lists[i]:RefreshData()
+    end
+end
 
 function PVP_InitKillfeedScoreboard()
+    PVP.killfeedScoreboard = {}
+
     if not PVP.killfeedScoreboard.lists then
         if not PVP_KillfeedScoreboard then
             return
@@ -146,6 +683,7 @@ function PVP_InitKillfeedScoreboard()
         PVP.killfeedScoreboard.filterGroupOnly = false
         PVP.killfeedScoreboard.filterGuildOnly = false
         PVP.killfeedScoreboard.selectedGuilds = {}
+        PVP.killfeedScoreboard.currentDetailsPlayerName = nil
 
         for i = 1, GetNumGuilds() do
             local guildId = GetGuildId(i)
@@ -199,7 +737,8 @@ function PVP_InitKillfeedScoreboard()
 end
 
 function PVP:KillfeedScoreboardToggle(isKeyDown)
-	if not PVP.killfeedScoreboard.lists then
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.lists then
 		PVP_InitKillfeedScoreboard()
 	end
 	
@@ -208,11 +747,11 @@ function PVP:KillfeedScoreboardToggle(isKeyDown)
 		return
 	end
 	
-	if PVP.SV.killfeedScoreboardToggle then
+    if self.SV.killfeedScoreboardToggle then
 		if isKeyDown then
 			if PVP_KillfeedScoreboard:IsControlHidden() then
 				SCENE_MANAGER:Show("PVPKillfeedScoreboardScene")
-				PVP:RefreshKillfeedScoreboards()
+                self:RefreshKillfeedScoreboards()
 			else
 				SCENE_MANAGER:Hide("PVPKillfeedScoreboardScene")
 			end
@@ -220,7 +759,7 @@ function PVP:KillfeedScoreboardToggle(isKeyDown)
 	else
 		if isKeyDown then
 			SCENE_MANAGER:Show("PVPKillfeedScoreboardScene")
-			PVP:RefreshKillfeedScoreboards()
+            self:RefreshKillfeedScoreboards()
 		else
 			SCENE_MANAGER:Hide("PVPKillfeedScoreboardScene")
 		end
@@ -228,50 +767,42 @@ function PVP:KillfeedScoreboardToggle(isKeyDown)
 end
 
 function PVP:ToggleGroupMemberFilter()
-	PVP.killfeedScoreboard.filterGroupOnly = not PVP.killfeedScoreboard.filterGroupOnly
-	PVP:RefreshKillfeedScoreboards()
-	PVP:RefreshPlayerDetailsIfOpen()
-	return PVP.killfeedScoreboard.filterGroupOnly
+    local killfeedScoreboard = self.killfeedScoreboard
+    killfeedScoreboard.filterGroupOnly = not killfeedScoreboard.filterGroupOnly
+    self:RefreshKillfeedScoreboards()
+    self:RefreshPlayerDetailsIfOpen()
+    return killfeedScoreboard.filterGroupOnly
 end
 
 function PVP:ToggleGuildMemberFilter()
-	PVP.killfeedScoreboard.filterGuildOnly = not PVP.killfeedScoreboard.filterGuildOnly
-	PVP:RefreshKillfeedScoreboards()
-	PVP:RefreshPlayerDetailsIfOpen()
-	return PVP.killfeedScoreboard.filterGuildOnly
+    local killfeedScoreboard = self.killfeedScoreboard
+    killfeedScoreboard.filterGuildOnly = not killfeedScoreboard.filterGuildOnly
+    self:RefreshKillfeedScoreboards()
+    self:RefreshPlayerDetailsIfOpen()
+    return killfeedScoreboard.filterGuildOnly
 end
 
 function PVP:ToggleGuildInFilter(guildId)
-	if not PVP.killfeedScoreboard.selectedGuilds then
-		PVP.killfeedScoreboard.selectedGuilds = {}
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.selectedGuilds then
+        killfeedScoreboard.selectedGuilds = {}
 	end
 	
-	if PVP.killfeedScoreboard.selectedGuilds[guildId] then
-		PVP.killfeedScoreboard.selectedGuilds[guildId] = nil
+    if killfeedScoreboard.selectedGuilds[guildId] then
+        killfeedScoreboard.selectedGuilds[guildId] = nil
 	else
-		PVP.killfeedScoreboard.selectedGuilds[guildId] = true
+        killfeedScoreboard.selectedGuilds[guildId] = true
 	end
 	
-	PVP:RefreshKillfeedScoreboards()
-	PVP:RefreshPlayerDetailsIfOpen()
-	return PVP.killfeedScoreboard.selectedGuilds[guildId] or false
+    self:RefreshKillfeedScoreboards()
+    self:RefreshPlayerDetailsIfOpen()
+    return killfeedScoreboard.selectedGuilds[guildId] or false
 end
 
 function PVP:IsGuildSelected(guildId)
-	return PVP.killfeedScoreboard.selectedGuilds and PVP.killfeedScoreboard.selectedGuilds[guildId] or false
+    local killfeedScoreboard = self.killfeedScoreboard
+    return killfeedScoreboard.selectedGuilds and killfeedScoreboard.selectedGuilds[guildId] or false
 end
-
---[[ local function PlayerMedalsPoolCustomFactory(control)
-	local score = control:GetNamedChild('Score')
-	local icon = control:GetNamedChild('Icon')
-	icon:SetDimensions(75, 75)
-	control:SetHidden(false)
-end
-
-local function MedalsPoolCustomReset(control)
-	control:SetHidden(true)
-end
- ]]
 
 function KillfeedScoreboardList:New(control)
 	local list = ZO_SortFilterList.New(self, control)
@@ -531,463 +1062,14 @@ function PVP_KillfeedScoreboardRow_OnMouseUp(control, button, upInside)
 	end
 end
 
-function PVP_ShowPlayerDetails(playerName)
-	if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then return end
-	
-	PVP.killfeedScoreboard.currentDetailsPlayerName = playerName
-	
-	local playerStats = PVP.killfeedScoreboard.playerStats[playerName]
-	local aggregates = PVP:CalculatePlayerAggregateStats(playerName, true)
-	
-	if not aggregates then return end
-	
-	local classID = playerStats.class or 0
-	local classIcon = ""
-	if classID > 0 and PVP.classIcons then
-		classIcon = PVP.classIcons[classID] or ""
-	end
-	
-	local formattedPlayerName = FormatPlayerDisplayName(playerName, playerStats.displayName)
-	
-	local nameText
-	if classIcon ~= "" then
-		nameText = zo_iconFormatInheritColor(classIcon, 28, 28) .. " " .. formattedPlayerName
-	else
-		nameText = formattedPlayerName
-	end
-	
-	local allianceHex = GetCachedAllianceColor(playerStats.alliance or ALLIANCE_NONE)
-	nameText = PVP:Colorize(nameText, allianceHex)
-	
-	PVP_KillfeedPlayerDetailsPlayerName:SetText(nameText)
-	
-	local kdRatio = aggregates.deaths > 0 and (aggregates.kills / aggregates.deaths) or aggregates.kills
-	local statsText = format("Kills: %s | Deaths: %s | K/D: %s",
-		PVP:Colorize(tostring(aggregates.kills), "00FF00"),
-		PVP:Colorize(tostring(aggregates.deaths), "FF0000"),
-		PVP:Colorize(format("%.2f", kdRatio), "FFFF00")
-	)
-	
-	local adHex = GetCachedAllianceColor(ALLIANCE_ALDMERI_DOMINION)
-	local dcHex = GetCachedAllianceColor(ALLIANCE_DAGGERFALL_COVENANT)
-	local epHex = GetCachedAllianceColor(ALLIANCE_EBONHEART_PACT)
-	
-	statsText = statsText .. "\n" .. format("vs |c%sAD|r: %d/%d  |  vs |c%sDC|r: %d/%d  |  vs |c%sEP|r: %d/%d",
-		adHex, aggregates.killsByAlliance[ALLIANCE_ALDMERI_DOMINION] or 0, aggregates.deathsByAlliance[ALLIANCE_ALDMERI_DOMINION] or 0,
-		dcHex, aggregates.killsByAlliance[ALLIANCE_DAGGERFALL_COVENANT] or 0, aggregates.deathsByAlliance[ALLIANCE_DAGGERFALL_COVENANT] or 0,
-		epHex, aggregates.killsByAlliance[ALLIANCE_EBONHEART_PACT] or 0, aggregates.deathsByAlliance[ALLIANCE_EBONHEART_PACT] or 0
-	)
-	
-	PVP_KillfeedPlayerDetailsStats:SetText(statsText)
-	
-	local events = PVP:GetPlayerRecentEvents(playerName)
-	
-	if not PVP.killfeedScoreboard.eventsList then
-		local eventListControl = PVP_KillfeedPlayerDetailsEventList
-		if eventListControl then
-            PVP.killfeedScoreboard.eventsList = eventListControl
-            ZO_ScrollList_AddDataType(PVP.killfeedScoreboard.eventsList, 1, "PVP_KillfeedPlayerDetailsEventRow", 32,
-                function(control, data)
-                    control:SetText(data.text)
-                end)
-		end
-	end
-	
-	if PVP.killfeedScoreboard.eventsList then
-		local scrollData = ZO_ScrollList_GetDataList(PVP.killfeedScoreboard.eventsList)
-		ZO_ScrollList_Clear(PVP.killfeedScoreboard.eventsList)
-		
-        local subjectMatchesFilter = false
-        if PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly then
-            if PVP.killfeedScoreboard.filterGroupOnly and PVP:IsGroupMember(playerStats.displayName) then
-                subjectMatchesFilter = true
-            elseif PVP.killfeedScoreboard.filterGuildOnly and PVP:IsGuildmateInSelected(playerStats.displayName) then
-                subjectMatchesFilter = true
-            end
-        end
-
-		for _, event in ipairs(events) do
-			local timestamp = event.timestamp
-			local timeStr = ZO_FormatTime(zo_floor((GetGameTimeMilliseconds() - timestamp) / 1000), TIME_FORMAT_STYLE_COLONS, TIME_FORMAT_PRECISION_SECONDS)
-			
-			local formattedOpponentName = FormatPlayerDisplayName(event.opponent, event.opponentDisplayName)
-			
-            local isOpponentDisabled = PVP.killfeedScoreboard.disabledPlayers[event.opponent] or false
-            local isOpponentAllianceDisabled = PVP.killfeedScoreboard.disabledAlliances[event.opponentAlliance] or false
-            local isOpponentFilteredOut = false
-            
-            if PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly then
-                if not subjectMatchesFilter then
-                    local matchesFilter = false
-                    local opponentDisplayName = event.opponentDisplayName
-                    
-                    if PVP.killfeedScoreboard.filterGroupOnly and PVP:IsGroupMember(opponentDisplayName) then
-                        matchesFilter = true
-                    elseif PVP.killfeedScoreboard.filterGuildOnly and PVP:IsGuildmateInSelected(opponentDisplayName) then
-                        matchesFilter = true
-                    end
-                    
-                    if not matchesFilter then isOpponentFilteredOut = true end
-                else
-                    isOpponentFilteredOut = false
-                end
-            end
-            
-            local isDimmed = isOpponentDisabled or isOpponentAllianceDisabled or isOpponentFilteredOut
-
-			local opponentAllianceHex = PVP:AllianceToColor(event.opponentAlliance or ALLIANCE_NONE, isDimmed)
-			local opponentName = PVP:Colorize(formattedOpponentName, opponentAllianceHex)
-			
-			local eventText
-			if event.type == "kill" then
-				eventText = format("[%s] %s killed %s", timeStr, PVP:Colorize("KILL", "00FF00"), opponentName)
-			else
-				eventText = format("[%s] %s by %s", timeStr, PVP:Colorize("DEATH", "FF0000"), opponentName)
-			end
-			
-			insert(scrollData, ZO_ScrollList_CreateDataEntry(1, { text = eventText }))
-		end
-		
-		if #scrollData == 0 then
-			insert(scrollData, ZO_ScrollList_CreateDataEntry(1, { text = "No events recorded" }))
-		end
-		
-		ZO_ScrollList_Commit(PVP.killfeedScoreboard.eventsList)
-	end
-	
-	PVP_KillfeedPlayerDetails:SetHidden(false)
-	PVP_KillfeedPlayerDetails:BringWindowToTop()
-end
-
-function PVP:RefreshPlayerDetailsIfOpen()
-	if PVP.killfeedScoreboard.currentDetailsPlayerName and 
-	   PVP_KillfeedPlayerDetails and 
-	   not PVP_KillfeedPlayerDetails:IsHidden() then
-		PVP_ShowPlayerDetails(PVP.killfeedScoreboard.currentDetailsPlayerName)
-	end
-end
-
-function PVP_KillfeedPlayerDetailsEventRow_Setup(control, data)
-	control:SetText(data.text)
-end
-
-function PVP:UpdateHistoricalGroupMembers()
-	if not PVP.killfeedScoreboard.historicalGroupMembers then
-		PVP.killfeedScoreboard.historicalGroupMembers = {}
-	end
-
-	for i = 1, GetGroupSize() do
-		local unitTag = GetGroupUnitTagByIndex(i)
-		if unitTag then
-			local displayName = GetUnitDisplayName(unitTag)
-			if displayName and displayName ~= "" then
-				PVP.killfeedScoreboard.historicalGroupMembers[displayName] = true
-			end
-		end
-	end
-end
-
-function PVP:RefreshKillfeedScoreboards()
-    if not PVP.killfeedScoreboard or not PVP.killfeedScoreboard.lists then return end
-    
-    if not PVP.killfeedScoreboard.playerStats then
-        PVP.killfeedScoreboard.playerStats = {}
-    end
-    
-    PVP:UpdateHistoricalGroupMembers()
-
-    local totalPlayers = 0
-    local disabledPlayers = 0
-    
-    local allianceStats = {}
-    local alliancePlayers = {}
-    for i = 1, 3 do
-        allianceStats[i] = { 
-            alliance = i, 
-            totalKills = 0, 
-            totalDeaths = 0,
-            totalPlayers = 0,
-            enabledPlayers = 0,
-            killsByAlliance = {
-                [ALLIANCE_ALDMERI_DOMINION] = 0,
-                [ALLIANCE_DAGGERFALL_COVENANT] = 0,
-                [ALLIANCE_EBONHEART_PACT] = 0
-            },
-            deathsByAlliance = {
-                [ALLIANCE_ALDMERI_DOMINION] = 0,
-                [ALLIANCE_DAGGERFALL_COVENANT] = 0,
-                [ALLIANCE_EBONHEART_PACT] = 0
-            }
-        }
-        alliancePlayers[i] = {}
-    end
-    
-    for playerName, stats in pairs(PVP.killfeedScoreboard.playerStats) do
-        local alliance = stats.alliance
-        
-        local passesDirectFilter = false
-        if not PVP.killfeedScoreboard.filterGroupOnly and not PVP.killfeedScoreboard.filterGuildOnly then
-            passesDirectFilter = true
-        else
-            if PVP.killfeedScoreboard.filterGroupOnly and PVP:IsGroupMember(stats.displayName) then
-                passesDirectFilter = true
-            elseif PVP.killfeedScoreboard.filterGuildOnly and PVP:IsGuildmateInSelected(stats.displayName) then
-                passesDirectFilter = true
-            end
-        end
-
-        local isPlayerDisabled = PVP.killfeedScoreboard.disabledPlayers[playerName] or false
-        local isAllianceDisabled = (alliance and PVP.killfeedScoreboard.disabledAlliances[alliance]) or false
-        local isDisabled = isPlayerDisabled or isAllianceDisabled
-        
-        local applyFilters = true 
-        local aggregates = PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
-        local includePlayer = false
-        
-        if passesDirectFilter then
-             includePlayer = true
-        elseif aggregates and (aggregates.kills + aggregates.deaths > 0) then
-             includePlayer = true
-        end
-
-        if includePlayer then
-            if isDisabled then
-                disabledPlayers = disabledPlayers + 1
-                if alliance and allianceStats[alliance] then
-                    allianceStats[alliance].totalPlayers = allianceStats[alliance].totalPlayers + 1
-                end
-            else
-                totalPlayers = totalPlayers + 1
-                if alliance and allianceStats[alliance] then
-                    allianceStats[alliance].totalPlayers = allianceStats[alliance].totalPlayers + 1
-                    allianceStats[alliance].enabledPlayers = allianceStats[alliance].enabledPlayers + 1
-                end
-            end
-            
-            if alliance and alliancePlayers[alliance] then
-                if aggregates then
-                    local kills = aggregates.kills
-                    local deaths = aggregates.deaths
-                    
-                    insert(alliancePlayers[alliance], {
-                        name = playerName,
-                        sortName = FormatPlayerDisplayName(playerName, stats.displayName),
-                        displayName = stats.displayName,
-                        kills = kills,
-                        deaths = deaths,
-                        killsByAlliance = aggregates.killsByAlliance,
-                        deathsByAlliance = aggregates.deathsByAlliance,
-                        alliance = alliance,
-                        rank = stats.rank or 9999,
-                        class = stats.class or 0,
-                        lastSeen = stats.lastSeen or 0,
-                        kd = (deaths > 0) and (kills / deaths) or kills,
-                    })
-                    
-                    if not isDisabled then
-                        allianceStats[alliance].totalKills = allianceStats[alliance].totalKills + kills
-                        allianceStats[alliance].totalDeaths = allianceStats[alliance].totalDeaths + deaths
-                        
-                        if aggregates.killsByAlliance then
-                            for kAlliance, count in pairs(aggregates.killsByAlliance) do
-                                allianceStats[alliance].killsByAlliance[kAlliance] = (allianceStats[alliance].killsByAlliance[kAlliance] or 0) + count
-                            end
-                        end
-                        if aggregates.deathsByAlliance then
-                            for kAlliance, count in pairs(aggregates.deathsByAlliance) do
-                                allianceStats[alliance].deathsByAlliance[kAlliance] = (allianceStats[alliance].deathsByAlliance[kAlliance] or 0) + count
-                            end
-                        end
-                    end
-                end
-            end
-        end
-    end
-    
-    local totalPlayersText = "Players: " .. tostring(totalPlayers)
-    if disabledPlayers > 0 then
-        totalPlayersText = totalPlayersText .. " (" .. tostring(disabledPlayers) .. " disabled)"
-    end
-    if PVP_KillfeedScoreboardPlayers then
-        PVP_KillfeedScoreboardPlayers:SetText(totalPlayersText)
-    end
-    
-    if PVP_KillfeedScoreboardInfo then
-        PVP_KillfeedScoreboardInfo:SetText("Killfeed Scoreboard - " .. GetPlayerLocationName())
-    end
-    
-    sort(allianceStats, function(a, b)
-        local kdA = a.totalDeaths > 0 and (a.totalKills / a.totalDeaths) or a.totalKills
-        local kdB = b.totalDeaths > 0 and (b.totalKills / b.totalDeaths) or b.totalKills
-        return kdA > kdB
-    end)
-    
-    for i = 1, 3 do
-        local statsData = allianceStats[i]
-        local alliance = statsData.alliance
-        local players = alliancePlayers[alliance]
-        
-        sort(players, function(a, b)
-            return a.kd > b.kd
-        end)
-        
-        PVP.killfeedScoreboard.lists[i].masterList = players
-        
-        local allianceName = GetAllianceName(alliance)
-        local icon = GetAllianceBannerIcon(alliance)
-        
-        local isAllianceDisabled = PVP.killfeedScoreboard.disabledAlliances[alliance] or false
-        local colorHex = PVP:AllianceToColor(alliance, isAllianceDisabled)
-        
-        local totalKills = statsData.totalKills
-        local totalDeaths = statsData.totalDeaths
-        local kd = (totalDeaths > 0) and (totalKills / totalDeaths) or totalKills
-        local kdText = format("%.2f", kd)
-        local headerNameText = zo_iconFormatInheritColor(icon, 28, 28) .. "  " .. allianceName .. "  (K/D " .. kdText .. ")"
-        
-        if isAllianceDisabled then
-             headerNameText = headerNameText .. " (Disabled)"
-        end
-        
-        local enabledCount = statsData.enabledPlayers or 0
-        local totalCount = statsData.totalPlayers or 0
-        local playerCountText
-        if totalCount > enabledCount then
-            playerCountText = enabledCount .. "/" .. totalCount
-        else
-            playerCountText = tostring(enabledCount)
-        end
-        
-        local headerStatsText = "Kills: " .. tostring(totalKills) .. " | Deaths: " .. tostring(totalDeaths) .. " (Players: " .. playerCountText .. ")"
-        
-        local headerControl = PVP_KillfeedScoreboard:GetNamedChild("List" .. i .. "AllianceHeader")
-        if headerControl then
-            headerControl.allianceId = alliance
-            headerControl.statsData = statsData
-            headerControl:SetText(PVP:Colorize(headerNameText, colorHex))
-        end
-        local subHeaderControl = PVP_KillfeedScoreboard:GetNamedChild("List" .. i .. "AllianceSubHeader")
-        if subHeaderControl then
-            subHeaderControl:SetText(PVP:Colorize(headerStatsText, colorHex))
-        end
-        
-        PVP.killfeedScoreboard.lists[i]:RefreshData()
-    end
-end
-
-function PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
-    if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then
-        return nil
-    end
-    
-    local stats = PVP.killfeedScoreboard.playerStats[playerName]
-    local events = stats.events or {}
-    
-    local killsByAlliance = {
-        [ALLIANCE_ALDMERI_DOMINION] = 0,
-        [ALLIANCE_DAGGERFALL_COVENANT] = 0,
-        [ALLIANCE_EBONHEART_PACT] = 0
-    }
-    local deathsByAlliance = {
-        [ALLIANCE_ALDMERI_DOMINION] = 0,
-        [ALLIANCE_DAGGERFALL_COVENANT] = 0,
-        [ALLIANCE_EBONHEART_PACT] = 0
-    }
-    
-    local kills = 0
-    local deaths = 0
-    
-    local playerInGroup = false
-    local playerInGuild = false
-    if applyFilters and (PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly) then
-        if PVP.killfeedScoreboard.filterGroupOnly and stats.displayName then
-            playerInGroup = PVP:IsGroupMember(stats.displayName)
-        end
-        if PVP.killfeedScoreboard.filterGuildOnly and stats.displayName then
-            playerInGuild = PVP:IsGuildmateInSelected(stats.displayName)
-        end
-    end
-    
-    if applyFilters and (PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly) then
-        for _, event in ipairs(events) do
-            local isKill = (event.source == playerName)
-            local opponent = isKill and event.target or event.source
-            local opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName
-            local opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance
-
-            local isOpponentAllianceDisabled = opponentAlliance and PVP.killfeedScoreboard.disabledAlliances[opponentAlliance]
-            
-            if not PVP.killfeedScoreboard.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
-                local countThisEvent = false
-                if playerInGroup or playerInGuild then
-                    countThisEvent = true
-                end
-                if not countThisEvent and opponentDisplayName then
-                    if PVP.killfeedScoreboard.filterGroupOnly and PVP:IsGroupMember(opponentDisplayName) then
-                        countThisEvent = true
-                    end
-                    if PVP.killfeedScoreboard.filterGuildOnly and PVP:IsGuildmateInSelected(opponentDisplayName) then
-                        countThisEvent = true
-                    end
-                end
-                
-                if countThisEvent then
-                    if isKill then
-                        kills = kills + 1
-                        if opponentAlliance then
-                            killsByAlliance[opponentAlliance] = killsByAlliance[opponentAlliance] + 1
-                        end
-                    else
-                        deaths = deaths + 1
-                        if opponentAlliance then
-                            deathsByAlliance[opponentAlliance] = deathsByAlliance[opponentAlliance] + 1
-                        end
-                    end
-                end
-            end
-        end
-    else
-        for _, event in ipairs(events) do
-            local isKill = (event.source == playerName)
-            local opponent = isKill and event.target or event.source
-            local opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance
-            
-            local isOpponentAllianceDisabled = opponentAlliance and PVP.killfeedScoreboard.disabledAlliances[opponentAlliance]
-
-            if not PVP.killfeedScoreboard.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
-                if isKill then
-                    kills = kills + 1
-                    if opponentAlliance then
-                        killsByAlliance[opponentAlliance] = killsByAlliance[opponentAlliance] + 1
-                    end
-                else
-                    deaths = deaths + 1
-                    if opponentAlliance then
-                        deathsByAlliance[opponentAlliance] = deathsByAlliance[opponentAlliance] + 1
-                    end
-                end
-            end
-        end
-    end
-    
-    return {
-        kills = kills,
-        deaths = deaths,
-        killsByAlliance = killsByAlliance,
-        deathsByAlliance = deathsByAlliance
-    }
-end
-
 function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targetCharacterName, targetAlliance, sourceDisplayName, targetDisplayName)
-    if not PVP.killfeedScoreboard.isLogging then
-        return
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.playerStats then
+        killfeedScoreboard.playerStats = {}
     end
-    
-    if not PVP.killfeedScoreboard.playerStats then
-        PVP.killfeedScoreboard.playerStats = {}
-    end
+    local playerStats = killfeedScoreboard.playerStats
 
-    local playersDB = PVP.SV.playersDB
+    local playersDB = self.SV.playersDB
     local sourceClass = 0
     local targetClass = 0
     if playersDB then
@@ -999,8 +1081,8 @@ function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targ
         end
     end
 
-    if not PVP.killfeedScoreboard.playerStats[sourceCharacterName] then
-        PVP.killfeedScoreboard.playerStats[sourceCharacterName] = {
+    if not playerStats[sourceCharacterName] then
+        playerStats[sourceCharacterName] = {
             events = {},
             alliance = sourceAlliance,
             name = sourceCharacterName,
@@ -1010,15 +1092,15 @@ function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targ
         }
     else
         if sourceClass ~= 0 then
-            PVP.killfeedScoreboard.playerStats[sourceCharacterName].class = sourceClass
+            playerStats[sourceCharacterName].class = sourceClass
         end
-        if not PVP.killfeedScoreboard.playerStats[sourceCharacterName].events then
-            PVP.killfeedScoreboard.playerStats[sourceCharacterName].events = {}
+        if not playerStats[sourceCharacterName].events then
+            playerStats[sourceCharacterName].events = {}
         end
     end
 
-    if not PVP.killfeedScoreboard.playerStats[targetCharacterName] then
-        PVP.killfeedScoreboard.playerStats[targetCharacterName] = {
+    if not playerStats[targetCharacterName] then
+        playerStats[targetCharacterName] = {
             events = {},
             alliance = targetAlliance,
             name = targetCharacterName,
@@ -1028,10 +1110,10 @@ function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targ
         }
     else
         if targetClass ~= 0 then
-            PVP.killfeedScoreboard.playerStats[targetCharacterName].class = targetClass
+            playerStats[targetCharacterName].class = targetClass
         end
-        if not PVP.killfeedScoreboard.playerStats[targetCharacterName].events then
-            PVP.killfeedScoreboard.playerStats[targetCharacterName].events = {}
+        if not playerStats[targetCharacterName].events then
+            playerStats[targetCharacterName].events = {}
         end
     end
 
@@ -1049,192 +1131,38 @@ function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targ
         timestamp = timestamp
     }
     
-    insert(PVP.killfeedScoreboard.playerStats[sourceCharacterName].events, event)
-    insert(PVP.killfeedScoreboard.playerStats[targetCharacterName].events, event)
+    insert(playerStats[sourceCharacterName].events, event)
+    insert(playerStats[targetCharacterName].events, event)
 
-    PVP.killfeedScoreboard.playerStats[sourceCharacterName].lastSeen = timestamp
-    PVP.killfeedScoreboard.playerStats[targetCharacterName].lastSeen = timestamp
-    PVP.killfeedScoreboard.playerStats[sourceCharacterName].displayName = sourceDisplayName
-    PVP.killfeedScoreboard.playerStats[targetCharacterName].displayName = targetDisplayName
-end
-
-function PVP:GetKillsBetweenPlayers(killerName, victimName)
-    if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[killerName] then
-        return {}
-    end
-    
-    local events = PVP.killfeedScoreboard.playerStats[killerName].events or {}
-    local kills = {}
-    
-    for _, event in ipairs(events) do
-        if event.source == killerName and event.target == victimName then
-            insert(kills, event)
-        end
-    end
-    
-    return kills
-end
-
-function PVP:GetKillDeathCountsBetweenPlayers(player1, player2)
-    local p1KillsP2 = 0
-    local p2KillsP1 = 0
-    
-    if PVP.killfeedScoreboard.playerStats and PVP.killfeedScoreboard.playerStats[player1] then
-        local events = PVP.killfeedScoreboard.playerStats[player1].events or {}
-        for _, event in ipairs(events) do
-            if event.source == player1 and event.target == player2 then
-                p1KillsP2 = p1KillsP2 + 1
-            end
-        end
-    end
-    
-    if PVP.killfeedScoreboard.playerStats and PVP.killfeedScoreboard.playerStats[player2] then
-        local events = PVP.killfeedScoreboard.playerStats[player2].events or {}
-        for _, event in ipairs(events) do
-            if event.source == player2 and event.target == player1 then
-                p2KillsP1 = p2KillsP1 + 1
-            end
-        end
-    end
-    
-    return p1KillsP2, p2KillsP1
-end
-
-function PVP:GetPlayerTopVictims(playerName, maxResults)
-    maxResults = maxResults or 10
-    
-    if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then
-        return {}
-    end
-    
-    local victimCounts = {}
-    local events = PVP.killfeedScoreboard.playerStats[playerName].events or {}
-    
-    for _, event in ipairs(events) do
-        if event.source == playerName then
-            local victim = event.target
-            if not victimCounts[victim] then
-                victimCounts[victim] = {
-                    name = victim,
-                    displayName = event.targetDisplayName,
-                    alliance = event.targetAlliance,
-                    class = event.targetClass,
-                    count = 0
-                }
-            end
-            victimCounts[victim].count = victimCounts[victim].count + 1
-        end
-    end
-    
-    local results = {}
-    for _, victimData in pairs(victimCounts) do
-        insert(results, victimData)
-    end
-    
-    sort(results, function(a, b) return a.count > b.count end)
-    
-    local topResults = {}
-    for i = 1, zo_min(maxResults, #results) do
-        insert(topResults, results[i])
-    end
-    
-    return topResults
-end
-
-function PVP:GetPlayerTopKillers(playerName, maxResults)
-    maxResults = maxResults or 10
-    
-    if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then
-        return {}
-    end
-    
-    local killerCounts = {}
-    local events = PVP.killfeedScoreboard.playerStats[playerName].events or {}
-    
-    for _, event in ipairs(events) do
-        if event.target == playerName then
-            local killer = event.source
-            if not killerCounts[killer] then
-                killerCounts[killer] = {
-                    name = killer,
-                    displayName = event.sourceDisplayName,
-                    alliance = event.sourceAlliance,
-                    class = event.sourceClass,
-                    count = 0
-                }
-            end
-            killerCounts[killer].count = killerCounts[killer].count + 1
-        end
-    end
-    
-    local results = {}
-    for _, killerData in pairs(killerCounts) do
-        insert(results, killerData)
-    end
-    
-    sort(results, function(a, b) return a.count > b.count end)
-    
-    local topResults = {}
-    for i = 1, zo_min(maxResults, #results) do
-        insert(topResults, results[i])
-    end
-    
-    return topResults
-end
-
-function PVP:GetPlayerRecentEvents(playerName)
-    if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then
-        return {}
-    end
-    
-    local allEvents = PVP.killfeedScoreboard.playerStats[playerName].events or {}
-    local events = {}
-    
-    for _, event in ipairs(allEvents) do
-        local isKill = (event.source == playerName)
-        
-        insert(events, {
-            type = isKill and "kill" or "death",
-            opponent = isKill and event.target or event.source,
-            opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName,
-            opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance,
-            opponentClass = isKill and event.targetClass or event.sourceClass,
-            timestamp = event.timestamp
-        })
-    end
-    
-    sort(events, function(a, b) return a.timestamp > b.timestamp end)
-    
-    return events
+    playerStats[sourceCharacterName].lastSeen = timestamp
+    playerStats[targetCharacterName].lastSeen = timestamp
+    playerStats[sourceCharacterName].displayName = sourceDisplayName
+    playerStats[targetCharacterName].displayName = targetDisplayName
 end
 
 function PVP:ClearKillfeedScoreboard()
+    local killfeedScoreboard = self.killfeedScoreboard
 	local numPlayers = 0
-	if PVP.killfeedScoreboard.playerStats then
-		for _ in pairs(PVP.killfeedScoreboard.playerStats) do
+    if killfeedScoreboard.playerStats then
+        for _ in pairs(killfeedScoreboard.playerStats) do
 			numPlayers = numPlayers + 1
 		end
 	end
 	
-    PVP.killfeedScoreboard.playerStats = {}
-    if PVP.killfeedScoreboard.historicalGroupMembers then
-    	for k in pairs(PVP.killfeedScoreboard.historicalGroupMembers) do
-    		PVP.killfeedScoreboard.historicalGroupMembers[k] = nil
+    killfeedScoreboard.playerStats = {}
+    if killfeedScoreboard.historicalGroupMembers then
+        for k in pairs(killfeedScoreboard.historicalGroupMembers) do
+            killfeedScoreboard.historicalGroupMembers[k] = nil
     	end
     else
-    	PVP.killfeedScoreboard.historicalGroupMembers = {}
+        killfeedScoreboard.historicalGroupMembers = {}
     end
-    PVP.killfeedScoreboard.disabledPlayers = {}
-    PVP:RefreshKillfeedScoreboards()
+    killfeedScoreboard.disabledPlayers = {}
+    self:RefreshKillfeedScoreboards()
 	
 	if numPlayers > 0 then
 		ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Killfeed Scoreboard cleared (" .. numPlayers .. " players removed)")
 	end
-end
-
-function PVP:GetKillfeedPlayerStats(playerName)
-	if not PVP.killfeedScoreboard.playerStats then return nil end
-	return PVP.killfeedScoreboard.playerStats[playerName]
 end
 
 function PVP_KillfeedScoreboard_OnClear()
@@ -1336,118 +1264,4 @@ end
 function PVP_KillfeedScoreboard_OnRefresh()
 	PVP.killfeedScoreboard.disabledPlayers = {}
 	PVP:RefreshKillfeedScoreboards()
-end
-function PVP:IsGroupMember(characterName)
-	if not characterName or characterName == "" then
-		return false
-	end
-	
-	if not PVP.killfeedScoreboard.historicalGroupMembers then
-		PVP.killfeedScoreboard.historicalGroupMembers = {}
-	end
-	return PVP.killfeedScoreboard.historicalGroupMembers[characterName] or false
-end
-
-function PVP:PlayerHasEventsWithGroup(playerName)
-	if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then
-		return false
-	end
-	
-	local playerStats = PVP.killfeedScoreboard.playerStats[playerName]
-	local events = playerStats.events or {}
-	
-	for _, event in ipairs(events) do
-		local isKill = (event.source == playerName)
-		local opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName
-		
-		if opponentDisplayName and PVP:IsGroupMember(opponentDisplayName) then
-			return true
-		end
-	end
-	
-	return false
-end
-
-function PVP:PlayerHasEventsWithGuild(playerName)
-	if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then
-		return false
-	end
-	
-	local playerStats = PVP.killfeedScoreboard.playerStats[playerName]
-	local events = playerStats.events or {}
-	
-	for _, event in ipairs(events) do
-		local isKill = (event.source == playerName)
-		local opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName
-		
-		if opponentDisplayName and PVP:IsGuildmateInSelected(opponentDisplayName) then
-			return true
-		end
-	end
-	
-	return false
-end
-
-function PVP:PlayerPassesFilters(playerName, playerStats)
-	if not PVP.killfeedScoreboard.filterGroupOnly and not PVP.killfeedScoreboard.filterGuildOnly then
-		return true
-	end
-	
-	local displayName = playerStats.displayName
-	local isInGroup = PVP:IsGroupMember(displayName)
-	local isInGuild = PVP:IsGuildmateInSelected(displayName)
-	local hasGroupEvents = false
-	local hasGuildEvents = false
-	
-	if PVP.killfeedScoreboard.filterGroupOnly then
-		if isInGroup then
-			return true
-		end
-		hasGroupEvents = PVP:PlayerHasEventsWithGroup(playerName)
-		if hasGroupEvents then
-			return true
-		end
-	end
-	
-	if PVP.killfeedScoreboard.filterGuildOnly then
-		if isInGuild then
-			return true
-		end
-		hasGuildEvents = PVP:PlayerHasEventsWithGuild(playerName)
-		if hasGuildEvents then
-			return true
-		end
-	end
-	
-	return false
-end
-
-
-function PVP:IsGuildmateInSelected(displayName)
-	if not PVP.killfeedScoreboard or not PVP.killfeedScoreboard.selectedGuilds then
-		return false
-	end
-	
-	local guildmates = PVP.guildmates
-	if not guildmates or not guildmates[displayName] then
-		return false
-	end
-	-- Check if player is in any of the selected guilds
-	for guildId, _ in pairs(guildmates[displayName]) do
-		if PVP.killfeedScoreboard.selectedGuilds[guildId] then
-			return true
-		end
-	end
-	
-	return false
-end
-
-function PVP:GetAvailableGuilds()
-	local guilds = {}
-	for i = 1, GetNumGuilds() do
-		local guildId = GetGuildId(i)
-		local guildName = GetGuildName(guildId)
-		insert(guilds, { id = guildId, name = guildName })
-	end
-	return guilds
 end

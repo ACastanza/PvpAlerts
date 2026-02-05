@@ -1,6 +1,7 @@
 ---@class (partial) PvpAlerts
 local PVP = PVP_Alerts_Main_Table
 local PVP_KEEPTYPE_ARTIFACT_KEEP = PVP:GetGlobal('PVP_KEEPTYPE_ARTIFACT_KEEP')
+local BGQUERY_LOCAL = BGQUERY_LOCAL
 
 function PVP:SetupOnScreen()
 	local control = PVP_OnScreen
@@ -167,7 +168,7 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 					control.name:SetColor(1, 0, 0)
 				end
 			else
-				control.name:SetColor(self:GetTrueAllianceColors(GetKeepAlliance(keepId, 1)))
+				control.name:SetColor(self:GetTrueAllianceColors(GetKeepAlliance(keepId, BGQUERY_LOCAL)))
 			end
 		end
 		if GetKeepResourceType(keepId) ~= 0 then
@@ -202,8 +203,8 @@ function PVP:ManageOnScreen(iconTexture, scrollTexture, captureTexture, naveFlag
 			if isMainControl then control.name:SetColor(0.5, 0.5, 0.5) end
 			control.icon:SetColor(0.5, 0.5, 0.5)
 		else
-			if isMainControl then control.name:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(otherAlliance, 1))) end
-			control.icon:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(otherAlliance, 1)))
+			if isMainControl then control.name:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(otherAlliance, BGQUERY_LOCAL))) end
+			control.icon:SetColor(PVP:GetTrueAllianceColors(GetKeepAlliance(otherAlliance, BGQUERY_LOCAL)))
 		end
 		control.icon:SetDimensions(75, 75)
 		control.iconUA:SetDimensions(100, 100)

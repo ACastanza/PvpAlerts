@@ -10,6 +10,8 @@ local Set3DRenderSpaceToCurrentCamera = Set3DRenderSpaceToCurrentCamera
 local GetPlayerCameraHeading = GetPlayerCameraHeading
 local GetCurrentMapIndex = GetCurrentMapIndex
 local GetObjectiveInfo = GetObjectiveInfo
+local GetObjectiveControlState = GetObjectiveControlState
+local IsObjectiveEnabled = IsObjectiveEnabled
 local GetCurrentSubZonePOIIndices = GetCurrentSubZonePOIIndices
 local IsInImperialCity = IsInImperialCity
 local IsActiveWorldBattleground = IsActiveWorldBattleground
@@ -1879,7 +1881,7 @@ local function IsScrollInKeepId(keepId, keepIdType)
 	local isArtifactKeep = keepIdType == PVP_KEEPTYPE_ARTIFACT_KEEP
 	if not (isKeep or isArtifactKeep) then return false end
 	for k, v in pairs(PVP.elderScrollsIds) do
-		local _, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
+		local scrollState = GetObjectiveControlState(k, v, BGQUERY_LOCAL)
 		if isArtifactKeep and scrollState == OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE and keepId == k then
 			local mappin = GetObjectivePinInfo(k, v, BGQUERY_LOCAL)
 			return true, strgsub(ZO_MapPin.PIN_DATA[mappin].texture, 'MapPins', 'compass')
@@ -2893,8 +2895,8 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 		naveId = PVP.AVAids[control.params.keepId][2].objectiveId
 		apseId = PVP.AVAids[control.params.keepId][1].objectiveId
 
-		naveObjectiveState = select(3, GetObjectiveInfo(control.params.keepId, naveId, BGQUERY_LOCAL))
-		apseObjectiveState = select(3, GetObjectiveInfo(control.params.keepId, apseId, BGQUERY_LOCAL))
+		naveObjectiveState = GetObjectiveControlState(control.params.keepId, naveId, BGQUERY_LOCAL)
+		apseObjectiveState = GetObjectiveControlState(control.params.keepId, apseId, BGQUERY_LOCAL)
 
 		naveAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, naveId, BGQUERY_LOCAL)
 		apseAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, apseId, BGQUERY_LOCAL)
@@ -2911,7 +2913,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 		if isTown then
 			otherId = PVP.AVAids[control.params.keepId][3].objectiveId
-			otherObjectiveState = select(3, GetObjectiveInfo(control.params.keepId, otherId, BGQUERY_LOCAL))
+			otherObjectiveState = GetObjectiveControlState(control.params.keepId, otherId, BGQUERY_LOCAL)
 			otherAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, otherId, BGQUERY_LOCAL)
 			if otherAlliance == 0 and not isUnderAttack then
 				otherAlliance = keepAlliance
@@ -2964,7 +2966,7 @@ local function SetupNew3DMarker(keepId, distance, isActivated, isNewObjective)
 
 	if showCaptureTexture then
 		local isCapture
-		local _, _, objectiveState = GetObjectiveInfo(control.params.keepId, objectiveId, BGQUERY_LOCAL)
+		local objectiveState = GetObjectiveControlState(control.params.keepId, objectiveId, BGQUERY_LOCAL)
 		local captureAlliance = GetCaptureAreaObjectiveOwner(control.params.keepId, objectiveId, BGQUERY_LOCAL)
 
 		if captureAlliance == 0 and not isUnderAttack then
@@ -3824,7 +3826,7 @@ local function FindNearbyPOIs()
 		if isBgCtf --[[or isBgMurderball]] then
 			for i = 1, GetNumObjectives() do
 				local keepId, objectiveId, bgContext = GetObjectiveIdsForIndex(i)
-				if keepId == 0 and bgContext == BGQUERY_LOCAL and DoesObjectiveExist(keepId, objectiveId, bgContext) then
+				if keepId == 0 and bgContext == BGQUERY_LOCAL and DoesObjectiveExist(keepId, objectiveId, bgContext) and IsObjectiveEnabled(keepId, objectiveId, bgContext) then
 					local flagState = GetObjectiveControlState(0, objectiveId, bgContext)
 					if flagState ~= OBJECTIVE_CONTROL_STATE_FLAG_AT_BASE then
 						local pinType, targetX, targetY = GetObjectivePinInfo(keepId, objectiveId, bgContext)
@@ -3900,7 +3902,8 @@ local function FindNearbyPOIs()
 
 		local activeScrolls =  PVP.activeScrolls
 		for k, v in pairs(PVP.elderScrollsIds) do
-			local name, _, scrollState = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
+			local name = GetObjectiveInfo(k, v, BGQUERY_LOCAL)
+			local scrollState = GetObjectiveControlState(k, v, BGQUERY_LOCAL)
 			local originalAlliance
 			if not isActiveWorldBattleground then
 				originalAlliance = GetArtifactScrollObjectiveOriginalOwningAlliance(k, v, BGQUERY_LOCAL)
@@ -3954,7 +3957,8 @@ local function FindNearbyPOIs()
 
 		local activeObjectiveId = PVP.activeDaedricArtifact
 		if activeObjectiveId then
-			local name, _, artifactState = GetObjectiveInfo(0, activeObjectiveId, BGQUERY_LOCAL)
+			local name = GetObjectiveInfo(0, activeObjectiveId, BGQUERY_LOCAL)
+			local artifactState = GetObjectiveControlState(0, activeObjectiveId, BGQUERY_LOCAL)
 			if artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
 				local pinType, targetX, targetY = GetObjectivePinInfo(0, activeObjectiveId, BGQUERY_LOCAL)
 				if targetX ~= 0 and targetY ~= 0 then
@@ -3995,7 +3999,7 @@ local function FindNearbyPOIs()
 			local numArtifacts = #candidateArtifacts
 			for i = 1, numArtifacts do
 				local id = candidateArtifacts[i]
-				local _, _, artifactState = GetObjectiveInfo(0, id, BGQUERY_LOCAL)
+				local artifactState = GetObjectiveControlState(0, id, BGQUERY_LOCAL)
 				if artifactState ~= OBJECTIVE_CONTROL_STATE_UNKNOWN then
 					PVP.activeDaedricArtifact = id
 					break
@@ -4440,7 +4444,7 @@ local function FindBgObjectives()
 	local selfX, selfY = GetMapPlayerPosition('player')
 	for i = 1, GetNumObjectives() do
 		local keepId, objectiveId, bgContext = GetObjectiveIdsForIndex(i)
-		if keepId == 0 and bgContext == BGQUERY_LOCAL and DoesObjectiveExist(keepId, objectiveId, bgContext) then
+		if keepId == 0 and bgContext == BGQUERY_LOCAL and DoesObjectiveExist(keepId, objectiveId, bgContext) and IsObjectiveEnabled(keepId, objectiveId, bgContext) then
 			if isBgCtf then
 				local pinType, targetX, targetY = GetObjectiveSpawnPinInfo(keepId, objectiveId, bgContext)
 				if targetX ~= 0 and targetY ~= 0 then
@@ -4463,7 +4467,7 @@ end
 
 local function GetCurrentMapScaleFromBgObjectiveId()
 	for k, v in pairs(PVP.bgMapScale) do
-		if DoesObjectiveExist(0, k, BGQUERY_LOCAL) then
+		if DoesObjectiveExist(0, k, BGQUERY_LOCAL) and IsObjectiveEnabled(0, k, BGQUERY_LOCAL) then
 			return v * 55555.555
 		end
 	end

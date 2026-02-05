@@ -443,9 +443,9 @@ function PVP:GetFormattedAvaRankIcon(unitAvARank, allianceColor, dimension, play
 	else
 		local playerDbRecord = self.SV.playersDB[playerName]
 		if playerDbRecord and playerDbRecord.unitAvARank then
-		unitAvARank = playerDbRecord.unitAvARank
-		avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
-			allianceColor)
+			unitAvARank = playerDbRecord.unitAvARank
+			avaRankIcon = self:Colorize(zo_iconFormatInheritColor(GetAvARankIcon(unitAvARank), dimension, dimension),
+				allianceColor)
 		else
 			avaRankIcon = ""
 		end
@@ -703,47 +703,44 @@ function PVP:InsertAnimationType(animHandler, animType, control, animDuration, a
 	end
 end
 
-function PVP:ProcessLengths(namesTable, maxLength, addedLength)
-	-- local function GetTextWidthInPixels(text)
-	-- PVP_Counter_TestWidth:SetFont("ZoFontWinH5")
-	-- PVP_Counter_TestWidth:SetText(text)
-	-- local width = PVP_Counter_TestWidth:GetTextWidth()
-	-- return width
-	-- return strlen(text) * 2
-	-- end
+-- Precompiled suffix check table for faster ProcessLengths lookup (O(1) instead of O(n) string comparisons)
+local SUFFIX_LENGTH_MAP = {
+	["+"] = { length = 1, minWidth = 35 },
+	["%"] = { length = 1, minWidth = 45 },
+	["%*"] = { length = 2, minWidth = 65 },
+	["+*"] = { length = 2, minWidth = 55 },
+	["%**"] = { length = 3, minWidth = 75 },
+	["+**"] = { length = 3, minWidth = 65 },
+	["**"] = { length = 2, minWidth = 45 },
+	["*"] = { length = 1, minWidth = 40 }
+}
 
-	-- local maxLength=0
+function PVP:ProcessLengths(namesTable, maxLength, addedLength)
+	-- Optimized version: cache strlen result and use precompiled suffix map instead of chained if/elseif
 	addedLength = addedLength or 0
 	local numNames = #namesTable
+	
 	for i = 1, numNames do
-		if self:StringEnd(namesTable[i], "+") then
-			if addedLength < 35 then addedLength = 35 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 1))
-		elseif self:StringEnd(namesTable[i], "%") then
-			if addedLength < 45 then addedLength = 45 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 1))
-		elseif self:StringEnd(namesTable[i], "%*") then
-			if addedLength < 65 then addedLength = 65 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 2))
-		elseif self:StringEnd(namesTable[i], "+*") then
-			if addedLength < 55 then addedLength = 55 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 2))
-		elseif self:StringEnd(namesTable[i], "%**") then
-			if addedLength < 75 then addedLength = 75 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 3))
-		elseif self:StringEnd(namesTable[i], "+**") then
-			if addedLength < 65 then addedLength = 65 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 3))
-		elseif self:StringEnd(namesTable[i], "**") then
-			if addedLength < 45 then addedLength = 45 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 2))
-		elseif self:StringEnd(namesTable[i], "*") then
-			if addedLength < 40 then addedLength = 40 end
-			namesTable[i] = zo_strsub(namesTable[i], 1, (strlen(namesTable[i]) - 1))
+		local name = namesTable[i]
+		local nameLen = strlen(name)
+		
+		-- Check suffixes from longest to shortest for correct matching
+		for suffixLen = 3, 1, -1 do
+			if nameLen > suffixLen then
+				local suffix = zo_strsub(name, nameLen - suffixLen + 1)
+				local suffixInfo = SUFFIX_LENGTH_MAP[suffix]
+				if suffixInfo then
+					if addedLength < suffixInfo.minWidth then
+						addedLength = suffixInfo.minWidth
+					end
+					namesTable[i] = zo_strsub(name, 1, nameLen - suffixLen)
+					break
+				end
+			end
 		end
 	end
+	
 	return 6 * maxLength + 90 + addedLength
-	-- return 6*maxLength + 70 + addedLength
 end
 
 function PVP:ShouldShowCampFrame()

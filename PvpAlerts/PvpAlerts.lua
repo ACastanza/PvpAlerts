@@ -3,7 +3,7 @@
 local PVP = PVP_Alerts_Main_Table
 
 PVP.version = 1.01 -- // NEVER CHANGE THIS NUMBER FROM 1.01! Otherwise the whole players databse will be lost and you will cry
-PVP.textVersion = "3.17.0"
+PVP.textVersion = "3.18.0"
 PVP.name = "PvpAlerts"
 
 local sessionTimeEpoch = GetTimeStamp()
@@ -28,6 +28,7 @@ local remove = table.remove
 local upper = string.upper
 --local lower = string.lower
 local format = string.format
+local BGQUERY_LOCAL = BGQUERY_LOCAL
 
 local PVP_NAME_FONT = PVP:GetGlobal('PVP_NAME_FONT')
 local PVP_NUMBER_FONT = PVP:GetGlobal('PVP_NUMBER_FONT')
@@ -333,11 +334,11 @@ function PVP:RefreshStoredNumbers(currentTime) -- // output of the number of sto
 
 	local count = 0
 	local countAcc = 0
-	local accountsDB = {}
+	local accountsSeen = {}
 	local playersDB = self.SV.playersDB
 	for k, v in pairs(playersDB) do
-		if not accountsDB[v.unitAccName] then
-			accountsDB[v.unitAccName] = true
+		if not accountsSeen[v.unitAccName] then
+			accountsSeen[v.unitAccName] = true
 			countAcc = countAcc + 1
 		end
 		count = count + 1
@@ -567,14 +568,19 @@ function PVP:CountTotal(currentTime)
 	local playerAlliance = self.playerAlliance
 	local idToName = self.idToName
 	local playerNames = self.playerNames
-	local namesToDisplay = self.namesToDisplay
+	local namesControlMap = self.namesControlMap
+	local namesLinePool = self.namesLinePool
 	local currentlyDead = self.currentlyDead
+	local count = 0
 
 	for k, v in pairs(totalPlayers) do
 		if (currentTime - v) > PVP_ID_RETAIN_TIME_EFFECT then
+			local playerName = idToName[k]
 			totalPlayers[k] = nil
-			playerSpec[idToName[k]] = nil
-			miscAbilities[idToName[k]] = nil
+			if playerName then
+				playerSpec[playerName] = nil
+				miscAbilities[playerName] = nil
+			end
 			playerAlliance[k] = nil
 			idToName[k] = nil
 		end
@@ -586,35 +592,30 @@ function PVP:CountTotal(currentTime)
 		end
 	end
 
-	local wasRemoved = false
-	for i = #namesToDisplay, 1, -1 do
-		if (currentTime - namesToDisplay[i].currentTime) >= PVP_ID_RETAIN_TIME then
-			remove(namesToDisplay, i)
-			wasRemoved = true
+	if namesControlMap and namesLinePool then
+		for playerName, controlData in pairs(namesControlMap) do
+			if (currentTime - controlData.currentTime) >= PVP_ID_RETAIN_TIME then
+				controlData.control:SetText("")
+				namesLinePool:ReleaseObject(controlData.control)
+				namesControlMap[playerName] = nil
+			else
+				if not controlData.isDead and not controlData.isResurrect then
+					count = count + 1
+				end
+			end
 		end
-	end
-
-	if wasRemoved then
-		self:PopulateReticleOverNamesBuffer(nil, currentTime)
-	end
-
-	local count = 0
-	for _, v in ipairs(namesToDisplay) do
-		if not v.isDead and not v.isResurrect then
-			count = count + 1
-		end
+		self:ReanchorNamesControls()
 	end
 
 	for k, v in pairs(currentlyDead) do
-		currentlyDead[k] = nil
-		currentlyDead[k] = nil
-		if idToName[k] then
-			playerSpec[idToName[k]] = nil
-			miscAbilities[idToName[k]] = nil
+		local playerName = idToName[k]
+		if playerName then
+			playerSpec[playerName] = nil
+			miscAbilities[playerName] = nil
 		end
 		playerAlliance[k] = nil
 		idToName[k] = nil
-		-- if (currentTime-v.currentTime)>PVP_ID_RETAIN_TIME then self.currentlyDead[k]=nil end
+		currentlyDead[k] = nil
 	end
 
 	return count
@@ -858,6 +859,9 @@ end
 function PVP_ClearTooltip(control)
 	PVP_Alerts_Main_Table.detailedTooltipCalc = false
 	ClearTooltip(PVP_Tooltip)
+	if PVP_Counter_Tooltip then
+		PVP_Counter_Tooltip:SetHidden(true)
+	end
 	control:SetHandler("OnUpdate", nil)
 	control.lastTooltipUpdate = nil
 end
@@ -865,7 +869,12 @@ end
 local function FillCurrentTooltip(control)
 	if not PVP.SV.enabled or not PVP.SV.showCounterFrame or not PVP:IsInPVPZone() then return end
 
-	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = unpack(localActivePlayerCache)
+	if PVP.counterTooltipPinnedControl and PVP.counterTooltipPinnedControl ~= control then
+		PVP.counterTooltipPinnedControl = nil
+	end
+
+	local numberAD, numberDC, numberEP, tableAD, tableDC, tableEP = PVP:GetAllianceCountPlayers()
+	localActivePlayerCache = { numberAD, numberDC, numberEP, tableAD, tableDC, tableEP }
 
 	local currentTable, currentNumber
 
@@ -928,6 +937,13 @@ end
 function PVP.SetToolTip(control, maxNameWidth, isCounter, ...)
 	local args = { ... }
 	control:SetHandler("OnMouseEnter", function(self)
+		if isCounter then
+			PVP.counterTooltipHoverControl = control
+			if PVP.pendingTooltipHideId then
+				zo_removeCallLater(PVP.pendingTooltipHideId)
+				PVP.pendingTooltipHideId = nil
+			end
+		end
 		local side = TOP
 		local relativeControl = isCounter and PVP_Counter or PVP_ForwardCamp
 		local _, centerY = relativeControl:GetCenter()
@@ -943,11 +959,44 @@ function PVP.SetToolTip(control, maxNameWidth, isCounter, ...)
 			HandleTooltipFilling(control)
 		end
 	end)
+	if isCounter then
+		control:SetHandler("OnMouseUp", function(self, button)
+			if button == MOUSE_BUTTON_INDEX_LEFT then
+				if PVP.counterTooltipPinnedControl == control then
+					PVP.counterTooltipPinnedControl = nil
+					if PVP_Counter_Tooltip then
+						PVP_Counter_Tooltip:SetHidden(true)
+					end
+				else
+					PVP.counterTooltipPinnedControl = control
+				end
+			end
+		end)
+	end
 	control:SetHandler("OnMouseExit", function(self)
-		PVP.detailedTooltipCalc = false
-		ClearTooltip(PVP_Tooltip)
-		control:SetHandler("OnUpdate", nil)
-		control.lastTooltipUpdate = nil
+		if PVP.counterTooltipPinnedControl ~= control then
+			control:SetHandler("OnUpdate", nil)
+			control.lastTooltipUpdate = nil
+		end
+		PVP.counterTooltipHoverControl = nil
+		
+		if PVP.counterTooltipPinnedControl == control then
+			return
+		end
+		
+		if PVP.pendingTooltipHideId then
+			zo_removeCallLater(PVP.pendingTooltipHideId)
+		end
+		
+		PVP.pendingTooltipHideId = zo_callLater(function()
+			local tooltip = PVP_Counter_Tooltip
+			if not MouseIsOver(control) and not MouseIsOver(tooltip) then
+				PVP.detailedTooltipCalc = false
+				ClearTooltip(PVP_Tooltip)
+				tooltip:SetHidden(true)
+			end
+			PVP.pendingTooltipHideId = nil
+		end, 150)
 	end)
 end
 
@@ -959,7 +1008,170 @@ function PVP.ReleaseToolTip(control, isCurrentTooltip)
 	end
 end
 
+local function ShowCounterScrollableTooltip(control, side, maxNameWidth, ...)
+	if not PVP_Counter_Tooltip then
+		return
+	end
+
+	local scroll = PVP_Counter_Tooltip:GetNamedChild("Scroll")
+	local content = scroll and scroll:GetNamedChild("ScrollChild")
+	if not (scroll and content) then
+		return
+	end
+
+	local numLines = select("#", ...)
+	if numLines == 0 then
+		PVP_Counter_Tooltip:SetHidden(true)
+		return
+	end
+
+	ClearTooltip(PVP_Tooltip)
+
+	local lines = {}
+	for i = 1, numLines do
+		lines[i] = select(i, ...)
+	end
+	local normalizedLines = {}
+	for i = 1, numLines do
+		local lineData = lines[i]
+		if type(lineData) == "string" then
+			lineData = { text = lineData, characterName = "", displayName = "" }
+		elseif type(lineData) ~= "table" or not lineData.text then
+			lineData = nil
+		end
+		if lineData then
+			normalizedLines[#normalizedLines + 1] = lineData
+		end
+	end
+	lines = normalizedLines
+	numLines = #lines
+	if numLines == 0 then
+		PVP_Counter_Tooltip:SetHidden(true)
+		return
+	end
+	local paddingLeft = 12
+	local paddingRight = 8
+	local paddingTop = 20
+	local paddingBottom = 8
+	local iconPaddingPerLine = 60
+	local maxWidth = maxNameWidth
+	local testLabel = PVP_Counter_TestWidth
+	if not maxWidth then
+		local measuredWidth = 0
+		if testLabel then
+			testLabel:SetFont("ZoFontWinH5")
+			for i = 1, numLines do
+				local lineData = lines[i]
+				if type(lineData) == "table" and lineData.text then
+					testLabel:SetText(lineData.text)
+					local width = testLabel:GetTextWidth()
+					if width > measuredWidth then
+						measuredWidth = width
+					end
+				end
+			end
+		end
+		maxWidth = measuredWidth + paddingLeft + paddingRight + iconPaddingPerLine
+	end
+
+	local maxAllowedWidth = GuiRoot:GetWidth() * 0.95
+	maxWidth = zo_min(zo_max(maxWidth, 220), maxAllowedWidth)
+
+	if not PVP.counterTooltipLinePool then
+		PVP.counterTooltipLinePool = ZO_ControlPool:New("PVP_Counter_Tooltip_Line", content)
+	end
+
+	local linePool = PVP.counterTooltipLinePool
+	
+	linePool:ReleaseAllObjects()
+
+	local lineWidth = maxWidth - paddingLeft - paddingRight
+	local lineSpacing = 2
+	local totalHeight = paddingTop
+
+	for i = 1, numLines do
+		local lineData = lines[i]
+		if type(lineData) == "table" and lineData.text then
+			local lineControl = linePool:AcquireObject()
+			if lineControl then
+				lineControl:ClearAnchors()
+				lineControl:SetAnchor(TOPLEFT, content, TOPLEFT, paddingLeft, totalHeight)
+				lineControl:SetWidth(lineWidth)
+				
+				lineControl:SetText(lineData.text)
+				lineControl.playerCharacterName = lineData.characterName
+				lineControl.playerDisplayName = lineData.displayName
+				lineControl:SetMouseEnabled(true)
+				
+				if not lineControl.contextMenuHandlerSet then
+					lineControl:SetHandler("OnMouseUp", function(self, button, upInside)
+						if upInside and button == MOUSE_BUTTON_INDEX_RIGHT then
+							if CHAT_SYSTEM and CHAT_SYSTEM.ShowPlayerContextMenu then
+								CHAT_SYSTEM:ShowPlayerContextMenu(self.playerDisplayName, self.playerCharacterName)
+							end
+						end
+					end)
+					lineControl.contextMenuHandlerSet = true
+				end
+				
+				local lineHeight = lineControl:GetTextHeight()
+				lineControl:SetHeight(lineHeight)
+				totalHeight = totalHeight + lineHeight
+				if i < numLines then
+					totalHeight = totalHeight + lineSpacing
+				end
+			end
+		end
+	end
+
+	content:SetDimensions(maxWidth, totalHeight + paddingBottom)
+
+	local maxHeight = zo_floor(GuiRoot:GetHeight() * 0.66)
+	local desiredHeight = zo_min(totalHeight + paddingBottom, maxHeight)
+	PVP_Counter_Tooltip:SetDimensions(maxWidth, desiredHeight)
+
+	local OFFSET_DISTANCE = 5
+	local OFFSETS_X =
+	{
+		[TOP] = 0,
+		[BOTTOM] = 0,
+		[LEFT] = -OFFSET_DISTANCE,
+		[RIGHT] = OFFSET_DISTANCE,
+	}
+	local OFFSETS_Y =
+	{
+		[TOP] = -OFFSET_DISTANCE,
+		[BOTTOM] = OFFSET_DISTANCE,
+		[LEFT] = 0,
+		[RIGHT] = 0,
+	}
+	local SIDE_TO_TOOLTIP_SIDE =
+	{
+		[TOP] = BOTTOM,
+		[BOTTOM] = TOP,
+		[LEFT] = RIGHT,
+		[RIGHT] = LEFT,
+	}
+
+	local anchorSide = side or TOP
+	PVP_Counter_Tooltip:ClearAnchors()
+	PVP_Counter_Tooltip:SetAnchor(SIDE_TO_TOOLTIP_SIDE[anchorSide], control, anchorSide, OFFSETS_X[anchorSide], OFFSETS_Y[anchorSide])
+	PVP_Counter_Tooltip:SetHidden(false)
+	PVP_Counter_Tooltip:BringWindowToTop()
+
+	if scroll.MoveScrollPosition then
+		scroll:MoveScrollPosition(-999999)
+	end
+end
+
 function PVP.Tooltips_ShowTextTooltip(control, side, maxNameWidth, isCounter, ...)
+	if isCounter then
+		ShowCounterScrollableTooltip(control, side, maxNameWidth, ...)
+		return
+	end
+	if PVP_Counter_Tooltip then
+		PVP_Counter_Tooltip:SetHidden(true)
+	end
 	local OFFSET_DISTANCE = 5
 	local OFFSETS_X =
 	{
@@ -1002,12 +1214,14 @@ function PVP.Tooltips_ShowTextTooltip(control, side, maxNameWidth, isCounter, ..
 end
 
 function PVP:OnDeactivated(eventId)
-	for id, _ in pairs(self.totalPlayers) do
-		self.playerSpec[self.idToName[id]] = nil
-		self.miscAbilities[self.idToName[id]] = nil
-		self.playerAlliance[id] = nil
-		self.idToName[id] = nil
-		self.totalPlayers[id] = nil
+	if self.totalPlayers then
+		for id, _ in pairs(self.totalPlayers) do
+			self.playerSpec[self.idToName[id]] = nil
+			self.miscAbilities[self.idToName[id]] = nil
+			self.playerAlliance[id] = nil
+			self.idToName[id] = nil
+			self.totalPlayers[id] = nil
+		end
 	end
 end
 
@@ -1144,11 +1358,12 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 
 	local totalPlayers = self.totalPlayers
 	local idToName = self.idToName
+	local playersDB = self.SV.playersDB
 	if totalPlayers[unitId] and unitName ~= "" then
 		if self:CheckName(unitName) then
 			idToName[unitId] = unitName
 			totalPlayers[unitId] = currentTime
-			local playerDbRecord = self.SV.playersDB[unitName]
+			local playerDbRecord = playersDB[unitName]
 			if playerDbRecord then
 				self.playerAlliance[unitId] = playerDbRecord.unitAlliance
 				self.playerNames[unitName] = currentTime
@@ -1158,17 +1373,20 @@ function PVP:OnEffect(eventCode, changeType, effectSlot, effectName, unitTag, be
 				playerDbRecord.unitSpec = self:DetectSpec(nil, abilityId, nil, unitName, true)
 			end
 		else
+			local oldName = idToName[unitId]
 			totalPlayers[unitId] = nil
 			self.playerAlliance[unitId] = nil
-			self.playerSpec[idToName[unitId]] = nil
-			self.miscAbilities[idToName[unitId]] = nil
+			if oldName then
+				self.playerSpec[oldName] = nil
+				self.miscAbilities[oldName] = nil
+			end
 			idToName[unitId] = nil
 			self.npcExclude[unitId] = currentTime
 		end
 	elseif (unitName ~= "") and (totalPlayers[unitId] == nil) and self:CheckName(unitName) then
 		totalPlayers[unitId] = currentTime
 		idToName[unitId] = unitName
-		local playerDbRecord = self.SV.playersDB[unitName]
+		local playerDbRecord = playersDB[unitName]
 		if playerDbRecord then
 			self.playerAlliance[unitId] = playerDbRecord.unitAlliance
 			self.playerNames[unitName] = currentTime
@@ -1304,8 +1522,109 @@ function PVP:BattleReport()
 	end
 end
 
-function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType, abilityId, result, unitId, playerDbRecord)
-	-- if not (self.SV.showNamesFrame and self.SV.playersDB[unitName]) then return end
+function PVP:InitNamesPool()
+	if not self.namesLinePool then
+		local scrollContainer = PVP_Names:GetNamedChild("_ScrollContainer")
+		local scrollChild = scrollContainer and scrollContainer:GetNamedChild("_ScrollChild")
+		if not scrollChild then return false end
+		
+		self.namesLinePool = ZO_ControlPool:New("PVP_Names_Line", scrollChild)
+		self.namesScrollContainer = scrollContainer
+		self.namesScrollChild = scrollChild
+		self.namesControlMap = {}
+	end
+	return true
+end
+
+function PVP:ReanchorNamesControls()
+	if not (self.namesControlMap and self.namesScrollChild and self.namesLinePool) then return end
+	
+	local controlList = {}
+	for playerName, controlData in pairs(self.namesControlMap) do
+		table.insert(controlList, {name = playerName, data = controlData})
+	end
+	
+	table.sort(controlList, function(a, b)
+		if a.data.isAttacker and not b.data.isAttacker then return true end
+		if b.data.isAttacker and not a.data.isAttacker then return false end
+		return a.data.currentTime > b.data.currentTime
+	end)
+	
+	local totalHeight = 0
+	local lineSpacing = 2
+	for i, entry in ipairs(controlList) do
+		local control = entry.data.control
+		control:ClearAnchors()
+		control:SetAnchor(TOPLEFT, self.namesScrollChild, TOPLEFT, 0, totalHeight)
+		totalHeight = totalHeight + control:GetHeight() + lineSpacing
+	end
+	
+	if totalHeight > 0 then
+		self.namesScrollChild:SetDimensions(220, totalHeight)
+	else
+		self.namesScrollChild:SetDimensions(220, 1)
+	end
+end
+
+function PVP:BuildNameControlText(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord)
+	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
+	
+	if isResurrect and (currentTime - isResurrect) > 15000 then
+		isResurrect = nil
+	end
+
+	local formattedName = ""
+	local KOSOrFriend = self:IsKOSOrFriend(unitName, playerDbRecord)
+	if KOSOrFriend then
+		if KOSOrFriend == "KOS" then
+			formattedName = formattedName .. self:GetKOSIcon()
+		elseif KOSOrFriend == "friend" then
+			formattedName = formattedName .. self:GetFriendIcon()
+		elseif KOSOrFriend == "cool" then
+			formattedName = formattedName .. self:GetCoolIcon()
+		elseif KOSOrFriend == "groupleader" then
+			formattedName = formattedName .. self:GetGroupLeaderIcon()
+		elseif KOSOrFriend == "group" then
+			formattedName = formattedName .. self:GetGroupIcon()
+		elseif KOSOrFriend == "guild" then
+			formattedName = formattedName .. self:GetGuildIcon(nil, unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
+		end
+	end
+
+	local allianceColor = self:NameToAllianceColor(unitName, isDead or isResurrect, nil, unitAlliance)
+	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor, isDead or isResurrect,
+		nil, nil, nil, nil, currentTime, playerDbRecord.unitAvARank, playerDbRecord or "none")
+	local charName = self:Colorize(self:GetFormattedName(unitName), allianceColor)
+	local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
+	if userDisplayNameType == "both" then
+		formattedName = classIcons .. charName .. accountName .. formattedName
+	elseif userDisplayNameType == "character" then
+		formattedName = classIcons .. charName .. formattedName
+	elseif userDisplayNameType == "user" then
+		formattedName = classIcons .. accountName .. formattedName
+	end
+
+	local endIcon = ""
+	if isDead then
+		endIcon = self:GetDeathIcon(nil, 'AAAAAA')
+	elseif isResurrect then
+		endIcon = self:GetResurrectIcon()
+	else
+		if isAttacker and isTarget then
+			endIcon = self:GetFightIcon(nil, nil, unitAlliance)
+		elseif isAttacker then
+			endIcon = self:GetAttackerIcon()
+		elseif isTarget then
+			endIcon = self:GetEyeIcon()
+		end
+	end
+
+	return formattedName .. endIcon
+end
+
+function PVP:UpdateNameControl(unitName, currentTime, updateOnly, attackType, abilityId, result, unitId, playerDbRecord)
+	if not self.SV.showNamesFrame or self.SV.unlocked then return end
+	
 	playerDbRecord = playerDbRecord or self.SV.playersDB[unitName]
 	if not playerDbRecord then return end
 
@@ -1315,85 +1634,100 @@ function PVP:UpdateNamesToDisplay(unitName, currentTime, updateOnly, attackType,
 	local unitAlliance = self.playerAlliance[unitId] or playerDbRecord and playerDbRecord.unitAlliance
 	local isValidCyroNameToDisplay = (not isInBG) and (unitAlliance ~= self.allianceOfPlayer)
 
-	local namesToDisplay = self.namesToDisplay
-	local numNames = #namesToDisplay
-	if isValidBGNameToDisplay or isValidCyroNameToDisplay then
-		local found
-		for i = 1, numNames do
-			if namesToDisplay[i].unitName == unitName then
-				found = i
-				break
+	if not (isValidBGNameToDisplay or isValidCyroNameToDisplay) then return end
+	
+	if not self:InitNamesPool() then return end
+	
+	local namesControlMap = self.namesControlMap
+	local controlData = namesControlMap[unitName]
+	
+	if controlData then
+		controlData.unitAlliance = unitAlliance
+		controlData.currentTime = currentTime
+		
+		-- Check for resurrect action
+		if abilityId == 0 and result == 2265 then
+			controlData.isDead = nil
+			controlData.isResurrect = currentTime
+		end
+		
+		if updateOnly and self:GetValidName(GetRawUnitName('reticleover')) == unitName then
+			if IsUnitDead('reticleover') then
+				controlData.isDead = true
+				controlData.isResurrect = nil
+			else
+				if controlData.isResurrect and (currentTime - controlData.isResurrect) > 15000 then
+					controlData.isResurrect = nil
+				end
+				if controlData.isDead then
+					controlData.isDead = nil
+				end
 			end
 		end
-		if found then
-			namesToDisplay[found].unitAlliance = unitAlliance
-			namesToDisplay[found].currentTime = currentTime
-
-			if updateOnly and self:GetValidName(GetRawUnitName('reticleover')) == unitName then
-				if IsUnitDead('reticleover') then
-					namesToDisplay[found].isDead = true
-				else
-					namesToDisplay[found].isResurrect = nil
-				end
-			end
-
-			if not updateOnly and namesToDisplay[found].isDead then
-				namesToDisplay[found].isDead = nil
-				if not namesToDisplay[found].isResurrect then
-					namesToDisplay[found].isResurrect = currentTime
-				end
-			end
-
-			if attackType == 'source' then
-				namesToDisplay[found].isAttacker = true
-			elseif attackType == 'target' then
-				namesToDisplay[found].isTarget = true
-			end
-
-			local playerToUpdate = namesToDisplay[found]
-			local nameToken = self:BuildReticleName(unitName, unitAlliance, false, playerToUpdate.isAttacker,
-			playerToUpdate.isTarget, playerToUpdate.isResurrect, currentTime, playerDbRecord, found)
-			playerToUpdate.nameToken = nameToken
-			if attackType == 'source' then
-				remove(namesToDisplay, found)
-				insert(namesToDisplay, playerToUpdate)
-			end
-			self:PopulateReticleOverNamesBuffer(nil, currentTime)
-		elseif not updateOnly then
-			local isAttacker, isTarget, isResurrect
-			if attackType == 'source' then
-				isAttacker = true
-				if self.SV.playNewAttackerSound and not IsActiveWorldBattleground() then
-					self:PlayLoudSound('DUEL_BOUNDARY_WARNING')
-					-- d('New attacker!')
-					-- d('unitName: '..unitName)
-					-- d('abilityId: '..abilityId)
-					-- d('abilityName: '..GetAbilityName(abilityId))
-				end
-				if self.SV.showNamesFrame and self.SV.showNewAttackerFrame then
-					self:UpdateNewAttacker(unitName)
-				end
-			elseif attackType == 'target' then
-				isTarget = true
-			end
-			if abilityId == 0 and result == 2265 and isTarget then
-				isResurrect = currentTime
-			end
-
-			local nameToken = self:BuildReticleName(unitName, unitAlliance, false, isAttacker,
-			isTarget, isResurrect, currentTime, playerDbRecord, found)
-
-			insert(namesToDisplay,
-				{
-					unitName = unitName,
-					unitAlliance = unitAlliance,
-					currentTime = currentTime,
-					isAttacker = isAttacker,
-					isTarget = isTarget,
-					isResurrect = isResurrect,
-					nameToken = nameToken
-				})
+		
+		if attackType == 'source' then
+			controlData.isAttacker = true
+		elseif attackType == 'target' then
+			controlData.isTarget = true
 		end
+		
+		local text = self:BuildNameControlText(unitName, unitAlliance, controlData.isDead,
+			controlData.isAttacker, controlData.isTarget, controlData.isResurrect, currentTime, playerDbRecord)
+		controlData.control:SetText(text)
+		
+		if attackType == 'source' then
+			self:ReanchorNamesControls()
+		end
+		
+	elseif not updateOnly then
+		local isAttacker, isTarget, isResurrect
+		
+		if attackType == 'source' then
+			isAttacker = true
+			if self.SV.playNewAttackerSound and not IsActiveWorldBattleground() then
+				self:PlayLoudSound('DUEL_BOUNDARY_WARNING')
+			end
+			if self.SV.showNamesFrame and self.SV.showNewAttackerFrame then
+				self:UpdateNewAttacker(unitName)
+			end
+		elseif attackType == 'target' then
+			isTarget = true
+		end
+		
+		if abilityId == 0 and result == 2265 and isTarget then
+			isResurrect = currentTime
+		end
+		
+		local control = self.namesLinePool:AcquireObject()
+		if not control then return end
+		
+		control:SetText("")
+		
+		local text = self:BuildNameControlText(unitName, unitAlliance, false, isAttacker,
+			isTarget, isResurrect, currentTime, playerDbRecord)
+		control:SetText(text)
+		
+		namesControlMap[unitName] = {
+			control = control,
+			unitAlliance = unitAlliance,
+			currentTime = currentTime,
+			isAttacker = isAttacker,
+			isTarget = isTarget,
+			isResurrect = isResurrect,
+			isDead = false
+		}
+		
+		control.playerCharacterName = unitName
+		control.playerDisplayName = playerDbRecord.unitAccName or unitName
+		control:SetHandler("OnMouseUp", function(self, button, upInside)
+			if upInside and button == MOUSE_BUTTON_INDEX_RIGHT then
+				if CHAT_SYSTEM and CHAT_SYSTEM.ShowPlayerContextMenu then
+					CHAT_SYSTEM:ShowPlayerContextMenu(self.playerDisplayName, self.playerCharacterName)
+				end
+			end
+		end)
+		
+		self:ReanchorNamesControls()
 	end
 end
 
@@ -1421,16 +1755,18 @@ function PVP:OnKillingBlow(result, targetUnitId, currentTime, targetName)
 
 		local deadName = idToName[targetUnitId] or targetName
 
-		local numNames = #self.namesToDisplay
-		if deadName and numNames > 0 then
-			for i = 1, numNames do
-				if self.namesToDisplay[i].unitName == deadName and not self.namesToDisplay[i].isDead then
-					self.namesToDisplay[i].isDead = true
-					self.namesToDisplay[i].currentTime = currentTime
-					self:UpdateNamesToDisplay(deadName, currentTime, true, 'target', nil, nil, targetUnitId)
-					break
-				end
-			end
+		if deadName and self.namesControlMap and self.namesControlMap[deadName] then
+			local controlData = self.namesControlMap[deadName]
+			controlData.isDead = true
+			controlData.isResurrect = nil
+			controlData.isAttacker = nil
+			controlData.isTarget = nil
+			controlData.currentTime = currentTime
+			
+			local playerDbRecord = self.SV.playersDB[deadName] or {}
+			local text = self:BuildNameControlText(deadName, controlData.unitAlliance, true,
+				nil, nil, nil, currentTime, playerDbRecord)
+			controlData.control:SetText(text)
 		end
 
 		totalPlayers[targetUnitId] = nil
@@ -1488,7 +1824,7 @@ function PVP:ProcessSources(result, sourceName, sourceUnitId, abilityId, targetN
 						self.miscAbilities[sourceName] = self.miscAbilities[sourceName] or {}
 						self.miscAbilities[sourceName].chargeId = abilityId
 					end
-					self:UpdateNamesToDisplay(sourceName, currentTime, false, 'source', abilityId, result, sourceUnitId, playerDbRecord)
+					self:UpdateNameControl(sourceName, currentTime, false, 'source', abilityId, result, sourceUnitId, playerDbRecord)
 				end
 			end
 		end
@@ -1514,7 +1850,7 @@ function PVP:ProcessTargets(result, targetName, sourceName, targetUnitId, abilit
 				self.playerAlliance[targetUnitId] = playerDbRecord.unitAlliance
 				idToName[targetUnitId] = targetName
 				totalPlayers[targetUnitId] = currentTime
-				self:UpdateNamesToDisplay(targetName, currentTime, false, 'target', abilityId, result, targetUnitId, playerDbRecord)
+				self:UpdateNameControl(targetName, currentTime, false, 'target', abilityId, result, targetUnitId, playerDbRecord)
 
 				if result == ACTION_RESULT_REFLECTED then
 					self.miscAbilities[targetName] = self.miscAbilities[targetName] or {}
@@ -1549,50 +1885,68 @@ end
 
 function PVP:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 	local SV = self.SV
-	if SV.showImportant and (((self.majorImportantAbilities[abilityId] and self.majorImportantAbilities[abilityId][result]) or (self.minorImportantAbilities[abilityId] and self.minorImportantAbilities[abilityId][result])) or
-		(result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)) then
-		if (not hitValue) or (hitValue <= 200) or (hitValue > 5000) then return end
-		local ccImmune = self:IsPlayerCCImmune(currentTime, hitValue)
-		if (not ccImmune) then
-			local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
-			if self.majorImportantAbilities[abilityId] then
-				self.majorAttackNotficiationLockout = currentTime + hitValue
-				if SV.enableAttackSound then
-					local secondaryAlert = SV.secondaryAlert
-					self:PlayLoudSound(secondaryAlert and 'DUEL_START' or 'CONSOLE_GAME_ENTER')
-					if secondaryAlert and hitValue > 500 then
-						zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
-					end
-				end
-				FlashHealthWarningStage(1, 150)
-				PVP_Main.currentChannel = nil
-				self:OnDraw(false, sourceUnitId, abilityName,
-					abilityId, abilityIcon, sourceName, true,
-					false, false, hitValue)
-			elseif self.minorImportantAbilities[abilityId] then
-				if currentTime < self.majorAttackNotficiationLockout then return end
-				self.minorAttackNotficiationLockout = currentTime + hitValue
-				if SV.enableAttackSound then
-					self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
-				end
-				self:OnDraw(false, sourceUnitId, abilityName,
-					abilityId, abilityIcon, sourceName, false,
-					false, false, hitValue)
-				PVP_Main.currentChannel = {
-					abilityId = abilityId,
-					sourceUnitId = sourceUnitId,
-					isHA = false,
-					coolDownStartTime = currentTime
-				}
-			elseif abilityName == "Charge Snare" then
-				if currentTime < self.majorAttackNotficiationLockout then return end
-				if currentTime < self.minorAttackNotficiationLockout then return end
-					abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
-					self:OnDraw(false, sourceUnitId, abilityName,
-					abilityId, abilityIcon, sourceName, false,
-					false, false, hitValue)
+	if not SV.showImportant then return end
+	if PVP.missTypes[result] then return end
+
+	local validHit, isCCImmune = false, false
+	local isValidAbility = (
+		(
+			(self.majorImportantAbilities[abilityId] and self.majorImportantAbilities[abilityId][result]) or 
+			(self.minorImportantAbilities[abilityId] and self.minorImportantAbilities[abilityId][result])
+		) or
+		(result == ACTION_RESULT_EFFECT_GAINED_DURATION and abilityName == "Charge Snare" and self.miscAbilities[sourceName] and self.miscAbilities[sourceName].chargeId)
+	)
+	if not isValidAbility then return end
+
+	validHit = hitValue and hitValue >= 200 and hitValue <= 5000
+	if not validHit then return end
+
+	isCCImmune = self:IsPlayerCCImmune(currentTime, hitValue)
+	if isCCImmune then return end
+
+
+	local abilityIcon = self.abilityIconSwaps[abilityId] or GetAbilityIcon(abilityId)
+	if self.majorImportantAbilities[abilityId] then
+		self.majorAttackNotficiationLockout = currentTime + hitValue
+		if SV.enableAttackSound then
+			local secondaryAlert = SV.secondaryAlert
+			self:PlayLoudSound(secondaryAlert and 'DUEL_START' or 'CONSOLE_GAME_ENTER')
+			if secondaryAlert and hitValue > 500 then
+				zo_callLater(function() self:PlayLoudSound('DUEL_START') end, hitValue - 300)
 			end
 		end
+		FlashHealthWarningStage(1, 150)
+		PVP_Main.currentChannel = nil
+		self:OnDraw(false, sourceUnitId, abilityName,
+			abilityId, abilityIcon, sourceName, true,
+			false, false, hitValue)
+	end
+
+	if self.minorImportantAbilities[abilityId] then
+		if currentTime < self.majorAttackNotficiationLockout then return end
+		if currentTime < self.minorAttackNotficiationLockout then return end
+		self.minorAttackNotficiationLockout = currentTime + hitValue
+		if SV.enableAttackSound then
+			self:PlayLoudSound('COLLECTIBLE_ON_COOLDOWN')
+		end
+		self:OnDraw(false, sourceUnitId, abilityName,
+			abilityId, abilityIcon, sourceName, false,
+			false, false, hitValue)
+		PVP_Main.currentChannel = {
+			abilityId = abilityId,
+			sourceUnitId = sourceUnitId,
+			isHA = false,
+			coolDownStartTime = currentTime
+		}
+	end
+	
+	if abilityName == "Charge Snare" then
+		if currentTime < self.majorAttackNotficiationLockout then return end
+		if currentTime < self.minorAttackNotficiationLockout then return end
+			abilityIcon = GetAbilityIcon(self.miscAbilities[sourceName].chargeId)
+			self:OnDraw(false, sourceUnitId, abilityName,
+			abilityId, abilityIcon, sourceName, false,
+			false, false, hitValue)
 	end
 end
 
@@ -1695,12 +2049,30 @@ function PVP:OnCombat(eventCode, result, isError, abilityName, abilityGraphic, a
 		self:ProcessPvpBuffs(result, targetName, abilityId)
 	end
 
-	if self.SV.showAttacks and sourceName ~= self.playerName and ((self.majorImportantAbilities[abilityId] or self.minorImportantAbilities[abilityId]) and (targetName == self.playerName or self.playerAlliance[targetUnitId] == self.allianceOfPlayer or self.playerAlliance[sourceUnitId] ~= self.allianceOfPlayer)) then
-		self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-		self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-		self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
-		self:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	if not self.SV.showAttacks then return end
+	if sourceName == self.playerName then return end
+
+	local major = self.majorImportantAbilities
+	local minor = self.minorImportantAbilities
+
+	if not (major[abilityId] or minor[abilityId]) then return end
+
+	local playerAlliance = self.allianceOfPlayer
+	local alliances = self.playerAlliance
+
+	if not (
+		targetName == self.playerName
+		or alliances[targetUnitId] == playerAlliance
+	) then
+		return
 	end
+
+	if alliances[sourceUnitId] == playerAlliance then return end
+
+	self:ProcessImportantAttacks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	self:ProcessChanneledAttacks(result, isHeavyAttack, isSnipe, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	self:ProcessPiercingMarks(result, abilityName, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
+	self:ProcessChanneledHits(result, abilityId, sourceUnitId, sourceName, hitValue, currentTime)
 end
 
 function PVP:UpdateKillfeedPlayer(currentTime, playerValidName, playerDisplayName, unitAlliance, unitAllianceRank)
@@ -1991,7 +2363,9 @@ function PVP:ProcessKillfeedEntry(targetValidName, targetDisplayName, targetAlli
 		end
 	end
 
-	self:AddKillfeedScoreboardKill(sourceValidName, sourceAlliance, targetValidName, targetAlliance, sourceDisplayName, targetDisplayName)
+	if self.killfeedScoreboard and self.killfeedScoreboard.isLogging then
+		self:AddKillfeedScoreboardKill(sourceValidName, sourceAlliance, targetValidName, targetAlliance, sourceDisplayName, targetDisplayName)
+	end
 end
 
 function PVP:OnKillfeed(_, killLocation, sourceDisplayName, sourceCharacterName, sourceAlliance, sourceRank, targetDisplayName, targetCharacterName, targetAlliance, targetRank)
@@ -2350,23 +2724,21 @@ end
 local function FindTargetCharInNames(playerName, isTargetFrame, unitAlliance)
 	local isDeadOrResurrect
 	local statusIcon = ""
-	if #PVP.namesToDisplay ~= 0 then
-		for _, v in ipairs(PVP.namesToDisplay) do
-			if v.unitName == playerName then
-				if v.isDead then
-					statusIcon = PVP:GetDeathIcon(not isTargetFrame and 40 or nil)
-					isDeadOrResurrect = true
-				elseif v.isTarget then
-					if IsActiveWorldBattleground() then
-						statusIcon = PVP:GetAttackerIcon(not isTargetFrame and 55 or nil)
-					else
-						statusIcon = PVP:GetFightIcon(not isTargetFrame and 35 or nil, nil, unitAlliance)
-					end
-				elseif v.isAttacker then
-					statusIcon = PVP:GetAttackerIcon(not isTargetFrame and 55 or nil)
-				end
-				break
-			end
+	local namesControlMap = PVP.namesControlMap
+	if namesControlMap and namesControlMap[playerName] then
+		local controlData = namesControlMap[playerName]
+		if controlData.isDead then
+			statusIcon = PVP:GetDeathIcon(not isTargetFrame and 40 or nil)
+			isDeadOrResurrect = true
+		elseif controlData.isResurrect then
+			statusIcon = PVP:GetResurrectIcon()
+			isDeadOrResurrect = true
+		elseif controlData.isAttacker and controlData.isTarget then
+			statusIcon = PVP:GetFightIcon(not isTargetFrame and 55 or nil, nil, unitAlliance)
+		elseif controlData.isAttacker then
+			statusIcon = PVP:GetAttackerIcon(not isTargetFrame and 55 or nil)
+		elseif controlData.isTarget then
+			statusIcon = PVP:GetEyeIcon(not isTargetFrame and 35 or nil)
 		end
 	end
 
@@ -2590,8 +2962,8 @@ function PVP:ProcessKeepTicks(difference, isOffensiveTick, keepId)
 		end
 	end
 
-	text = zo_iconFormat(self:GetObjectiveIcon(GetKeepType(keepId), GetKeepAlliance(keepId, 1)), 27, 27) ..
-		self:Colorize(GetKeepName(keepId), self:AllianceToColor(GetKeepAlliance(keepId, 1)))
+	text = zo_iconFormat(self:GetObjectiveIcon(GetKeepType(keepId), GetKeepAlliance(keepId, BGQUERY_LOCAL)), 27, 27) ..
+			self:Colorize(GetKeepName(keepId), self:AllianceToColor(GetKeepAlliance(keepId, BGQUERY_LOCAL)))
 
 	if not text or text == "" then return end
 
@@ -2830,6 +3202,10 @@ function PVP:OnOff()
 			self:ResetMainFrame()
 			PVP_Counter:SetHidden(true)
 			PVP_Names:SetHidden(true)
+			if self.namesLinePool then
+				self.namesLinePool:ReleaseAllObjects()
+				self.namesControlMap = {}
+			end
 			PVP_KOS:SetHidden(true)
 			PVP_KillFeed:SetHidden(true)
 			PVP_Capture:SetHidden(true)
@@ -2854,10 +3230,14 @@ function PVP:FullReset()
 	self.idToName = {}
 	self.playerAlliance = {}
 	self.currentlyDead = {}
-	self.namesToDisplay = {}
 
 	self.localPlayers = {}
 	self.potentialAllies = {}
+
+	if self.namesLinePool then
+		self.namesLinePool:ReleaseAllObjects()
+		self.namesControlMap = {}
+	end
 
 	self.majorAttackNotficiationLockout = 0
 	self.minorAttackNotficiationLockout = 0
@@ -2881,44 +3261,36 @@ function PVP:FullReset()
 end
 
 local function FindAlliancePlayerInNames(playerName, unitAlliance)
-	local namesToDisplay = PVP.namesToDisplay
-	local numNames = #namesToDisplay
+	local namesControlMap = PVP.namesControlMap
 	local isResurrect, isDead
 	local statusIcon = ""
-	if numNames ~= 0 then
-		for i = 1, numNames do
-			local name = namesToDisplay[i]
-			if name.unitName == playerName then
-				if name.isResurrect then
-					statusIcon = PVP:GetResurrectIcon()
-					isResurrect = true
-				elseif name.isDead then
-					statusIcon = PVP:GetDeathIcon()
-					isDead = true
-				elseif name.isTarget then
-					statusIcon = PVP:GetFightIcon(nil, nil, unitAlliance)
-				elseif name.isAttacker then
-					statusIcon = PVP:GetAttackerIcon()
-				end
-				break
-			end
+	if namesControlMap and namesControlMap[playerName] then
+		local controlData = namesControlMap[playerName]
+		if controlData.isResurrect then
+			statusIcon = PVP:GetResurrectIcon()
+			isResurrect = true
+		elseif controlData.isDead then
+			statusIcon = PVP:GetDeathIcon()
+			isDead = true
+		elseif controlData.isTarget then
+			statusIcon = PVP:GetEyeIcon()
+		elseif controlData.isAttacker then
+			statusIcon = PVP:GetAttackerIcon()
 		end
 	end
 	return statusIcon, isResurrect, isDead
 end
 
 local function ConvertAlliancePlayerNames()
-	local namesToDisplay = PVP.namesToDisplay
-	local numNames = #namesToDisplay
+	local namesControlMap = PVP.namesControlMap
 	local outputArray = {}
-	if numNames ~= 0 then
-		for i = 1, numNames do
-			local name = namesToDisplay[i]
-			outputArray[name.unitName] = {
-				isResurrect = name.isResurrect,
-				isDead = name.isDead,
-				isTarget = name.isTarget,
-				isAttacker = name.isAttacker
+	if namesControlMap then
+		for playerName, controlData in pairs(namesControlMap) do
+			outputArray[playerName] = {
+				isResurrect = controlData.isResurrect,
+				isDead = controlData.isDead,
+				isTarget = controlData.isTarget,
+				isAttacker = controlData.isAttacker
 			}
 		end
 	end
@@ -2945,12 +3317,14 @@ local function SummaryConversion(inputArray, summaryType)
 		summary = ' --- Friends (' .. numberInCategory .. ') ---'
 	elseif summaryType == 'kos' then
 		summary = ' --- KOS (' .. numberInCategory .. ') ---'
+	elseif summaryType == 'guildmates' then
+		summary = ' --- Guildmates (' .. numberInCategory .. ') ---'
 	elseif summaryType == 'others' then
 		summary = ' --- Others (' .. numberInCategory .. ') ---'
 	end
 
 	local outputArray = {}
-	outputArray[1] = summary
+	outputArray[1] = { text = summary, characterName = "", displayName = "" }
 	for i = 1, num do
 		outputArray[i + 1] = inputArray[i]
 	end
@@ -2961,8 +3335,8 @@ function PVP:PopulateFromBGScoreboard()
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
-	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP =
-		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, guildmatesTableAD, guildmatesTableDC, guildmatesTableEP, othersTableAD, othersTableDC, othersTableEP =
+		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
 
 		-- {class = 3, name = "Test^Fx" , kills = 30, deaths = 20, assists = 100, damage = 10000000, healing = 3000000, points = 800, alliance = 3},
 	self.scoreboardListData = {}
@@ -3102,7 +3476,7 @@ function PVP:PopulateFromBGScoreboard()
 
 		if bgAlliance == 1 then
 			numberAD = numberAD + 1
-			insert(tableAD, formattedName)
+			insert(tableAD, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 			tableNameToIndexAD[playerName] = numberAD
 			if KOSOrFriend == "groupleader" then
 				insert(groupLeaderTable, playerName)
@@ -3114,12 +3488,14 @@ function PVP:PopulateFromBGScoreboard()
 				insert(friendsTableAD, playerName)
 			elseif KOSOrFriend == "cool" then
 				insert(friendsTableAD, playerName)
+			elseif KOSOrFriend == "guild" then
+				insert(guildmatesTableAD, playerName)
 			else
 				insert(othersTableAD, playerName)
 			end
 		elseif bgAlliance == 2 then
 			numberEP = numberEP + 1
-			insert(tableEP, formattedName)
+			insert(tableEP, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 			tableNameToIndexEP[playerName] = numberEP
 
 			if KOSOrFriend == "groupleader" then
@@ -3132,12 +3508,14 @@ function PVP:PopulateFromBGScoreboard()
 				insert(friendsTableEP, playerName)
 			elseif KOSOrFriend == "cool" then
 				insert(friendsTableEP, playerName)
+			elseif KOSOrFriend == "guild" then
+				insert(guildmatesTableEP, playerName)
 			else
 				insert(othersTableEP, playerName)
 			end
 		elseif bgAlliance == 3 then
 			numberDC = numberDC + 1
-			insert(tableDC, formattedName)
+			insert(tableDC, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 			tableNameToIndexDC[playerName] = numberDC
 
 			if KOSOrFriend == "groupleader" then
@@ -3150,6 +3528,8 @@ function PVP:PopulateFromBGScoreboard()
 				insert(friendsTableDC, playerName)
 			elseif KOSOrFriend == "cool" then
 				insert(friendsTableDC, playerName)
+			elseif KOSOrFriend == "guild" then
+				insert(guildmatesTableDC, playerName)
 			else
 				insert(othersTableDC, playerName)
 			end
@@ -3168,7 +3548,7 @@ function PVP:PopulateFromBGScoreboard()
 
 	if self.bgScoreboard and self.bgScoreboard.list then self.bgScoreboard.list:RefreshData() end
 
-	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP
+	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, guildmatesTableAD, guildmatesTableDC, guildmatesTableEP, othersTableAD, othersTableDC, othersTableEP
 end
 
 function PVP:GetAllianceCountPlayers()
@@ -3177,8 +3557,8 @@ function PVP:GetAllianceCountPlayers()
 	local numberAD, numberDC, numberEP = 0, 0, 0
 	local tableAD, tableDC, tableEP, foundNames = {}, {}, {}, {}
 	local tableNameToIndexAD, tableNameToIndexDC, tableNameToIndexEP = {}, {}, {}
-	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP =
-		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
+	local groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, friendsTableDC, friendsTableEP, guildmatesTableAD, guildmatesTableDC, guildmatesTableEP, othersTableAD, othersTableDC, othersTableEP =
+		{}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}, {}
 
 	local currentTime = GetFrameTimeMilliseconds()
 
@@ -3203,7 +3583,7 @@ function PVP:GetAllianceCountPlayers()
 			local isDead = alliancePlayerNameData.isDead or false
 			local isTarget = alliancePlayerNameData.isTarget or false
 			local isAttacker = alliancePlayerNameData.isAttacker or false
-			local statusIcon = isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
+			local statusIcon = isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetEyeIcon() or (isAttacker and self:GetAttackerIcon() or "")
 
 			local allianceColor, classIcons
 
@@ -3244,7 +3624,7 @@ function PVP:GetAllianceCountPlayers()
 
 			if v == 1 then
 				numberAD = numberAD + 1
-				insert(tableAD, formattedName)
+				insert(tableAD, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 				tableNameToIndexAD[playerName] = numberAD
 				if KOSOrFriend == "groupleader" then
 					insert(groupLeaderTable, playerName)
@@ -3256,12 +3636,14 @@ function PVP:GetAllianceCountPlayers()
 					insert(friendsTableAD, playerName)
 				elseif KOSOrFriend == "cool" then
 					insert(friendsTableAD, playerName)
+				elseif KOSOrFriend == "guild" then
+					insert(guildmatesTableAD, playerName)
 				else
 					insert(othersTableAD, playerName)
 				end
 			elseif v == 2 then
 				numberEP = numberEP + 1
-				insert(tableEP, formattedName)
+				insert(tableEP, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 				tableNameToIndexEP[playerName] = numberEP
 
 				if KOSOrFriend == "groupleader" then
@@ -3274,12 +3656,14 @@ function PVP:GetAllianceCountPlayers()
 					insert(friendsTableEP, playerName)
 				elseif KOSOrFriend == "cool" then
 					insert(friendsTableEP, playerName)
+				elseif KOSOrFriend == "guild" then
+					insert(guildmatesTableEP, playerName)
 				else
 					insert(othersTableEP, playerName)
 				end
 			elseif v == 3 then
 				numberDC = numberDC + 1
-				insert(tableDC, formattedName)
+				insert(tableDC, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 				tableNameToIndexDC[playerName] = numberDC
 
 				if KOSOrFriend == "groupleader" then
@@ -3292,6 +3676,8 @@ function PVP:GetAllianceCountPlayers()
 					insert(friendsTableDC, playerName)
 				elseif KOSOrFriend == "cool" then
 					insert(friendsTableDC, playerName)
+				elseif KOSOrFriend == "guild" then
+					insert(guildmatesTableDC, playerName)
 				else
 					insert(othersTableDC, playerName)
 				end
@@ -3305,15 +3691,26 @@ function PVP:GetAllianceCountPlayers()
 				local alliancePlayerNameData = alliancePlayerNames[playerName] or {}
 				local playerDbRecord = playersDb[playerName] or {}
 				local unitAccName = playerDbRecord.unitAccName
+				local unitClass = playerDbRecord.unitClass
 				local unitAlliance = playerDbRecord.unitAlliance
+				local unitAvARank = playerDbRecord.unitAvARank
 				local formattedName
 				local KOSOrFriend = self:IsKOSOrFriend(playerName, unitAccName)
 				local isResurrect = alliancePlayerNameData.isResurrect or false
 				local isDead = alliancePlayerNameData.isDead or false
 				local isTarget = alliancePlayerNameData.isTarget or false
 				local isAttacker = alliancePlayerNameData.isAttacker or false
-				local statusIcon = isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetFightIcon(nil, nil, unitAlliance) or (isAttacker and self:GetAttackerIcon() or "")
+				local statusIcon = isResurrect and self:GetResurrectIcon() or isDead and self:GetDeathIcon() or isTarget and self:GetEyeIcon() or (isAttacker and self:GetAttackerIcon() or "")
 	
+				-- Find player ID for time fading lookup
+				local playerId = nil
+				for id, name in pairs(idToName) do
+					if name == playerName then
+						playerId = id
+						break
+					end
+				end
+
 				if (not isDead) and (not isResurrect) then
 					if statusIcon == "" then
 						statusIcon = self:GetEyeIcon()
@@ -3322,8 +3719,14 @@ function PVP:GetAllianceCountPlayers()
 					-- if isDead or isResurrect then
 					-- formattedName = self:GetFormattedClassNameLink(playerName, self:NameToAllianceColor(playerName, true), false, true)
 					-- else
-					formattedName = self:GetFormattedClassNameLink(playerName,
-						self:NameToAllianceColor(playerName, false, nil, unitAlliance))
+					local allianceColor = self:NameToAllianceColor(playerName, false, nil, unitAlliance)
+					allianceColor = self:GetTimeFadedColor(allianceColor, playerId, currentTime)
+					local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, false, nil, nil,
+						unitClass, nil, currentTime, unitAvARank, playerDbRecord or "none")
+					formattedName = classIcons .. (userDisplayNameType == "character" and
+						(self:Colorize(self:GetFormattedName(playerName) or "unknown player", allianceColor)) or
+						(userDisplayNameType == "user" and self:Colorize(playerDbRecord and unitAccName or self:GetFormattedName(playerName) or "unknown player", allianceColor) or
+							(userDisplayNameType == "both" and (self:Colorize(self:GetFormattedName(playerName), allianceColor) .. (unitAccName or "")) or "unknown player")))
 					-- end
 
 					if KOSOrFriend then
@@ -3347,9 +3750,8 @@ function PVP:GetAllianceCountPlayers()
 
 					if unitAlliance == 1 then
 						numberAD = numberAD + 1
-						insert(tableAD, formattedName)
+					insert(tableAD, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 						tableNameToIndexAD[playerName] = numberAD
-
 						if KOSOrFriend == "groupleader" then
 							insert(groupLeaderTable, playerName)
 						elseif KOSOrFriend == "group" then
@@ -3360,12 +3762,14 @@ function PVP:GetAllianceCountPlayers()
 							insert(friendsTableAD, playerName)
 						elseif KOSOrFriend == "cool" then
 							insert(friendsTableAD, playerName)
+						elseif KOSOrFriend == "guild" then
+							insert(guildmatesTableAD, playerName)
 						else
 							insert(othersTableAD, playerName)
 						end
 					elseif unitAlliance == 2 then
 						numberEP = numberEP + 1
-						insert(tableEP, formattedName)
+						insert(tableEP, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 						tableNameToIndexEP[playerName] = numberEP
 						if KOSOrFriend == "groupleader" then
 							insert(groupLeaderTable, playerName)
@@ -3377,12 +3781,14 @@ function PVP:GetAllianceCountPlayers()
 							insert(friendsTableEP, playerName)
 						elseif KOSOrFriend == "cool" then
 							insert(friendsTableEP, playerName)
+						elseif KOSOrFriend == "guild" then
+							insert(guildmatesTableEP, playerName)
 						else
 							insert(othersTableEP, playerName)
 						end
 					elseif unitAlliance == 3 then
 						numberDC = numberDC + 1
-						insert(tableDC, formattedName)
+						insert(tableDC, { text = formattedName, characterName = playerName, displayName = unitAccName or playerName })
 						tableNameToIndexDC[playerName] = numberDC
 						if KOSOrFriend == "groupleader" then
 							insert(groupLeaderTable, playerName)
@@ -3394,6 +3800,8 @@ function PVP:GetAllianceCountPlayers()
 							insert(friendsTableDC, playerName)
 						elseif KOSOrFriend == "cool" then
 							insert(friendsTableDC, playerName)
+						elseif KOSOrFriend == "guild" then
+							insert(guildmatesTableDC, playerName)
 						else
 							insert(othersTableDC, playerName)
 						end
@@ -3404,7 +3812,7 @@ function PVP:GetAllianceCountPlayers()
 	else
 		numberAD, numberDC, numberEP, tableAD, tableDC, tableEP, tableNameToIndexAD, tableNameToIndexDC, 
 		tableNameToIndexEP, groupLeaderTable, groupMembersTable, kosTableAD, kosTableDC, kosTableEP, friendsTableAD, 
-		friendsTableDC, friendsTableEP, othersTableAD, othersTableDC, othersTableEP = self:PopulateFromBGScoreboard()
+		friendsTableDC, friendsTableEP, guildmatesTableAD, guildmatesTableDC, guildmatesTableEP, othersTableAD, othersTableDC, othersTableEP = self:PopulateFromBGScoreboard()
 	end
 
 
@@ -3415,6 +3823,10 @@ function PVP:GetAllianceCountPlayers()
 	if #friendsTableAD > 1 then sort(friendsTableAD) end
 	if #friendsTableDC > 1 then sort(friendsTableDC) end
 	if #friendsTableEP > 1 then sort(friendsTableEP) end
+
+	if #guildmatesTableAD > 1 then sort(guildmatesTableAD) end
+	if #guildmatesTableDC > 1 then sort(guildmatesTableDC) end
+	if #guildmatesTableEP > 1 then sort(guildmatesTableEP) end
 
 	if #othersTableAD > 1 then sort(othersTableAD) end
 	if #othersTableDC > 1 then sort(othersTableDC) end
@@ -3446,6 +3858,9 @@ function PVP:GetAllianceCountPlayers()
 	friendsTableAD = ArrayConversion(friendsTableAD, tableNameToIndexAD, tableAD)
 	friendsTableDC = ArrayConversion(friendsTableDC, tableNameToIndexDC, tableDC)
 	friendsTableEP = ArrayConversion(friendsTableEP, tableNameToIndexEP, tableEP)
+	guildmatesTableAD = ArrayConversion(guildmatesTableAD, tableNameToIndexAD, tableAD)
+	guildmatesTableDC = ArrayConversion(guildmatesTableDC, tableNameToIndexDC, tableDC)
+	guildmatesTableEP = ArrayConversion(guildmatesTableEP, tableNameToIndexEP, tableEP)
 	othersTableAD = ArrayConversion(othersTableAD, tableNameToIndexAD, tableAD)
 	othersTableDC = ArrayConversion(othersTableDC, tableNameToIndexDC, tableDC)
 	othersTableEP = ArrayConversion(othersTableEP, tableNameToIndexEP, tableEP)
@@ -3462,9 +3877,13 @@ function PVP:GetAllianceCountPlayers()
 	if #friendsTableDC ~= 0 then friendsTableDC = SummaryConversion(friendsTableDC, 'friends') end
 	if #friendsTableEP ~= 0 then friendsTableEP = SummaryConversion(friendsTableEP, 'friends') end
 
-	if #kosTableAD ~= 0 or #friendsTableAD ~= 0 then onlyOthersAD = false end
-	if #kosTableDC ~= 0 or #friendsTableDC ~= 0 then onlyOthersDC = false end
-	if #kosTableEP ~= 0 or #friendsTableEP ~= 0 then onlyOthersEP = false end
+	if #guildmatesTableAD ~= 0 then guildmatesTableAD = SummaryConversion(guildmatesTableAD, 'guildmates') end
+	if #guildmatesTableDC ~= 0 then guildmatesTableDC = SummaryConversion(guildmatesTableDC, 'guildmates') end
+	if #guildmatesTableEP ~= 0 then guildmatesTableEP = SummaryConversion(guildmatesTableEP, 'guildmates') end
+
+	if #kosTableAD ~= 0 or #friendsTableAD ~= 0 or #guildmatesTableAD ~= 0 then onlyOthersAD = false end
+	if #kosTableDC ~= 0 or #friendsTableDC ~= 0 or #guildmatesTableDC ~= 0 then onlyOthersDC = false end
+	if #kosTableEP ~= 0 or #friendsTableEP ~= 0 or #guildmatesTableEP ~= 0 then onlyOthersEP = false end
 
 
 	if #othersTableAD ~= 0 and not onlyOthersAD then othersTableAD = SummaryConversion(othersTableAD, 'others') end
@@ -3477,14 +3896,17 @@ function PVP:GetAllianceCountPlayers()
 
 	tableAD = self:TableConcat(tableAD, friendsTableAD)
 	tableAD = self:TableConcat(tableAD, kosTableAD)
+	tableAD = self:TableConcat(tableAD, guildmatesTableAD)
 	tableAD = self:TableConcat(tableAD, othersTableAD)
 
 	tableDC = self:TableConcat(tableDC, friendsTableDC)
 	tableDC = self:TableConcat(tableDC, kosTableDC)
+	tableDC = self:TableConcat(tableDC, guildmatesTableDC)
 	tableDC = self:TableConcat(tableDC, othersTableDC)
 
 	tableEP = self:TableConcat(tableEP, friendsTableEP)
 	tableEP = self:TableConcat(tableEP, kosTableEP)
+	tableEP = self:TableConcat(tableEP, guildmatesTableEP)
 	tableEP = self:TableConcat(tableEP, othersTableEP)
 
 	if allianceOfPlayer == 1 then
@@ -3496,162 +3918,6 @@ function PVP:GetAllianceCountPlayers()
 	end
 	-- d('Damn table time: '..tostring(GetGameTimeMilliseconds() - countAllianceStart)..'ms')
 	return numberAD, numberDC, numberEP, tableAD, tableDC, tableEP
-end
-
-function PVP:BuildReticleName(unitName, unitAlliance, isDead, isAttacker, isTarget, isResurrect, currentTime, playerDbRecord, found)
-	if not self.SV.showNamesFrame or self.SV.unlocked then return "" end
-	if not unitName then return "" end
-	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
-	if isResurrect and (currentTime - isResurrect) > 15000 then
-		isResurrect = nil
-	end
-
-	local formattedName = ""
-	local KOSOrFriend = self:IsKOSOrFriend(unitName, playerDbRecord)
-	if KOSOrFriend then
-		if KOSOrFriend == "KOS" then
-			formattedName = formattedName .. self:GetKOSIcon()
-		elseif KOSOrFriend == "friend" then
-			formattedName = formattedName .. self:GetFriendIcon()
-		elseif KOSOrFriend == "cool" then
-			formattedName = formattedName .. self:GetCoolIcon()
-		elseif KOSOrFriend == "groupleader" then
-			formattedName = formattedName .. self:GetGroupLeaderIcon()
-		elseif KOSOrFriend == "group" then
-			formattedName = formattedName .. self:GetGroupIcon()
-		elseif KOSOrFriend == "guild" then
-			formattedName = formattedName .. self:GetGuildIcon(nil, unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
-		end
-	end
-
-	local allianceColor = self:NameToAllianceColor(unitName, isDead or isResurrect, nil, unitAlliance)
-	local classIcons = self:GetFormattedClassIcon(unitName, nil, allianceColor,isDead or isResurrect,
-		nil, nil, nil, nil, currentTime, playerDbRecord.unitAvaRank, playerDbRecord or "none")
-	local charName = self:Colorize(self:GetFormattedName(unitName), allianceColor)
-	local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
-	if userDisplayNameType == "both" then
-		formattedName = classIcons .. charName .. accountName .. formattedName
-	elseif userDisplayNameType == "character" then
-		formattedName = classIcons .. charName .. formattedName
-	elseif userDisplayNameType == "user" then
-		formattedName = classIcons .. accountName .. formattedName
-	end
-
-	local endIcon = ""
-	if isDead then
-		endIcon = self:GetDeathIcon(nil, 'AAAAAA')
-	elseif isResurrect then
-		endIcon = self:GetResurrectIcon()
-	else
-		if IsActiveWorldBattleground() then
-			if isAttacker or isTarget then
-				endIcon = self:GetAttackerIcon()
-			end
-		else
-			if isAttacker and isTarget then
-				endIcon = self:GetFightIcon(nil, nil, unitAlliance)
-			elseif isAttacker then
-				endIcon = self:GetAttackerIcon()
-			elseif isTarget then
-				endIcon = self:GetFightIcon(nil, nil, unitAlliance)
-			end
-		end
-	end
-
-	if not found then
-		PVP_Names_Text:AddMessage(formattedName .. endIcon)
-	end
-
-	return formattedName
-end
-
-function PVP:PopulateReticleOverNamesBuffer(forceRefresh, currentTime)
-	if not self.SV.showNamesFrame or self.SV.unlocked then return end
-	currentTime = currentTime or GetFrameTimeMilliseconds()
-	local userDisplayNameType = self.SV.userDisplayNameType or self.defaults.userDisplayNameType
-	PVP_Names_Text:Clear()
-	local namesToDisplay = self.namesToDisplay
-	if #namesToDisplay == 0 then return end
-
-	local playersDb = self.SV.playersDB
-
-	for k, v in ipairs(namesToDisplay) do
-		local playerName = v.unitName
-		if playerName then
-			local unitAlliance = v.unitAlliance
-			local nameToken = v.nameToken
-			local isDead = v.isDead
-			local isAttacker = v.isAttacker
-			local isTarget = v.isTarget
-			local isResurrect = v.isResurrect
-
-			if isResurrect and (currentTime - isResurrect) > 15000 then
-				v.isResurrect = nil
-				isResurrect = nil
-				--Could insert a call to BuildReticleName here to update the colors if this isn't good enough
-			end
-			if (not nameToken) or (nameToken == "") or forceRefresh then
-				local formattedName = ""
-				local playerDbRecord = playersDb[playerName]
-				unitAlliance = playerDbRecord and playerDbRecord.unitAlliance
-
-				local KOSOrFriend = self:IsKOSOrFriend(playerName, playerDbRecord)
-				if KOSOrFriend then
-					if KOSOrFriend == "KOS" then
-						formattedName = formattedName .. self:GetKOSIcon()
-					elseif KOSOrFriend == "friend" then
-						formattedName = formattedName .. self:GetFriendIcon()
-					elseif KOSOrFriend == "cool" then
-						formattedName = formattedName .. self:GetCoolIcon()
-					elseif KOSOrFriend == "groupleader" then
-						formattedName = formattedName .. self:GetGroupLeaderIcon()
-					elseif KOSOrFriend == "group" then
-						formattedName = formattedName .. self:GetGroupIcon()
-					elseif KOSOrFriend == "guild" then
-						formattedName = formattedName .. self:GetGuildIcon(nil, unitAlliance == self.allianceOfPlayer and "40BB40" or "BB4040")
-					end
-				end
-
-				local allianceColor = self:NameToAllianceColor(playerName, isDead or isResurrect, nil, unitAlliance)
-				local classIcons = self:GetFormattedClassIcon(playerName, nil, allianceColor, isDead or isResurrect,
-					nil, nil, nil, nil, currentTime, playerDbRecord.unitAvaRank, playerDbRecord or "none")
-				local charName = self:Colorize(self:GetFormattedName(playerName), allianceColor)
-				local accountName = self:Colorize(playerDbRecord.unitAccName, userDisplayNameType == "user" and allianceColor or "CCCCCC")
-				if userDisplayNameType == "both" then
-					formattedName = classIcons .. charName .. accountName .. formattedName
-				elseif userDisplayNameType == "character" then
-					formattedName = classIcons .. charName .. formattedName
-				elseif userDisplayNameType == "user" then
-					formattedName = classIcons .. accountName .. formattedName
-				end
-				v.nameToken = formattedName
-				nameToken = formattedName
-			end
-
-			local endIcon = ""
-			if isDead then
-				endIcon = self:GetDeathIcon(nil, 'AAAAAA')
-			elseif isResurrect then
-				endIcon = self:GetResurrectIcon()
-			else
-				if IsActiveWorldBattleground() then
-					if isAttacker or isTarget then
-						endIcon = self:GetAttackerIcon()
-					end
-				else
-					if isAttacker and isTarget then
-						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
-					elseif isAttacker then
-						endIcon = self:GetAttackerIcon()
-					elseif isTarget then
-						endIcon = self:GetFightIcon(nil, nil, unitAlliance)
-					end
-				end
-			end
-
-			PVP_Names_Text:AddMessage(nameToken .. endIcon)
-		end
-	end
 end
 
 function PVP:GetKillFeed()
@@ -3712,7 +3978,7 @@ function PVP:ProcessReticleOver(unitName, unitAccName, unitClass, unitAlliance, 
 
 	if found then self.totalPlayers[found] = currentTime end
 	self.playerNames[unitName] = currentTime
-	self:UpdateNamesToDisplay(unitName, currentTime, true, nil, nil, nil, found)
+	self:UpdateNameControl(unitName, currentTime, true, nil, nil, nil, found)
 end
 
 function PVP.OnTargetChanged()
@@ -3820,11 +4086,11 @@ end
 
 function PVP:UpdateNewAttacker(attackerName, test)
 	local function CountNonDead()
-		local namesToDisplay = self.namesToDisplay
+		local namesControlMap = self.namesControlMap
 		local count = 0
-		if namesToDisplay and #namesToDisplay > 0 then
-			for k, v in ipairs(namesToDisplay) do
-				if not v.isDead then
+		if namesControlMap then
+			for playerName, controlData in pairs(namesControlMap) do
+				if not controlData.isDead then
 					count = count + 1
 				end
 			end
@@ -3907,8 +4173,7 @@ function PVP:InitEnabledAddon()
 		self.guildmates = self:PopulateGuildmateDatabase()
 		PVP_KOS_Text:SetHandler("OnLinkMouseUp",
 			function(self, _, link, button) return ZO_LinkHandler_OnLinkMouseUp(link, button, self) end)
-		PVP_Names_Text:SetHandler("OnLinkMouseUp",
-			function(self, _, link, button) return ZO_LinkHandler_OnLinkMouseUp(link, button, self) end)
+		-- Names frame uses control pool, handlers set per control in PopulateReticleOverNamesBuffer
 		PVP_KillFeed_Text:SetHandler("OnLinkMouseUp",
 			function(self, _, link, button) return ZO_LinkHandler_OnLinkMouseUp(link, button, self) end)
 		self:FullReset()
@@ -4065,14 +4330,12 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							remove(PVP.SV.KOSList, index)
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer(true)
 						end)
 						local removeCool = PVP:FindAccInCOOL(rawName, unitAccName)
 						if removeCool then
 							PVP.SV.coolList[removeCool] = nil
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer(true)
 						end
 
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_COOL), function()
@@ -4085,7 +4348,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 							if not addCool then PVP.SV.coolList[rawName] = unitAccName end
 							PVP:RefreshKOSandCoolAccList()
 							PVP:RefreshLocalPlayers()
-							PVP:PopulateReticleOverNamesBuffer(true)
 						end)
 					else
 						AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_ADD_TO_KOS), function()
@@ -4095,7 +4357,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP:GetFormattedName(rawName),
 									unitAccName)
 								PVP.SV.coolList[cool] = nil
-								PVP:PopulateReticleOverNamesBuffer(true)
 							end
 							chat:Printf("Added to KOS: %s%s!", PVP:GetFormattedName(rawName),
 								unitAccName)
@@ -4106,7 +4367,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								})
 								PVP:RefreshKOSandCoolAccList()
 								PVP:RefreshLocalPlayers()
-								PVP:PopulateReticleOverNamesBuffer(true)
 							end)
 						local addCool = PVP:FindAccInCOOL(rawName, unitAccName)
 
@@ -4118,7 +4378,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 								PVP.SV.coolList[rawName] = unitAccName
 								PVP:RefreshKOSandCoolAccList()
 								PVP:RefreshLocalPlayers()
-								PVP:PopulateReticleOverNamesBuffer(true)
 							end)
 						else
 							AddMenuItem(GetString(SI_CHAT_PLAYER_CONTEXT_REMOVE_FROM_COOL), function()
@@ -4130,7 +4389,6 @@ CALLBACK_MANAGER:RegisterCallback(PVP.name .. "_OnAddOnLoaded", function()
 									PVP.SV.coolList[removeCool] = nil
 									PVP:RefreshKOSandCoolAccList()
 									PVP:RefreshLocalPlayers()
-									PVP:PopulateReticleOverNamesBuffer(true)
 								end
 							end)
 						end

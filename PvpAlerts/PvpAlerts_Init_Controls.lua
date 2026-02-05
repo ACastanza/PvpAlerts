@@ -61,8 +61,7 @@ function PVP:InitControls()
 	PVP_Names:SetScale(SV.namesControlScale)
 	PVP_Names:ClearAnchors()
 	PVP_Names:SetAnchor(CENTER, GuiRoot, CENTER, SV.namesOffsetX, SV.namesOffsetY)
-
-	self:ScaleControls(PVP_Names, PVP_Names_Text, 18, SV.namesControlScale)
+	-- Names frame uses control pool, scaling handled by parent control
 
 	PVP_KOS:SetScale(SV.KOSControlScale)
 	PVP_KOS:ClearAnchors()
@@ -132,19 +131,10 @@ function PVP:InitControls()
 			PVP_KillFeed_Text:AddMessage("Another Player died from a nasty ability")
 			PVP_KillFeed_Text:AddMessage("Yet Another Player died from a nasty ability")
 		end
-		PVP_Names_Text:Clear()
-		if SV.showNamesFrame then
-			PVP_Names_Text:AddMessage("NAMES FRAME UNLOCKED")
-			PVP_Names_Text:AddMessage("Some player")
-			PVP_Names_Text:AddMessage("Another player")
-			PVP_Names_Text:AddMessage("Yet another player")
-		end
-		PVP_KOS_Text:Clear()
-		if SV.showKOSFrame then
-			PVP_KOS_Text:AddMessage("KOS FRAME UNLOCKED")
-			PVP_KOS_Text:AddMessage("Some KOS player")
-			PVP_KOS_Text:AddMessage("Another KOS player")
-			PVP_KOS_Text:AddMessage("Yet another KOS player")
+	-- Names frame uses control pool, no placeholder messages in unlock mode
+	if self.namesLinePool then
+		self.namesLinePool:ReleaseAllObjects()
+		self.namesControlMap = {}
 		end
 
 		PVP_TargetName:SetAlpha(SV.targetNameFrameAlpha)
@@ -218,7 +208,7 @@ function PVP:InitControls()
 			end
 		end
 
-		PVP_Names_Text:SetLineFade(0, 0)
+	-- Names frame uses control pool, no fade settings
 		PVP_KillFeed_Text:SetLineFade(0, 0)
 	else
 		PVP_MainLabel:SetText("")
@@ -229,9 +219,9 @@ function PVP:InitControls()
 		end
 
 		PVP_KillFeed_Text:Clear()
-		PVP_Names_Text:Clear()
+		-- Names frame uses control pool, cleared via normal visibility logic
 		PVP_KOS_Text:Clear()
-		PVP_Names_Text:SetLineFade(13, 2)
+		-- Names frame uses control pool, no fade settings needed
 		PVP_KillFeed_Text:SetLineFade(8, 2)
 
 		PVP_TargetNameLabel:SetText("")
@@ -253,6 +243,17 @@ function PVP:InitControls()
 	PVP_Counter_CountContainer_CountAD:SetMouseEnabled(true)
 	PVP_Counter_CountContainer_CountDC:SetMouseEnabled(true)
 	PVP_Counter_CountContainer_CountEP:SetMouseEnabled(true)
+	
+	-- Set up click handlers to toggle tooltip pin
+	local function ToggleTooltipPin(control, button)
+		if button == MOUSE_BUTTON_INDEX_LEFT then
+			PVP = PVP or {}
+			PVP.counterTooltipPinned = not (PVP.counterTooltipPinned or false)
+		end
+	end
+	PVP_Counter_CountContainer_CountAD:SetHandler("OnMouseUp", ToggleTooltipPin)
+	PVP_Counter_CountContainer_CountDC:SetHandler("OnMouseUp", ToggleTooltipPin)
+	PVP_Counter_CountContainer_CountEP:SetHandler("OnMouseUp", ToggleTooltipPin)
 
 	if IsActiveWorldBattleground() then
 		PVP_Counter_CountContainer_CountAD:SetColor(GetBattlegroundTeamColor(1):UnpackRGBA())
@@ -283,9 +284,8 @@ function PVP:InitControls()
 	PVP_KillFeed:SetAlpha(1)
 
 	PVP_Names:SetMouseEnabled(true)
-	PVP_Names_Text:SetMouseEnabled(not unlocked)
+	-- Names frame uses control pool, mouse/link handlers set per control
 	PVP_Names:SetMovable(unlocked)
-	PVP_Names_Text:SetLinkEnabled(not unlocked)
 	PVP_Names:SetAlpha(1)
 
 	PVP_KOS:SetMouseEnabled(true)
@@ -408,7 +408,13 @@ function PVP:SetSceneVisibility()
 		PVP_ForwardCamp:SetHidden(not (hidingCondition and self.SV.showCampFrame and not IsActiveWorldBattleground()))
 		PVP_Capture:SetHidden(not (hidingCondition and self.SV.showCaptureFrame))
 		PVP_Counter:SetHidden(not (hidingCondition and self.SV.showCounterFrame))
-		PVP_Names:SetHidden(not (hidingCondition and self.SV.showNamesFrame))
+		local showNamesFrame = (hidingCondition and self.SV.showNamesFrame)
+		PVP_Names:SetHidden(not showNamesFrame)
+		if not showNamesFrame and self.namesLinePool then
+			self.namesLinePool:ReleaseAllObjects()
+			self.namesControlMap = {}
+			self.lastNamesCount = nil
+		end
 		PVP_KOS:SetHidden(not (hidingCondition and self.SV.showKOSFrame))
 		PVP_KillFeed:SetHidden(not (hidingCondition and self.SV.showKillFeedFrame))
 		PVP_TargetName:SetHidden(not (hidingCondition and self.SV.showTargetNameFrame))

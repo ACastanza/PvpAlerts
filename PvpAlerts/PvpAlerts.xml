@@ -257,14 +257,19 @@
 				PVP_Names_SavePosition()
 			</OnMoveStop>
 			<Controls>
-				<TextBuffer name="$(parent)_Text" mouseEnabled="false" font="ZoFontWinH3" horizontalAlignment="RIGHT" maxHistoryLines="200" inheritAlpha="true" linkEnabled="true"  inheritScale="false">
+				<Control name="$(parent)_ScrollContainer" inherits="ZO_ScrollContainer" hidden="false">
 					<Dimensions x="220" y="500" />
 					<Anchor point="CENTER" offsetY="0" />
-					<LineFade fadeBegin="13" fadeDuration="2"/>
 					<OnMouseWheel>
 						self:MoveScrollPosition(delta)
 					</OnMouseWheel>
-				</TextBuffer>
+					<Controls>
+						<Control name="$(parent)_ScrollChild" override="true">
+							<Anchor point="TOPLEFT" />
+							<Dimensions x="220" y="1" />
+						</Control>
+					</Controls>
+				</Control>
 				<Backdrop name="$(parent)_Backdrop" inherits="ZO_DefaultBackdrop" alpha="0.3" hidden="false" />
 			</Controls>
 		</TopLevelControl>
@@ -827,7 +832,67 @@
 			<Anchor point="CENTER" offsetY="450"/>
 		</TopLevelControl>
 
+		<TopLevelControl name="PVP_Counter_Tooltip" mouseEnabled="true" movable="false" clampedToScreen="true" hidden="true" tier="1" layer="2" resizeToFitDescendents="false">
+			<OnShow>
+				-- Start checking if mouse is still over tooltip or counter after a grace period
+				self.tooltipGracePeriod = GetFrameTimeMilliseconds() + 750
+				self:SetHandler("OnUpdate", function(control, timeSeconds)
+					local PVP = PVP_Alerts_Main_Table
+					local currentTime = GetFrameTimeMilliseconds()
+					
+					-- Check if we should hide the tooltip after grace period (only when not pinned)
+					if not PVP.counterTooltipPinnedControl then
+						-- Only check after grace period has elapsed
+						if currentTime >= control.tooltipGracePeriod then
+							local counter = PVP.counterTooltipHoverControl
+							if not MouseIsOver(control) and (not counter or not MouseIsOver(counter)) then
+								control:SetHidden(true)
+								PVP.detailedTooltipCalc = false
+								ClearTooltip(PVP_Tooltip)
+								control:SetHandler("OnUpdate", nil)
+							end
+						end
+					end
+				end)
+			</OnShow>
+			<OnHide>
+				self:SetHandler("OnUpdate", nil)
+				self.tooltipGracePeriod = nil
+			</OnHide>
+			<OnMouseUp>
+				if button == MOUSE_BUTTON_INDEX_LEFT then
+					return true
+				end
+			</OnMouseUp>
+			<Dimensions x="300" y="200" />
+			<Controls>
+			<Backdrop name="$(parent)Backdrop" inherits="ZO_DefaultBackdrop" edgeColor="000000" centerColor="000000" alpha="0.85">
+				<AnchorFill />
+				</Backdrop>
+				<Control name="$(parent)Scroll" inherits="ZO_ScrollContainer">
+					<AnchorFill offsetX="8" offsetY="8" offsetXEnd="-8" offsetYEnd="-8" />
+					<OnMouseWheel>
+						self:MoveScrollPosition(delta)
+					</OnMouseWheel>
+					<Controls>
+						<Control name="$(parent)ScrollChild" override="true">
+							<Anchor point="TOPLEFT" />
+							<Dimensions x="260" y="10" />
+						</Control>
+					</Controls>
+				</Control>
+			</Controls>
+		</TopLevelControl>
 
+		<Label name="PVP_Counter_Tooltip_Line" virtual="true" font="ZoFontWinH5" color="FFFFFF" horizontalAlignment="LEFT" verticalAlignment="TOP" wrapMode="WRAP">
+			<Anchor point="TOPLEFT" />
+			<Dimensions x="260" y="10" />
+		</Label>
+
+		<Label name="PVP_Names_Line" virtual="true" font="ZoFontWinT1" color="FFFFFF" horizontalAlignment="RIGHT" verticalAlignment="TOP" wrapMode="WRAP" mouseEnabled="true">
+			<Anchor point="TOPLEFT" />
+			<Dimensions x="220" y="20" />
+		</Label>
 
 		<TopLevelControl name="PVP_TopLevel_Tooltip" inherits="TooltipTopLevel">
 			<Controls>

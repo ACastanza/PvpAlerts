@@ -9,6 +9,7 @@ local PVP_BLESSING_OF_WAR_ID = PVP:GetGlobal('PVP_BLESSING_OF_WAR_ID')
 local floor = zo_floor
 local GetGameTimeMilliseconds = GetGameTimeMilliseconds
 local zo_distance3D = zo_distance3D
+local BGQUERY_LOCAL = BGQUERY_LOCAL
 
 function PVP:FindNearbyKeepToRespawn(anyKeep)
 	local selfX, selfY = GetMapPlayerPosition('player')
@@ -17,7 +18,7 @@ function PVP:FindNearbyKeepToRespawn(anyKeep)
 	for i = 1, GetNumKeeps() do
 		local keepId = GetKeepKeysByIndex(i)
 		if anyKeep or (CanRespawnAtKeep(keepId) and not (IsInImperialCity() and GetKeepType(keepId) ~= KEEPTYPE_IMPERIAL_CITY_DISTRICT)) then
-			local _, targetX, targetY = GetKeepPinInfo(keepId, 1)
+			local _, targetX, targetY = GetKeepPinInfo(keepId, BGQUERY_LOCAL)
 			if targetX ~= 0 and targetY ~= 0 then
 				local distance = zo_distance3D(selfX, selfY, 0, targetX, targetY, 0)
 				if not minDistance or distance < minDistance then

@@ -925,6 +925,8 @@ PVP.majorImportantAbilities = {
 }
 
 PVP.minorImportantAbilities = {
+--	[188546] = {[ACTION_RESULT_EFFECT_GAINED] = true, [ACTION_RESULT_EFFECT_GAINED_DURATION] = true}, -- Star Venom
+
 }
 
 PVP.abilityIdIgnoreList = {
@@ -933,6 +935,7 @@ PVP.abilityIdIgnoreList = {
 PVP.abilityMessages = {
 	[159279] = "BLOCK - AGONY PULL from: ",
 	[160184] = "BLOCK - AGONY PULL from: ",
+--	[188546] = "STAR VENOM from: ", -- Star Venom
 }
 
 PVP.abilityIconSwaps = {
@@ -946,6 +949,12 @@ PVP.abilityIconSwaps = {
 }
 
 PVP.heavyAttackNames = {
+	["Heavy Attack (2H)"] = PVP_2H_HA_ICON,
+	["Heavy Attack (Bow)"] = PVP_BOW_HA_ICON,
+	["Heavy Attack (Dual Wield)"] = PVP_DW_HA_ICON,
+	["Heavy Attack (1H)"] = PVP_SB_HA_ICON,
+	["Heavy Attack (Flame)"] = PVP_FLAME_HA_ICON,
+	["Heavy Attack (Frost)"] = PVP_FROST_HA_ICON,
 }
 
 PVP.heavyAttackId = {
@@ -958,28 +967,35 @@ PVP.heavyAttackId = {
 }
 
 PVP.hitTypes = {
-	[ACTION_RESULT_BLOCKED] = true,
-	[ACTION_RESULT_ABSORBED] = true,
-	[ACTION_RESULT_BLOCKED_DAMAGE] = true,
+	[ACTION_RESULT_BEGIN] = true,
 	[ACTION_RESULT_CRITICAL_DAMAGE] = true,
 	[ACTION_RESULT_DAMAGE] = true,
-	[ACTION_RESULT_DAMAGE_SHIELDED] = true,
 	[ACTION_RESULT_IMMUNE] = true,
-	[ACTION_RESULT_MISS] = true,
 	[ACTION_RESULT_PARTIAL_RESIST] = true,
-	[ACTION_RESULT_REFLECTED] = true,
-	[ACTION_RESULT_RESIST] = true,
 	[ACTION_RESULT_WRECKING_DAMAGE] = true,
-
-	[ACTION_RESULT_DODGED] = true,
 	[ACTION_RESULT_DISORIENTED] = true,
 	[ACTION_RESULT_EFFECT_GAINED] = true,
 	[ACTION_RESULT_EFFECT_GAINED_DURATION] = true,
 	[ACTION_RESULT_FEARED] = true,
+	[ACTION_RESULT_CHARMED] = true,
+	[ACTION_RESULT_LEVITATED] = true,
+	[ACTION_RESULT_KNOCKBACK] = true,
+	[ACTION_RESULT_SILENCED] = true,
 	[ACTION_RESULT_STUNNED] = true,
 	[ACTION_RESULT_OFFBALANCE] = true,
 }
 
+PVP.missTypes = {
+	[ACTION_RESULT_RESIST] = true,
+	[ACTION_RESULT_BLOCKED] = true,
+	[ACTION_RESULT_ABSORBED] = true,
+	[ACTION_RESULT_DAMAGE_SHIELDED] = true,
+	[ACTION_RESULT_BLOCKED_DAMAGE] = true,
+	[ACTION_RESULT_REFLECTED] = true,
+	[ACTION_RESULT_MISS] = true,
+	[ACTION_RESULT_DODGED] = true,
+	[ACTION_RESULT_IMMUNE] = true,
+}
 -- PVP.heavyAttackIdFrame={
 -- [16041] = PVP_2H_HA_ICON,
 -- [16691] = PVP_BOW_HA_ICON,

@@ -659,7 +659,6 @@ function PVP:AddKOS(playerName, isSlashCommand)
 		self.CHAT:Printf("Removed from COOL: %s%s!", self:GetFormattedName(playersDB[cool].unitName),
 			playersDB[cool].unitAccName)
 		SV.coolList[cool] = nil
-		self:PopulateReticleOverNamesBuffer(true)
 	end
 
 	if not isInKOS then
@@ -740,10 +739,10 @@ function PVP:AddCOOL(playerName, isSlashCommand)
 	end
 
 	self:RefreshLocalPlayers()
-	self:PopulateReticleOverNamesBuffer(true)
 end
 
 function PVP:IsKOSOrFriend(playerName, unitAccName)
+	if not self.KOSAccList or not self.coolAccList or not self.guildmates then return false end
 	local isGrouped = IsUnitGrouped('player')
 	if isGrouped and self:GetValidName(GetRawUnitName(GetGroupLeaderUnitTag())) == playerName then return "groupleader" end
 	if isGrouped and IsPlayerInGroup(playerName) then return "group" end
@@ -856,13 +855,12 @@ local function FormatResurrectIcon(isResurrect)
 	return isResurrect and PVP:GetResurrectIcon() or ""
 end
 
-local function createIsResurrectList(namesToDisplay)
+local function createIsResurrectList(namesControlMap)
 	local isResurrectList = {}
-	if namesToDisplay then
-		local numNames = #namesToDisplay
-		for j = 1, numNames do
-			if namesToDisplay[j].isResurrect then
-				isResurrectList[namesToDisplay[j]] = true
+	if namesControlMap then
+		for playerName, controlData in pairs(namesControlMap) do
+			if controlData.isResurrect then
+				isResurrectList[playerName] = true
 			end
 		end
 	end
@@ -1000,7 +998,7 @@ function PVP:RefreshLocalPlayers()
 	local potentialAllies = {}
 	local idToName = self.idToName
 	local playerNames = self.playerNames
-	local namesToDisplay = self.namesToDisplay
+	local namesControlMap = self.namesControlMap
 	local playerNotes = SV.playerNotes
 	local showPlayerNotes = SV.showPlayerNotes
 	local showFriends = SV.showFriends
@@ -1009,7 +1007,7 @@ function PVP:RefreshLocalPlayers()
 	local activeStringsArray = {}
 	local inactiveStringsArray = {}
 
-	local isResurrectList = createIsResurrectList(namesToDisplay)
+	local isResurrectList = createIsResurrectList(namesControlMap)
 
 	for unitId, rawName in pairs(idToName) do
 		local dbRec = playersDB[rawName]

@@ -158,8 +158,12 @@ function PVP:InitializeAddonMenu()
 			setFunc = function(newValue)
 				self.SV.showNamesFrame = newValue
 				if not newValue then
-					self.namesToDisplay = {}
-					PVP_Names_Text:Clear()
+					
+					if self.namesLinePool then
+						self.namesLinePool:ReleaseAllObjects()
+						self.namesControlMap = {}
+						self.lastNamesCount = nil
+					end
 				end
 				self:InitControls()
 			end
