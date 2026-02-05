@@ -114,11 +114,12 @@ end
 
 function PVP:GetPlayerRecentEvents(playerName)
     local killfeedScoreboard = self.killfeedScoreboard
-    if not killfeedScoreboard.playerStats or not killfeedScoreboard.playerStats[playerName] then
+    local currentTab = self:GetTabById(killfeedScoreboard.activeTabId)
+    if not currentTab or not currentTab.playerStats or not currentTab.playerStats[playerName] then
         return {}
     end
     
-    local allEvents = killfeedScoreboard.playerStats[playerName].events or {}
+    local allEvents = currentTab.playerStats[playerName].events or {}
     local events = {}
     
     for _, event in ipairs(allEvents) do
@@ -139,13 +140,16 @@ function PVP:GetPlayerRecentEvents(playerName)
     return events
 end
 
-function PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
+function PVP:CalculatePlayerAggregateStats(playerName, applyFilters, tab)
     local killfeedScoreboard = self.killfeedScoreboard
-    if not killfeedScoreboard.playerStats or not killfeedScoreboard.playerStats[playerName] then
+    
+    -- Use provided tab or get current active tab
+    local currentTab = tab or self:GetTabById(killfeedScoreboard.activeTabId)
+    if not currentTab or not currentTab.playerStats or not currentTab.playerStats[playerName] then
         return nil
     end
     
-    local stats = killfeedScoreboard.playerStats[playerName]
+    local stats = currentTab.playerStats[playerName]
     local events = stats.events or {}
     
     local killsByAlliance = {
@@ -180,9 +184,9 @@ function PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
             local opponentDisplayName = isKill and event.targetDisplayName or event.sourceDisplayName
             local opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance
 
-            local isOpponentAllianceDisabled = opponentAlliance and killfeedScoreboard.disabledAlliances[opponentAlliance]
+            local isOpponentAllianceDisabled = opponentAlliance and currentTab.disabledAlliances[opponentAlliance]
             
-            if not killfeedScoreboard.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
+            if not currentTab.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
                 local countThisEvent = false
                 if playerInGroup or playerInGuild then
                     countThisEvent = true
@@ -217,9 +221,9 @@ function PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
             local opponent = isKill and event.target or event.source
             local opponentAlliance = isKill and event.targetAlliance or event.sourceAlliance
             
-            local isOpponentAllianceDisabled = opponentAlliance and killfeedScoreboard.disabledAlliances[opponentAlliance]
+            local isOpponentAllianceDisabled = opponentAlliance and currentTab.disabledAlliances[opponentAlliance]
 
-            if not killfeedScoreboard.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
+            if not currentTab.disabledPlayers[opponent] and not isOpponentAllianceDisabled then
                 if isKill then
                     kills = kills + 1
                     if opponentAlliance then
@@ -244,12 +248,13 @@ function PVP:CalculatePlayerAggregateStats(playerName, applyFilters)
 end
 
 function PVP_ShowPlayerDetails(playerName)
-	if not PVP.killfeedScoreboard.playerStats or not PVP.killfeedScoreboard.playerStats[playerName] then return end
+	local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+	if not currentTab or not currentTab.playerStats or not currentTab.playerStats[playerName] then return end
 	
 	PVP.killfeedScoreboard.currentDetailsPlayerName = playerName
 	
-	local playerStats = PVP.killfeedScoreboard.playerStats[playerName]
-	local aggregates = PVP:CalculatePlayerAggregateStats(playerName, true)
+	local playerStats = currentTab.playerStats[playerName]
+	local aggregates = PVP:CalculatePlayerAggregateStats(playerName, true, currentTab)
 	
 	if not aggregates then return end
 	
@@ -406,8 +411,11 @@ function PVP:RefreshKillfeedScoreboards()
     local killfeedScoreboard = self.killfeedScoreboard
     if not killfeedScoreboard or not killfeedScoreboard.lists then return end
     
-    if not killfeedScoreboard.playerStats then
-        killfeedScoreboard.playerStats = {}
+    local currentTab = self:GetTabById(killfeedScoreboard.activeTabId)
+    if not currentTab then return end
+    
+    if not currentTab.playerStats then
+        currentTab.playerStats = {}
     end
     
     self:UpdateHistoricalGroupMembers()
@@ -438,7 +446,7 @@ function PVP:RefreshKillfeedScoreboards()
         alliancePlayers[i] = {}
     end
     
-    for playerName, stats in pairs(killfeedScoreboard.playerStats) do
+    for playerName, stats in pairs(currentTab.playerStats) do
         local alliance = stats.alliance
         
         local passesDirectFilter = false
@@ -452,12 +460,12 @@ function PVP:RefreshKillfeedScoreboards()
             end
         end
 
-        local isPlayerDisabled = killfeedScoreboard.disabledPlayers[playerName] or false
-        local isAllianceDisabled = (alliance and killfeedScoreboard.disabledAlliances[alliance]) or false
+        local isPlayerDisabled = currentTab.disabledPlayers[playerName] or false
+        local isAllianceDisabled = (alliance and currentTab.disabledAlliances[alliance]) or false
         local isDisabled = isPlayerDisabled or isAllianceDisabled
         
         local applyFilters = true 
-        local aggregates = self:CalculatePlayerAggregateStats(playerName, applyFilters)
+        local aggregates = self:CalculatePlayerAggregateStats(playerName, applyFilters, currentTab)
         local includePlayer = false
         
         if passesDirectFilter then
@@ -529,7 +537,12 @@ function PVP:RefreshKillfeedScoreboards()
     end
     
     if PVP_KillfeedScoreboardInfo then
-        PVP_KillfeedScoreboardInfo:SetText("Killfeed Scoreboard - " .. GetPlayerLocationName())
+        local infoText = "Killfeed Scoreboard"
+        if not currentTab.isMainTab then
+            infoText = infoText .. " - " .. currentTab.name
+        end
+        infoText = infoText .. " - " .. GetPlayerLocationName()
+        PVP_KillfeedScoreboardInfo:SetText(infoText)
     end
     
     sort(allianceStats, function(a, b)
@@ -552,7 +565,7 @@ function PVP:RefreshKillfeedScoreboards()
         local allianceName = GetAllianceName(alliance)
         local icon = GetAllianceBannerIcon(alliance)
         
-        local isAllianceDisabled = killfeedScoreboard.disabledAlliances[alliance] or false
+        local isAllianceDisabled = currentTab.disabledAlliances[alliance] or false
         local colorHex = self:AllianceToColor(alliance, isAllianceDisabled)
         
         local totalKills = statsData.totalKills
@@ -591,6 +604,400 @@ function PVP:RefreshKillfeedScoreboards()
     end
 end
 
+-- Tab Management Functions
+function PVP:GetTabById(tabId)
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard.tabs then return nil end
+    
+    for _, tab in ipairs(killfeedScoreboard.tabs) do
+        if tab.id == tabId then
+            return tab
+        end
+    end
+    return nil
+end
+
+function PVP:CreateScoreboardTab(name, isMainTab)
+    local killfeedScoreboard = self.killfeedScoreboard
+    
+    -- Get and increment the next tab ID BEFORE using it (to prevent reuse)
+    local tabId
+    if isMainTab then
+        tabId = 1
+    else
+        tabId = killfeedScoreboard.nextTabId
+        killfeedScoreboard.nextTabId = killfeedScoreboard.nextTabId + 1
+    end
+    
+    local newTab = {
+        id = tabId,
+        name = name or ("Tab " .. tabId),
+        isMainTab = isMainTab or false,
+        isLogging = isMainTab and killfeedScoreboard.isLogging or false,
+        playerStats = {},
+        disabledPlayers = {},
+        disabledAlliances = {},
+        createdTime = GetGameTimeMilliseconds()
+    }
+    
+    -- Add tab to array (not using ID as index)
+    if isMainTab then
+        -- Main tab always at position 1
+        killfeedScoreboard.tabs[1] = newTab
+    else
+        -- Snapshots are appended to array
+        table.insert(killfeedScoreboard.tabs, newTab)
+    end
+    
+    return tabId
+end
+
+function PVP:InitializeTabUI()
+    local killfeedScoreboard = self.killfeedScoreboard
+    local container = WINDOW_MANAGER:GetControlByName("PVP_KillfeedScoreboardTabContainer", "")
+    if not container then return end
+    
+    local mainTabButtonContainer = container:GetNamedChild("MainTabButton")
+    if not mainTabButtonContainer then return end
+    
+    local scrollContainer = container:GetNamedChild("ScrollContainer")
+    if not scrollContainer then return end
+    
+    local scrollContent = scrollContainer:GetNamedChild("ScrollChild")
+    if not scrollContent then return end
+    
+    -- Clear existing snapshot buttons (keep main tab button separate)
+    for tabId, button in pairs(killfeedScoreboard.tabButtons) do
+        local tab = self:GetTabById(tabId)
+        if not tab or not tab.isMainTab then
+            button:SetHidden(true)
+            button:ClearAnchors()
+            killfeedScoreboard.tabButtons[tabId] = nil
+        end
+    end
+    
+    local buttonHeight = 35
+    local buttonSpacing = 2
+    
+    -- Create main tab button (always visible at top)
+    local mainTab = killfeedScoreboard.tabs[1]
+    if mainTab then
+        local mainButtonName = "PVP_KillfeedScoreboardTabButton" .. mainTab.id
+        local mainButton = WINDOW_MANAGER:GetControlByName(mainButtonName, "")
+        
+        if not mainButton then
+            mainButton = WINDOW_MANAGER:CreateControlFromVirtual(mainButtonName, mainTabButtonContainer, "PVP_KillfeedScoreboardTabButton")
+        end
+        
+        killfeedScoreboard.tabButtons[mainTab.id] = mainButton
+        mainButton.tabId = mainTab.id
+        
+        mainButton:ClearAnchors()
+        mainButton:SetAnchor(TOPLEFT, mainTabButtonContainer, TOPLEFT, 0, 0)
+        
+        local label = mainButton:GetNamedChild("Label")
+        if label then
+            label:SetText(mainTab.name)
+        end
+        
+        local bg = mainButton:GetNamedChild("BG")
+        if bg then
+            if mainTab.id == killfeedScoreboard.activeTabId then
+                bg:SetCenterColor(0.3, 0.3, 0.5, 1)
+                bg:SetEdgeColor(0.5, 0.5, 0.8, 1)
+            else
+                bg:SetCenterColor(0.2, 0.2, 0.2, 1)
+                bg:SetEdgeColor(0.4, 0.4, 0.4, 1)
+            end
+        end
+        
+        mainButton:SetHandler("OnClicked", function(self)
+            PVP:SwitchToTab(self.tabId)
+        end)
+        
+        local stopButton = mainButton:GetNamedChild("StopButton")
+        if stopButton then
+            stopButton:SetHidden(true)
+        end
+        
+        mainButton:SetHidden(false)
+    end
+    
+    -- Add "+" button first (at top of scrollable area)
+    local yOffset = 0
+    local addButtonName = "PVP_KillfeedScoreboardTabButtonAdd"
+    local addButton = WINDOW_MANAGER:GetControlByName(addButtonName, "")
+    
+    if not addButton then
+        addButton = WINDOW_MANAGER:CreateControlFromVirtual(addButtonName, scrollContent, "PVP_KillfeedScoreboardTabButton")
+    end
+    
+    addButton:ClearAnchors()
+    addButton:SetAnchor(TOPLEFT, scrollContent, TOPLEFT, 0, yOffset)
+    
+    local addLabel = addButton:GetNamedChild("Label")
+    if addLabel then
+        addLabel:SetText("+")
+        addLabel:SetFont("ZoFontWinH1")
+        addLabel:ClearAnchors()
+        addLabel:SetAnchor(CENTER, addButton, CENTER, 0, -4)
+    end
+    
+    local addBg = addButton:GetNamedChild("BG")
+    if addBg then
+        addBg:SetCenterColor(0.1, 0.3, 0.1, 1)
+        addBg:SetEdgeColor(0.2, 0.5, 0.2, 1)
+    end
+    
+    addButton:SetHandler("OnClicked", function(self)
+        PVP:CreateNewSnapshot()
+    end)
+    
+    addButton:SetHandler("OnMouseUp", function(self, mouseButton, upInside)
+        if upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT then
+            ClearMenu()
+            AddCustomMenuItem(
+                "Delete All Snapshots",
+                function()
+                    PVP:DeleteAllSnapshots()
+                end
+            )
+            ShowMenu(self)
+        end
+    end)
+    
+    local addStopButton = addButton:GetNamedChild("StopButton")
+    if addStopButton then
+        addStopButton:SetHidden(true)
+    end
+    
+    addButton:SetHidden(false)
+    yOffset = yOffset + buttonHeight + buttonSpacing
+    
+    -- Create buttons for snapshot tabs in reverse order (newest at top)
+    local prevButton = addButton
+    for i = #killfeedScoreboard.tabs, 2, -1 do
+        local tab = killfeedScoreboard.tabs[i]
+        if not tab then break end  -- Safety check for deleted tabs
+        
+        local buttonName = "PVP_KillfeedScoreboardTabButton" .. tab.id
+        local button = WINDOW_MANAGER:GetControlByName(buttonName, "")
+        
+        if not button then
+            button = WINDOW_MANAGER:CreateControlFromVirtual(buttonName, scrollContent, "PVP_KillfeedScoreboardTabButton")
+        end
+        
+        killfeedScoreboard.tabButtons[tab.id] = button
+        button.tabId = tab.id
+        
+        button:ClearAnchors()
+        button:SetAnchor(TOPLEFT, prevButton, BOTTOMLEFT, 0, buttonSpacing)
+        
+        local label = button:GetNamedChild("Label")
+        if label then
+            label:SetText(tab.name)
+        end
+        
+        local bg = button:GetNamedChild("BG")
+        if bg then
+            if tab.id == killfeedScoreboard.activeTabId then
+                bg:SetCenterColor(0.3, 0.3, 0.5, 1)
+                bg:SetEdgeColor(0.5, 0.5, 0.8, 1)
+            else
+                bg:SetCenterColor(0.2, 0.2, 0.2, 1)
+                bg:SetEdgeColor(0.4, 0.4, 0.4, 1)
+            end
+        end
+        
+        button:SetHandler("OnClicked", function(self)
+            PVP:SwitchToTab(self.tabId)
+        end)
+        
+        button:SetHandler("OnMouseUp", function(self, mouseButton, upInside)
+            if upInside and mouseButton == MOUSE_BUTTON_INDEX_RIGHT and not tab.isMainTab then
+                ClearMenu()
+                AddCustomMenuItem(
+                    "Delete Snapshot",
+                    function()
+                        PVP:DeleteSnapshot(self.tabId)
+                    end
+                )
+                ShowMenu(self)
+            end
+        end)
+        
+        local stopButton = button:GetNamedChild("StopButton")
+        if stopButton then
+            if not tab.isMainTab then
+                stopButton:SetHidden(false)
+                stopButton:SetHandler("OnClicked", function(self)
+                    PVP:ToggleTabLogging(button.tabId)
+                end)
+                
+                -- Set initial appearance based on logging state
+                PVP:UpdateTabLoggingButtonAppearance(tab.id)
+            else
+                stopButton:SetHidden(true)
+            end
+        end
+        
+        button:SetHidden(false)
+        yOffset = yOffset + buttonHeight + buttonSpacing
+        prevButton = button
+    end
+    
+    -- Update scroll content height - ZO_ScrollContainer will automatically handle scrolling
+    local totalContentHeight = yOffset
+    scrollContent:SetHeight(totalContentHeight)
+end
+
+function PVP:SwitchToTab(tabId)
+    local killfeedScoreboard = self.killfeedScoreboard
+    local tab = self:GetTabById(tabId)
+    if not tab then return end
+    
+    killfeedScoreboard.activeTabId = tabId
+    self:InitializeTabUI()
+    self:RefreshKillfeedScoreboards()
+    
+    -- Update info label
+    if PVP_KillfeedScoreboardInfo then
+        local infoText = "Killfeed Scoreboard"
+        if not tab.isMainTab then
+            infoText = infoText .. " - " .. tab.name
+        end
+        infoText = infoText .. " - " .. GetPlayerLocationName()
+        PVP_KillfeedScoreboardInfo:SetText(infoText)
+    end
+end
+
+function PVP:CreateNewSnapshot()
+    local killfeedScoreboard = self.killfeedScoreboard
+    local newTabId = self:CreateScoreboardTab(nil, false)  -- Name will be set based on tabId
+    
+    -- Update the tab name to use the snapshot number (ID - 1, since main tab is ID 1)
+    local newTab = self:GetTabById(newTabId)
+    if newTab then
+        newTab.name = tostring(newTabId - 1)
+        newTab.isLogging = true
+    end
+    
+    self:InitializeTabUI()
+    self:SwitchToTab(newTabId)
+    
+    ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Created new snapshot #" .. (newTabId - 1))
+end
+
+function PVP:UpdateTabLoggingButtonAppearance(tabId)
+    local killfeedScoreboard = self.killfeedScoreboard
+    local tab = self:GetTabById(tabId)
+    if not tab then return end
+    
+    local button = killfeedScoreboard.tabButtons and killfeedScoreboard.tabButtons[tabId]
+    if not button then return end
+    
+    local stopButton = button:GetNamedChild("StopButton")
+    if stopButton then
+        if tab.isLogging then
+            -- Logging is active: show red X (stop) button
+            stopButton:SetNormalTexture("EsoUI/Art/Buttons/decline_up.dds")
+            stopButton:SetPressedTexture("EsoUI/Art/Buttons/decline_down.dds")
+            stopButton:SetMouseOverTexture("EsoUI/Art/Buttons/decline_over.dds")
+            stopButton:SetAlpha(1.0)
+        else
+            -- Logging is inactive: show green check (start) button
+            stopButton:SetNormalTexture("EsoUI/Art/Buttons/accept_up.dds")
+            stopButton:SetPressedTexture("EsoUI/Art/Buttons/accept_down.dds")
+            stopButton:SetMouseOverTexture("EsoUI/Art/Buttons/accept_over.dds")
+            stopButton:SetAlpha(1.0)
+        end
+    end
+end
+
+function PVP:ToggleTabLogging(tabId)
+    local killfeedScoreboard = self.killfeedScoreboard
+    local tab = self:GetTabById(tabId)
+    if not tab or tab.isMainTab then return end
+    
+    tab.isLogging = not tab.isLogging
+    
+    -- Update button appearance
+    self:UpdateTabLoggingButtonAppearance(tabId)
+    
+    local status = tab.isLogging and "started" or "stopped"
+    ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Snapshot #" .. tab.name .. " logging " .. status)
+end
+
+function PVP:DeleteSnapshot(tabId)
+    local killfeedScoreboard = self.killfeedScoreboard
+    local tab = self:GetTabById(tabId)
+    
+    -- Cannot delete the main tab
+    if not tab or tab.isMainTab then return end
+    
+    local tabName = tab.name
+    
+    -- Remove the tab from the table
+    for i, t in ipairs(killfeedScoreboard.tabs) do
+        if t.id == tabId then
+            table.remove(killfeedScoreboard.tabs, i)
+            break
+        end
+    end
+    
+    -- If we deleted the active tab, switch to the main tab
+    if killfeedScoreboard.activeTabId == tabId then
+        killfeedScoreboard.activeTabId = 1
+    end
+    
+    -- Reset numbering if all snapshots are gone
+    if #killfeedScoreboard.tabs == 1 then
+        killfeedScoreboard.nextTabId = 2
+    end
+    
+    self:InitializeTabUI()
+    self:SwitchToTab(killfeedScoreboard.activeTabId)
+    
+    ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Deleted snapshot #" .. tabName)
+end
+
+function PVP:DeleteAllSnapshots()
+    local killfeedScoreboard = self.killfeedScoreboard
+    
+    -- Count how many snapshots exist
+    local snapshotCount = 0
+    for i = #killfeedScoreboard.tabs, 2, -1 do
+        local tab = killfeedScoreboard.tabs[i]
+        if tab and not tab.isMainTab then
+            snapshotCount = snapshotCount + 1
+        end
+    end
+    
+    if snapshotCount == 0 then
+        ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "No snapshots to delete")
+        return
+    end
+    
+    -- Delete all snapshot tabs (keep only main tab)
+    for i = #killfeedScoreboard.tabs, 2, -1 do
+        local tab = killfeedScoreboard.tabs[i]
+        if tab and not tab.isMainTab then
+            table.remove(killfeedScoreboard.tabs, i)
+        end
+    end
+    
+    -- Reset numbering back to 2
+    killfeedScoreboard.nextTabId = 2
+    
+    -- Switch to main tab
+    killfeedScoreboard.activeTabId = 1
+    
+    self:InitializeTabUI()
+    self:SwitchToTab(killfeedScoreboard.activeTabId)
+    
+    ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Deleted " .. snapshotCount .. " snapshot(s)")
+end
+
 function PVP_InitKillfeedScoreboard()
     PVP.killfeedScoreboard = {}
 
@@ -613,10 +1020,11 @@ function PVP_InitKillfeedScoreboard()
                 header:SetHandler("OnMouseUp", function(self, button, upInside)
                     if upInside and button == MOUSE_BUTTON_INDEX_LEFT and self.allianceId then
                         local allianceId = self.allianceId
-                        if PVP.killfeedScoreboard.disabledAlliances[allianceId] then
-                            PVP.killfeedScoreboard.disabledAlliances[allianceId] = nil
+                        local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+                        if currentTab.disabledAlliances[allianceId] then
+                            currentTab.disabledAlliances[allianceId] = nil
                         else
-                            PVP.killfeedScoreboard.disabledAlliances[allianceId] = true
+                            currentTab.disabledAlliances[allianceId] = true
                         end
                         PVP:RefreshKillfeedScoreboards()
                         PVP:RefreshPlayerDetailsIfOpen()
@@ -626,7 +1034,8 @@ function PVP_InitKillfeedScoreboard()
                 header:SetHandler("OnMouseEnter", function(self)
                     if not self.allianceId then return end
                     InitializeTooltip(InformationTooltip, self, TOP, 0, 0)
-                    local isDisabled = PVP.killfeedScoreboard.disabledAlliances[self.allianceId]
+                    local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+                    local isDisabled = currentTab.disabledAlliances[self.allianceId]
                     local actionText = isDisabled and "Click to Enable Alliance" or "Click to Disable Alliance"
                     InformationTooltip:AddLine(actionText, "", 1, 1, 1)
 
@@ -675,11 +1084,21 @@ function PVP_InitKillfeedScoreboard()
                 end)
             end
         end
-        PVP.killfeedScoreboard.playerStats = {}
+        
+        -- Initialize tab system
+        PVP.killfeedScoreboard.tabs = {}
+        PVP.killfeedScoreboard.activeTabId = 1
+        PVP.killfeedScoreboard.nextTabId = 2
+        PVP.killfeedScoreboard.tabButtons = {}
+        
+        -- Create main tab
+        PVP:CreateScoreboardTab("Main", true)
+        
+        -- Initialize tab UI
+        PVP:InitializeTabUI()
+        
         PVP.killfeedScoreboard.isLogging = false
         PVP.killfeedScoreboard.historicalGroupMembers = {}
-        PVP.killfeedScoreboard.disabledPlayers = {}
-        PVP.killfeedScoreboard.disabledAlliances = {}
         PVP.killfeedScoreboard.filterGroupOnly = false
         PVP.killfeedScoreboard.filterGuildOnly = false
         PVP.killfeedScoreboard.selectedGuilds = {}
@@ -904,8 +1323,13 @@ function KillfeedScoreboardList:SetupPlayerRow(control, data)
 
     local formattedDisplayName = FormatPlayerDisplayName(data.name, data.displayName)
 
-    local isPlayerDisabled = PVP.killfeedScoreboard.disabledPlayers[data.name] or false
-    local isAllianceDisabled = PVP.killfeedScoreboard.disabledAlliances[data.alliance] or false
+    local isPlayerDisabled = false
+    local isAllianceDisabled = false
+    local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+    if currentTab then
+        isPlayerDisabled = currentTab.disabledPlayers[data.name] or false
+        isAllianceDisabled = currentTab.disabledAlliances[data.alliance] or false
+    end
     local isDisabled = isPlayerDisabled or isAllianceDisabled
 
     local nameText
@@ -1048,12 +1472,15 @@ end
 function PVP_KillfeedScoreboardRow_OnMouseUp(control, button, upInside)
 	if not upInside or not control.data then return end
 	
+	local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+	if not currentTab then return end
+	
 	if button == MOUSE_BUTTON_INDEX_LEFT then
 		local playerName = control.data.name
-		if PVP.killfeedScoreboard.disabledPlayers[playerName] then
-			PVP.killfeedScoreboard.disabledPlayers[playerName] = nil
+		if currentTab.disabledPlayers[playerName] then
+			currentTab.disabledPlayers[playerName] = nil
 		else
-			PVP.killfeedScoreboard.disabledPlayers[playerName] = true
+			currentTab.disabledPlayers[playerName] = true
 		end
 		PVP:RefreshKillfeedScoreboards()
 		PVP:RefreshPlayerDetailsIfOpen()
@@ -1064,10 +1491,7 @@ end
 
 function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targetCharacterName, targetAlliance, sourceDisplayName, targetDisplayName)
     local killfeedScoreboard = self.killfeedScoreboard
-    if not killfeedScoreboard.playerStats then
-        killfeedScoreboard.playerStats = {}
-    end
-    local playerStats = killfeedScoreboard.playerStats
+    if not killfeedScoreboard or not killfeedScoreboard.tabs then return end
 
     local playersDB = self.SV.playersDB
     local sourceClass = 0
@@ -1080,84 +1504,91 @@ function PVP:AddKillfeedScoreboardKill(sourceCharacterName, sourceAlliance, targ
             targetClass = playersDB[targetCharacterName].unitClass
         end
     end
-
-    if not playerStats[sourceCharacterName] then
-        playerStats[sourceCharacterName] = {
-            events = {},
-            alliance = sourceAlliance,
-            name = sourceCharacterName,
-            displayName = sourceDisplayName,
-            class = sourceClass,
-            lastSeen = GetGameTimeMilliseconds(),
-        }
-    else
-        if sourceClass ~= 0 then
-            playerStats[sourceCharacterName].class = sourceClass
-        end
-        if not playerStats[sourceCharacterName].events then
-            playerStats[sourceCharacterName].events = {}
-        end
-    end
-
-    if not playerStats[targetCharacterName] then
-        playerStats[targetCharacterName] = {
-            events = {},
-            alliance = targetAlliance,
-            name = targetCharacterName,
-            displayName = targetDisplayName,
-            class = targetClass,
-            lastSeen = GetGameTimeMilliseconds(),
-        }
-    else
-        if targetClass ~= 0 then
-            playerStats[targetCharacterName].class = targetClass
-        end
-        if not playerStats[targetCharacterName].events then
-            playerStats[targetCharacterName].events = {}
-        end
-    end
-
+    
     local timestamp = GetGameTimeMilliseconds()
-
-    local event = {
+    
+    local eventData = {
         source = sourceCharacterName,
-        sourceDisplayName = sourceDisplayName,
-        sourceAlliance = sourceAlliance,
-        sourceClass = sourceClass,
         target = targetCharacterName,
-        targetDisplayName = targetDisplayName,
+        sourceAlliance = sourceAlliance,
         targetAlliance = targetAlliance,
+        sourceDisplayName = sourceDisplayName,
+        targetDisplayName = targetDisplayName,
+        sourceClass = sourceClass,
         targetClass = targetClass,
-        timestamp = timestamp
+        timestamp = timestamp,
     }
     
-    insert(playerStats[sourceCharacterName].events, event)
-    insert(playerStats[targetCharacterName].events, event)
+    -- Add to all tabs that are logging
+    -- Main logging must be active for any tab to receive events
+    if not killfeedScoreboard.isLogging then return end
+    
+    for _, tab in pairs(killfeedScoreboard.tabs) do
+        if tab.isLogging then
+            if not tab.playerStats then
+                tab.playerStats = {}
+            end
+            local playerStats = tab.playerStats
+            
+            if not playerStats[sourceCharacterName] then
+                playerStats[sourceCharacterName] = {
+                    events = {},
+                    alliance = sourceAlliance,
+                    name = sourceCharacterName,
+                    displayName = sourceDisplayName,
+                    class = sourceClass,
+                    lastSeen = timestamp,
+                }
+            else
+                if sourceClass ~= 0 then
+                    playerStats[sourceCharacterName].class = sourceClass
+                end
+                if not playerStats[sourceCharacterName].events then
+                    playerStats[sourceCharacterName].events = {}
+                end
+                playerStats[sourceCharacterName].lastSeen = timestamp
+            end
 
-    playerStats[sourceCharacterName].lastSeen = timestamp
-    playerStats[targetCharacterName].lastSeen = timestamp
-    playerStats[sourceCharacterName].displayName = sourceDisplayName
-    playerStats[targetCharacterName].displayName = targetDisplayName
+            if not playerStats[targetCharacterName] then
+                playerStats[targetCharacterName] = {
+                    events = {},
+                    alliance = targetAlliance,
+                    name = targetCharacterName,
+                    displayName = targetDisplayName,
+                    class = targetClass,
+                    lastSeen = timestamp,
+                }
+            else
+                if targetClass ~= 0 then
+                    playerStats[targetCharacterName].class = targetClass
+                end
+                if not playerStats[targetCharacterName].events then
+                    playerStats[targetCharacterName].events = {}
+                end
+                playerStats[targetCharacterName].lastSeen = timestamp
+            end
+            
+            -- Add event to both players
+            insert(playerStats[sourceCharacterName].events, eventData)
+            insert(playerStats[targetCharacterName].events, eventData)
+        end
+    end
 end
 
 function PVP:ClearKillfeedScoreboard()
     local killfeedScoreboard = self.killfeedScoreboard
+    local currentTab = self:GetTabById(killfeedScoreboard.activeTabId)
+    if not currentTab then return end
+    
 	local numPlayers = 0
-    if killfeedScoreboard.playerStats then
-        for _ in pairs(killfeedScoreboard.playerStats) do
+    if currentTab.playerStats then
+        for _ in pairs(currentTab.playerStats) do
 			numPlayers = numPlayers + 1
 		end
 	end
 	
-    killfeedScoreboard.playerStats = {}
-    if killfeedScoreboard.historicalGroupMembers then
-        for k in pairs(killfeedScoreboard.historicalGroupMembers) do
-            killfeedScoreboard.historicalGroupMembers[k] = nil
-    	end
-    else
-        killfeedScoreboard.historicalGroupMembers = {}
-    end
-    killfeedScoreboard.disabledPlayers = {}
+    currentTab.playerStats = {}
+    currentTab.disabledPlayers = {}
     self:RefreshKillfeedScoreboards()
 	
 	if numPlayers > 0 then
@@ -1176,28 +1607,55 @@ function PVP_KillfeedScoreboardStartButton_OnMouseEnter(button)
 	InformationTooltip:AddLine(tooltipText, "", 1, 1, 1)
 end
 
+function PVP:SetKillfeedScoreboardLogging(isLogging, showAlert)
+    local killfeedScoreboard = self.killfeedScoreboard
+    if not killfeedScoreboard then return end
+
+    killfeedScoreboard.isLogging = isLogging and true or false
+    
+    -- Update main tab's logging status
+    if killfeedScoreboard.tabs and killfeedScoreboard.tabs[1] then
+        killfeedScoreboard.tabs[1].isLogging = killfeedScoreboard.isLogging
+    end
+    
+    if killfeedScoreboard.isLogging then
+        self:UpdateHistoricalGroupMembers()
+    end
+
+    if PVP_KillfeedScoreboard then
+        local button = PVP_KillfeedScoreboard:GetNamedChild("StartButton")
+        if button then
+            if killfeedScoreboard.isLogging then
+                button:SetNormalTexture("EsoUI/Art/Buttons/decline_up.dds")
+                button:SetPressedTexture("EsoUI/Art/Buttons/decline_down.dds")
+                button:SetMouseOverTexture("EsoUI/Art/Buttons/decline_over.dds")
+            else
+                button:SetNormalTexture("EsoUI/Art/Buttons/accept_up.dds")
+                button:SetPressedTexture("EsoUI/Art/Buttons/accept_down.dds")
+                button:SetMouseOverTexture("EsoUI/Art/Buttons/accept_over.dds")
+            end
+        end
+    end
+
+    if showAlert then
+        local status = killfeedScoreboard.isLogging and "Logging Started" or "Logging Stopped"
+        ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Killfeed Scoreboard: " .. status)
+    end
+end
+
+function PVP:AutoStartKillfeedScoreboardLogging(showAlert)
+    if not self.SV.killfeedScoreboardAutoStartLogging then return end
+    if not self.killfeedScoreboard or not self.killfeedScoreboard.lists then
+        PVP_InitKillfeedScoreboard()
+    end
+    if self.killfeedScoreboard and not self.killfeedScoreboard.isLogging then
+        self:SetKillfeedScoreboardLogging(true, showAlert)
+    end
+end
+
 function PVP_KillfeedScoreboard_OnToggleLogging()
-	PVP.killfeedScoreboard.isLogging = not PVP.killfeedScoreboard.isLogging
-	
-	if PVP.killfeedScoreboard.isLogging then
-		PVP:UpdateHistoricalGroupMembers()
-	end
-	
-	local button = PVP_KillfeedScoreboard:GetNamedChild("StartButton")
-	if button then
-		if PVP.killfeedScoreboard.isLogging then
-			button:SetNormalTexture("EsoUI/Art/Buttons/decline_up.dds")
-			button:SetPressedTexture("EsoUI/Art/Buttons/decline_down.dds")
-			button:SetMouseOverTexture("EsoUI/Art/Buttons/decline_over.dds")
-		else
-			button:SetNormalTexture("EsoUI/Art/Buttons/accept_up.dds")
-			button:SetPressedTexture("EsoUI/Art/Buttons/accept_down.dds")
-			button:SetMouseOverTexture("EsoUI/Art/Buttons/accept_over.dds")
-		end
-	end
-	
-	local status = PVP.killfeedScoreboard.isLogging and "Logging Started" or "Logging Stopped"
-	ZO_Alert(UI_ALERT_CATEGORY_ALERT, nil, "Killfeed Scoreboard: " .. status)
+    local killfeedScoreboard = PVP.killfeedScoreboard
+    PVP:SetKillfeedScoreboardLogging(not killfeedScoreboard.isLogging, true)
 end
 
 function PVP_KillfeedScoreboard_OnToggleGroupFilter()
@@ -1262,6 +1720,9 @@ function PVP_KillfeedScoreboard_ShowGuildSelectComboBox(anchorButton)
 end
 
 function PVP_KillfeedScoreboard_OnRefresh()
-	PVP.killfeedScoreboard.disabledPlayers = {}
+	local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+	if currentTab then
+		currentTab.disabledPlayers = {}
+	end
 	PVP:RefreshKillfeedScoreboards()
 end

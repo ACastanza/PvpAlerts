@@ -127,6 +127,7 @@ PVP.defaults = {
 
 	bgToggle = false,
 	killfeedScoreboardToggle = false,
+	killfeedScoreboardAutoStartLogging = false,
 	show6star = true,
 	offsetX = 0,
 	offsetY = -100,

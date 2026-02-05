@@ -4185,6 +4185,7 @@ function PVP:InitEnabledAddon()
 					DeathScreenOnLoadFix()
 				end, 50)
 		end
+		self:AutoStartKillfeedScoreboardLogging(false)
 	end
 end
 

@@ -38,6 +38,7 @@ function PVP:InitializeAddonMenu()
 			self.SV.newAttackerOffsetY = 0
 			self.SV.medalsOffsetX = 0
 			self.SV.medalsOffsetY = 0
+			self.SV.killfeedScoreboardAutoStartLogging = self.defaults.killfeedScoreboardAutoStartLogging
 
 
 			self:FullReset()
@@ -1195,6 +1196,20 @@ function PVP:InitializeAddonMenu()
 			setFunc = function(newValue)
 				self.SV.killfeedScoreboardToggle = newValue
 				self:InitControls()
+			end,
+		},
+		{
+			type = "checkbox",
+			name = "Auto-start Killfeed Scoreboard logging",
+			tooltip = "ON - automatically starts killfeed scoreboard logging. Turning OFF does not stop logging if it is already running.",
+			default = self.defaults.killfeedScoreboardAutoStartLogging,
+			disabled = function() return not self.SV.enabled end,
+			getFunc = function() return self.SV.killfeedScoreboardAutoStartLogging end,
+			setFunc = function(newValue)
+				self.SV.killfeedScoreboardAutoStartLogging = newValue
+				if newValue then
+					self:AutoStartKillfeedScoreboardLogging(true)
+				end
 			end,
 		},
 		{

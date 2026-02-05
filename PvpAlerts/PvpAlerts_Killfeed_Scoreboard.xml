@@ -49,6 +49,24 @@
         </Controls>
         </Control>
 
+        <!-- Tab Button Template -->
+        <Button name="PVP_KillfeedScoreboardTabButton" mouseEnabled="true" virtual="true" clickSound="Click">
+            <Dimensions x="56" y="35"/>
+            <Controls>
+                <Backdrop name="$(parent)BG" inherits="ZO_DefaultBackdrop" edgeColor="FFFFFF">
+                    <AnchorFill/>
+                </Backdrop>
+                <Label name="$(parent)Label" font="ZoFontGame" horizontalAlignment="CENTER" verticalAlignment="CENTER" wrapMode="TRUNCATE">
+                    <AnchorFill offsetX="2" offsetY="2" offsetXEnd="-2" offsetYEnd="-2"/>
+                </Label>
+                <Button name="$(parent)StopButton" clickSound="Click" hidden="true">
+                    <Anchor point="TOPRIGHT" relativeTo="$(parent)" offsetX="-4" offsetY="2"/>
+                    <Dimensions x="14" y="14"/>
+                    <Textures normal="EsoUI/Art/Buttons/decline_up.dds" pressed="EsoUI/Art/Buttons/decline_down.dds" mouseOver="EsoUI/Art/Buttons/decline_over.dds"/>
+                </Button>
+            </Controls>
+        </Button>
+
         <Control name="PVP_KillfeedScoreboardSectionHeader" virtual="true">
             <Dimensions x="800" y="32"/>
             <Controls>
@@ -118,7 +136,7 @@
         </Control>
 
         <TopLevelControl name="PVP_KillfeedScoreboard" hidden="true" movable="true" clampedToScreen="true">
-            <Dimensions x="1250" y="600"/>
+            <Dimensions x="1330" y="600"/>
             <Anchor point="CENTER" relativePoint="CENTER"/>
 			<OnInitialized>
 				PVP_InitKillfeedScoreboard()
@@ -131,14 +149,33 @@
                 <!-- Drag handle at the top to move the scoreboard -->
                 <Control name="$(parent)DragHandle" mouseEnabled="true">
                     <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="0" offsetY="0"/>
-                    <Dimensions x="1250" y="30"/>
+                    <Dimensions x="1330" y="30"/>
                     <OnMouseDown>self:GetParent():StartMoving()</OnMouseDown>
                     <OnMouseUp>self:GetParent():StopMovingOrResizing()</OnMouseUp>
                 </Control>
 
                 <Label name="$(parent)Info" font="$(BOLD_FONT)|$(KB_20)|soft-shadow-thick" horizontalAlignment="LEFT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" text="Killfeed Scoreboard">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="10" offsetY="10"/>
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="90" offsetY="10"/>
                 </Label>
+                
+                <!-- Tab Container on the left -->
+                <Control name="$(parent)TabContainer">
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" offsetX="10" offsetY="60"/>
+                    <Dimensions x="70" y="500"/>
+                    <Controls>
+                        <!-- Main tab button (always visible at top) -->
+                        <Control name="$(parent)MainTabButton">
+                            <Anchor point="TOPLEFT"/>
+                            <Dimensions x="70" y="50"/>
+                        </Control>
+                        
+                        <!-- Scrollable snapshot tabs -->
+                        <Control name="$(parent)ScrollContainer" inherits="ZO_ScrollContainer">
+                            <Anchor point="TOPLEFT" relativeTo="$(parent)MainTabButton" relativePoint="BOTTOMLEFT"/>
+                            <Dimensions x="70" y="450"/>
+                        </Control>
+                    </Controls>
+                </Control>
 
                 <Label name="$(parent)Players" font="$(BOLD_FONT)|$(KB_20)|soft-shadow-thick" horizontalAlignment="RIGHT" color="INTERFACE_COLOR_TYPE_TEXT_COLORS:INTERFACE_TEXT_COLOR_NORMAL" text="Players: 0">
                     <Anchor point="TOPRIGHT" relativeTo="$(parent)" offsetX="-10" offsetY="40"/>
@@ -146,7 +183,7 @@
 
                 <!-- List 1 - Left column -->
                 <Control name="$(parent)List1" inherits="PVP_KillfeedScoreboardList">
-                    <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="10" offsetY="60"/>
+                    <Anchor point="TOPLEFT" relativeTo="$(parent)" relativePoint="TOPLEFT" offsetX="90" offsetY="60"/>
                     <Dimensions x="400" y="500"/>
                 </Control>
 
