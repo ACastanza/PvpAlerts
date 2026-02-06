@@ -347,8 +347,8 @@ function PVP_ShowPlayerDetails(playerName)
 			
 			local formattedOpponentName = FormatPlayerDisplayName(event.opponent, event.opponentDisplayName)
 			
-            local isOpponentDisabled = PVP.killfeedScoreboard.disabledPlayers[event.opponent] or false
-            local isOpponentAllianceDisabled = PVP.killfeedScoreboard.disabledAlliances[event.opponentAlliance] or false
+            local isOpponentDisabled = currentTab.disabledPlayers[event.opponent] or false
+            local isOpponentAllianceDisabled = currentTab.disabledAlliances[event.opponentAlliance] or false
             local isOpponentFilteredOut = false
             
             if PVP.killfeedScoreboard.filterGroupOnly or PVP.killfeedScoreboard.filterGuildOnly then
@@ -1363,7 +1363,8 @@ function PVP_KillfeedScoreboardRow_OnMouseEnter(control)
 	
 	InitializeTooltip(InformationTooltip, control, TOPLEFT, 0, 0, BOTTOMRIGHT)
 	
-	local isDisabled = PVP.killfeedScoreboard.disabledPlayers[control.data.name] or false
+	local currentTab = PVP:GetTabById(PVP.killfeedScoreboard.activeTabId)
+	local isDisabled = currentTab and currentTab.disabledPlayers[control.data.name] or false
 	local toggleText = isDisabled and "Left-click to Enable | Right-click for Details" or "Left-click to Disable | Right-click for Details"
 	InformationTooltip:AddLine(toggleText, "ZoFontWinH5", 0.7, 0.7, 0.7, CENTER, MODIFY_TEXT_TYPE_NONE, TEXT_ALIGN_CENTER, true)
 	ZO_Tooltip_AddDivider(InformationTooltip)
