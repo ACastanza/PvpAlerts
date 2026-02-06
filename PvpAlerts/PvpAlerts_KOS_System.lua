@@ -217,6 +217,13 @@ local function GetCharLink(rawName)
 		(PVP:StringEnd(rawName, '^Mx') and 'male' or 'female')
 end
 
+local function FormatTimestampToDate(unixTimestamp)
+	if not unixTimestamp or unixTimestamp == 0 then
+		return "Unknown"
+	end
+	return os.date("%y/%m/%d", unixTimestamp)
+end
+
 function PVP:Who(name, contains)
 
 	local foundPlayerNames, KOSIndex, looseMatch, stringPositionsArray
@@ -278,8 +285,18 @@ function PVP:Who(name, contains)
 				PVP:Colorize(zo_strformat(SI_UNIT_NAME, trimmedName), 'FF00FF') ..
 				' that has ' .. PVP:Colorize(#foundPlayerNames, 'FFFFFF') .. ' known characters:')
 		end
+		-- Sort by lastSeen timestamp (most recent first)
+		sort(foundPlayerNames, function(a, b)
+			local aTime = playersDb[a].lastSeen or 0
+			local bTime = playersDb[b].lastSeen or 0
+			return aTime > bTime
+		end)
 		for i = 1, #foundPlayerNames do
-			d(tostring(i) .. '. ' .. GetCharLink(foundPlayerNames[i]))
+			local charName = foundPlayerNames[i]
+			local charRecord = playersDb[charName]
+			local lastSeenTimestamp = charRecord.lastSeen or 0
+			local lastSeenText = lastSeenTimestamp > 0 and PVP:Colorize(' (Last Seen: ' .. FormatTimestampToDate(lastSeenTimestamp) .. ')', 'CCCCCC') or ''
+			d(tostring(i) .. '. ' .. GetCharLink(charName) .. lastSeenText)
 		end
 		if sharedGuilds and sharedGuilds ~= "" then
 			d('Shared Guild(s): ' .. sharedGuilds)
@@ -295,16 +312,24 @@ function PVP:Who(name, contains)
 		d('Found ' .. tostring(#foundPlayerNames + #looseMatch) .. ' players, similar to ' .. highlightedName .. ':')
 
 		if foundPlayerNames and #foundPlayerNames ~= 0 then
+			-- Sort by lastSeen timestamp (most recent first)
+			sort(foundPlayerNames, function(a, b)
+				local aTime = playersDb[a].lastSeen or 0
+				local bTime = playersDb[b].lastSeen or 0
+				return aTime > bTime
+			end)
 			for i = 1, #foundPlayerNames do
 				local currentplayerDbRecord = playersDb[foundPlayerNames[i]]
 				local currentAccName = currentplayerDbRecord.unitAccName
 				local currentAccCP = ""
 				if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
 				local currentName = foundPlayerNames[i]
+				local lastSeenTimestamp = currentplayerDbRecord.lastSeen or 0
+				local lastSeenText = lastSeenTimestamp > 0 and PVP:Colorize(' (Last Seen: ' .. FormatTimestampToDate(lastSeenTimestamp) .. ')', 'CCCCCC') or ''
 
 				local nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
 
-				d(tostring(i) .. '. ' .. nameLink .. currentAccCP)
+				d(tostring(i) .. '. ' .. nameLink .. currentAccCP .. lastSeenText)
 			end
 		end
 
@@ -348,6 +373,12 @@ function PVP:Who(name, contains)
 
 			local indexToHighlight = #startFullWord + #startPartWord + 1
 
+			-- Sort by lastSeen timestamp (most recent first)
+			sort(looseMatchOutput, function(a, b)
+				local aTime = playersDb[a].lastSeen or 0
+				local bTime = playersDb[b].lastSeen or 0
+				return aTime > bTime
+			end)
 			for i = 1, #looseMatchOutput do
 				local currentplayerDbRecord = playersDb[looseMatchOutput[i]]
 				local currentAccName = currentplayerDbRecord.unitAccName
@@ -355,6 +386,8 @@ function PVP:Who(name, contains)
 				if playersCP[currentAccName] then currentAccCP = ' (' .. playersCP[currentAccName] .. 'cp)' end
 				local currentName = looseMatchOutput[i]
 				local strippedCurrentName = zo_strformat(SI_UNIT_NAME, currentName)
+				local lastSeenTimestamp = currentplayerDbRecord.lastSeen or 0
+				local lastSeenText = lastSeenTimestamp > 0 and PVP:Colorize(' (Last Seen: ' .. FormatTimestampToDate(lastSeenTimestamp) .. ')', 'CCCCCC') or ''
 
 				local nameLink
 
@@ -365,7 +398,7 @@ function PVP:Who(name, contains)
 					nameLink = GetCharAccLink(currentName, currentAccName, currentplayerDbRecord.unitRace)
 				end
 
-				d(tostring(i) .. '. ' .. nameLink .. currentAccCP)
+				d(tostring(i) .. '. ' .. nameLink .. currentAccCP .. lastSeenText)
 			end
 		end
 	end
