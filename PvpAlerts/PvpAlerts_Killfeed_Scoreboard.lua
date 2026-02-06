@@ -7,7 +7,7 @@ local GetGameTimeMilliseconds = GetGameTimeMilliseconds
 --local GetGameTimeSeconds = GetGameTimeSeconds
 local sort = table.sort
 local insert = table.insert
---local remove = table.remove
+local remove = table.remove
 --local concat = table.concat
 --local upper = string.upper
 --local lower = string.lower
@@ -646,7 +646,7 @@ function PVP:CreateScoreboardTab(name, isMainTab)
         killfeedScoreboard.tabs[1] = newTab
     else
         -- Snapshots are appended to array
-        table.insert(killfeedScoreboard.tabs, newTab)
+        insert(killfeedScoreboard.tabs, newTab)
     end
     
     return tabId
@@ -940,7 +940,7 @@ function PVP:DeleteSnapshot(tabId)
     -- Remove the tab from the table
     for i, t in ipairs(killfeedScoreboard.tabs) do
         if t.id == tabId then
-            table.remove(killfeedScoreboard.tabs, i)
+            remove(killfeedScoreboard.tabs, i)
             break
         end
     end
@@ -982,7 +982,7 @@ function PVP:DeleteAllSnapshots()
     for i = #killfeedScoreboard.tabs, 2, -1 do
         local tab = killfeedScoreboard.tabs[i]
         if tab and not tab.isMainTab then
-            table.remove(killfeedScoreboard.tabs, i)
+            remove(killfeedScoreboard.tabs, i)
         end
     end
     
